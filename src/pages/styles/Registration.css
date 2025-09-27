@@ -1,0 +1,90 @@
+.Hide{
+    display:none;
+}
+.register-form-container{
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   min-height: 70dvh;
+   gap: 15px;
+}
+
+.register-container{
+ background-color:white;
+ border: 1px solid rgb(216, 208, 208);
+ box-shadow: 0px 1px 6px 3px  rgb(209, 206, 206);
+ padding: 20px;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ flex-direction: column;
+}
+.sign-in-btn,
+.log-in-link{
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+.log-in-link{
+    gap:3px;
+}
+ .register-container .input-group{
+    margin: 5px 10px;
+    background-color: white;
+    border-radius: 4px;
+    width:400px;
+    border: 1px solid gray;
+}
+ .register-container .input-group .inputs{
+    width: 100%;
+    outline: none;
+    border: none;
+    background: transparent;
+    padding: 5px 10px;
+}
+.register-container .input-group:nth-child(1){
+    border:none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+}
+
+.input-first,.input-last{
+    border: 1px solid gray;
+    border-radius: 4px;
+}
+
+
+.sign-in-btn{
+ width: 100px;
+ padding: 5px 10px;
+ background-color:#FF8904;
+ margin: 10px;
+  border-radius: 4px;
+  color: white;
+}
+.sign-in-btn button{
+    width: 100%;
+    background: transparent;
+    border: none;
+    font-weight: 600;
+   color: white;
+}
+.log-in-link p{
+    font-size: 0.9rem;
+}
+
+.Login-link{
+    font-size: 0.8rem;
+    text-decoration: none;
+    color: #FF8904;
+    font-weight: 600;
+    letter-spacing: 0.1rem;
+    transition: all 0.4s ease;
+}
+.Login-link:hover{
+border-bottom: 1px solid #FF8904;
+transform: translateY(-5px);
+}

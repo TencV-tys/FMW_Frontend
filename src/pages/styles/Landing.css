@@ -1,0 +1,19 @@
+.Show{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FF8904;
+    width: 6rem;
+    border-radius: 4px;
+}
+.navigation-auth .Show .nav-link{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+    text-decoration: none;
+    padding: 7px;
+    color: white;
+    font-weight: bold;    
+    
+}

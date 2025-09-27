@@ -1,0 +1,26 @@
+.nav-con{
+    border-bottom: 1px solid rgb(207, 197, 197);
+    box-shadow: 0 2px 6px 1px rgb(207, 197, 197);
+}
+
+.nav-con nav{
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ padding: 0.5rem 2.1rem;
+ 
+}
+.Logo{
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+    font-size: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.Logo-pic{
+    border-radius: 50%;
+    width:4.125rem;
+}

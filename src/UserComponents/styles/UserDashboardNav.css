@@ -1,0 +1,47 @@
+
+.user-page-Logo{
+    width: 50px;
+    border-radius: 50%;
+}
+.nav-container .user-nav{   
+    border-bottom: 1px solid #FF8904;
+    box-shadow: 0px 1px 6px 3px rgb(141, 141, 141);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color:#FF8904;
+    gap:10px;
+    padding: 0 20px;
+}
+.user-link-container{
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+
+.user-link-container:hover{
+    transform:translateY(-5px);
+}
+.user-nav-link:hover{
+color:black;
+}
+.user-nav-link{
+    font-weight: bold;
+    text-decoration: none;
+    color: white;
+    font-size: 0.9rem;
+    width: 100%;
+ 
+}
+
+.user-links{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    padding: 10px;
+}
+.Profile{
+    width: 30px;
+    border-radius: 50%;
+}

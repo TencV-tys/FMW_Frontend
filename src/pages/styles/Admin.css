@@ -1,0 +1,14 @@
+.admin-container{
+ display: grid;
+ grid-template-areas:
+ "sidebar main"
+ "sidebar main";
+ height: 100dvh;
+
+}
+
+.admin-content{
+  grid-area: main;
+  width: 100dvw;
+  
+}
