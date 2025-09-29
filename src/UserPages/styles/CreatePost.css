@@ -1,0 +1,80 @@
+
+.create-content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.create-form-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 80dvh;
+    gap: 10px;
+}
+.create-post-form{
+    box-shadow: 0 0 6px 3px rgb(209, 206, 206);
+    display: flex;
+    gap:10px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 30px 50px;
+    border-radius: 4px;
+}
+.create-select-container{
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    width: 400px;
+}
+
+
+.create-input-group{
+    border-bottom: 1px solid rgb(179, 175, 175);
+    width: 400px;
+    padding: 10px 0;
+
+}
+.create-input-group input{
+    width: 100%;
+    border: none;
+    outline: none;
+ }
+
+ .create-textarea-group{
+    width: 400px;
+    border: 1px solid rgb(170, 170, 170);
+    border-radius: 4px;
+ }
+ .create-textarea-group textarea{
+    width: 100%;
+    border: none;
+    resize: none;
+    outline: none;
+    padding: 10px;
+ }
+ .submit-post-btn{
+    width: 200px;
+    padding: 8px 10px;
+    background-color: #FF8904;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: 600;
+    transition:all 0.3s ease;
+ }
+.submit-post-btn:hover{
+  transform: scale(1.2);
+}
+
+.image-uploader-container input{
+ width: 100%;
+}
+.image-uploader-container{
+    width: 400px;
+    padding: 10px;
+}

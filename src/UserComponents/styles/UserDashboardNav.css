@@ -3,6 +3,7 @@
     width: 50px;
     border-radius: 50%;
 }
+
 .nav-container .user-nav{   
     border-bottom: 1px solid #FF8904;
     box-shadow: 0px 1px 6px 3px rgb(141, 141, 141);
@@ -12,6 +13,7 @@
     background-color:#FF8904;
     gap:10px;
     padding: 0 50px;
+ 
 }
 .user-link-container{
     text-align: center;
