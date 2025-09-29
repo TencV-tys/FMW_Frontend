@@ -31,7 +31,21 @@
     align-items: center;
     width: 400px;
 }
-
+.create-select-container .create-select-group{
+    padding: 5px;
+    background-color: #FF8904;
+    border: none;
+    border-radius: 4px;
+}
+.create-select-group select{
+    color: white;
+    width: 100%;
+    background:transparent;
+    background-color: #FF8904;
+    border: none;
+    outline: none;
+    font-weight: 600;
+}
 
 .create-input-group{
     border-bottom: 1px solid rgb(179, 175, 175);
@@ -66,15 +80,26 @@
     color: white;
     font-weight: 600;
     transition:all 0.3s ease;
+    margin: 10px;
  }
 .submit-post-btn:hover{
   transform: scale(1.2);
 }
 
 .image-uploader-container input{
- width: 100%;
+    color: rgb(122, 122, 122);
+    font-weight: 600;
+    width: 100%;
 }
 .image-uploader-container{
     width: 400px;
     padding: 10px;
+    margin: 10px;
+  }
+
+::placeholder{
+    font-weight: 600;
+}
+.create-post-title{
+    color: rgb(63, 59, 59);
 }

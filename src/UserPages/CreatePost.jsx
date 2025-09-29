@@ -14,7 +14,7 @@ export default function CreatePost(){
               <div className='create-form-container'> 
                 
                 <form className='create-post-form'>
-                  <h2>Create a Post</h2>
+                  <h2 className='create-post-title'>Create a Post</h2>
                      <div className='create-input-group'>
                         <input type='text'
                                name='name'
