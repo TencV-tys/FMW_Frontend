@@ -6,6 +6,9 @@
  import User from './pages/User';
  import Admin from './pages/Admin';
  import './index.css';
+import BulletinBoard from './UserPages/BulletinBoard';
+import CreatePost from './UserPages/CreatePost';
+import MyPosts from './UserPages/MyPosts';
 
  function App() {
    return (
@@ -14,7 +17,12 @@
            <Route path='/' element={<Landing/>}/>
            <Route path='/registration' element={<Registration/>}/>
            <Route path='/login' element={<Login/>}/>
-           <Route path='/user' element={<User/>}/>
+
+           <Route path='/user' element={<User/>}>
+            <Route index element={<BulletinBoard/>}/>
+            <Route path='create' element={<CreatePost/>} />
+             <Route path='myposts' element={<MyPosts/>} />
+           </Route>
            <Route path='/admin' element={<Admin/>}/>
         </Routes>
      </BrowserRouter>

@@ -17,18 +17,23 @@ return(
                 <img  src={Logo} className='user-page-Logo'></img>
                </div>
                <div className='user-link-container'>
-                  <Link to='' className='user-nav-link'>Bulletin board</Link>
+                  <Link to='/user' className='user-nav-link'>Bulletin Board</Link>
                 </div>
                <div className='user-link-container'>
-                  <Link to='' className='user-nav-link'>My Posts</Link>
+                  <Link to='/user/myposts' className='user-nav-link'>My Posts</Link>
                 </div>
                 <div className='user-link-container'>
-                  <Link to='' className='user-nav-link'>Post</Link>
+                  <Link to='/user/create' className='user-nav-link'>Create Post</Link>
                 </div>
            </div>
 
              <div className='user-profile-container'>
-              <img src={Profile} className='Profile'/>
+              <div className='user-profile-sub'>
+                <p>Username</p>
+              <img src={Profile} 
+                  className='Profile'
+                  title='Profile'/>
+              </div>
               </div>    
            </nav>
          </header>
