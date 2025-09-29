@@ -41,6 +41,11 @@ export default function CreatePost(){
                         <textarea name='descripion'
                                   placeholder='Additional details'></textarea>
                      </div>
+                      <div className='create-input-group'>
+                        <textarea name='contact_info'
+                                  placeholder='How can people reach you? (e.g.,Call me:09877666677, Email: example@example.com)'
+                                  ></textarea>
+                     </div>
                      <div className='create-input-group'>
                         <input type='file'
                                name='image'
