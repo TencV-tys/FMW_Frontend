@@ -27,11 +27,17 @@ export default function CreatePost(){
                            <option value="found">Found</option>
                         </select>
                      </div>
+                      <div className='create-input-group'>
+                          <select name='category_id'>
+                           <option value="">Select Category</option>
+                          </select>
+                     </div>
                      <div className='create-input-group'>
                           <select name='barangay_id'>
                            <option value="">Select Barangay</option>
                           </select>
                      </div>
+                     
                      <div  className='create-input-group'>
                         <input type='text'
                                name='color'
