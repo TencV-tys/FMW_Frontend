@@ -96,3 +96,8 @@
     transform: translateY(-5px);
   border-bottom: 1px solid ;
 }
+
+
+.login-form-title{
+    padding-bottom:15px;
+}

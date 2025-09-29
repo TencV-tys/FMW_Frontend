@@ -43,7 +43,7 @@
     background: transparent;
     padding: 5px 10px;
 }
-.register-container .input-group:nth-child(1){
+.register-container .input-group:nth-child(2){
     border:none;
     display: flex;
     justify-content: space-between;
@@ -87,4 +87,12 @@
 .Login-link:hover{
 border-bottom: 1px solid #FF8904;
 transform: translateY(-5px);
+}
+.register-title{
+    color: #FF8904;
+}
+
+.register-form-title .create{
+     text-align: center;
+     padding-bottom: 15px;
 }

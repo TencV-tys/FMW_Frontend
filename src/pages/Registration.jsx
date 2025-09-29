@@ -9,8 +9,11 @@ export default function Registration(){
     <>
     <NavAuth disabled="Hide"/>
     <div className="register-form-container">
-        <h2>Sign Up</h2>
-        <form className="register-container">   
+     
+        <form className="register-container"> 
+          <div className="register-form-title">
+            <h2 className="create">Create Account</h2>
+            </div>  
           <div className="input-group">
             <div className="input-first">
             <input type="text"

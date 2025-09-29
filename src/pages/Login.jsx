@@ -9,9 +9,9 @@ export default function Login(){
       <div className='container'>
       <NavAuth disabled="Hide"/>
        <div className='login-form-container'>
-             <h2>Login</h2>
+           
            <form className='login-container'>
-          
+             <h2 className='login-form-title'>Login</h2>
               <div className='input-group'>
         
                 <input type="email"
