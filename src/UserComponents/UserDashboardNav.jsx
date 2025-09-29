@@ -1,11 +1,11 @@
-import './styles/UserDashboardNav.css';
+import React,{useState} from 'react';
 import { Link } from 'react-router-dom';
-import React from 'react';
 import Logo from '../assets/Logo2.jpg';
 import Profile from '../assets/download.png';
+import './styles/UserDashboardNav.css';
 export default function UserDashboardNav(){
   
-   
+   const [ open , setOpen ] = useState(false);
 
   
 
@@ -28,12 +28,23 @@ return(
            </div>
 
              <div className='user-profile-container'>
-              <div className='user-profile-sub'>
-                <p>Username</p>
+              <div className='user-profile-sub' onClick={()=>setOpen(!open)}>
+                <p>Vincent</p>
               <img src={Profile} 
                   className='Profile'
                   title='Profile'/>
               </div>
+
+              { open && (
+               <div className='profile-dropdown-menu'>
+                <div className='dropdown-link-container'>
+                <Link to='' className='dropdown-link'>Edit Profile</Link>
+                </div>
+                 <div className='dropdown-link-container'>
+                <Link to='' className='dropdown-link'>Logout</Link>
+                 </div>
+               </div>
+              )}
               </div>    
            </nav>
          </header>

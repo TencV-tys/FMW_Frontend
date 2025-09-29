@@ -1,12 +1,22 @@
 import {Link} from 'react-router-dom';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faChevronLeft,faChevronRight} from '@fortawesome/free-solid-svg-icons';
+import { useState } from 'react';
 import './AdminStyles/AdminNav.css';
 import Logo from '../assets/Logo2.jpg';
 export default function AdminNav(){
-
-
+ const [ isOpen , setIsOpen ] = useState(false);
+ 
 return(
-    <header className="admin-nav-container">
+    <header className={`admin-nav-container ${isOpen ? "open" : "closed"}`}>
         <nav className='admin-link-container'>
+          <div className='toggle'>
+           <button className='toggle-icon' onClick={()=>setIsOpen(!isOpen)}>
+            <FontAwesomeIcon  className='icon' icon={ isOpen ? faChevronLeft : faChevronRight}/>
+           </button>
+          </div>
+          { isOpen &&(
+            <>
             <div className='admin-logo'>
               <img className='logo' src={Logo}/>
             </div>
@@ -19,6 +29,8 @@ return(
           <div className='admin-links'>
           <Link className='nav-link'>Settings</Link>
           </div>
+          </>
+        )}
         </nav>
     </header>
 )

@@ -1,27 +1,32 @@
 .admin-nav-container{
     background-color:#FF8904;
     height: 100dvh;
-  max-width: 250px;
+    max-width: 300px;
+    width: 200px;
   position: fixed;
   top: 0;
-  left: 0;
-  padding: 0 30px;  
+  left: 0; 
   border-right: 1px solid #FF8904;
   box-shadow: 6px 0px 6px 5px rgb(207, 207, 207);
+  transition: width 0.4s ease;
 }
 .admin-link-container{
  display: flex;
  justify-content: center;
  align-items: center;
  flex-direction: column;
+ width: 100%;
 
 }
+.admin-nav-container.closed{
+    width: 60px;
+}
+
 .admin-link-container .admin-links{
     margin: 10px 0;
-    border: 1px solid white;
+    border: none;
     padding: 2px 10px;
-    border-radius: 4px;
-    width: 150px;
+    width: 200px;
     transition: all 0.4s ease;
     text-align: center;
 }
@@ -30,14 +35,14 @@
     color:rgb(255, 255, 255);
     font-weight: bold;
     font-size: 0.8rem;
+    
     width: 100%;
 }
 .admin-links:hover{
-    background-color: white;
+    background-color:rgba(255,255,255,0.2);
+    color: black;
 }
-.nav-link:hover{
-    color:black;
-}
+
 
 .admin-logo{
     margin:10px 0;
@@ -46,4 +51,20 @@
 .admin-logo .logo{
     width: 100%;
     border-radius:50%;
+}
+.toggle{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+ .toggle-icon{
+    border: none;
+    background-color:rgba(255,255,255,0.2);
+    padding: 10px;
+    
+}
+
+.icon{
+    color: white;
 }
