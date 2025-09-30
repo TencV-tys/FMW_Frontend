@@ -1,0 +1,45 @@
+
+.myposts-content{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 100px;
+}
+.myposts-list{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.mypost-cards{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border: 1px solid gray;
+    padding: 10px;
+}
+.mypost-actions{
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+.mypost-details-container{
+    display: flex;
+    flex: 1;
+    gap: 10px;
+}
+.mypost-details{
+    display: flex;
+    flex-direction: column;
+    border: 1px solid gray;
+}
+.mypost-image img{
+    width: 100%;
+
+}
+.mypost-image{
+    width: 400px;
+}
