@@ -5,7 +5,7 @@ import { useState } from 'react';
 import './AdminStyles/AdminNav.css';
 import Logo from '../assets/Logo2.jpg';
 export default function AdminNav(){
- const [ isOpen , setIsOpen ] = useState(false);
+ const [ isOpen , setIsOpen ] = useState(true);
  
 return(
     <header className={`admin-nav-container ${isOpen ? "open" : "closed"}`}>
