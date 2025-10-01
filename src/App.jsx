@@ -9,7 +9,8 @@
 import BulletinBoard from './UserPages/BulletinBoard';
 import CreatePost from './UserPages/CreatePost';
 import MyPosts from './UserPages/MyPosts';
-
+import EditProfile from './UserPages/EditProfile';
+import Profile from './UserPages/Profile';
  function App() {
    return (
      <BrowserRouter>
@@ -19,10 +20,14 @@ import MyPosts from './UserPages/MyPosts';
            <Route path='/login' element={<Login/>}/>
 
            <Route path='/user' element={<User/>}>
-            <Route index element={<BulletinBoard/>}/>
-            <Route path='create' element={<CreatePost/>} />
-             <Route path='myposts' element={<MyPosts/>} />
+            <Route index element={<BulletinBoard/>} />
+            <Route path='create'  element={<CreatePost/>} />
+            <Route path='myposts' element={<MyPosts/>} />
+            <Route path='profile' element={<Profile/>} />
+            <Route path='edit-profile' element={<EditProfile/>} /> 
            </Route>
+
+           
            <Route path='/admin' element={<Admin/>}/>
         </Routes>
      </BrowserRouter>

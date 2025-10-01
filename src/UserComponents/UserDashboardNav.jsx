@@ -38,7 +38,7 @@ return(
               { open && (
                <div className='profile-dropdown-menu'>
                 <div className='dropdown-link-container'>
-                <Link to='' className='dropdown-link'>Edit Profile</Link>
+                <Link to='/user/profile' className='dropdown-link'>Profile</Link>
                 </div>
                  <div className='dropdown-link-container'>
                 <Link to='' className='dropdown-link'>Logout</Link>

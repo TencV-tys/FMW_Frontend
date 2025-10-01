@@ -7,11 +7,12 @@
     min-height: 100dvh;
     border-radius: 4px;
     padding: 20px;
+    
 }
 .bulletin-board-container-lightbrown{
     background-color: #D6A96D;
     min-height: 100dvh;
-    
+    box-shadow: inset 0px 0px 15px 3px #8B5A2B;;
 }
 .bulletin-board-content{
     display: flex;
@@ -75,6 +76,7 @@
     background-color: #F8E38C;
     position: relative;
     padding: 10px;
+    border-radius: 4px;
 }
 .lost-found-category{
     text-align: center;
