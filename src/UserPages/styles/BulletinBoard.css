@@ -1,6 +1,5 @@
 
 .bulletin-container{
-   
     padding: 50px;
 }
 .bulletin-board-container-darkbrown{
@@ -55,4 +54,45 @@
 .lost-found-container{
     display: grid;
     grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+    margin: 10px;
+}
+.lost-found-cards{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    margin: 20px;
+    gap: 10px;
+    background-color: #F8E38C;
+    position: relative;
+    padding: 10px;
+}
+.lost-found-category{
+    text-align: center;
+}
+.lost-found-contents{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.lost-found-contents img{
+    width: 100%;
+}
+.lost-found-details{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.pin{
+    position: absolute;
+    top: -10px;
+    background-color: red;
+    border-radius: 50%;
+    padding: 10px;
+    color: red; 
+    box-shadow: 5px 5px 6px 1px rgba(104, 103, 103, 0.3);
 }
