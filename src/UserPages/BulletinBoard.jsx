@@ -24,7 +24,7 @@ return(
                       <div className='search-bar'>
                         <input className='search-bar-input' type='text'
                                   placeholder='Search...'  />
-                        <FontAwesomeIcon icon={faMagnifyingGlass}/>
+                        <FontAwesomeIcon className='search-icon' icon={faMagnifyingGlass}/>
                        </div>
                    </div>
                    <div className='lost-found-container'>
