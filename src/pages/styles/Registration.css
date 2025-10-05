@@ -50,7 +50,15 @@
     align-items: center;
     
 }
-
+.register-container .input-group .gender-select-container{
+   width: 100%;
+   border: none;
+   outline: none;
+   background: transparent;
+   padding: 5px 10px;
+   color: gray;
+   font-weight: 700;
+}
 .input-first,.input-last{
     border: 1px solid gray;
     border-radius: 4px;
@@ -64,6 +72,10 @@
  margin: 10px;
   border-radius: 4px;
   color: white;
+  transition: all 0.3s ease;
+}
+.sign-in-btn:hover{
+    transform: scale(1.2);
 }
 .sign-in-btn button{
     width: 100%;

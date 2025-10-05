@@ -30,6 +30,15 @@ export default function Registration(){
             <input className="inputs" type="email"
                    placeholder="Email"/>
           </div>
+           <div className="input-group">
+           <select name="gender" class="gender-select-container">
+            <option value="">Select gender</option>
+           <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+            </select>
+
+          </div>
           <div className="input-group">
             <input className="inputs" type="password"
                    placeholder="Password"/>

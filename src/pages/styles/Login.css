@@ -64,7 +64,13 @@
     padding: 5px 10px;
     margin: 10px;
     border-radius: 4px;
+    transition: all 0.3s ease;
 }
+.login-btn:hover{
+    transform: scale(1.2);
+}
+
+
 .login-btn button{
     width: 100%;
     background: transparent;
