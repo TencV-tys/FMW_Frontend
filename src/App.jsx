@@ -11,6 +11,7 @@ import CreatePost from './UserPages/CreatePost';
 import MyPosts from './UserPages/MyPosts';
 import EditProfile from './UserPages/EditProfile';
 import Profile from './UserPages/Profile';
+import Dashboard from './AdminPages/Dashboard';
  function App() {
    return (
      <BrowserRouter>
@@ -28,7 +29,9 @@ import Profile from './UserPages/Profile';
            </Route>
 
            
-           <Route path='/admin' element={<Admin/>}/>
+           <Route path='/admin' element={<Admin/>}>
+              <Route index element={<Dashboard/>} /> 
+           </Route>
         </Routes>
      </BrowserRouter>
    )

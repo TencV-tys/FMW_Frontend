@@ -23,11 +23,17 @@ return(
             <div className='admin-links'>
           <Link className='nav-link'>Dashboard</Link>
           </div>
+           <div className='admin-links'>
+          <Link className='nav-link'>Manage Users</Link>
+          </div>
           <div className='admin-links'>
           <Link className='nav-link'>Manage Page</Link>
           </div>
           <div className='admin-links'>
           <Link className='nav-link'>Settings</Link>
+          </div>
+           <div className='admin-links'>
+          <Link className='nav-link'>Logout</Link>
           </div>
           </>
         )}
