@@ -17,9 +17,15 @@ export default function Dashboard(){
         transition: 'margin-left 0.4s ease'
      }}
      >
+      <header className='admin-header'>
+        <h1>Admin Dashboard</h1>
+        <div className='admin-header-right'>
+            <p>Welcome, Admin</p>
+            <button>Logout</button>
+        </div>
+      </header>
 
-
-     <h2>Welcome to Dashboard</h2>
+    
       </main>
     </section>
     )

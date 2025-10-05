@@ -3,3 +3,14 @@
     margin-left: 200px;
     padding: 20px;
 }
+.admin-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.admin-header-right{
+    display: flex;
+}
+.admin-header button{
+    margin-left: 10px;
+}
