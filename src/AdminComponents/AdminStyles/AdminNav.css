@@ -18,9 +18,11 @@
  width: 100%;
 
 }
+
 .admin-nav-container.closed{
-    width: 60px;
+  width: 60px;
 }
+
 
 .admin-link-container .admin-links{
     margin: 5px 0;

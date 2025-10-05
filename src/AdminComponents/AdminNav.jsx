@@ -1,11 +1,10 @@
 import {Link} from 'react-router-dom';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faChevronLeft,faChevronRight} from '@fortawesome/free-solid-svg-icons';
-import { useState } from 'react';
+
 import './AdminStyles/AdminNav.css';
 import Logo from '../assets/Logo2.jpg';
-export default function AdminNav(){
- const [ isOpen , setIsOpen ] = useState(true);
+export default function AdminNav({isOpen, setIsOpen}){
  
 return(
     <header className={`admin-nav-container ${isOpen ? "open" : "closed"}`}>
