@@ -9,16 +9,20 @@ return(
     <div className="myposts-container">
         <UserNav/>
         <main className="myposts-content">
-       <h2>MyPosts</h2>
+      <div className='myposts-content-darkbrown'>
+        <div className='myposts-content-lightbrown'>
+            <div className='myposts-content-container'>
+            <div className='myposts-content-title'>
+                <h2>My Posts</h2>
+            </div>
         <div className='myposts-list'>
-
             <div className='mypost-cards'>
                 <div className='mypost-details-container'>
                 <div className='mypost-details'> 
-                <h3>post.title</h3>
+                <h1>post.title</h1>
               <p>post.content</p>
-              <small>Category: post.category</small>
-              <small>Contact: post.contact_info</small>
+              <p>Category: post.category</p>
+              <p>Contact: post.contact_info</p>
                </div>
                <div className='mypost-image'>
               <img src={Logo1} alt="image" />
@@ -29,9 +33,11 @@ return(
                       <button>Delete</button>
               </div>
                 
-            </div>
-           
+             </div>
+           </div>
         </div>
+     </div>
+    </div>
         </main>
 
     </div>

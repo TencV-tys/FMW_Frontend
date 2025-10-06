@@ -1,25 +1,54 @@
 
 .myposts-content{
+    padding: 50px;
+}
+.myposts-content-darkbrown{
+background-color: #8B5A2B;
+    min-height: 100dvh;
+    border-radius: 4px;
+    padding: 20px;
+}
+.myposts-content-lightbrown{
+    background-color: #D6A96D;
+    min-height: 100dvh;
+    box-shadow: inset 0px 0px 10px 2px #8B5A2B;
+}
+.myposts-content-container{
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     flex-direction: column;
-    padding: 100px;
+   
+}
+.myposts-content-title{
+    background-color: #FBFCF8;
+    width: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px;
+    padding: 10px;
+    border-radius: 4px;
 }
 .myposts-list{
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+   background-color: #FBFCF8;
+   width: 95%;
+    border-radius: 4px;
 }
 
 .mypost-cards{
     display: flex;
-    justify-content: center;
     align-items: center;
     flex-direction: column;
-    border: 1px solid gray;
+    background-color:#F8E38C;
     padding: 10px;
+    width: 100%;
+    border-radius: 4px;
+   
 }
 .mypost-actions{
     display: flex;
@@ -28,13 +57,19 @@
 }
 .mypost-details-container{
     display: flex;
-    flex: 1;
+    justify-content: space-between;
+    width: 90%;
+    margin: 10px;
     gap: 10px;
 }
 .mypost-details{
     display: flex;
     flex-direction: column;
-    border: 1px solid gray;
+    align-items: center;
+    flex: 1;
+}
+.mypost-details p{
+    font-size: 1.3rem;
 }
 .mypost-image img{
     width: 100%;
