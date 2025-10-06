@@ -26,7 +26,10 @@ return(
           <Link className='nav-link'>Manage Users</Link>
           </div>
           <div className='admin-links'>
-          <Link className='nav-link'>Manage Page</Link>
+          <Link className='nav-link'>Manage Posts</Link>
+          </div>
+          <div className='admin-links'>
+          <Link className='nav-link'>Reports</Link>
           </div>
           <div className='admin-links'>
           <Link className='nav-link'>Settings</Link>
