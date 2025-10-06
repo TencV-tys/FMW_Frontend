@@ -20,10 +20,10 @@ return(
               <img className='logo' src={Logo}/>
             </div>
             <div className='admin-links'>
-          <Link className='nav-link'>Dashboard</Link>
+          <Link to='/admin' className='nav-link'>Dashboard</Link>
           </div>
            <div className='admin-links'>
-          <Link className='nav-link'>Manage Users</Link>
+          <Link to='/admin/manage-users' className='nav-link'>Manage Users</Link>
           </div>
           <div className='admin-links'>
           <Link className='nav-link'>Manage Posts</Link>

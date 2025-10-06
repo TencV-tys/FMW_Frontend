@@ -1,0 +1,39 @@
+
+.manage-users-table-darkbrown{
+    background-color: #8B5A2B;
+    min-height: 100dvh;
+    border: 4px;
+    padding: 20px;
+}
+.manage-users-table-lightbrown{
+    background-color: #D6A96D;
+    min-height: 100dvh;
+    box-shadow: inset 0px 0px 10px 2px #8B5A2B;;
+}
+.manage-users-table-content{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+.manage-users-table-title{
+    background-color:#FBFCF8;
+    width: 80%;
+    border: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    margin: 20px;
+}
+.users-table{
+    border-collapse: collapse;
+    width: 95%;
+    margin: 10px;
+}
+th,td{
+ text-align: center;
+ padding: 10px;
+ background-color: white; 
+
+}
