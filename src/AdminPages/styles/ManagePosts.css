@@ -2,7 +2,7 @@
 .manage-posts-table-darkbrown{
     background-color: #8B5A2B;
     min-height: 100dvh;
-    border: 4px;
+    border-radius: 4px;
     padding: 20px;
 }
 .manage-posts-table-lightbrown{
@@ -19,7 +19,7 @@
 .manage-posts-table-title{
     background-color:#FBFCF8;
     width: 80%;
-    border: 5px;
+    border-radius: 4px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -30,10 +30,12 @@
     border-collapse: collapse;
     width: 95%;
     margin: 10px;
+    background-color: #FBFCF8;
+    border-radius: 4px;
 }
 th,td{
  text-align: center;
  padding: 10px;
- background-color: white; 
+  
 
 }

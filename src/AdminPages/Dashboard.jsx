@@ -1,6 +1,8 @@
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import AdminNav from '../AdminComponents/AdminNav';
+import AdminLogo from '../assets/download.png';
+import { faBell } from '@fortawesome/free-solid-svg-icons';
 import './styles/Dashboard.css';
 export default function Dashboard(){
    
@@ -21,7 +23,8 @@ export default function Dashboard(){
         <h1>Admin Dashboard</h1>
         <div className='admin-header-right'>
             <p>Welcome, Admin</p>
-            <button>Logout</button>
+           <img className='admin-profile' src={AdminLogo}></img>
+           <FontAwesomeIcon className='notif-icon' icon={faBell}/>
         </div>
       </header>
       <section className="dashboard-cards">
