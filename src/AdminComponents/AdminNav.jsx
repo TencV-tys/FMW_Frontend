@@ -31,9 +31,7 @@ return(
           <div className='admin-links'>
           <Link className='nav-link'>Reports</Link>
           </div>
-          <div className='admin-links'>
-          <Link className='nav-link'>Settings</Link>
-          </div>
+      
            <div className='admin-links'>
           <Link className='nav-link'>Logout</Link>
           </div>

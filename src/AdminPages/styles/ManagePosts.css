@@ -8,7 +8,7 @@
 .manage-posts-table-lightbrown{
     background-color: #D6A96D;
     min-height: 100dvh;
-    box-shadow: inset 0px 0px 10px 2px #8B5A2B;;
+    box-shadow: inset 0px 0px 10px 2px #8B5A2B;
 }
 .manage-posts-table-content{
     display: flex;
