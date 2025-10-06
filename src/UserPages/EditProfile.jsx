@@ -10,7 +10,7 @@ export default function EditProfile(){
              <main className="edit-profile-content">
                 <div className='edit-profile-back'>
                             <button className='action-back'>
-                                <Link to='/user/profile'>Go Back</Link>
+                                <Link to='/user/profile'>Profile</Link>
                                 </button>                   
                 </div>
                <div className='edit-profile-form-container'>

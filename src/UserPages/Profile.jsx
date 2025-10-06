@@ -12,15 +12,21 @@ export default function Profile(){
             <UserNav/>
             <main className="profile-content">
                 <div className='profile-action'>
-                    <h1>Profile</h1>
+                    <h2></h2>
                     <button className='profile-edit-btn'>
                         <Link to='/user/edit-profile'>Edit Profile</Link>
                         </button>
                 </div>
+             <div className='profile-data-container-darkbrown'>   
+              <div className='profile-data-container-lightbrown'>  
                <div className='profile-data-container'>
                      
                      <div className='profile-data'>
+                        <div className='profile-data-title'>
+                            <h2>Profile</h2>
+                        </div>
                              <div className='profile-container'>
+                                <span className='profile-pin'></span>
                                    <div className='profile-pic'>
                                         <img src={Logo2} alt='preview'/>
                                    </div>
@@ -32,6 +38,8 @@ export default function Profile(){
                              </div>
                      </div>
                </div>
+              </div>
+            </div>   
             </main>
 
         </section>
