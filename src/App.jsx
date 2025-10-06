@@ -13,6 +13,7 @@ import EditProfile from './UserPages/EditProfile';
 import Profile from './UserPages/Profile';
 import Dashboard from './AdminPages/Dashboard';
 import ManageUsers from './AdminPages/ManageUsers';
+import ManagePosts from './AdminPages/ManagePosts';
  function App() {
    return (
      <BrowserRouter>
@@ -33,6 +34,7 @@ import ManageUsers from './AdminPages/ManageUsers';
            <Route path='/admin' element={<Admin/>}>
               <Route index element={<Dashboard/>} /> 
               <Route path='manage-users' element={<ManageUsers/>} />
+               <Route path='manage-posts' element={<ManagePosts/>} />
            </Route>
         </Routes>
      </BrowserRouter>

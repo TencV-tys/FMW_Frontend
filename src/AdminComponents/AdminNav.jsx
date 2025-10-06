@@ -26,7 +26,7 @@ return(
           <Link to='/admin/manage-users' className='nav-link'>Manage Users</Link>
           </div>
           <div className='admin-links'>
-          <Link className='nav-link'>Manage Posts</Link>
+          <Link to='/admin/manage-posts' className='nav-link'>Manage Posts</Link>
           </div>
           <div className='admin-links'>
           <Link className='nav-link'>Reports</Link>
