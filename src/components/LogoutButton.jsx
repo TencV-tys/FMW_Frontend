@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
-function LogoutButton() {
+import './styles/LogoutButton.css';
+export default function LogoutButton() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -23,10 +23,10 @@ function LogoutButton() {
   };
 
   return (
-    <button onClick={handleLogout} className="btn btn-danger">
+    <button onClick={handleLogout} className="logout-btn">
       Logout
     </button>
   );
 }
 
-export default LogoutButton;
+
