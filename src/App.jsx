@@ -14,6 +14,7 @@ import Profile from './UserPages/Profile';
 import Dashboard from './AdminPages/Dashboard';
 import ManageUsers from './AdminPages/ManageUsers';
 import ManagePosts from './AdminPages/ManagePosts';
+import ProtectedRoute from './components/ProtectedRoutes';
  function App() {
    return (
      <BrowserRouter>
@@ -22,7 +23,12 @@ import ManagePosts from './AdminPages/ManagePosts';
            <Route path='/registration' element={<Registration/>}/>
            <Route path='/login' element={<Login/>}/>
 
-           <Route path='/user' element={<User/>}>
+           <Route 
+            path='/user' element={
+            <ProtectedRoute allowedRole='user'>
+               <User/>
+            </ProtectedRoute>
+            }>
             <Route index element={<BulletinBoard/>} />
             <Route path='create'  element={<CreatePost/>} />
             <Route path='myposts' element={<MyPosts/>} />
@@ -31,7 +37,11 @@ import ManagePosts from './AdminPages/ManagePosts';
            </Route>
 
            
-           <Route path='/admin' element={<Admin/>}>
+           <Route path='/admin' element={
+            <ProtectedRoute allowedRole='admin'>
+               <Admin/>
+            </ProtectedRoute>
+            }>
               <Route index element={<Dashboard/>} /> 
               <Route path='manage-users' element={<ManageUsers/>} />
                <Route path='manage-posts' element={<ManagePosts/>} />
