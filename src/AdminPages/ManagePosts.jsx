@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminNav from '../AdminComponents/AdminNav';
 import { Link } from 'react-router-dom';
 import './styles/ManagePosts.css';
 export default function ManageUsers(){
  const [isSideBarOpen, setIsSideBarOpen] = useState(true);
+ 
 
 
 return(
