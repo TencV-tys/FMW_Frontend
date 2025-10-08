@@ -24,7 +24,7 @@ export default function Registration(){
      e.preventDefault();
      
      try{
-      const response = await fetch("http://localhost:8000/api/register",{
+      const response = await fetch("http://localhost:8000/auth/register",{
         method:"POST",
         headers:{ "Content-Type": "application/json",
         },
@@ -44,7 +44,7 @@ export default function Registration(){
           password:"",
           password_confirmation:""
         });
-        setTimeout(()=>nav('/login'),2000);
+        setTimeout(()=>nav('/login'),1000);
       }else{
         setMessage(`${data.message || "Registration failed"}`);
         console.log(`Failed registartion through:${data.message}`);
