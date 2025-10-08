@@ -26,14 +26,16 @@ export default function Registration(){
      try{
       const response = await fetch("http://localhost:8000/api/register",{
         method:"POST",
-        headers:{ "Content-Type": "application/json"},
+        headers:{ "Content-Type": "application/json",
+        },
+        credentials:'include',
         body:JSON.stringify(formData)
       });
       
       const data = await response.json();
 
       if(response.ok){
-        setMessage("Registered successfully");
+        setMessage(data.message);
         setFormData({
           first_name:"",
           last_name:"",
@@ -42,6 +44,7 @@ export default function Registration(){
           password:"",
           password_confirmation:""
         });
+        setTimeout(()=>nav('/login'),2000);
       }else{
         setMessage(`${data.message || "Registration failed"}`);
         console.log(`Failed registartion through:${data.message}`);
