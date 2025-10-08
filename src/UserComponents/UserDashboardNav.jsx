@@ -2,6 +2,7 @@ import React,{useState} from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../assets/Logo2.jpg';
 import Profile from '../assets/download.png';
+import LogoutButton from '../components/LogoutButton';
 import './styles/UserDashboardNav.css';
 export default function UserDashboardNav(){
   
@@ -41,7 +42,9 @@ return(
                 <Link to='/user/profile' className='dropdown-link'>Profile</Link>
                 </div>
                  <div className='dropdown-link-container'>
-                <Link to='' className='dropdown-link'>Logout</Link>
+                <Link to='' className='dropdown-link'>
+                <LogoutButton/>
+                </Link>
                  </div>
                </div>
               )}

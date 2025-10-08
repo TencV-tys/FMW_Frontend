@@ -4,6 +4,7 @@ import {faChevronLeft,faChevronRight} from '@fortawesome/free-solid-svg-icons';
 
 import './AdminStyles/AdminNav.css';
 import Logo from '../assets/Logo2.jpg';
+import LogoutButton from '../components/LogoutButton';
 export default function AdminNav({isOpen, setIsOpen}){
  
 return(
@@ -33,7 +34,9 @@ return(
           </div>
       
            <div className='admin-links'>
-          <Link className='nav-link'>Logout</Link>
+          <Link className='nav-link'>
+           <LogoutButton/>
+          </Link>
           </div>
           </>
         )}
