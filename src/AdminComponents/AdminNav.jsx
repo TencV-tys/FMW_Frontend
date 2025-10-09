@@ -27,33 +27,35 @@ return(
             <div className='admin-logo'>
               <img className='logo' src={Logo}/>
             </div>
-            <div className='admin-links'>
-          <Link to='/admin' className='nav-link'>
+            <Link to='/admin' className='admin-links'>
+          <div  className='nav-link'>
           <FontAwesomeIcon icon={faGauge} className='nav-icons'/>
-          Dashboard</Link>
+          Dashboard
           </div>
-           <div className='admin-links'>
-          <Link to='/admin/manage-users' className='nav-link'>
+          </Link>
+           <Link to='/admin/manage-users' className='admin-links'>
+          <div  className='nav-link'>
           <FontAwesomeIcon icon={faUsers} className='nav-icons'/>
-          Manage Users</Link>
+          Manage Users
           </div>
-          <div className='admin-links'>
-          <Link to='/admin/manage-posts' className='nav-link'>
+          </Link>
+          <Link to='/admin/manage-posts' className='admin-links'>
+          <div  className='nav-link'>
           <FontAwesomeIcon icon={faNewspaper} className='nav-icons'/>
-          Manage Posts</Link>
-          </div>
-          <div className='admin-links'>
-          <Link className='nav-link'>
+          Manage Posts</div>
+          </Link>
+          <Link className='admin-links'>
+          <div className='nav-link'>
           <FontAwesomeIcon icon={faChartBar} className='nav-icons'/>
            Reports
-          </Link>
           </div>
+          </Link>
       
-           <div className='admin-links'>
-          <Link className='nav-link '>
+           <Link className='admin-links logout'>
+        
            <LogoutButton/>
+        
           </Link>
-          </div>
           </>
         )}
         </nav>

@@ -37,18 +37,12 @@
 }
 .checkbox-container{
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     width: 400px;
     align-items: center;
     margin: 5px 10px;
 }
-.checkbox-container .checkbox{
-    display: flex;
-    gap: 5px;
-    align-items: center;
- 
-    
-}
+
 .checkbox input[type="checkbox"]{
     accent-color: #FF8904;
 }

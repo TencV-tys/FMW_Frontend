@@ -9,7 +9,7 @@ export default function Login(){
     
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
-   
+
     const nav = useNavigate(); 
 
    const handleLogin = async (e) => {
@@ -21,7 +21,7 @@ export default function Login(){
         method:"POST",
         credentials:'include',
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({email,password})
+        body:JSON.stringify({ email,password })
       });
      const data = await res.json();
 
@@ -81,8 +81,7 @@ export default function Login(){
                        />
               </div >
               <div className='checkbox-container'>
-                <div className='checkbox'><input type="checkbox"/><p>Remember me</p></div>
-                <Link href="#" className='Forgot-password'>Forgot password</Link>
+                <Link href="#" className='Forgot-password'>Forgot password?</Link>
               </div>
               <div className='login-btn'>
                 <button type="submit">Login</button>

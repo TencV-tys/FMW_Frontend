@@ -34,7 +34,7 @@ export default function LogoutButton() {
   return (
   
     <button onClick={handleLogout} className="logout-btn">
-      <FontAwesomeIcon icon={faRightFromBracket}/>
+      <FontAwesomeIcon className="logout-icon" icon={faRightFromBracket}/>
       Logout
     </button>
    
