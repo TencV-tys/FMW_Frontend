@@ -89,6 +89,7 @@
 .admin-profile{
     width: 40px;
     border-radius: 50%;
-    border: 1px solid gray;
+    border: 1px solid rgb(202, 200, 200);
     padding: 3px;
+    background-color: #FF8904;
 }

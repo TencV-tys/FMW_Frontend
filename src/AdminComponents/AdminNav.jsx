@@ -10,7 +10,7 @@ import {faChevronLeft,
   from '@fortawesome/free-solid-svg-icons';
 
 import './AdminStyles/AdminNav.css';
-import Logo from '../assets/Logo2.jpg';
+import Logo from '../assets/Admin.png';
 import LogoutButton from '../components/LogoutButton';
 export default function AdminNav({isOpen, setIsOpen}){
  
@@ -24,9 +24,15 @@ return(
           </div>
           { isOpen &&(
             <>
-            <div className='admin-logo'>
+            <Link to='/admin' className='admin-profile-container'>
+             <div className='admin-logo-container'>
               <img className='logo' src={Logo}/>
-            </div>
+              </div>
+              <div className='admin-name'>
+                <p>Welcome!</p>
+                <p>admin</p>
+              </div>
+            </Link>
             <Link to='/admin' className='admin-links'>
           <div  className='nav-link'>
           <FontAwesomeIcon icon={faGauge} className='nav-icons'/>

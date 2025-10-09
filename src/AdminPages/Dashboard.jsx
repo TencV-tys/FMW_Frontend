@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import AdminNav from '../AdminComponents/AdminNav';
-import AdminLogo from '../assets/download.png';
+import AdminLogo from '../assets/Admin.png';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
 import './styles/Dashboard.css';
 export default function Dashboard(){
