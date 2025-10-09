@@ -36,7 +36,10 @@ export default function Registration(){
       const data = await response.json();
 
       if(response.ok){
-        toast.success(data.message);
+        toast.success(data.message,{
+          position:'top-center',
+          autoClose:1000
+        });
         setFormData({
           first_name:"",
           last_name:"",

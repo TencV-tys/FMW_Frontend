@@ -9,12 +9,12 @@ export default function Login(){
     
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
-    const [ error, setError ] = useState('');
+   
     const nav = useNavigate(); 
 
    const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    
 
     try{
       const res = await fetch('http://localhost:8000/auth/login',{
