@@ -1,4 +1,6 @@
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import './styles/LogoutButton.css';
 export default function LogoutButton() {
@@ -24,6 +26,7 @@ export default function LogoutButton() {
 
   return (
     <button onClick={handleLogout} className="logout-btn">
+      <FontAwesomeIcon icon={faRightFromBracket}/>
       Logout
     </button>
   );

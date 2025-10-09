@@ -31,7 +31,7 @@ export default function ManageUsers(){
       if(!window.confirm("Are you sure you want to delete this user?")) return;
        
       try{
-        const res = await fetch(`http://localhost:8000/api/users/{id}`,{
+        const res = await fetch(`http://localhost:8000/api/users/${id}`,{
          method:"DELETE",
          credentials:'include'
         });

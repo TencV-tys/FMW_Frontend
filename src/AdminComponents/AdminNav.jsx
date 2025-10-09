@@ -1,6 +1,15 @@
 import {Link} from 'react-router-dom';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faChevronLeft,faChevronRight} from '@fortawesome/free-solid-svg-icons';
+import {faChevronLeft,
+        faChevronRight,
+        faGauge,
+        faUsers,
+        faNewspaper,
+        faChartBar,
+        faRightFromBracket,
+         
+} 
+  from '@fortawesome/free-solid-svg-icons';
 
 import './AdminStyles/AdminNav.css';
 import Logo from '../assets/Logo2.jpg';
@@ -21,20 +30,29 @@ return(
               <img className='logo' src={Logo}/>
             </div>
             <div className='admin-links'>
-          <Link to='/admin' className='nav-link'>Dashboard</Link>
+          <Link to='/admin' className='nav-link'>
+          <FontAwesomeIcon icon={faGauge} className='nav-icons'/>
+          Dashboard</Link>
           </div>
            <div className='admin-links'>
-          <Link to='/admin/manage-users' className='nav-link'>Manage Users</Link>
+          <Link to='/admin/manage-users' className='nav-link'>
+          <FontAwesomeIcon icon={faUsers} className='nav-icons'/>
+          Manage Users</Link>
           </div>
           <div className='admin-links'>
-          <Link to='/admin/manage-posts' className='nav-link'>Manage Posts</Link>
+          <Link to='/admin/manage-posts' className='nav-link'>
+          <FontAwesomeIcon icon={faNewspaper} className='nav-icons'/>
+          Manage Posts</Link>
           </div>
           <div className='admin-links'>
-          <Link className='nav-link'>Reports</Link>
+          <Link className='nav-link'>
+          <FontAwesomeIcon icon={faChartBar} className='nav-icons'/>
+           Reports
+          </Link>
           </div>
       
            <div className='admin-links'>
-          <Link className='nav-link'>
+          <Link className='nav-link '>
            <LogoutButton/>
           </Link>
           </div>
