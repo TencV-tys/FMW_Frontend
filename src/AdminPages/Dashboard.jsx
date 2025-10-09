@@ -22,7 +22,7 @@ export default function Dashboard(){
       <header className='admin-header'>
         <h1>Admin Dashboard</h1>
         <div className='admin-header-right'>
-            <p>Welcome, Admin</p>
+           
            <img className='admin-profile' src={AdminLogo}></img>
            <FontAwesomeIcon className='notif-icon' icon={faBell}/>
         </div>
@@ -31,12 +31,22 @@ export default function Dashboard(){
         <div className='cards'>
           <span className='dashboard-pins'></span>
          <h2>120</h2>
-         <p>Total Users</p>
+         <p>Total Lost Posts</p>
+        </div>
+        <div className='cards'>
+          <span className='dashboard-pins'></span>
+         <h2>120</h2>
+         <p>Total Found Posts</p>
         </div>
           <div className='cards'>
             <span className='dashboard-pins'></span>
          <h2>540</h2>
          <p>Total Posts</p>
+        </div>
+        <div className='cards'>
+          <span className='dashboard-pins'></span>
+         <h2>120</h2>
+         <p>Total Users</p>
         </div>
          <div className='cards'>
           <span className='dashboard-pins'></span>
@@ -48,6 +58,12 @@ export default function Dashboard(){
          <h2>0</h2>
          <p>Active Posts</p>
         </div>
+          <div className='cards'>
+          <span className='dashboard-pins'></span>
+         <h2>0</h2>
+         <p>Total Resolved Cases</p>
+        </div>
+        
       </section>
     <section className='recent-activities'>
       <div className='recent-container-darkbrown'>
