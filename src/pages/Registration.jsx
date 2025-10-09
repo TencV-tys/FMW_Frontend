@@ -4,6 +4,7 @@ import {useState} from 'react';
 import './styles/Registration.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignIn } from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
 export default function Registration(){
    
    const [formData, setFormData] = useState({
@@ -14,7 +15,7 @@ export default function Registration(){
     password:"",
     password_confirmation:""
   });
-   const [ message, setMessage ] = useState('');
+   
    const nav = useNavigate();
    const handleChange = (e) => {
     setFormData({...formData,[e.target.name]: e.target.value });
@@ -35,7 +36,7 @@ export default function Registration(){
       const data = await response.json();
 
       if(response.ok){
-        setMessage(data.message);
+        toast.success(data.message);
         setFormData({
           first_name:"",
           last_name:"",
@@ -46,12 +47,18 @@ export default function Registration(){
         });
         setTimeout(()=>nav('/login'),1000);
       }else{
-        setMessage(`${data.message || "Registration failed"}`);
+        toast.error(`${data.message || "Registration failed"}`,{
+          position:'top-center',
+          autoClose:1000
+        });
         console.log(`Failed registartion through:${data.message}`);
       }
 
      }catch(error){
-         setMessage("Network error:"+error.message);
+         toast.error("Network error:"+error.message,{
+             position:'top-center',
+          autoClose:1000
+         });
          console.log(`possible errors:${error.message}`);
      }
 
@@ -144,9 +151,7 @@ export default function Registration(){
           <Link to="/login" className="Login-link">Login</Link>
           </div>
        </form>
-       {
-        message && <p>{message}</p>
-       }
+      
     </div>
    </>
   )

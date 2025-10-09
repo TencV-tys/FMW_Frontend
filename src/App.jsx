@@ -1,11 +1,13 @@
  import React from 'react';
  import { BrowserRouter, Routes, Route } from 'react-router-dom';
- import Login from './pages/Login'; 
- import Landing from './pages/Landing';
- import Registration from './pages/Registration'; 
- import User from './pages/User';
- import Admin from './pages/Admin';
+ import { ToastContainer } from 'react-toastify';
  import './index.css';
+
+import Login from './pages/Login'; 
+import Landing from './pages/Landing';
+import Registration from './pages/Registration'; 
+import User from './pages/User';
+import Admin from './pages/Admin';
 import BulletinBoard from './UserPages/BulletinBoard';
 import CreatePost from './UserPages/CreatePost';
 import MyPosts from './UserPages/MyPosts';
@@ -47,6 +49,13 @@ import ProtectedRoute from './components/ProtectedRoutes';
                <Route path='manage-posts' element={<ManagePosts/>} />
            </Route>
         </Routes>
+
+        <ToastContainer
+          position='top-right'
+          autoClose={2000}
+          theme='colored'
+          newestOnTop={true}
+        />
      </BrowserRouter>
    )
  }

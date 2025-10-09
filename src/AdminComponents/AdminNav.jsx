@@ -6,8 +6,6 @@ import {faChevronLeft,
         faUsers,
         faNewspaper,
         faChartBar,
-        faRightFromBracket,
-         
 } 
   from '@fortawesome/free-solid-svg-icons';
 

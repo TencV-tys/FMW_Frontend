@@ -4,6 +4,7 @@ import NavAuth from "../components/NavAuth";
 import {Link, useNavigate} from 'react-router-dom';
 import './styles/Login.css';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 export default function Login(){
     
     const [ email, setEmail ] = useState('');
@@ -25,7 +26,10 @@ export default function Login(){
      const data = await res.json();
 
      if(res.ok){
-        alert(data.message||'Login successfully');
+       toast.success(`Login Successfully`,{
+        position:"top-center",
+        autoClose:1000
+       });
 
        if(data.user.role === 'admin'){
         setTimeout(()=>nav('/admin'),1000);
@@ -34,11 +38,18 @@ export default function Login(){
        }
 
      }else{
-       setError(data.message||'Login failed');
+       toast.error(data.message||'Login failed',{
+        position:"top-center",
+        autoClose:2000
+       });
+     
      }
 
     }catch(error){
-    setError('Network Error'+error.message);
+    toast.error('Network Error'+error.message,{
+      position:'bottom-center',
+      autoClose:1000
+    });
 
     }
 
@@ -82,7 +93,7 @@ export default function Login(){
               </div>
 
            </form>
-           {error && <p>{error}</p>}
+         
        </div>
     </div>
     )
