@@ -30,6 +30,11 @@ background-color: #8B5A2B;
     padding: 10px;
     border-radius: 4px;
 }
+.myposts-content-title h1{
+      color: #8B5A2B;
+      font-size: 1.9rem;
+}
+
 .myposts-list{
     display: flex;
     justify-content: center;
@@ -37,7 +42,8 @@ background-color: #8B5A2B;
     flex-direction: column;
     width: 90%;
     border-radius: 4px;
-    margin: 10px;
+    margin: 30px;
+    gap:30px;
    
 }
 
@@ -73,9 +79,11 @@ background-color: #8B5A2B;
     gap: 10px;
     margin: 10px;
 }
+
 .mypost-details p{
     font-size: 1.3rem;
     letter-spacing: 0.1rem;
+
 }
 .mypost-image img{
     width: 100%;

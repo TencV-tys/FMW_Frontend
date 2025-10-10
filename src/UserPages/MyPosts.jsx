@@ -116,7 +116,7 @@ return(
 
            
             <div className='myposts-content-title'>
-                <h2>My Posts</h2>
+                <h1>My Posts</h1>
             </div>
            {
              posts.length === 0 ?(
