@@ -37,7 +37,7 @@ export default function Registration(){
 
       if(response.ok){
         toast.success(data.message,{
-          position:'top-center',
+          position:'bottom-center',
           autoClose:1000
         });
         setFormData({
@@ -51,7 +51,7 @@ export default function Registration(){
         setTimeout(()=>nav('/login'),1000);
       }else{
         toast.error(`${data.message || "Registration failed"}`,{
-          position:'top-center',
+          position:'bottom-center',
           autoClose:1000
         });
         console.log(`Failed registartion through:${data.message}`);
@@ -59,7 +59,7 @@ export default function Registration(){
 
      }catch(error){
          toast.error("Network error:"+error.message,{
-             position:'top-center',
+             position:'bottom-center',
           autoClose:1000
          });
          console.log(`possible errors:${error.message}`);

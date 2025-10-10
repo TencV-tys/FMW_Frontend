@@ -18,7 +18,7 @@ background-color: #8B5A2B;
     align-items: center;
     justify-content: center;
     flex-direction: column;
-   
+    
 }
 .myposts-content-title{
     background-color: #FBFCF8;
@@ -35,9 +35,10 @@ background-color: #8B5A2B;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-   background-color: #FBFCF8;
-   width: 95%;
+    width: 90%;
     border-radius: 4px;
+    margin: 10px;
+   
 }
 
 .mypost-cards{
@@ -46,8 +47,9 @@ background-color: #8B5A2B;
     flex-direction: column;
     background-color:#F8E38C;
     padding: 10px;
-    width: 100%;
+    width: 80%;
     border-radius: 4px;
+    position: relative;
    
 }
 .mypost-actions{
@@ -59,22 +61,69 @@ background-color: #8B5A2B;
     display: flex;
     justify-content: space-between;
     width: 90%;
-    margin: 10px;
+    margin: 20px;
     gap: 10px;
+   
 }
 .mypost-details{
     display: flex;
     flex-direction: column;
-    align-items: center;
-    flex: 1;
+    align-items: flex-start;
+    width: 50%;
+    gap: 10px;
+    margin: 10px;
 }
 .mypost-details p{
     font-size: 1.3rem;
+    letter-spacing: 0.1rem;
 }
 .mypost-image img{
     width: 100%;
-
 }
 .mypost-image{
-    width: 400px;
+    width: 50%;
+}
+.myposts-pins{
+  position: absolute;
+    top: -10px;
+    left: 50%;
+    background-color: red;
+    border-radius: 50%;
+    padding: 10px;
+    color: red; 
+    box-shadow: 5px 5px 6px 1px rgba(104, 103, 103, 0.3);
+
+}
+
+.lost-type{
+    display: flex;
+    margin: 10px;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+}
+
+
+.status-active {
+  
+  background: #22c55e;
+}
+
+.status-resolved {
+  background: #3b82f6;
+}
+
+.status-removed {
+  background: #ef4444;
+}
+
+.status-default {
+  background: #6b7280;
+}
+.status-active,
+.status-default,
+.status-removed,
+.status-resolved{
+    padding: 3px 8px;
+    border-radius: 4px;
 }

@@ -27,7 +27,7 @@ export default function Login(){
 
      if(res.ok){
        toast.success(`Login Successfully`,{
-        position:"top-center",
+        position:"bottom-center",
         autoClose:1000
        });
 
@@ -39,7 +39,7 @@ export default function Login(){
 
      }else{
        toast.error(data.message||'Login failed',{
-        position:"top-center",
+        position:"bottom-center",
         autoClose:2000
        });
      
