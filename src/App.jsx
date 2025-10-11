@@ -17,6 +17,7 @@ import Dashboard from './AdminPages/Dashboard';
 import ManageUsers from './AdminPages/ManageUsers';
 import ManagePosts from './AdminPages/ManagePosts';
 import ProtectedRoute from './components/ProtectedRoutes';
+import EditPost from './UserPages/EditPost';
  function App() {
    return (
      <BrowserRouter>
@@ -36,6 +37,7 @@ import ProtectedRoute from './components/ProtectedRoutes';
             <Route path='myposts' element={<MyPosts/>} />
             <Route path='profile' element={<Profile/>} />
             <Route path='edit-profile' element={<EditProfile/>} /> 
+            <Route path='edit-post/:id' element={<EditPost/>} />
            </Route>
 
            

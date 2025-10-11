@@ -13,12 +13,12 @@ export default function BulletinBoard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all'); // all, lost, found
 
-  // 🎯 Fetch all active posts
+  //  Fetch all active posts
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  // 🎯 Filter posts when search term or filters change
+  //Filter posts when search term or filters change
   useEffect(() => {
     filterPosts();
   }, [posts, searchTerm, filterType]);
@@ -57,7 +57,7 @@ export default function BulletinBoard() {
   const filterPosts = () => {
     let filtered = posts;
 
-    // 🎯 Filter by search term
+    //  Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(post => 
         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -75,7 +75,7 @@ export default function BulletinBoard() {
     setFilteredPosts(filtered);
   };
 
-  // 🎯 Format date for display
+  // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -85,7 +85,7 @@ export default function BulletinBoard() {
     });
   };
 
-  // 🎯 Get user profile image or fallback
+  //  Get user profile image or fallback
   const getUserImage = (user) => {
     if (user.user_photo) {
       return `http://localhost:8000/uploads/${user.user_photo}`;
@@ -93,7 +93,7 @@ export default function BulletinBoard() {
     return null;
   };
 
-  // 🎯 Loading state
+  //  Loading state
   if (loading) {
     return (
       <div className="bulletin-page-container">
