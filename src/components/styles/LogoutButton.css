@@ -1,11 +1,74 @@
-.logout-btn{
-    display: flex;
-    width: 100%;
-    background: transparent;
-    border: none;
-    color:white;
-    
+/* LogoutButton.css */
+
+/* 🎯 Base logout button style */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  padding: 8px 16px;
+  border-radius: 4px;
 }
-.logout-icon{
-    margin-right: 8px;
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: black;
+}
+
+.logout-icon {
+  margin-right: 8px;
+  width: 14px;
+}
+
+/* 🎯 Dropdown-specific logout button */
+.logout-dropdown {
+  width: 100%;
+  color: #ef4444 !important; /* Red color for dropdown */
+  justify-content: flex-start;
+  padding: 12px 20px;
+  font-size: 0.85rem;
+  border: none;
+  background: none;
+}
+
+.logout-dropdown:hover {
+  color: #dc2626 !important; /* Darker red on hover */
+  background: #fef2f2 !important; /* Light red background */
+}
+
+.logout-dropdown .logout-icon {
+  color: #ef4444 !important;
+}
+
+.logout-dropdown:hover .logout-icon {
+  color: #dc2626 !important;
+}
+
+/* 🎯 Standalone logout button (for admin pages, etc.) */
+.logout-btn:not(.logout-dropdown) {
+  background: #ef4444;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.logout-btn:not(.logout-dropdown):hover {
+  background: #dc2626;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* 🎯 If you need a specific admin logout style */
+.logout-admin {
+  background: #8B5A2B; /* Brown color for admin */
+}
+
+.logout-admin:hover {
+  background: #654321;
 }
