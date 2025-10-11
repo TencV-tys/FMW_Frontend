@@ -15,7 +15,7 @@ export default function Dashboard(){
      <AdminNav isOpen={isSideBarOpen} setIsOpen={setIsSideBarOpen}/>
      <main className='dashboard-content' 
         style={{
-        marginLeft: isSideBarOpen ? '200px' : '60px',
+        marginLeft: isSideBarOpen ? '200px' : '70px',
         transition: 'margin-left 0.4s ease'
      }}
      >

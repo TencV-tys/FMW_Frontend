@@ -314,8 +314,9 @@ export default function ManagePosts() {
       
       <main className='manage-posts-content'
         style={{
-          marginLeft: isSideBarOpen ? '200px' : '60px',
-          transition: 'margin-left 0.4s ease'
+          marginLeft: isSideBarOpen ? '200px' : '70px',
+          transition: 'margin-left 0.4s ease',
+         
         }}
       >
         {/* Header Section */}

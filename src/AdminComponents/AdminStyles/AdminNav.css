@@ -14,8 +14,8 @@
 
 /* Open state - Full sidebar */
 .admin-nav-container.open {
-    width: 250px;
-    min-width: 250px;
+    width: 200px;
+    min-width: 200px;
 }
 
 /* Closed state - Collapsed sidebar */
