@@ -48,8 +48,8 @@ export default function MyPosts() {
     }
   };
 
-  // 🎯 Handle post deletion
-  // 🎯 Handle post deletion
+  //Handle post deletion
+
 const handleDeletePost = async (postId) => {
   if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
     return;
@@ -77,7 +77,7 @@ const handleDeletePost = async (postId) => {
 };
 
 
-  // 🎯 Handle post editing
+  // Handle post editing
   const handleEditPost = (postId) => {
     nav(`/user/edit-post/${postId}`);
   };
@@ -103,7 +103,7 @@ const handleDeletePost = async (postId) => {
     return statusConfig[status] || { class: 'status-default', text: status };
   };
 
-  // 🎯 Loading state
+  //  Loading state
   if (loading) {
     return (
       <div className="myposts-container">
@@ -118,7 +118,7 @@ const handleDeletePost = async (postId) => {
     );
   }
 
-  // 🎯 Error state
+  // Error state
   if (error) {
     return (
       <div className="myposts-container">
@@ -146,7 +146,7 @@ const handleDeletePost = async (postId) => {
 
               <div className='myposts-content-title'>
                 <h1>My Posts</h1>
-                <div className="posts-count">
+                <div className="posts-counts">
                   {posts.length} {posts.length === 1 ? 'post' : 'posts'}
                 </div>
               </div>
