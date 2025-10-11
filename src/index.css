@@ -4,10 +4,7 @@
     box-sizing: border-box;
     font-family:'Times New Roman', Times, serif;
 }
-/* 🎯 Global content spacing fix */
-body {
-  padding-top: 30px; /* 🎯 This fixes all content spacing */
-}
+
 /* 🎯 Or if you prefer, add this to each page */
 .bulletin-page-container,
 .myposts-container,

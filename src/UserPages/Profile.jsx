@@ -34,7 +34,7 @@ export default function Profile() {
         setUser(userData.user);
 
         // 🎯 Fetch user statistics
-        const statsResponse = await fetch('http://localhost:8000/api/users/stats', {
+        const statsResponse = await fetch('http://localhost:8000/api/users/post-stats', {
           credentials: 'include'
         });
 
