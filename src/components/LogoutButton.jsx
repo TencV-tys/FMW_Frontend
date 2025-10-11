@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import './styles/LogoutButton.css';
 
-export default function LogoutButton({ className = "", isDropdown = false }) {
+export default function LogoutButton({ className = "", isDropdown = false, isOpen = true }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -35,10 +35,11 @@ export default function LogoutButton({ className = "", isDropdown = false }) {
   return (
     <button 
       onClick={handleLogout} 
-      className={`logout-btn ${isDropdown ? 'logout-dropdown' : ''} ${className}`}
+      className={`logout-btn ${isDropdown ? 'logout-dropdown' : ''} ${!isOpen ? 'collapsed' : ''} ${className}`}
+      title={!isOpen ? "Logout" : ""}
     >
       <FontAwesomeIcon className="logout-icon" icon={faRightFromBracket}/>
-      Logout
+      {isOpen && "Logout"}
     </button>
   );
 }

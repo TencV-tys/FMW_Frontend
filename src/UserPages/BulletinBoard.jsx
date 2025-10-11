@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faUserCircle, faMapMarkerAlt, faPhone, faTag } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav.jsx';
-import Logo2 from '../assets/Logo2.jpg';
+import OptionalPhoto from '../assets/download.png';
 import './styles/BulletinBoard.css';
 
 export default function BulletinBoard() {
@@ -227,10 +227,10 @@ export default function BulletinBoard() {
                       {/* 🎯 Post Image */}
                       <div className="post-image-container">
                         <img 
-                          src={post.photo ? `http://localhost:8000/uploads/${post.photo}` : Logo2} 
+                          src={post.photo ? `http://localhost:8000/uploads/${post.photo}` : OptionalPhoto} 
                           alt={post.title}
                           onError={(e) => {
-                            e.target.src = Logo2;
+                            e.target.src = OptionalPhoto;
                           }}
                         />
                       </div>

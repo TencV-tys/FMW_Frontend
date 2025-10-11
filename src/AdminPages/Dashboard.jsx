@@ -50,11 +50,6 @@ export default function Dashboard(){
         </div>
          <div className='cards'>
           <span className='dashboard-pins'></span>
-         <h2>8</h2>
-         <p>Pending Reports</p>
-        </div>
-         <div className='cards'>
-          <span className='dashboard-pins'></span>
          <h2>0</h2>
          <p>Active Posts</p>
         </div>
