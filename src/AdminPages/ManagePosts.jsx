@@ -100,11 +100,11 @@ export default function ManagePosts() {
             if (post.id === postId) {
               switch (action) {
                 case 'remove':
-                  return { ...post, status: 'removed' };
+                  return { ...post, status: 'Removed' };
                 case 'restore':
-                  return { ...post, status: 'active' };
+                  return { ...post, status: 'Active' };
                 case 'resolve':
-                  return { ...post, status: 'resolved' };
+                  return { ...post, status: 'Resolved' };
                 default:
                   return post;
               }
@@ -354,9 +354,9 @@ export default function ManagePosts() {
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="resolved">Resolved</option>
-              <option value="removed">Removed</option>
+              <option value="Active">Active</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Removed">Removed</option>
             </select>
           </div>
 
@@ -401,15 +401,15 @@ export default function ManagePosts() {
             <span className="stat-label">Total Posts</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{posts.filter(p => p.status === 'active').length}</span>
+            <span className="stat-number">{posts.filter(p => p.status === 'Active').length}</span>
             <span className="stat-label">Active</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{posts.filter(p => p.status === 'resolved').length}</span>
+            <span className="stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
             <span className="stat-label">Resolved</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{posts.filter(p => p.status === 'removed').length}</span>
+            <span className="stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
             <span className="stat-label">Removed</span>
           </div>
         </div>
