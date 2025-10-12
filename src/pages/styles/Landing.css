@@ -2,9 +2,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #FF8904;
-    width: 6rem;
-    border-radius: 4px;
+    gap: 10px;
+    width: 6rem;  
 }
 .navigation-auth .Show .nav-link{
     display: flex;
@@ -15,5 +14,13 @@
     padding: 7px;
     color: white;
     font-weight: bold;    
-    
+    background-color: #FF8904;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    margin: 10px;
+}
+
+.navigation-auth .Show .nav-link:hover{
+ transform: scale(1.1);
+
 }
