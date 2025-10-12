@@ -15,7 +15,7 @@ export default function Profile() {
     resolvedPosts: 0
   });
 
-  // 🎯 Fetch user data and statistics
+  //  Fetch user data and statistics
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -33,7 +33,7 @@ export default function Profile() {
         const userData = await userResponse.json();
         setUser(userData.user);
 
-        // 🎯 Fetch user statistics
+        //  Fetch user statistics
         const statsResponse = await fetch('http://localhost:8000/api/users/post-stats', {
           credentials: 'include'
         });
@@ -64,7 +64,7 @@ export default function Profile() {
     });
   };
 
-  // 🎯 Get gender display text
+  //  Get gender display text
   const getGenderDisplay = (gender) => {
     if (!gender) return 'Not specified';
     
@@ -77,7 +77,7 @@ export default function Profile() {
     return genderMap[gender] || gender;
   };
 
-  // 🎯 Loading state
+  //  Loading state
   if (loading) {
     return (
       <section className="profile-page">
@@ -97,7 +97,7 @@ export default function Profile() {
       <UserNav />
       <main className="profile-content">
         
-        {/* 🎯 Header Section */}
+        {/* Header Section */}
         <div className='profile-action'>
           <h1 className="profile-welcome">
             Welcome back, {user?.first_name || 'User'}! 👋
@@ -108,7 +108,7 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* 🎯 Statistics Cards */}
+        {/*  Statistics Cards */}
         <div className="profile-stats-container">
           <div className="stat-card">
             <div className="stat-icon posts-icon">
@@ -141,13 +141,13 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* 🎯 Main Profile Card */}
+        {/*  Main Profile Card */}
         <div className='profile-data-container-darkbrown'>   
           <div className='profile-data-container-lightbrown'>  
             <div className='profile-data-container'>
               <div className='profile-data'>
                 
-                {/* 🎯 Profile Title */}
+                {/* Profile Title */}
                 <div className='profile-data-title'>
                   <h2>Profile Information</h2>
                   <div className="member-since">
@@ -170,7 +170,7 @@ export default function Profile() {
                         }}
                       />
                       <div className="profile-pic-overlay">
-                        <span>Change Photo</span>
+                        <Link to='/user/edit-profile'>Change Photo</Link>
                       </div>
                     </div>
                     <div className="profile-role-badge">
