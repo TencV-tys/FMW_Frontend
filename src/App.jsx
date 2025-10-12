@@ -18,6 +18,7 @@ import ManageUsers from './AdminPages/ManageUsers';
 import ManagePosts from './AdminPages/ManagePosts';
 import ProtectedRoute from './components/ProtectedRoutes';
 import EditPost from './UserPages/EditPost';
+import NotFound from './components/NotFound';
  function App() {
    return (
      <BrowserRouter>
@@ -50,6 +51,8 @@ import EditPost from './UserPages/EditPost';
               <Route path='manage-users' element={<ManageUsers/>} />
                <Route path='manage-posts' element={<ManagePosts/>} />
            </Route>
+
+           <Route path='*' element={<NotFound/>} />
         </Routes>
 
         <ToastContainer
