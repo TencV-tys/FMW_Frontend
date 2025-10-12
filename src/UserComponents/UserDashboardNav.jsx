@@ -7,7 +7,8 @@ import {
   faPlus, 
   faBullhorn,
   faCaretDown,
-  faSignOutAlt
+  faSignOutAlt,
+  faBell
 } from '@fortawesome/free-solid-svg-icons';
 import Logo from '../assets/Logo2.jpg';
 import Profile from '../assets/download.png';
@@ -192,7 +193,16 @@ export default function UserDashboardNav() {
                   <span>My Posts</span>
                 </Link>
               </div>
-
+               <div className='dropdown-link-container'>
+                <Link 
+                  to='/user/notifications' 
+                  className='dropdown-link'
+                  onClick={() => setOpen(false)}
+                >
+                  <FontAwesomeIcon icon={faBell} />
+                  <span>Notifications</span>
+                </Link>
+              </div>
               <div className="dropdown-divider"></div>
               
               <div className='dropdown-link-container logout-container'>
