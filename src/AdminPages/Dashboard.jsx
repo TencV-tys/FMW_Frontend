@@ -81,7 +81,7 @@ export default function Dashboard() {
 
   const StatCard = ({ icon, value, label, color, change }) => (
     <div className='stat-card'>
-      <span className='stat-pin'></span>
+      
       <div className='stat-content'>
         <div className='stat-icon' style={{ backgroundColor: color }}>
           <FontAwesomeIcon icon={icon} />

@@ -300,7 +300,7 @@ export default function EditPost() {
             <div className="form-actions">
               <button
                 type="button"
-                className="cancel-btn"
+                className="edit-cancel-btn"
                 onClick={() => nav('/user/myposts')}
                 disabled={loading}
               >

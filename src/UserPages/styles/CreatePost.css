@@ -51,13 +51,14 @@
 .create-input-group{
     border-bottom: 1px solid rgb(179, 175, 175);
     width: 400px;
-    padding: 10px 0;
+    padding: 4px 0;
 
 }
 .create-input-group input{
     width: 100%;
     border: none;
     outline: none;
+    padding: 0 10px;
  }
 
  .create-textarea-group{
@@ -84,7 +85,7 @@
     margin: 10px;
  }
 .submit-post-btn:hover{
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 .image-uploader-container input{
@@ -183,12 +184,13 @@
   display: flex;
   gap: 15px;
   justify-content: center;
+  align-items: center;
   width: 100%;
   margin-top: 10px;
 }
 
-.cancel-btn {
-  width: 120px;
+.edit-cancel-btn {
+  width: 200px;
   padding: 8px 10px;
   background-color: #6b7280;
   border: none;
@@ -199,12 +201,12 @@
   cursor: pointer;
 }
 
-.cancel-btn:hover:not(:disabled) {
+.edit-cancel-btn:hover:not(:disabled) {
   background-color: #4b5563;
   transform: scale(1.1);
 }
 
-.cancel-btn:disabled {
+.edit-cancel-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -235,6 +237,12 @@
     width: 100%;
     gap: 15px;
   }
+  .create-select-group{
+    width: 100%;
+  }
+  .create-select-group select{
+    text-align: center;
+  }
   
   .create-input-group,
   .create-textarea-group,
@@ -245,12 +253,13 @@
   
   .form-actions {
     flex-direction: column;
+    justify-content: center;
     align-items: center;
   }
   
-  .cancel-btn,
+  .edit-cancel-btn,
   .submit-post-btn {
     width: 100%;
-    max-width: 200px;
+    max-width: 300px;
   }
 }

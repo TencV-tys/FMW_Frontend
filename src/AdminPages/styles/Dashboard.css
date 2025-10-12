@@ -9,7 +9,7 @@
   padding: 2rem;
 }
 
-/* Header */
+/* Header - Keep profile on right */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -35,6 +35,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: auto;
 }
 
 .notification-btn {
@@ -117,10 +118,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* FIXED: Stat Content - Always centered layout */
 .stat-content {
   display: flex;
   align-items: center;
+  justify-content: center; /* Center everything horizontally */
   gap: 1rem;
+  text-align: center; /* Center text */
 }
 
 .stat-icon {
@@ -132,6 +136,13 @@
   justify-content: center;
   color: white;
   font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center the info content */
 }
 
 .stat-info h3 {
@@ -155,7 +166,7 @@
   border-radius: 12px;
   background: #d4edda;
   color: #155724;
-  margin-left: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 /* Main Content Layout */
@@ -332,8 +343,8 @@
   }
   
   .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     gap: 1rem;
   }
   
@@ -342,24 +353,50 @@
     gap: 1rem;
   }
   
+  /* FIXED: Ensure cards are always centered */
+  .stat-card {
+    display: flex;
+    justify-content: center;
+  }
+  
   .stat-content {
     flex-direction: column;
-    text-align: center;
     gap: 0.75rem;
+    width: 100%;
   }
   
-  .section-container-darkbrown {
-    padding: 1rem;
-  }
-  
-  .section-content {
-    padding: 1rem;
+  .stat-info {
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
   .dashboard-content {
     padding: 0.75rem;
+  }
+  
+  .dashboard-header {
+    flex-wrap: nowrap;
+  }
+  
+  .header-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .header-content h1 {
+    font-size: 1.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .header-content p {
+    display: none;
+  }
+  
+  .dashboard-header-right {
+    flex-shrink: 0;
   }
   
   .activity-item {
@@ -370,5 +407,58 @@
   
   .activity-content {
     text-align: center;
+  }
+  
+  .admin-profile {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .notification-btn {
+    padding: 0.4rem;
+  }
+  
+  .notif-icon {
+    font-size: 1rem;
+  }
+  
+  /* FIXED: Extra small screens card centering */
+  .stat-content {
+    gap: 0.5rem;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+  
+  .stat-info h3 {
+    font-size: 1.75rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 360px) {
+  .dashboard-header {
+    gap: 0.5rem;
+  }
+  
+  .header-content h1 {
+    font-size: 1.1rem;
+  }
+  
+  .admin-profile {
+    width: 35px;
+    height: 35px;
+  }
+  
+  /* FIXED: Ensure perfect centering on very small screens */
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-content {
+    gap: 0.5rem;
   }
 }
