@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import AdminNav from '../AdminComponents/AdminNav';
+
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -16,7 +16,7 @@ import {
 import './styles/ManagePosts.css';
 
 export default function ManagePosts() {
-  const [isSideBarOpen, setIsSideBarOpen] = useState(true);
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -309,16 +309,7 @@ export default function ManagePosts() {
   );
 
   return (
-    <section className="manage-posts-container">
-      <AdminNav isOpen={isSideBarOpen} setIsOpen={setIsSideBarOpen} />
-      
-      <main className='manage-posts-content'
-        style={{
-          marginLeft: isSideBarOpen ? '200px' : '70px',
-          transition: 'margin-left 0.4s ease',
-         
-        }}
-      >
+      <>
         {/* Header Section */}
         <div className="manage-posts-header">
           <div className="header-content">
@@ -521,7 +512,6 @@ export default function ManagePosts() {
             </div>
           </div>
         </div>
-      </main>
-    </section>
+      </>
   );
 }

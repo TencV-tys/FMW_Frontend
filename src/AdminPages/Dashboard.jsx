@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState, useEffect } from 'react';
-import AdminNav from '../AdminComponents/AdminNav';
+
 import AdminLogo from '../assets/Admin.png';
 import { 
   faBell, 
@@ -16,7 +16,7 @@ import {
 import './styles/Dashboard.css';
 
 export default function Dashboard() {
-  const [isSideBarOpen, setIsSideBarOpen] = useState(true);
+
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPosts: 0,
@@ -114,16 +114,7 @@ export default function Dashboard() {
   );
 
   return (
-    <section className='dashboard-container'>
-      <AdminNav isOpen={isSideBarOpen} setIsOpen={setIsSideBarOpen}/>
-      
-      <main className='dashboard-content' 
-        style={{
-          marginLeft: isSideBarOpen ? '200px' : '70px',
-          transition: 'margin-left 0.4s ease',
-          padding: '20px'
-        }}
-      >
+   <>
         {/* Header */}
         <header className='dashboard-header'>
           <div className="header-content">
@@ -253,7 +244,6 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
-      </main>
-    </section>
+     </>
   );
 }

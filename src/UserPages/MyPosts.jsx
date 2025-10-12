@@ -147,7 +147,7 @@ const handleDeletePost = async (postId) => {
               <div className='myposts-content-title'>
                 <h1>My Posts</h1>
                 <div className="posts-counts">
-                  {posts.length} {posts.length === 1 ? 'post' : 'posts'}
+                  {posts.length} {posts.length <= 1 ? 'post' : 'posts'}
                 </div>
               </div>
 

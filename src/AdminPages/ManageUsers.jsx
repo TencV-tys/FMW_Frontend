@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import AdminNav from '../AdminComponents/AdminNav';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -15,7 +15,7 @@ import {
 import './styles/ManageUsers.css';
 
 export default function ManageUsers() {
-  const [isSideBarOpen, setIsSideBarOpen] = useState(true);
+ 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -122,16 +122,7 @@ export default function ManageUsers() {
   };
 
   return (
-    <section className="manage-users-container">
-      <AdminNav isOpen={isSideBarOpen} setIsOpen={setIsSideBarOpen} />
-      
-      <main className='manage-users-content'
-        style={{
-          marginLeft: isSideBarOpen ? '200px' : '70px',
-          transition: 'margin-left 0.4s ease',
-          padding: '20px'
-        }}
-      >
+   <>
         {/* Header Section */}
         <div className="manage-users-header">
           <div className="header-content">
@@ -315,7 +306,6 @@ export default function ManageUsers() {
             </div>
           </div>
         </div>
-      </main>
-    </section>
+    </>
   );
 }

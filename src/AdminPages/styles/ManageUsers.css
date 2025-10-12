@@ -1,13 +1,4 @@
-.manage-users-container {
-  min-height: 100dvh;
-  background: #f5f5f5;
-}
 
-.manage-users-content {
-  min-height: 100dvh;
-  transition: margin-left 0.4s ease;
-  padding: 2rem;
-}
 
 /* Header */
 .manage-users-header {

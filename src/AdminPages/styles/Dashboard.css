@@ -1,13 +1,4 @@
-.dashboard-container {
-  min-height: 100dvh;
-  background: #f5f5f5;
-}
 
-.dashboard-content {
-  min-height: 100dvh;
-  transition: margin-left 0.4s ease;
-  padding: 2rem;
-}
 
 /* Header - Keep profile on right */
 .dashboard-header {
