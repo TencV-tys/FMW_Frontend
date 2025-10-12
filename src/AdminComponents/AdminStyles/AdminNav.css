@@ -16,12 +16,18 @@
 .admin-nav-container.open {
     width: 200px;
     min-width: 200px;
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Closed state - Collapsed sidebar */
 .admin-nav-container.closed {
     width: 70px;
     min-width: 70px;
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
 }
 
 .admin-link-container {
@@ -210,16 +216,22 @@
     border-left: 3px solid white;
 }
 
-/* Responsive Design */
+/* Responsive Design - FIXED */
 @media (max-width: 768px) {
     .admin-nav-container.open {
-        width: 100%;
+        width: 280px;
         max-width: 280px;
+        transform: translateX(0);
+        opacity: 1;
+        visibility: visible;
     }
     
     .admin-nav-container.closed {
-        width: 60px;
-        min-width: 60px;
+        width: 70px;
+        min-width: 70px;
+        transform: translateX(0);
+        opacity: 1;
+        visibility: visible;
     }
     
     .admin-link-container {
@@ -249,35 +261,49 @@
     .admin-nav-container.open {
         width: 100%;
         max-width: 100%;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 100%;
+        transform: translateX(0);
+        opacity: 1;
+        visibility: visible;
     }
     
     .admin-nav-container.closed {
         width: 0;
         min-width: 0;
-        overflow: hidden;
+        transform: translateX(-100%);
+        opacity: 0;
+        visibility: hidden;
     }
     
+    /* Remove the fixed toggle button in closed state */
     .admin-nav-container.closed .toggle {
-        position: fixed;
-        top: 1rem;
-        left: 1rem;
-        z-index: 1001;
-        background-color: #FF8904;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        padding: 0;
-        justify-content: center;
+        position: static;
+        background-color: transparent;
+        border-radius: 0;
+        width: auto;
+        height: auto;
+        padding: 0 0.75rem 0.75rem 0.75rem;
+        justify-content: flex-end;
         margin: 0;
+    }
+    
+    /* Add overlay when sidebar is open */
+    .admin-nav-container.open::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
     }
 }
 
 /* Smooth transitions for all interactive elements */
+.admin-nav-container {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .admin-nav-container * {
     transition: all 0.3s ease;
 }
@@ -310,8 +336,6 @@
 .admin-link-container::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
-
-/* Add these to your existing AdminNav.css */
 
 /* Logout Container */
 .logout-container {

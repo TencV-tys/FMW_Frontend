@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -10,17 +9,21 @@ import {
   faUser,
   faUserShield,
   faUserSlash,
-  faFilter
+  faFilter,
+  faList,
+  faEnvelope,
+  faVenusMars,
+  faCalendar
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
 export default function ManageUsers() {
- 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('table');
 
   useEffect(() => {
     fetchUsers();
@@ -73,7 +76,6 @@ export default function ManageUsers() {
       });
       
       if (res.ok) {
-        // Update local state
         setUsers(users.map(user => 
           user.id === userId ? { ...user, status: newStatus } : user
         ));
@@ -120,6 +122,86 @@ export default function ManageUsers() {
   const getRoleClass = (role) => {
     return role === 'admin' ? 'role-admin' : 'role-user';
   };
+
+  // Mobile User Card Component
+  const MobileUserCard = ({ user }) => (
+    <div className="mobile-user-card">
+      <div className="mobile-card-header">
+        <div className="mobile-card-title">
+          <h3>{user.first_name} {user.last_name}</h3>
+          <div className="mobile-card-id">ID: #{user.id}</div>
+        </div>
+        <div className="mobile-card-badges">
+          <span className={`mobile-card-status ${getStatusClass(user.status)}`}>
+            {user.status}
+          </span>
+          <span className={`mobile-card-role ${getRoleClass(user.role)}`}>
+            <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
+            {user.role}
+          </span>
+        </div>
+      </div>
+      
+      <div className="mobile-card-details">
+        <div className="mobile-card-detail">
+          <FontAwesomeIcon icon={faEnvelope} />
+          <span>{user.email}</span>
+        </div>
+        <div className="mobile-card-detail">
+          <FontAwesomeIcon icon={faVenusMars} />
+          <span>{user.gender || 'Not specified'}</span>
+        </div>
+        <div className="mobile-card-detail">
+          <FontAwesomeIcon icon={faCalendar} />
+          <span>{new Date(user.created_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })}</span>
+        </div>
+      </div>
+      
+      <div className="mobile-card-actions">
+        {user.status === 'active' ? (
+          <>
+            <button
+              className="mobile-action-btn suspend"
+              onClick={() => handleStatusUpdate(user.id, 'suspended')}
+              title="Suspend User"
+            >
+              <FontAwesomeIcon icon={faBan} />
+              Suspend
+            </button>
+            <button
+              className="mobile-action-btn ban"
+              onClick={() => handleStatusUpdate(user.id, 'banned')}
+              title="Ban User"
+            >
+              <FontAwesomeIcon icon={faUserSlash} />
+              Ban
+            </button>
+          </>
+        ) : (
+          <button
+            className="mobile-action-btn activate"
+            onClick={() => handleStatusUpdate(user.id, 'active')}
+            title="Activate User"
+          >
+            <FontAwesomeIcon icon={faCheckCircle} />
+            Activate
+          </button>
+        )}
+        <button
+          className="mobile-action-btn delete"
+          onClick={() => handleDelete(user.id)}
+          title="Delete User"
+        >
+          <FontAwesomeIcon icon={faTrash} />
+          Delete
+        </button>
+      </div>
+    </div>
+  );
 
   return (
    <>
@@ -175,6 +257,18 @@ export default function ManageUsers() {
               <option value="admin">Admin</option>
             </select>
           </div>
+
+          {/* View Toggle */}
+          <div className="filter-group">
+            <FontAwesomeIcon icon={faList} />
+            <select 
+              value={viewMode}
+              onChange={(e) => setViewMode(e.target.value)}
+            >
+              <option value="table">Table View</option>
+              <option value="card">Card View</option>
+            </select>
+          </div>
         </div>
 
         {/* Stats Summary */}
@@ -218,90 +312,100 @@ export default function ManageUsers() {
                   <p>No users found matching your criteria.</p>
                 </div>
               ) : (
-                <div className="table-wrapper">
-                  <table className='users-table'>
-                    <thead>
-                      <tr>
-                        <th>User Info</th>
-                        <th>Contact</th>
-                        <th>Gender</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Joined Date</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredUsers.map((user) => (
-                        <tr key={user.id}>
-                          <td>
-                            <div className="user-info">
-                              <strong>{user.first_name} {user.last_name}</strong>
-                              <small>ID: #{user.id}</small>
-                            </div>
-                          </td>
-                          <td>{user.email}</td>
-                          <td>{user.gender || '-'}</td>
-                          <td>
-                            <span className={`role-badge ${getRoleClass(user.role)}`}>
-                              <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
-                              {user.role}
-                            </span>
-                          </td>
-                          <td>
-                            <span className={`status-badge ${getStatusClass(user.status)}`}>
-                              {user.status}
-                            </span>
-                          </td>
-                          <td>
-                            {new Date(user.created_at).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </td>
-                          <td>
-                            <div className='users-table-actions'>
-                              {user.status === 'active' ? (
-                                <>
-                                  <button
-                                    className="action-btn suspend"
-                                    onClick={() => handleStatusUpdate(user.id, 'suspended')}
-                                    title="Suspend User"
-                                  >
-                                    <FontAwesomeIcon icon={faBan} />
-                                  </button>
-                                  <button
-                                    className="action-btn ban"
-                                    onClick={() => handleStatusUpdate(user.id, 'banned')}
-                                    title="Ban User"
-                                  >
-                                    <FontAwesomeIcon icon={faUserSlash} />
-                                  </button>
-                                </>
-                              ) : (
-                                <button
-                                  className="action-btn activate"
-                                  onClick={() => handleStatusUpdate(user.id, 'active')}
-                                  title="Activate User"
-                                >
-                                  <FontAwesomeIcon icon={faCheckCircle} />
-                                </button>
-                              )}
-                              <button
-                                className="action-btn delete"
-                                onClick={() => handleDelete(user.id)}
-                                title="Delete User"
-                              >
-                                <FontAwesomeIcon icon={faTrash} />
-                              </button>
-                            </div>
-                          </td>
+                <>
+                  {/* Desktop Table View */}
+                  <div className="table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
+                    <table className='users-table'>
+                      <thead>
+                        <tr>
+                          <th>User Info</th>
+                          <th>Contact</th>
+                          <th>Gender</th>
+                          <th>Role</th>
+                          <th>Status</th>
+                          <th>Joined Date</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.map((user) => (
+                          <tr key={user.id}>
+                            <td>
+                              <div className="user-info">
+                                <strong>{user.first_name} {user.last_name}</strong>
+                                <small>ID: #{user.id}</small>
+                              </div>
+                            </td>
+                            <td>{user.email}</td>
+                            <td>{user.gender || '-'}</td>
+                            <td>
+                              <span className={`role-badge ${getRoleClass(user.role)}`}>
+                                <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
+                                {user.role}
+                              </span>
+                            </td>
+                            <td>
+                              <span className={`status-badge ${getStatusClass(user.status)}`}>
+                                {user.status}
+                              </span>
+                            </td>
+                            <td>
+                              {new Date(user.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </td>
+                            <td>
+                              <div className='users-table-actions'>
+                                {user.status === 'active' ? (
+                                  <>
+                                    <button
+                                      className="action-btn suspend"
+                                      onClick={() => handleStatusUpdate(user.id, 'suspended')}
+                                      title="Suspend User"
+                                    >
+                                      <FontAwesomeIcon icon={faBan} />
+                                    </button>
+                                    <button
+                                      className="action-btn ban"
+                                      onClick={() => handleStatusUpdate(user.id, 'banned')}
+                                      title="Ban User"
+                                    >
+                                      <FontAwesomeIcon icon={faUserSlash} />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    className="action-btn activate"
+                                    onClick={() => handleStatusUpdate(user.id, 'active')}
+                                    title="Activate User"
+                                  >
+                                    <FontAwesomeIcon icon={faCheckCircle} />
+                                  </button>
+                                )}
+                                <button
+                                  className="action-btn delete"
+                                  onClick={() => handleDelete(user.id)}
+                                  title="Delete User"
+                                >
+                                  <FontAwesomeIcon icon={faTrash} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="mobile-users-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
+                    {filteredUsers.map(user => (
+                      <MobileUserCard key={user.id} user={user} />
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>
