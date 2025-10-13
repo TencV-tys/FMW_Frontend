@@ -274,19 +274,19 @@ export default function ManageUsers() {
         {/* Stats Summary */}
         <div className="users-stats">
           <div className="stat-card">
-            <span className="stat-number">{userStats.total}</span>
+            <span className="user-stat-number">{userStats.total}</span>
             <span className="stat-label">Total Users</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{userStats.admin}</span>
+            <span className="user-stat-number">{userStats.admin}</span>
             <span className="stat-label">Admin Users</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{userStats.active}</span>
+            <span className="user-stat-number">{userStats.active}</span>
             <span className="stat-label">Active</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{userStats.suspended + userStats.banned}</span>
+            <span className="user-stat-number">{userStats.suspended + userStats.banned}</span>
             <span className="stat-label">Restricted</span>
           </div>
         </div>

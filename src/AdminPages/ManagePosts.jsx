@@ -513,19 +513,19 @@ export default function ManagePosts() {
       {/* Stats Summary */}
       <div className="posts-stats">
         <div className="stat-card">
-          <span className="stat-number">{posts.length}</span>
+          <span className="post-stat-number">{posts.length}</span>
           <span className="stat-label">Total Posts</span>
         </div>
         <div className="stat-card">
-          <span className="stat-number">{posts.filter(p => p.status === 'Active').length}</span>
+          <span className="post-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
           <span className="stat-label">Active</span>
         </div>
         <div className="stat-card">
-          <span className="stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
+          <span className="post-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
           <span className="stat-label">Resolved</span>
         </div>
         <div className="stat-card">
-          <span className="stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
+          <span className="post-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
           <span className="stat-label">Removed</span>
         </div>
       </div>
