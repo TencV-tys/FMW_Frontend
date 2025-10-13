@@ -355,3 +355,121 @@
 }
 
 
+/* UserDashboardNav.css - Add these styles */
+
+/* 🎯 Notification Bell Styles */
+.notification-bell-container {
+  margin-right: 15px;
+  position: relative;
+}
+
+.notification-bell {
+  position: relative;
+  color: white;
+  font-size: 1.2rem;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.notification-bell:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border: 2px solid #FF8904;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* 🎯 Dropdown Notification Badge */
+.notification-dropdown-link {
+  position: relative;
+}
+
+.dropdown-notification-badge {
+  position: absolute;
+  right: 20px;
+  background: #ef4444;
+  color: white;
+  border-radius: 10px;
+  min-width: 20px;
+  height: 20px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+/* 🎯 Update user profile container for notification bell */
+.user-profile-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 🎯 Responsive Design for Notifications */
+@media (max-width: 768px) {
+  .notification-bell-container {
+    margin-right: 10px;
+  }
+  
+  .notification-bell {
+    font-size: 1.1rem;
+    padding: 6px;
+  }
+  
+  .notification-badge {
+    min-width: 16px;
+    height: 16px;
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-bell span {
+    display: none; /* Hide text on mobile */
+  }
+  
+  .dropdown-notification-badge {
+    right: 15px;
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.6rem;
+  }
+}

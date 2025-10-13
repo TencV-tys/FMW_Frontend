@@ -8,19 +8,23 @@ import Landing from './pages/Landing';
 import Registration from './pages/Registration'; 
 import User from './pages/User';
 import Admin from './pages/Admin';
+
+import Dashboard from './AdminPages/Dashboard';
+import ManageUsers from './AdminPages/ManageUsers';
+import ManagePosts from './AdminPages/ManagePosts';
+import Notifications from './AdminPages/Notifications';
+
+import NotFound from './components/NotFound';
+import ProtectedRoute from './components/ProtectedRoutes';
+
 import BulletinBoard from './UserPages/BulletinBoard';
 import CreatePost from './UserPages/CreatePost';
 import MyPosts from './UserPages/MyPosts';
 import EditProfile from './UserPages/EditProfile';
 import Profile from './UserPages/Profile';
-import Dashboard from './AdminPages/Dashboard';
-import ManageUsers from './AdminPages/ManageUsers';
-import ManagePosts from './AdminPages/ManagePosts';
-import Notifications from './AdminPages/Notifications';
-import ProtectedRoute from './components/ProtectedRoutes';
 import EditPost from './UserPages/EditPost';
-import NotFound from './components/NotFound';
 import MyReports from './UserPages/MyReports';
+import UserNotification from './UserPages/UserNotification';
  function App() {
    return (
      <BrowserRouter>
@@ -40,6 +44,7 @@ import MyReports from './UserPages/MyReports';
             <Route path='myposts' element={<MyPosts/>} />
             <Route path='profile' element={<Profile/>} />
             <Route path='edit-profile' element={<EditProfile/>} /> 
+            <Route path='user-notification' element={<UserNotification/> } />
             <Route path='my-reports' element={<MyReports/>} />
             <Route path='edit-post/:id' element={<EditPost/>} />
            </Route>
@@ -69,5 +74,5 @@ import MyReports from './UserPages/MyReports';
    )
  }
  
- export default App
+ export default App;
  

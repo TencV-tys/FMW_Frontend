@@ -1,3 +1,4 @@
+// components/UserDashboardNav.jsx - Updated version
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -20,6 +21,7 @@ export default function UserDashboardNav() {
   const [open, setOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const [user, setUser] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(0);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -41,6 +43,31 @@ export default function UserDashboardNav() {
     };
 
     fetchUserData();
+  }, []);
+
+  // 🎯 Fetch notification count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/notifications/unread-count', {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setNotificationCount(data.count || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching notification count:', error);
+      }
+    };
+
+    fetchNotificationCount();
+    
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotificationCount, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // 🎯 Sticky navbar on scroll
@@ -123,6 +150,22 @@ export default function UserDashboardNav() {
 
         {/* 🎯 Right Side - User Profile & Dropdown */}
         <div className='user-profile-container' ref={dropdownRef}>
+          {/* 🎯 Notification Bell with Badge */}
+          <div className="notification-bell-container">
+            <Link 
+              to="/user/user-notification" 
+              className="notification-bell"
+              title="Notifications"
+            >
+              <FontAwesomeIcon icon={faBell} />
+              {notificationCount > 0 && (
+                <span className="notification-badge">
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </span>
+              )}
+            </Link>
+          </div>
+
           <div 
             className='user-profile-sub' 
             onClick={() => setOpen(!open)}
@@ -194,26 +237,34 @@ export default function UserDashboardNav() {
                   <span>My Posts</span>
                 </Link>
               </div>
-            <div className='dropdown-link-container'>
-             <Link 
-              to='/user/my-reports' 
-              className='dropdown-link'
-              onClick={() => setOpen(false)}
-                >
-              <FontAwesomeIcon icon={faFlag} />
-              <span>My Reports</span>
-              </Link>
-              </div>
-               <div className='dropdown-link-container'>
+              
+              <div className='dropdown-link-container'>
                 <Link 
-                  to='/user/notifications' 
+                  to='/user/my-reports' 
                   className='dropdown-link'
+                  onClick={() => setOpen(false)}
+                >
+                  <FontAwesomeIcon icon={faFlag} />
+                  <span>My Reports</span>
+                </Link>
+              </div>
+              
+              <div className='dropdown-link-container'>
+                <Link 
+                  to='/user/user-notification' 
+                  className='dropdown-link notification-dropdown-link'
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faBell} />
                   <span>Notifications</span>
+                  {notificationCount > 0 && (
+                    <span className="dropdown-notification-badge">
+                      {notificationCount}
+                    </span>
+                  )}
                 </Link>
               </div>
+              
               <div className="dropdown-divider"></div>
               
               <div className='dropdown-link-container logout-container'>
