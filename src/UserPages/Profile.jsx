@@ -102,10 +102,10 @@ export default function Profile() {
           <h1 className="profile-welcome">
             Welcome back, {user?.first_name || 'User'}! 👋
           </h1>
-          <button className='profile-edit-btn'>
+          <Link to='/user/edit-profile' className='profile-edit-btn'>
             <FontAwesomeIcon icon={faEdit} />
-            <Link to='/user/edit-profile'>Edit Profile</Link>
-          </button>
+            <span>Edit Profile</span>
+          </Link>
         </div>
 
         {/*  Statistics Cards */}
