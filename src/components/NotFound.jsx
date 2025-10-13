@@ -23,12 +23,12 @@ export default function NotFound() {
         <div className="error-actions">
           <button 
             onClick={() => window.history.back()} 
-            className="action-btn primary"
+            className="nf-action-btn primary"
           >
             <FontAwesomeIcon icon={faArrowLeft} />
             Go Back
           </button>
-          <Link to="/" className="action-btn secondary">
+          <Link to="/" className="nf-action-btn secondary">
             <FontAwesomeIcon icon={faHome} />
             Home Page
           </Link>

@@ -219,13 +219,13 @@ export default function Profile() {
                     <div className="profile-actions">
                       <h3>Quick Actions</h3>
                       <div className="action-buttons">
-                        <Link to="/user/create" className="action-btn primary">
+                        <Link to="/user/create" className="action-btns primary">
                           Create New Post
                         </Link>
-                        <Link to="/user/myposts" className="action-btn secondary">
+                        <Link to="/user/myposts" className="action-btns secondary">
                           View My Posts
                         </Link>
-                        <Link to="/user" className="action-btn outline">
+                        <Link to="/user" className="action-btns outline">
                           Browse Bulletin
                         </Link>
                       </div>

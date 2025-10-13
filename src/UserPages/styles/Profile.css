@@ -1,4 +1,4 @@
-/* Profile.css */
+/* Profile.css - Orange Outside, Brown Inside Theme */
 
 .profile-page {
   min-height: 100vh;
@@ -9,7 +9,7 @@
     padding: 50px;
 }
 
-/* 🎯 Header Section */
+/* 🎯 Header Section - ORANGE */
 .profile-action{
     display: flex;
     align-items: center;
@@ -19,14 +19,14 @@
 }
 
 .profile-welcome {
-  color: #8B5A2B;
+  color: #FF8904; /* ORANGE - Outer theme */
   font-size: 2rem;
   margin: 0;
   font-weight: 700;
 }
 
 .profile-edit-btn{
-    background-color: #FF8904;
+    background-color: #FF8904; /* ORANGE - Outer theme */
     padding: 12px 24px;
     border-radius: 8px;
     border: none;
@@ -37,18 +37,18 @@
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     text-decoration: none;
-     color: white;
+    color: white;
     font-weight: 600;
     font-size: 1rem;
 }
 
 .profile-edit-btn:hover{
+   background: #e67a00; /* Darker orange */
    transform: translateY(-2px);
    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-
-/* 🎯 Statistics Section */
+/* 🎯 Statistics Section - ORANGE borders, BROWN text */
 .profile-stats-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -66,7 +66,7 @@
   align-items: center;
   gap: 15px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-left: 4px solid #FF8904;
+  border-left: 4px solid #FF8904; /* ORANGE - Outer theme */
 }
 
 .stat-card:hover {
@@ -121,7 +121,7 @@
 }
 
 .resolved-icon {
-  background: #8b5a2b;
+  background: #8b5a2b; /* BROWN - Inner theme */
 }
 
 .resolved-icon span {
@@ -133,7 +133,7 @@
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
-  color: #8B5A2B;
+  color: #8B5A2B; /* BROWN - Inner theme */
 }
 
 .stat-info p {
@@ -142,17 +142,17 @@
   font-weight: 600;
 }
 
-/* 🎯 Main Profile Container */
+/* 🎯 Main Profile Container - BROWN Inner Theme */
 .profile-data-container-darkbrown{
-    background-color: #8B5A2B;
+    background-color: #8B5A2B; /* BROWN - Inner theme */
     border-radius: 12px;
     padding: 25px;
     margin: 20px;
 }
 
 .profile-data-container-lightbrown{
-    background-color: #D6A96D;
-    box-shadow: inset 0px 0px 10px 2px #8B5A2B;
+    background-color: #D6A96D; /* Light brown - Inner theme */
+    box-shadow: inset 0px 0px 10px 2px #8B5A2B; /* BROWN - Inner theme */
     border-radius: 8px;
 }
 
@@ -171,7 +171,7 @@
     width: 100%;
 }
 
-/* 🎯 Profile Title */
+/* 🎯 Profile Title - BROWN Inner Theme */
 .profile-data-title{
     background-color: #FBFCF8;
     width: 100%;
@@ -185,7 +185,7 @@
 }
 
 .profile-data-title h2{
-    color: #8B5A2B;
+    color: #8B5A2B; /* BROWN - Inner theme */
     margin: 0;
     font-size: 1.8rem;
 }
@@ -196,7 +196,7 @@
   font-weight: 500;
 }
 
-/* 🎯 Profile Container */
+/* 🎯 Profile Container - BROWN Inner Theme */
 .profile-container{
     display: flex;
     align-items: flex-start;
@@ -204,7 +204,7 @@
     border-radius: 12px;
     padding: 40px;
     margin: 0;
-    background-color: #F8E38C;
+    background-color: #F8E38C; /* Light yellow - bulletin board style */
     width: 100%;
     gap: 40px;
     position: relative;
@@ -216,14 +216,14 @@
     top: -8px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #e74c3c;
+    background-color: #e74c3c; /* Red pin - bulletin board style */
     border-radius: 50%;
     width: 16px;
     height: 16px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-/* 🎯 Profile Picture Section */
+/* 🎯 Profile Picture Section - BROWN Inner Theme */
 .profile-pic-section {
   display: flex;
   flex-direction: column;
@@ -238,7 +238,7 @@
     border-radius: 50%;
     position: relative;
     overflow: hidden;
-    border: 4px solid #8B5A2B;
+    border: 4px solid #8B5A2B; /* BROWN - Inner theme */
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
@@ -258,18 +258,18 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(139, 90, 43, 0.9);
+  background: rgba(139, 90, 43, 0.9); /* BROWN - Inner theme */
   padding: 10px;
   text-align: center;
   transform: translateY(100%);
   transition: transform 0.3s ease;
   font-size: 0.9rem;
   font-weight: 600;
-  
 }
+
 .profile-pic-overlay a{
   text-decoration: none;
-    color: white;
+  color: white;
 }
 
 .profile-pic:hover .profile-pic-overlay {
@@ -277,7 +277,7 @@
 }
 
 .profile-role-badge {
-  background: #8B5A2B;
+  background: #8B5A2B; /* BROWN - Inner theme */
   color: white;
   padding: 8px 16px;
   border-radius: 20px;
@@ -287,7 +287,7 @@
   letter-spacing: 0.5px;
 }
 
-/* 🎯 Profile Details */
+/* 🎯 Profile Details - BROWN Inner Theme */
 .profile-details{
     display: flex;
     flex-direction: column;
@@ -296,10 +296,10 @@
 }
 
 .detail-group h3 {
-  color: #8B5A2B;
+  color: #8B5A2B; /* BROWN - Inner theme */
   margin: 0 0 20px 0;
   font-size: 1.4rem;
-  border-bottom: 2px solid #8B5A2B;
+  border-bottom: 2px solid #8B5A2B; /* BROWN - Inner theme */
   padding-bottom: 8px;
 }
 
@@ -308,7 +308,7 @@
     align-items: flex-start;
     gap: 15px;
     padding: 15px 0;
-    border-bottom: 1px solid rgba(139, 90, 43, 0.1);
+    border-bottom: 1px solid rgba(139, 90, 43, 0.1); /* BROWN - Inner theme */
 }
 
 .detail-item:last-child {
@@ -316,7 +316,7 @@
 }
 
 .detail-icon {
-  color: #8B5A2B;
+  color: #8B5A2B; /* BROWN - Inner theme */
   font-size: 1.1rem;
   margin-top: 2px;
   width: 20px;
@@ -330,7 +330,7 @@
 .detail-content label {
   display: block;
   font-weight: 600;
-  color: #5D4037;
+  color: #5D4037; /* Dark brown */
   font-size: 0.9rem;
   margin-bottom: 4px;
   text-transform: uppercase;
@@ -344,9 +344,9 @@
   font-weight: 500;
 }
 
-/* 🎯 Quick Actions */
+/* 🎯 Quick Actions - ORANGE Outer Theme */
 .profile-actions h3 {
-  color: #8B5A2B;
+  color: #8B5A2B; /* BROWN - Inner theme (header) */
   margin: 0 0 15px 0;
   font-size: 1.4rem;
 }
@@ -357,8 +357,8 @@
   flex-wrap: wrap;
 }
 
-.action-btn {
-  padding: 12px 20px;
+.action-btns {
+  padding: 12px 15px;
   border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
@@ -368,34 +368,34 @@
   min-width: 120px;
 }
 
-.action-btn.primary {
-  background: #FF8904;
+.action-btns.primary {
+  background: #FF8904; /* ORANGE - Outer theme */
   color: white;
 }
 
-.action-btn.primary:hover {
-  background: #e67a00;
+.action-btns.primary:hover {
+  background: #e67a00; /* Darker orange */
   transform: translateY(-2px);
 }
 
-.action-btn.secondary {
-  background: #3b82f6;
+.action-btns.secondary {
+  background: #3b82f6; /* Blue */
   color: white;
 }
 
-.action-btn.secondary:hover {
-  background: #2563eb;
+.action-btns.secondary:hover {
+  background: #2563eb; /* Darker blue */
   transform: translateY(-2px);
 }
 
-.action-btn.outline {
+.action-btns.outline {
   background: transparent;
-  color: #8B5A2B;
-  border: 2px solid #8B5A2B;
+  color: #8B5A2B; /* BROWN - Inner theme */
+  border: 2px solid #8B5A2B; /* BROWN - Inner theme */
 }
 
-.action-btn.outline:hover {
-  background: #8B5A2B;
+.action-btns.outline:hover {
+  background: #8B5A2B; /* BROWN - Inner theme */
   color: white;
   transform: translateY(-2px);
 }
@@ -413,8 +413,8 @@
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #D6A96D;
-  border-top: 4px solid #8B5A2B;
+  border: 4px solid #D6A96D; /* Light brown */
+  border-top: 4px solid #8B5A2B; /* BROWN - Inner theme */
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;

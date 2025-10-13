@@ -57,7 +57,7 @@
   flex-wrap: wrap;
 }
 
-.action-btn {
+.nf-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -71,24 +71,24 @@
   cursor: pointer;
 }
 
-.action-btn.primary {
+.nf-action-btn.primary {
   background: #8B5A2B;
   color: white;
   border-color: #8B5A2B;
 }
 
-.action-btn.primary:hover {
+.nf-action-btn.primary:hover {
   background: #6d451f;
   transform: translateY(-2px);
 }
 
-.action-btn.secondary {
+.nf-action-btn.secondary {
   background: #FF8904;
   color: white;
   border-color: #FF8904;
 }
 
-.action-btn.secondary:hover {
+.nf-action-btn.secondary:hover {
   background: #e67a00;
   transform: translateY(-2px);
 }
@@ -116,7 +116,7 @@
     align-items: center;
   }
   
-  .action-btn {
+  .nf-action-btn {
     width: 100%;
     max-width: 200px;
     justify-content: center;

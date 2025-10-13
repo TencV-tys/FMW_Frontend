@@ -14,6 +14,8 @@ import {
   faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
+import UserNav from '../UserComponents/UserDashboardNav';
+import User from '../pages/User';
 
 export default function UserNotifications() {
   const [notifications, setNotifications] = useState([]);
@@ -163,7 +165,9 @@ export default function UserNotifications() {
   };
 
   return (
+    <section className='user-notification-page'>
     <div className="user-notifications-page">
+      <UserNav/>
       {/* Header */}
       <header className="notifications-header">
         <div className="header-content">
@@ -275,5 +279,6 @@ export default function UserNotifications() {
         )}
       </section>
     </div>
+    </section>
   );
 }
