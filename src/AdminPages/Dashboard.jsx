@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import AdminLogo from '../assets/Admin.png';
 import { 
@@ -16,7 +17,6 @@ import {
 import './styles/Dashboard.css';
 
 export default function Dashboard() {
-
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPosts: 0,
@@ -26,10 +26,13 @@ export default function Dashboard() {
     resolvedPosts: 0,
     recentActivities: []
   });
+  const [notificationCount, setNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboardData();
+    fetchNotificationCount();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -41,7 +44,7 @@ export default function Dashboard() {
         credentials: 'include'
       });
       
-      // Fetch posts stats - you might need to create this endpoint
+      // Fetch posts stats
       const postsResponse = await fetch('http://localhost:8000/api/admin/posts', {
         credentials: 'include'
       });
@@ -55,10 +58,10 @@ export default function Dashboard() {
         setStats({
           totalUsers: usersData.stats?.totalUsers || 0,
           totalPosts: posts.length,
-          lostPosts: posts.filter(post => post.type === 'Lost').length,
-          foundPosts: posts.filter(post => post.type === 'Found').length,
-          activePosts: posts.filter(post => post.status === 'Active').length,
-          resolvedPosts: posts.filter(post => post.status === 'Resolved').length,
+          lostPosts: posts.filter(post => post.type === 'Lost' || post.type === 'lost').length,
+          foundPosts: posts.filter(post => post.type === 'Found' || post.type === 'found').length,
+          activePosts: posts.filter(post => post.status === 'Active' || post.status === 'active').length,
+          resolvedPosts: posts.filter(post => post.status === 'Resolved' || post.status === 'resolved').length,
           recentActivities: generateRecentActivities(posts)
         });
       }
@@ -69,19 +72,58 @@ export default function Dashboard() {
     }
   };
 
+  const fetchNotificationCount = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/admin/notifications/stats', {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotificationCount(data.stats?.unread || 0);
+      } else {
+        console.error('Failed to fetch notification stats');
+        // Fallback to user notifications if admin endpoint fails
+        fetchUserNotificationCount();
+      }
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+      // Fallback to user notifications
+      fetchUserNotificationCount();
+    }
+  };
+
+  const fetchUserNotificationCount = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/notifications/unread-count', {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotificationCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching user notification count:', error);
+    }
+  };
+
   const generateRecentActivities = (posts) => {
     const recentPosts = posts.slice(0, 5); // Get 5 most recent posts
     return recentPosts.map(post => ({
       id: post.id,
-      message: `${post.first_name} ${post.last_name} ${post.type === 'lost' ? 'reported a lost item' : 'found an item'}: "${post.title}"`,
+      message: `${post.first_name} ${post.last_name} ${(post.type === 'Lost' || post.type === 'lost') ? 'reported a lost item' : 'found an item'}: "${post.title}"`,
       time: new Date(post.created_at).toLocaleDateString(),
       type: post.type
     }));
   };
 
+  const handleNotificationClick = () => {
+    navigate('/admin/notifications');
+  };
+
   const StatCard = ({ icon, value, label, color, change }) => (
     <div className='stat-card'>
-      
       <div className='stat-content'>
         <div className='stat-icon' style={{ backgroundColor: color }}>
           <FontAwesomeIcon icon={icon} />
@@ -99,8 +141,8 @@ export default function Dashboard() {
     <div className='activity-item'>
       <div className='activity-icon'>
         <FontAwesomeIcon 
-          icon={activity.type === 'lost' ? faExclamationTriangle : faSearch} 
-          className={activity.type === 'lost' ? 'activity-lost' : 'activity-found'}
+          icon={(activity.type === 'Lost' || activity.type === 'lost') ? faExclamationTriangle : faSearch} 
+          className={(activity.type === 'Lost' || activity.type === 'lost') ? 'activity-lost' : 'activity-found'}
         />
       </div>
       <div className='activity-content'>
@@ -122,9 +164,17 @@ export default function Dashboard() {
             <p>Overview of platform statistics and activities</p>
           </div>
           <div className='dashboard-header-right'>
-            <button className='notification-btn'>
+            <button 
+              className='notification-btn'
+              onClick={handleNotificationClick}
+              title="View Notifications"
+            >
               <FontAwesomeIcon className='notif-icon' icon={faBell}/>
-              <span className='notif-badge'>3</span>
+              {notificationCount > 0 && (
+                <span className='notif-badge'>
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </span>
+              )}
             </button>
             <img className='admin-profile' src={AdminLogo} alt="Admin Profile" />
           </div>

@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBell,
   faCheckCircle,
-  faTimesCircle,
   faTrash,
   faEye,
   faEyeSlash,

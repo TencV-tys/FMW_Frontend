@@ -48,6 +48,7 @@
   font-size: 1.2rem;
 }
 
+* Enhanced Notification Badge */
 .notif-badge {
   position: absolute;
   top: -2px;
@@ -55,13 +56,38 @@
   background: #ef4444;
   color: white;
   border-radius: 50%;
-  width: 18px;
+  min-width: 18px;
   height: 18px;
   font-size: 0.7rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
+  padding: 0 4px;
+  border: 2px solid white;
+}
+/* Pulse animation for unread notifications */
+.notification-btn.has-notifications .notif-icon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Hover effects */
+.notification-btn:hover .notif-icon {
+  color: #7c4a1f;
+  transform: scale(1.1);
+  transition: all 0.3s ease;
 }
 
 .admin-profile {
