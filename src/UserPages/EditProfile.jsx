@@ -213,10 +213,7 @@ export default function EditProfile() {
                       e.target.src = '/default-avatar.png';
                     }}
                   />
-                  <div className="profile-picture-overlay">
-                    <FontAwesomeIcon icon={faCamera} />
-                    <span>Change Photo</span>
-                  </div>
+                
                 </div>
                 
                 <div className="profile-picture-actions">

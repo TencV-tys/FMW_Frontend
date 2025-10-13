@@ -22,7 +22,7 @@ export default function Profile() {
         setLoading(true);
         
         // Fetch user profile
-        const userResponse = await fetch('http://localhost:8000/auth/me', {
+        const userResponse = await fetch('http://localhost:8000/api/users/profile', {
           credentials: 'include'
         });
 
