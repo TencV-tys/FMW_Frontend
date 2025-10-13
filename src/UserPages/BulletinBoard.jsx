@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass, faUserCircle, faMapMarkerAlt, faPhone, faTag } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faMagnifyingGlass, 
+  faUserCircle, 
+  faMapMarkerAlt, 
+  faPhone, 
+  faTag,
+  faFlag  // ✅ ADDED MISSING IMPORT
+} from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav.jsx';
+import ReportModal from '../UserComponents/ReportModal'; // ✅ Make sure this path is correct
 import OptionalPhoto from '../assets/download.png';
 import './styles/BulletinBoard.css';
 
 export default function BulletinBoard() {
+  const [reportModal, setReportModal] = useState({ isOpen: false, post: null });
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +100,14 @@ export default function BulletinBoard() {
       return `http://localhost:8000/uploads/${user.user_photo}`;
     }
     return null;
+  };
+
+  const openReportModal = (post) => {
+    setReportModal({ isOpen: true, post });
+  };
+
+  const closeReportModal = () => {
+    setReportModal({ isOpen: false, post: null });
   };
 
   //  Loading state
@@ -197,7 +214,7 @@ export default function BulletinBoard() {
                     <div key={post.id} className='lost-found-cards'>
                       <span className='pin'></span>
                       
-                      {/* 🎯 Post Header with User Info */}
+                      {/* 🎯 Post Header with User Info - FIXED STRUCTURE */}
                       <div className="post-header">
                         <div className="user-info">
                           <div className="user-avatar">
@@ -219,8 +236,19 @@ export default function BulletinBoard() {
                             </span>
                           </div>
                         </div>
-                        <div className={`post-type-badge ${post.type.toLowerCase()}`}>
-                          {post.type}
+                        
+                        {/* 🎯 Post Header Actions - MOVED OUTSIDE user-info */}
+                        <div className="post-header-actions">
+                          <div className={`post-type-badge ${post.type.toLowerCase()}`}>
+                            {post.type}
+                          </div>
+                          <button 
+                            className="report-btn"
+                            onClick={() => openReportModal(post)}
+                            title="Report this post"
+                          >
+                            <FontAwesomeIcon icon={faFlag} />
+                          </button>
                         </div>
                       </div>
 
@@ -269,6 +297,13 @@ export default function BulletinBoard() {
                 </div>
               )}
             </div>
+            
+            {/* 🎯 Report Modal - MOVED OUTSIDE bulletin-board-content */}
+            <ReportModal 
+              isOpen={reportModal.isOpen}
+              onClose={closeReportModal}
+              post={reportModal.post}
+            />
           </div>
         </div>
       </main>

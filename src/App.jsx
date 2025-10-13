@@ -19,6 +19,7 @@ import ManagePosts from './AdminPages/ManagePosts';
 import ProtectedRoute from './components/ProtectedRoutes';
 import EditPost from './UserPages/EditPost';
 import NotFound from './components/NotFound';
+import MyReports from './UserPages/MyReports';
  function App() {
    return (
      <BrowserRouter>
@@ -38,6 +39,7 @@ import NotFound from './components/NotFound';
             <Route path='myposts' element={<MyPosts/>} />
             <Route path='profile' element={<Profile/>} />
             <Route path='edit-profile' element={<EditProfile/>} /> 
+            <Route path='my-reports' element={<MyReports/>} />
             <Route path='edit-post/:id' element={<EditPost/>} />
            </Route>
 

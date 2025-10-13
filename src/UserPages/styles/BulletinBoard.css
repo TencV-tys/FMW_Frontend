@@ -370,6 +370,31 @@
   background: #654321;
 }
 
+/* Add to BulletinBoard.css */
+.post-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.report-btn {
+  background: none;
+  border: none;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.report-btn:hover {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+
+
 /* 🎯 Responsive Design */
 @media (max-width: 1200px) {
   .lost-found-container {
