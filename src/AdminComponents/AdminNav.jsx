@@ -7,6 +7,7 @@ import {
     faUsers,
     faNewspaper,
     faChartBar,
+    faBell
 } from '@fortawesome/free-solid-svg-icons';
 
 import './AdminStyles/AdminNav.css';
@@ -67,6 +68,12 @@ return(
                 {isOpen && "Reports"}
               </div>
             </Link>
+            <Link to='/admin/notifications' className='admin-links'>
+          <div className='nav-link'>
+          <FontAwesomeIcon icon={faBell} className='nav-icons'/>
+          {isOpen && "Notifications"}
+          </div>
+          </Link>
           </div>
 
           {/* Logout Button - Fixed Integration */}

@@ -16,6 +16,7 @@ import Profile from './UserPages/Profile';
 import Dashboard from './AdminPages/Dashboard';
 import ManageUsers from './AdminPages/ManageUsers';
 import ManagePosts from './AdminPages/ManagePosts';
+import Notifications from './AdminPages/Notifications';
 import ProtectedRoute from './components/ProtectedRoutes';
 import EditPost from './UserPages/EditPost';
 import NotFound from './components/NotFound';
@@ -52,6 +53,7 @@ import MyReports from './UserPages/MyReports';
               <Route index element={<Dashboard/>} /> 
               <Route path='manage-users' element={<ManageUsers/>} />
                <Route path='manage-posts' element={<ManagePosts/>} />
+               <Route path='notifications' element={<Notifications/>} />
            </Route>
 
            <Route path='*' element={<NotFound/>} />
