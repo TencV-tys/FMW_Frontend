@@ -44,8 +44,9 @@ export default function ManageUsers() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+  // 🎯 DELETE USER with confirmation
+  const handleDelete = async (id, userName) => {
+    if (!window.confirm(`Are you sure you want to permanently delete user "${userName}"? This action cannot be undone.`)) return;
     
     try {
       const res = await fetch(`http://localhost:8000/api/users/${id}`, {
@@ -64,7 +65,10 @@ export default function ManageUsers() {
     }
   };
 
-  const handleStatusUpdate = async (userId, newStatus) => {
+  // 🎯 SUSPEND USER with confirmation
+  const handleSuspend = async (userId, userName) => {
+    if (!window.confirm(`Are you sure you want to suspend user "${userName}"? They will not be able to login until restored.`)) return;
+    
     try {
       const res = await fetch(`http://localhost:8000/api/users/${userId}/status`, {
         method: "PUT",
@@ -72,19 +76,73 @@ export default function ManageUsers() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: 'suspended' })
       });
       
       if (res.ok) {
         setUsers(users.map(user => 
-          user.id === userId ? { ...user, status: newStatus } : user
+          user.id === userId ? { ...user, status: 'suspended' } : user
         ));
-        alert(`User ${newStatus} successfully!`);
+        alert(`User "${userName}" suspended successfully!`);
       } else {
-        alert('Failed to update user status');
+        alert('Failed to suspend user');
       }
     } catch (error) {
-      console.log(`Status update error: ${error.message}`);
+      console.log(`Suspend error: ${error.message}`);
+    }
+  };
+
+  // 🎯 BAN USER with confirmation
+  const handleBan = async (userId, userName) => {
+    if (!window.confirm(`Are you sure you want to permanently ban user "${userName}"? This action is irreversible.`)) return;
+    
+    try {
+      const res = await fetch(`http://localhost:8000/api/users/${userId}/status`, {
+        method: "PUT",
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'banned' })
+      });
+      
+      if (res.ok) {
+        setUsers(users.map(user => 
+          user.id === userId ? { ...user, status: 'banned' } : user
+        ));
+        alert(`User "${userName}" banned successfully!`);
+      } else {
+        alert('Failed to ban user');
+      }
+    } catch (error) {
+      console.log(`Ban error: ${error.message}`);
+    }
+  };
+
+  // 🎯 ACTIVATE USER with confirmation
+  const handleActivate = async (userId, userName) => {
+    if (!window.confirm(`Are you sure you want to activate user "${userName}"? They will be able to login again.`)) return;
+    
+    try {
+      const res = await fetch(`http://localhost:8000/api/users/${userId}/status`, {
+        method: "PUT",
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'active' })
+      });
+      
+      if (res.ok) {
+        setUsers(users.map(user => 
+          user.id === userId ? { ...user, status: 'active' } : user
+        ));
+        alert(`User "${userName}" activated successfully!`);
+      } else {
+        alert('Failed to activate user');
+      }
+    } catch (error) {
+      console.log(`Activate error: ${error.message}`);
     }
   };
 
@@ -121,6 +179,11 @@ export default function ManageUsers() {
   // Get role badge class
   const getRoleClass = (role) => {
     return role === 'admin' ? 'role-admin' : 'role-user';
+  };
+
+  // Get user full name
+  const getUserName = (user) => {
+    return `${user.first_name} ${user.last_name}`;
   };
 
   // Mobile User Card Component
@@ -166,7 +229,7 @@ export default function ManageUsers() {
           <>
             <button
               className="mobile-action-btn suspend"
-              onClick={() => handleStatusUpdate(user.id, 'suspended')}
+              onClick={() => handleSuspend(user.id, getUserName(user))}
               title="Suspend User"
             >
               <FontAwesomeIcon icon={faBan} />
@@ -174,7 +237,7 @@ export default function ManageUsers() {
             </button>
             <button
               className="mobile-action-btn ban"
-              onClick={() => handleStatusUpdate(user.id, 'banned')}
+              onClick={() => handleBan(user.id, getUserName(user))}
               title="Ban User"
             >
               <FontAwesomeIcon icon={faUserSlash} />
@@ -184,7 +247,7 @@ export default function ManageUsers() {
         ) : (
           <button
             className="mobile-action-btn activate"
-            onClick={() => handleStatusUpdate(user.id, 'active')}
+            onClick={() => handleActivate(user.id, getUserName(user))}
             title="Activate User"
           >
             <FontAwesomeIcon icon={faCheckCircle} />
@@ -193,7 +256,7 @@ export default function ManageUsers() {
         )}
         <button
           className="mobile-action-btn delete"
-          onClick={() => handleDelete(user.id)}
+          onClick={() => handleDelete(user.id, getUserName(user))}
           title="Delete User"
         >
           <FontAwesomeIcon icon={faTrash} />
@@ -362,14 +425,14 @@ export default function ManageUsers() {
                                   <>
                                     <button
                                       className="action-btn suspend"
-                                      onClick={() => handleStatusUpdate(user.id, 'suspended')}
+                                      onClick={() => handleSuspend(user.id, getUserName(user))}
                                       title="Suspend User"
                                     >
                                       <FontAwesomeIcon icon={faBan} />
                                     </button>
                                     <button
                                       className="action-btn ban"
-                                      onClick={() => handleStatusUpdate(user.id, 'banned')}
+                                      onClick={() => handleBan(user.id, getUserName(user))}
                                       title="Ban User"
                                     >
                                       <FontAwesomeIcon icon={faUserSlash} />
@@ -378,7 +441,7 @@ export default function ManageUsers() {
                                 ) : (
                                   <button
                                     className="action-btn activate"
-                                    onClick={() => handleStatusUpdate(user.id, 'active')}
+                                    onClick={() => handleActivate(user.id, getUserName(user))}
                                     title="Activate User"
                                   >
                                     <FontAwesomeIcon icon={faCheckCircle} />
@@ -386,7 +449,7 @@ export default function ManageUsers() {
                                 )}
                                 <button
                                   className="action-btn delete"
-                                  onClick={() => handleDelete(user.id)}
+                                  onClick={() => handleDelete(user.id, getUserName(user))}
                                   title="Delete User"
                                 >
                                   <FontAwesomeIcon icon={faTrash} />
