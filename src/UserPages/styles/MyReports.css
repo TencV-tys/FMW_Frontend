@@ -19,10 +19,16 @@
   background-color: #D6A96D;
   min-height: 100dvh;
   box-shadow: inset 0px 0px 10px 2px #8B5A2B;
+  
 }
 
 .reports-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   padding: 20px;
+ 
 }
 
 .reports-header {
@@ -31,6 +37,7 @@
   border-radius: 8px;
   text-align: center;
   margin-bottom: 2rem;
+  width: 95%;
 }
 
 .reports-header h1 {
@@ -57,6 +64,7 @@
   background: #FBFCF8;
   padding: 1rem 1.5rem;
   border-radius: 8px;
+  width: 90%;
 }
 
 .filter-select {
@@ -151,6 +159,7 @@
   padding: 4rem 2rem;
   background: #FBFCF8;
   border-radius: 8px;
+  width: 80%;
 }
 
 .empty-icon {
