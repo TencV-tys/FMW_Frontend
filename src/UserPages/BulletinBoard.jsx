@@ -11,7 +11,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav.jsx';
 import ReportModal from '../UserComponents/ReportModal';
-import OptionalPhoto from '../assets/download.png';
+import OptionalPhoto from '../assets/Logo.jpg';
 import './styles/BulletinBoard.css';
 
 export default function BulletinBoard() {

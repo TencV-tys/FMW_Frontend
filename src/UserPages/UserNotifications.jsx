@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx
+// UserPages/UserNotifications.jsx - UPDATED
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,7 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
-import User from '../pages/User';
+
 
 export default function UserNotifications() {
   const [notifications, setNotifications] = useState([]);
@@ -105,6 +105,30 @@ export default function UserNotifications() {
       }
     } catch (error) {
       console.error('Error marking all as read:', error);
+    }
+  };
+
+  // ADD THIS: User deletes their own notification
+  const deleteNotification = async (notificationId) => {
+    if (!window.confirm('Are you sure you want to delete this notification?')) return;
+    
+    try {
+      const response = await fetch(`http://localhost:8000/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        // Remove from local state
+        setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
+        // Update count if it was unread
+        const deletedNotif = notifications.find(n => n.id === notificationId);
+        if (deletedNotif && !deletedNotif.is_read) {
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
     }
   };
 
@@ -267,6 +291,14 @@ export default function UserNotifications() {
                     <FontAwesomeIcon icon={faCheckCircle} />
                   </button>
                 )}
+                {/* ADD DELETE BUTTON */}
+                <button 
+                  className="btn-delete"
+                  onClick={() => deleteNotification(notification.id)}
+                  title="Delete notification"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
               </div>
             </div>
           ))

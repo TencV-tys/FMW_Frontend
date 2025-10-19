@@ -24,7 +24,7 @@ import EditProfile from './UserPages/EditProfile';
 import Profile from './UserPages/Profile';
 import EditPost from './UserPages/EditPost';
 import MyReports from './UserPages/MyReports';
-import UserNotification from './UserPages/UserNotification';
+import UserNotifications from './UserPages/UserNotifications';
  function App() {
    return (
      <BrowserRouter>
@@ -44,7 +44,7 @@ import UserNotification from './UserPages/UserNotification';
             <Route path='myposts' element={<MyPosts/>} />
             <Route path='profile' element={<Profile/>} />
             <Route path='edit-profile' element={<EditProfile/>} /> 
-            <Route path='user-notification' element={<UserNotification/> } />
+            <Route path='user-notification' element={<UserNotifications/> } />
             <Route path='my-reports' element={<MyReports/>} />
             <Route path='edit-post/:id' element={<EditPost/>} />
            </Route>

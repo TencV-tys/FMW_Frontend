@@ -1,4 +1,4 @@
-// AdminPages/Notifications.jsx - Fixed version
+// AdminPages/Notifications.jsx - FIXED VERSION
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -77,9 +77,10 @@ export default function Notifications() {
     }
   };
 
+  // FIXED: Use admin routes for mark as read
   const markAsRead = async (notificationId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`http://localhost:8000/api/admin/notifications/${notificationId}/read`, {
         method: 'PUT',
         credentials: 'include'
       });
@@ -97,9 +98,10 @@ export default function Notifications() {
     }
   };
 
+  // FIXED: Use admin route for mark all as read
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/notifications/read-all', {
+      const response = await fetch('http://localhost:8000/api/admin/notifications/read-all', {
         method: 'PUT',
         credentials: 'include'
       });
@@ -161,6 +163,8 @@ export default function Notifications() {
         return faEye;
       case 'report_submitted':
         return faBell;
+      case 'general':
+        return faBell;
       default:
         return faBell;
     }
@@ -178,6 +182,8 @@ export default function Notifications() {
         return '#3b82f6';
       case 'report_submitted':
         return '#8b5cf6';
+      case 'general':
+        return '#6b7280';
       default:
         return '#6b7280';
     }
@@ -283,6 +289,7 @@ export default function Notifications() {
             <option value="post_deleted">Deleted Posts</option>
             <option value="post_restored">Restored Posts</option>
             <option value="report_submitted">Reports</option>
+            <option value="general">General</option>
           </select>
         </div>
         <div className="search-group">
