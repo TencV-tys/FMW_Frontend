@@ -84,6 +84,53 @@
   box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
 }
 
+/* Password Input Group Styles */
+.password-input-group {
+  margin-bottom: 0.5rem;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 3rem; /* Space for the eye icon */
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle-btn:hover {
+  color: #FF8904;
+  background: rgba(255, 137, 4, 0.1);
+}
+
+.password-toggle-btn:disabled {
+  color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.password-toggle-icon {
+  font-size: 1rem;
+  width: 16px;
+  height: 16px;
+}
+
 .error-text {
   color: #e53e3e;
   font-size: 0.75rem;

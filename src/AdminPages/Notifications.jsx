@@ -1,12 +1,10 @@
-// AdminPages/Notifications.jsx - FIXED VERSION
+// AdminPages/Notifications.jsx - SIMPLIFIED (ONLY 3 CARDS)
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBell,
   faCheckCircle,
   faTrash,
-  faEye,
-  faEyeSlash,
   faSearch,
   faFilter,
   faCheckDouble
@@ -20,9 +18,6 @@ export default function Notifications() {
   const [stats, setStats] = useState({
     total: 0,
     unread: 0,
-    resolved: 0,
-    removed: 0,
-    deleted: 0,
     reports: 0
   });
 
@@ -66,9 +61,6 @@ export default function Notifications() {
         setStats(data.stats || {
           total: 0,
           unread: 0,
-          resolved: 0,
-          removed: 0,
-          deleted: 0,
           reports: 0
         });
       }
@@ -77,7 +69,6 @@ export default function Notifications() {
     }
   };
 
-  // FIXED: Use admin routes for mark as read
   const markAsRead = async (notificationId) => {
     try {
       const response = await fetch(`http://localhost:8000/api/admin/notifications/${notificationId}/read`, {
@@ -86,11 +77,9 @@ export default function Notifications() {
       });
 
       if (response.ok) {
-        // Update local state
         setNotifications(prev => prev.map(notif => 
           notif.id === notificationId ? { ...notif, is_read: true } : notif
         ));
-        // Refresh stats
         fetchNotificationStats();
       }
     } catch (error) {
@@ -98,7 +87,6 @@ export default function Notifications() {
     }
   };
 
-  // FIXED: Use admin route for mark all as read
   const markAllAsRead = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/admin/notifications/read-all', {
@@ -107,9 +95,7 @@ export default function Notifications() {
       });
 
       if (response.ok) {
-        // Update all notifications to read
         setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true })));
-        // Refresh stats
         fetchNotificationStats();
       }
     } catch (error) {
@@ -156,11 +142,11 @@ export default function Notifications() {
       case 'post_resolved':
         return faCheckCircle;
       case 'post_removed':
-        return faEyeSlash;
+        return faBell;
       case 'post_deleted':
         return faTrash;
       case 'post_restored':
-        return faEye;
+        return faBell;
       case 'report_submitted':
         return faBell;
       case 'general':
@@ -234,7 +220,7 @@ export default function Notifications() {
         </div>
       </header>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - ONLY 3 CARDS */}
       <section className="notification-stats">
         <div className="stat-card">
           <div className="stat-icon total">
@@ -252,15 +238,6 @@ export default function Notifications() {
           <div className="stat-info">
             <h3>{stats.unread}</h3>
             <p>Unread</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon resolved">
-            <FontAwesomeIcon icon={faCheckCircle} />
-          </div>
-          <div className="stat-info">
-            <h3>{stats.resolved}</h3>
-            <p>Resolved</p>
           </div>
         </div>
         <div className="stat-card">

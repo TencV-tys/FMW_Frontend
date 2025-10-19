@@ -100,12 +100,130 @@
   box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
 }
 
+/* Password Input Styles */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-input {
+  width: 100%;
+  padding-right: 3rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.password-toggle-btn:hover:not(:disabled) {
+  color: #FF8904;
+  background: rgba(255, 137, 4, 0.1);
+}
+
+.password-toggle-btn:disabled {
+  color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.password-toggle-icon {
+  font-size: 1rem;
+  width: 16px;
+  height: 16px;
+}
+
+/* Email Verification Styles */
+.email-input-wrapper {
+  position: relative;
+}
+
+.email-status-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  width: 16px;
+  height: 16px;
+}
+
+.email-status-icon.checking {
+  color: #FF8904;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.email-status-icon.verified {
+  color: #38a169;
+}
+
+.email-status-icon.not-verified {
+  color: #e53e3e;
+}
+
+.email-verification-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-height: 1.25rem;
+}
+
+.email-verification-status.checking {
+  color: #FF8904;
+}
+
+.email-verification-status.verified {
+  color: #38a169;
+}
+
+.email-verification-status.not-verified {
+  color: #e53e3e;
+}
+
+.verification-icon {
+  font-size: 0.875rem;
+  width: 14px;
+  height: 14px;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: translateY(-50%) scale(1);
+  }
+  50% { 
+    opacity: 0.7; 
+    transform: translateY(-50%) scale(1.05);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .error-text {
   color: #e53e3e;
   font-size: 0.75rem;
   margin-top: 0.25rem;
   display: block;
   font-weight: 500;
+  min-height: 1.25rem;
 }
 
 .register-button {
@@ -142,6 +260,10 @@
   background: #cbd5e0;
 }
 
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
 .auth-redirect {
   text-align: center;
   margin-top: 1.5rem;
@@ -168,6 +290,25 @@
   text-decoration: underline;
 }
 
+/* Password Strength Indicator */
+.password-strength {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.password-strength.weak {
+  color: #e53e3e;
+}
+
+.password-strength.medium {
+  color: #d69e2e;
+}
+
+.password-strength.strong {
+  color: #38a169;
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
   .register-container {
@@ -182,6 +323,14 @@
   .register-title {
     font-size: 1.5rem;
   }
+
+  .password-toggle-btn {
+    right: 0.5rem;
+  }
+
+  .email-status-icon {
+    right: 0.5rem;
+  }
 }
 
 /* Keep existing specific styles */
@@ -192,4 +341,23 @@
 .register-form-title .create {
   text-align: center;
   padding-bottom: 15px;
+}
+
+/* Focus states for accessibility */
+.password-toggle-btn:focus-visible,
+.form-input:focus-visible,
+.form-select:focus-visible {
+  outline: 2px solid #FF8904;
+  outline-offset: 2px;
+}
+
+/* Loading state for form */
+.register-container:has(.register-button.loading) {
+  pointer-events: none;
+}
+
+.register-container:has(.register-button.loading) .form-input,
+.register-container:has(.register-button.loading) .form-select,
+.register-container:has(.register-button.loading) .password-toggle-btn {
+  opacity: 0.7;
 }

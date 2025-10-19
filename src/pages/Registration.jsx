@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './styles/Registration.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faUserPlus, faSpinner, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 
 // Custom hook for registration form
@@ -17,7 +17,11 @@ const useRegistrationForm = () => {
     password_confirmation: "",
     isLoading: false,
     errors: {},
-    touched: {}
+    touched: {},
+    showPassword: false,
+    showConfirmPassword: false,
+    emailVerified: false,
+    checkingEmail: false
   });
 
   const updateField = (field, value) => {
@@ -25,7 +29,8 @@ const useRegistrationForm = () => {
       ...prev,
       [field]: value,
       errors: { ...prev.errors, [field]: '' },
-      touched: { ...prev.touched, [field]: true }
+      touched: { ...prev.touched, [field]: true },
+      emailVerified: field === 'email' ? false : prev.emailVerified
     }));
   };
 
@@ -37,8 +42,20 @@ const useRegistrationForm = () => {
     setState(prev => ({ ...prev, isLoading }));
   };
 
-  const validateField = (field, value) => {
-    return validationService.validateField(field, value, state);
+  const togglePasswordVisibility = () => {
+    setState(prev => ({ ...prev, showPassword: !prev.showPassword }));
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setState(prev => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }));
+  };
+
+  const setEmailVerificationStatus = (verified, checking = false) => {
+    setState(prev => ({ 
+      ...prev, 
+      emailVerified: verified, 
+      checkingEmail: checking 
+    }));
   };
 
   return {
@@ -46,7 +63,9 @@ const useRegistrationForm = () => {
     updateField,
     setErrors,
     setLoading,
-    validateField
+    togglePasswordVisibility,
+    toggleConfirmPasswordVisibility,
+    setEmailVerificationStatus
   };
 };
 
@@ -90,6 +109,38 @@ const validationService = {
   }
 };
 
+// Email verification service
+const emailVerificationService = {
+  checkEmailAvailability: async (email) => {
+    try {
+      const response = await fetch(`http://localhost:8000/auth/check-email?email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return { 
+          available: data.available, 
+          message: data.message 
+        };
+      } else {
+        const errorData = await response.json();
+        return { 
+          available: true, 
+          message: errorData.error || 'Could not verify email' 
+        };
+      }
+    } catch (error) {
+      console.error('Email verification error:', error);
+      return { 
+        available: true, 
+        message: 'Network error - could not verify email' 
+      };
+    }
+  }
+};
+
 // API service
 const registrationService = {
   register: async (userData) => {
@@ -121,12 +172,50 @@ export default function Registration() {
     isLoading,
     errors,
     touched,
+    showPassword,
+    showConfirmPassword,
+    emailVerified,
+    checkingEmail,
     updateField,
     setErrors,
-    setLoading
+    setLoading,
+    togglePasswordVisibility,
+    toggleConfirmPasswordVisibility,
+    setEmailVerificationStatus
   } = useRegistrationForm();
 
   const navigate = useNavigate();
+
+  // Real-time email verification
+  useEffect(() => {
+    const verifyEmail = async () => {
+      if (email && !errors.email && /\S+@\S+\.\S+/.test(email)) {
+        setEmailVerificationStatus(false, true);
+        
+        const timer = setTimeout(async () => {
+          try {
+            const result = await emailVerificationService.checkEmailAvailability(email);
+            setEmailVerificationStatus(result.available, false);
+            
+            if (!result.available && result.message) {
+              setErrors({ ...errors, email: result.message });
+            } else if (!result.available) {
+              setErrors({ ...errors, email: 'This email is already registered' });
+            }
+          } catch (error) {
+            console.error('Email verification failed:', error);
+            setEmailVerificationStatus(true, false);
+          }
+        }, 800);
+
+        return () => clearTimeout(timer);
+      } else {
+        setEmailVerificationStatus(false, false);
+      }
+    };
+
+    verifyEmail();
+  }, [email, errors.email]);
 
   // Real-time validation for touched fields
   useEffect(() => {
@@ -141,7 +230,6 @@ export default function Registration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Mark all fields as touched for validation
     const allTouched = {
       first_name: true, last_name: true, email: true, 
       password: true, password_confirmation: true
@@ -152,6 +240,13 @@ export default function Registration() {
     });
 
     setErrors(formErrors);
+
+    if (email && !emailVerified && !checkingEmail) {
+      toast.error('This email is already registered. Please use a different email.', {
+        position: 'bottom-center'
+      });
+      return;
+    }
 
     if (Object.keys(formErrors).length > 0) {
       toast.error('Please fix the form errors before submitting', {
@@ -178,7 +273,6 @@ export default function Registration() {
           autoClose: 1000
         });
 
-        // Navigate to login with success state
         setTimeout(() => 
           navigate('/login?registered=success', { replace: true }), 
           1000
@@ -200,7 +294,7 @@ export default function Registration() {
     
     const errorMessages = {
       400: data.error || 'Invalid registration data',
-      409: data.error || 'Email already exists',
+      409: 'Email already exists. Please use a different email address.',
       500: 'Server error. Please try again later.',
       default: data.error || data.message || 'Registration failed'
     };
@@ -210,9 +304,11 @@ export default function Registration() {
       autoClose: 4000
     });
 
-    // Set field-specific errors from server
     if (data.errors) {
       setErrors(data.errors);
+    } else if (status === 409) {
+      setErrors({ ...errors, email: 'This email is already registered' });
+      setEmailVerificationStatus(false, false);
     }
   };
 
@@ -226,6 +322,47 @@ export default function Registration() {
 
   const getFieldClassName = (fieldName) => {
     return `input-group ${errors[fieldName] ? 'has-error' : ''} ${touched[fieldName] ? 'touched' : ''}`;
+  };
+
+  const getEmailStatusIcon = () => {
+    if (!email) return null;
+    
+    if (checkingEmail) {
+      return <FontAwesomeIcon icon={faCircleNotch} className="email-status-icon checking" />;
+    } else if (emailVerified) {
+      return <FontAwesomeIcon icon={faCheckCircle} className="email-status-icon verified" />;
+    } else if (errors.email && touched.email) {
+      return <FontAwesomeIcon icon={faTimesCircle} className="email-status-icon not-verified" />;
+    }
+    return null;
+  };
+
+  const getEmailStatusText = () => {
+    if (!email) return null;
+    
+    if (checkingEmail) {
+      return (
+        <div className="email-verification-status checking">
+          <FontAwesomeIcon icon={faCircleNotch} className="verification-icon" spin />
+          Checking email availability...
+        </div>
+      );
+    } else if (emailVerified) {
+      return (
+        <div className="email-verification-status verified">
+          <FontAwesomeIcon icon={faCheckCircle} className="verification-icon" />
+          Email is available
+        </div>
+      );
+    } else if (errors.email && touched.email) {
+      return (
+        <div className="email-verification-status not-verified">
+          <FontAwesomeIcon icon={faTimesCircle} className="verification-icon" />
+          {errors.email}
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -282,22 +419,22 @@ export default function Registration() {
 
           {/* Email Field */}
           <div className={getFieldClassName('email')}>
-            <input
-              className="form-input"
-              type="email"
-              placeholder="Email Address"
-              name="email"
-              value={email}
-              onChange={(e) => updateField('email', e.target.value)}
-              disabled={isLoading}
-              autoComplete="email"
-              aria-describedby={errors.email ? "email-error" : undefined}
-            />
-            {errors.email && (
-              <span id="email-error" className="error-text" role="alert">
-                {errors.email}
-              </span>
-            )}
+            <div className="email-input-wrapper">
+              <input
+                className="form-input"
+                type="email"
+                placeholder="Email Address"
+                name="email"
+                value={email}
+                onChange={(e) => updateField('email', e.target.value)}
+                disabled={isLoading}
+                autoComplete="email"
+                aria-describedby={errors.email ? "email-error" : undefined}
+                style={{ paddingRight: '2.5rem' }}
+              />
+              {getEmailStatusIcon()}
+            </div>
+            {getEmailStatusText()}
           </div>
 
           {/* Gender Field */}
@@ -317,19 +454,33 @@ export default function Registration() {
             </select>
           </div>
 
-          {/* Password Fields */}
+          {/* Password Field */}
           <div className={getFieldClassName('password')}>
-            <input
-              className="form-input"
-              type="password"
-              placeholder="Create Password"
-              name="password"
-              value={password}
-              onChange={(e) => updateField('password', e.target.value)}
-              disabled={isLoading}
-              autoComplete="new-password"
-              aria-describedby={errors.password ? "password-error" : undefined}
-            />
+            <div className="password-input-wrapper">
+              <input
+                className="form-input"
+                type={showPassword ? "text" : "password"}
+                placeholder="Create Password"
+                name="password"
+                value={password}
+                onChange={(e) => updateField('password', e.target.value)}
+                disabled={isLoading}
+                autoComplete="new-password"
+                aria-describedby={errors.password ? "password-error" : undefined}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={togglePasswordVisibility}
+                disabled={isLoading}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                <FontAwesomeIcon 
+                  icon={showPassword ? faEyeSlash : faEye} 
+                  className="password-toggle-icon"
+                />
+              </button>
+            </div>
             {errors.password && (
               <span id="password-error" className="error-text" role="alert">
                 {errors.password}
@@ -337,18 +488,33 @@ export default function Registration() {
             )}
           </div>
 
+          {/* Confirm Password Field */}
           <div className={getFieldClassName('password_confirmation')}>
-            <input
-              className="form-input"
-              type="password"
-              placeholder="Confirm Password"
-              name="password_confirmation"
-              value={password_confirmation}
-              onChange={(e) => updateField('password_confirmation', e.target.value)}
-              disabled={isLoading}
-              autoComplete="new-password"
-              aria-describedby={errors.password_confirmation ? "password-confirm-error" : undefined}
-            />
+            <div className="password-input-wrapper">
+              <input
+                className="form-input"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm Password"
+                name="password_confirmation"
+                value={password_confirmation}
+                onChange={(e) => updateField('password_confirmation', e.target.value)}
+                disabled={isLoading}
+                autoComplete="new-password"
+                aria-describedby={errors.password_confirmation ? "password-confirm-error" : undefined}
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={toggleConfirmPasswordVisibility}
+                disabled={isLoading}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                <FontAwesomeIcon 
+                  icon={showConfirmPassword ? faEyeSlash : faEye} 
+                  className="password-toggle-icon"
+                />
+              </button>
+            </div>
             {errors.password_confirmation && (
               <span id="password-confirm-error" className="error-text" role="alert">
                 {errors.password_confirmation}
@@ -360,7 +526,7 @@ export default function Registration() {
           <button
             type="submit"
             className={`register-button ${isLoading ? 'loading' : ''}`}
-            disabled={isLoading}
+            disabled={isLoading || (email && !emailVerified && !checkingEmail)}
           >
             {isLoading ? (
               <>

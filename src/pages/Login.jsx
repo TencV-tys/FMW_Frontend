@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faDoorOpen, faSpinner, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import NavAuth from "../components/NavAuth";
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './styles/Login.css';
@@ -12,7 +12,8 @@ const useLoginForm = () => {
     email: '',
     password: '',
     isLoading: false,
-    errors: {}
+    errors: {},
+    showPassword: false // Add password visibility state
   });
 
   const updateField = (field, value) => {
@@ -31,11 +32,16 @@ const useLoginForm = () => {
     setState(prev => ({ ...prev, isLoading }));
   };
 
+  const togglePasswordVisibility = () => {
+    setState(prev => ({ ...prev, showPassword: !prev.showPassword }));
+  };
+
   return {
     ...state,
     updateField,
     setErrors,
-    setLoading
+    setLoading,
+    togglePasswordVisibility
   };
 };
 
@@ -75,7 +81,18 @@ const validationService = {
 };
 
 export default function Login() {
-  const { email, password, isLoading, errors, updateField, setErrors, setLoading } = useLoginForm();
+  const { 
+    email, 
+    password, 
+    isLoading, 
+    errors, 
+    showPassword,
+    updateField, 
+    setErrors, 
+    setLoading,
+    togglePasswordVisibility 
+  } = useLoginForm();
+  
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -213,17 +230,31 @@ export default function Login() {
               )}
             </div>
 
-            <div className={`input-group ${errors.password ? 'has-error' : ''}`}>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => updateField('password', e.target.value)}
-                onKeyPress={handleKeyPress}
-                disabled={isLoading}
-                autoComplete="current-password"
-                aria-describedby={errors.password ? "password-error" : undefined}
-              />
+            <div className={`input-group password-input-group ${errors.password ? 'has-error' : ''}`}>
+              <div className="password-input-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => updateField('password', e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+                  autoComplete="current-password"
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={togglePasswordVisibility}
+                  disabled={isLoading}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  <FontAwesomeIcon 
+                    icon={showPassword ? faEyeSlash : faEye} 
+                    className="password-toggle-icon"
+                  />
+                </button>
+              </div>
               {errors.password && (
                 <span id="password-error" className="error-text" role="alert">
                   {errors.password}
