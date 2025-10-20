@@ -1,6 +1,6 @@
 // components/UserDashboardNav.jsx - Updated version
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // Add useLocation
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, 
@@ -24,6 +24,7 @@ export default function UserDashboardNav() {
   const [notificationCount, setNotificationCount] = useState(0);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation(); // Get current location
 
   // 🎯 Fetch user data
   useEffect(() => {
@@ -92,6 +93,14 @@ export default function UserDashboardNav() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // 🎯 Check if a link is active
+  const isActiveLink = (path) => {
+    if (path === '/user') {
+      return location.pathname === '/user';
+    }
+    return location.pathname.startsWith(path);
+  };
+
   // 🎯 Get user profile image
   const getUserImage = () => {
     if (user?.profile_photo) {
@@ -126,21 +135,30 @@ export default function UserDashboardNav() {
           
           <div className='nav-links-group'>
             <div className='user-link-container'>
-              <Link to='/user' className='user-nav-link'>
+              <Link 
+                to='/user' 
+                className={`user-nav-link ${isActiveLink('/user') ? 'active' : ''}`}
+              >
                 <FontAwesomeIcon icon={faBullhorn} />
                 <span>Bulletin Board</span>
               </Link>
             </div>
             
             <div className='user-link-container'>
-              <Link to='/user/myposts' className='user-nav-link'>
+              <Link 
+                to='/user/myposts' 
+                className={`user-nav-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
+              >
                 <FontAwesomeIcon icon={faFileAlt} />
                 <span>My Posts</span>
               </Link>
             </div>
             
             <div className='user-link-container'>
-              <Link to='/user/create' className='user-nav-link create-post-link'>
+              <Link 
+                to='/user/create' 
+                className={`user-nav-link create-post-link ${isActiveLink('/user/create') ? 'active' : ''}`}
+              >
                 <FontAwesomeIcon icon={faPlus} />
                 <span>Create Post</span>
               </Link>
@@ -154,7 +172,7 @@ export default function UserDashboardNav() {
           <div className="notification-bell-container">
             <Link 
               to="/user/user-notification" 
-              className="notification-bell"
+              className={`notification-bell ${isActiveLink('/user/user-notification') ? 'active' : ''}`}
               title="Notifications"
             >
               <FontAwesomeIcon icon={faBell} />
@@ -219,7 +237,7 @@ export default function UserDashboardNav() {
               <div className='dropdown-link-container'>
                 <Link 
                   to='/user/profile' 
-                  className='dropdown-link'
+                  className={`dropdown-link ${isActiveLink('/user/profile') ? 'active' : ''}`}
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faUser} />
@@ -230,7 +248,7 @@ export default function UserDashboardNav() {
               <div className='dropdown-link-container'>
                 <Link 
                   to='/user/myposts' 
-                  className='dropdown-link'
+                  className={`dropdown-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faFileAlt} />
@@ -241,7 +259,7 @@ export default function UserDashboardNav() {
               <div className='dropdown-link-container'>
                 <Link 
                   to='/user/my-reports' 
-                  className='dropdown-link'
+                  className={`dropdown-link ${isActiveLink('/user/my-reports') ? 'active' : ''}`}
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faFlag} />
@@ -252,7 +270,7 @@ export default function UserDashboardNav() {
               <div className='dropdown-link-container'>
                 <Link 
                   to='/user/user-notification' 
-                  className='dropdown-link notification-dropdown-link'
+                  className={`dropdown-link notification-dropdown-link ${isActiveLink('/user/user-notification') ? 'active' : ''}`}
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faBell} />

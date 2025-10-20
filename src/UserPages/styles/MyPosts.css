@@ -323,7 +323,78 @@
 .create-first-post-btn:hover {
     background: #654321;
 }
+/* Add these styles to your existing MyPosts.css */
 
+.mypost-actions{
+    display: flex;
+    gap: 12px;
+}
+
+.resolve-btn, .edit-btn, .mypost-delete-btn {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resolve-btn {
+    background: #22c55e;
+    color: white;
+}
+
+.resolve-btn:hover {
+    background: #16a34a;
+    transform: scale(1.05);
+}
+
+.edit-btn {
+    background: #3b82f6;
+    color: white;
+}
+
+.edit-btn:hover:not(:disabled) {
+    background: #2563eb;
+    transform: scale(1.05);
+}
+
+.edit-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.mypost-delete-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.mypost-delete-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+/* Add this to your existing MyPosts.css */
+
+.resolve-btn {
+    background: #22c55e;
+    color: white;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resolve-btn:hover {
+    background: #16a34a;
+    transform: scale(1.05);
+}
 /* 🎯 Responsive Design */
 @media (max-width: 768px) {
     .myposts-content {

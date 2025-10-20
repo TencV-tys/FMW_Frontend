@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faTrash, faCheckCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import UserNav from '../UserComponents/UserDashboardNav'
 import Logo1 from '../assets/Logo.jpg'
@@ -48,38 +48,73 @@ export default function MyPosts() {
     }
   };
 
-  //Handle post deletion
-
-const handleDeletePost = async (postId) => {
-  if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-    return;
-  }
-
-  try {
-    const response = await fetch(`http://localhost:8000/api/posts/${postId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      toast.success('Post deleted successfully');
-      // Remove the post from local state
-      setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
-    } else {
-      throw new Error(result.error || 'Failed to delete post');
+  // Handle post deletion
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
     }
-  } catch (err) {
-    console.error('Error deleting post:', err);
-    toast.error('Failed to delete post');
-  }
-};
 
+    try {
+      const response = await fetch(`http://localhost:8000/api/posts/${postId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Post deleted successfully');
+        // Remove the post from local state
+        setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+      } else {
+        throw new Error(result.error || 'Failed to delete post');
+      }
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      toast.error('Failed to delete post');
+    }
+  };
 
   // Handle post editing
   const handleEditPost = (postId) => {
     nav(`/user/edit-post/${postId}`);
+  };
+
+  // Handle marking post as resolved - FIXED
+  const handleMarkAsResolved = async (postId) => {
+    if (!window.confirm('Are you sure you want to mark this post as resolved? This will close the post.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/posts/${postId}/status`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'Resolved'
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Post marked as resolved successfully');
+        // Update the post status in local state
+        setPosts(prevPosts => 
+          prevPosts.map(post => 
+            post.id === postId ? { ...post, status: 'Resolved' } : post
+          )
+        );
+      } else {
+        throw new Error(result.error || 'Failed to update post status');
+      }
+    } catch (err) {
+      console.error('Error updating post status:', err);
+      toast.error(err.message || 'Failed to mark post as resolved');
+    }
   };
 
   const formatDate = (dateString) => {
@@ -103,7 +138,7 @@ const handleDeletePost = async (postId) => {
     return statusConfig[status] || { class: 'status-default', text: status };
   };
 
-  //  Loading state
+  // Loading state
   if (loading) {
     return (
       <div className="myposts-container">
@@ -175,6 +210,18 @@ const handleDeletePost = async (postId) => {
                           </div>
                           <h1>{post.type} {post.category_name}</h1>
                           <div className='mypost-actions'>
+                            {/* Mark as Resolved Button */}
+                            {post.status === 'Active' && (
+                              <button
+                                onClick={() => handleMarkAsResolved(post.id)}
+                                className="resolve-btn"
+                                title="Mark as resolved"
+                              >
+                                <FontAwesomeIcon icon={faCheckCircle} />
+                              </button>
+                            )}
+                            
+                            {/* Edit Button */}
                             <button
                               onClick={() => handleEditPost(post.id)}
                               className="edit-btn"
@@ -183,6 +230,8 @@ const handleDeletePost = async (postId) => {
                             >
                               <FontAwesomeIcon icon={faEdit} />
                             </button>
+                            
+                            {/* Delete Button */}
                             <button
                               onClick={() => handleDeletePost(post.id)}
                               className='mypost-delete-btn'
