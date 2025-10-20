@@ -7,7 +7,9 @@ import {
   faPhone, 
   faTag,
   faFlag,
-  faFilter
+  faFilter,
+  faTimes,
+  faExpand
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav.jsx';
 import ReportModal from '../UserComponents/ReportModal';
@@ -23,17 +25,16 @@ export default function BulletinBoard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all'); // all, lost, found
-  const [filterCategory, setFilterCategory] = useState('all'); // all or category_id
-  const [filterBarangay, setFilterBarangay] = useState('all'); // all or barangay_id
+  const [filterType, setFilterType] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterBarangay, setFilterBarangay] = useState('all');
+  const [selectedPost, setSelectedPost] = useState(null);
 
-  // Fetch all active posts and form data
   useEffect(() => {
     fetchPosts();
     fetchFormData();
   }, []);
 
-  // Filter posts when search term or filters change
   useEffect(() => {
     filterPosts();
   }, [posts, searchTerm, filterType, filterCategory, filterBarangay]);
@@ -90,7 +91,6 @@ export default function BulletinBoard() {
   const filterPosts = () => {
     let filtered = posts;
 
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(post => 
         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,17 +102,14 @@ export default function BulletinBoard() {
       );
     }
 
-    // Filter by type (Lost/Found)
     if (filterType !== 'all') {
       filtered = filtered.filter(post => post.type === filterType);
     }
 
-    // Filter by category
     if (filterCategory !== 'all') {
       filtered = filtered.filter(post => post.category_id.toString() === filterCategory);
     }
 
-    // Filter by barangay
     if (filterBarangay !== 'all') {
       filtered = filtered.filter(post => post.barangay_id.toString() === filterBarangay);
     }
@@ -120,7 +117,6 @@ export default function BulletinBoard() {
     setFilteredPosts(filtered);
   };
 
-  // Reset all filters
   const resetFilters = () => {
     setSearchTerm('');
     setFilterType('all');
@@ -128,7 +124,6 @@ export default function BulletinBoard() {
     setFilterBarangay('all');
   };
 
-  // Check if any filter is active
   const isFilterActive = () => {
     return searchTerm !== '' || 
            filterType !== 'all' || 
@@ -136,7 +131,6 @@ export default function BulletinBoard() {
            filterBarangay !== 'all';
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -146,7 +140,6 @@ export default function BulletinBoard() {
     });
   };
 
-  // Get user profile image or fallback
   const getUserImage = (user) => {
     if (user.user_photo) {
       return `http://localhost:8000/uploads/${user.user_photo}`;
@@ -154,7 +147,8 @@ export default function BulletinBoard() {
     return null;
   };
 
-  const openReportModal = (post) => {
+  const openReportModal = (post, e) => {
+    if (e) e.stopPropagation();
     setReportModal({ isOpen: true, post });
   };
 
@@ -162,7 +156,18 @@ export default function BulletinBoard() {
     setReportModal({ isOpen: false, post: null });
   };
 
-  // Loading state
+  const openPostModal = (post) => {
+    setSelectedPost(post);
+  };
+
+  const closePostModal = () => {
+    setSelectedPost(null);
+  };
+
+  const handleModalClick = (e) => {
+    e.stopPropagation();
+  };
+
   if (loading) {
     return (
       <div className="bulletin-page-container">
@@ -181,7 +186,6 @@ export default function BulletinBoard() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="bulletin-page-container">
@@ -338,7 +342,11 @@ export default function BulletinBoard() {
               ) : (
                 <div className='lost-found-container'>
                   {filteredPosts.map((post) => (
-                    <div key={post.id} className='lost-found-cards'>
+                    <div 
+                      key={post.id} 
+                      className='lost-found-cards post-card'
+                      onClick={() => openPostModal(post)}
+                    >
                       <span className='pin'></span>
                       
                       {/* Post Header with User Info */}
@@ -371,7 +379,7 @@ export default function BulletinBoard() {
                           </div>
                           <button 
                             className="report-btn"
-                            onClick={() => openReportModal(post)}
+                            onClick={(e) => openReportModal(post, e)}
                             title="Report this post"
                           >
                             <FontAwesomeIcon icon={faFlag} />
@@ -419,6 +427,12 @@ export default function BulletinBoard() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Expand Overlay */}
+                      <div className="expand-overlay">
+                        <FontAwesomeIcon icon={faExpand} className="expand-icon" />
+                        <span>Click to view details</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -431,6 +445,105 @@ export default function BulletinBoard() {
               onClose={closeReportModal}
               post={reportModal.post}
             />
+
+            {/* Post Detail Modal */}
+            {selectedPost && (
+              <div className="post-modal-overlay" onClick={closePostModal}>
+                <div className="post-modal-content" onClick={handleModalClick}>
+                  {/* Fixed Header Layout */}
+                  <div className="post-modal-header">
+                    <div className="modal-user-info">
+                      <div className="user-avatar">
+                        {getUserImage(selectedPost) ? (
+                          <img 
+                            src={getUserImage(selectedPost)} 
+                            alt={`${selectedPost.first_name} ${selectedPost.last_name}`}
+                          />
+                        ) : (
+                          <FontAwesomeIcon icon={faUserCircle} className="avatar-fallback" />
+                        )}
+                      </div>
+                      <div className="modal-user-details">
+                        <span className="user-name">
+                          {selectedPost.first_name} {selectedPost.last_name}
+                        </span>
+                        <span className="post-time">
+                          {formatDate(selectedPost.created_at)}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="modal-actions-container">
+                      <div className={`post-type-badge ${selectedPost.type.toLowerCase()}`}>
+                        {selectedPost.type}
+                      </div>
+                      <button 
+                        className="modal-report-btn"
+                        onClick={() => {
+                          closePostModal();
+                          openReportModal(selectedPost);
+                        }}
+                        title="Report this post"
+                      >
+                        <FontAwesomeIcon icon={faFlag} />
+                      </button>
+                    </div>
+
+                    <button className="post-modal-close" onClick={closePostModal}>
+                      <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                  </div>
+
+                  <div className="post-modal-body">
+                    <div className="post-modal-image">
+                      <img 
+                        src={selectedPost.photo ? `http://localhost:8000/uploads/${selectedPost.photo}` : OptionalPhoto} 
+                        alt={selectedPost.title}
+                        onError={(e) => {
+                          e.target.src = OptionalPhoto;
+                        }}
+                      />
+                    </div>
+                    
+                    <div className="post-modal-details">
+                      <h2 className='lost-found-category'>
+                        <FontAwesomeIcon icon={faTag} /> {selectedPost.category_name}
+                      </h2>
+                      
+                      <h1 className="post-modal-title">{selectedPost.title}</h1>
+                      <p className="post-modal-description">{selectedPost.description}</p>
+                      
+                      <div className="post-modal-meta">
+                        <div className="meta-section">
+                          <h4>Location Information</h4>
+                          <div className="meta-item location">
+                            <FontAwesomeIcon icon={faMapMarkerAlt} />
+                            <span><strong>Barangay:</strong> {selectedPost.barangay_name}</span>
+                          </div>
+                        </div>
+                        
+                        {selectedPost.color && (
+                          <div className="meta-section">
+                            <h4>Item Details</h4>
+                            <div className="meta-item color">
+                              <strong>Color:</strong> {selectedPost.color}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="meta-section">
+                          <h4>Contact Information</h4>
+                          <div className="meta-item contact">
+                            <FontAwesomeIcon icon={faPhone} />
+                            <span><strong>Contact:</strong> {selectedPost.contact_info}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
