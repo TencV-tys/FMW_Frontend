@@ -13,8 +13,49 @@ import {
 import './AdminStyles/AdminNav.css';
 import Logo from '../assets/Admin.png';
 import LogoutButton from '../components/LogoutButton';
+import { useState, useEffect } from 'react';
 
 export default function AdminNav({isOpen, setIsOpen}){
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    fetchNotificationCount();
+  }, []);
+
+  const fetchNotificationCount = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/admin/notifications/stats', {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotificationCount(data.stats?.unread || 0);
+      } else {
+        // Fallback to user notifications if admin endpoint fails
+        fetchUserNotificationCount();
+      }
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+      // Fallback to user notifications
+      fetchUserNotificationCount();
+    }
+  };
+
+  const fetchUserNotificationCount = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/notifications/unread-count', {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotificationCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching user notification count:', error);
+    }
+  };
  
 return(
     <header className={`admin-nav-container ${isOpen ? "open" : "closed"}`}>
@@ -68,12 +109,21 @@ return(
                 {isOpen && "Reports"}
               </div>
             </Link>
+            
+            {/* 🎯 Notifications with Count */}
             <Link to='/admin/notifications' className='admin-links'>
-          <div className='nav-link'>
-          <FontAwesomeIcon icon={faBell} className='nav-icons'/>
-          {isOpen && "Notifications"}
-          </div>
-          </Link>
+              <div className='nav-link'>
+                <div className='notification-nav-item'>
+                  <FontAwesomeIcon icon={faBell} className='nav-icons'/>
+                  {isOpen && "Notifications"}
+                  {notificationCount > 0 && (
+                    <span className='nav-notif-badge'>
+                      {notificationCount > 99 ? '99+' : notificationCount}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Link>
           </div>
 
           {/* Logout Button - Fixed Integration */}

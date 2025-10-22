@@ -122,8 +122,38 @@ export default function Dashboard() {
     navigate('/admin/notifications');
   };
 
-  const StatCard = ({ icon, value, label, color, change }) => (
-    <div className='stat-card'>
+  // 🎯 Handle stat card clicks
+  const handleStatClick = (type) => {
+    switch(type) {
+      case 'users':
+        navigate('/admin/manage-users');
+        break;
+      case 'posts':
+        navigate('/admin/manage-posts');
+        break;
+      case 'lost':
+        navigate('/admin/manage-posts?type=lost');
+        break;
+      case 'found':
+        navigate('/admin/manage-posts?type=found');
+        break;
+      case 'active':
+        navigate('/admin/manage-posts?status=active');
+        break;
+      case 'resolved':
+        navigate('/admin/manage-posts?status=resolved');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const StatCard = ({ icon, value, label, color, change, type }) => (
+    <div 
+      className='stat-card clickable-stat' 
+      onClick={() => handleStatClick(type)}
+      title={`Click to view ${label}`}
+    >
       <div className='stat-content'>
         <div className='stat-icon' style={{ backgroundColor: color }}>
           <FontAwesomeIcon icon={icon} />
@@ -165,7 +195,7 @@ export default function Dashboard() {
           </div>
           <div className='dashboard-header-right'>
             <button 
-              className='notification-btn'
+              className={`notification-btn ${notificationCount > 0 ? 'has-notifications' : ''}`}
               onClick={handleNotificationClick}
               title="View Notifications"
             >
@@ -187,36 +217,42 @@ export default function Dashboard() {
             value={stats.totalUsers} 
             label="Total Users" 
             color="#3b82f6"
+            type="users"
           />
           <StatCard 
             icon={faNewspaper} 
             value={stats.totalPosts} 
             label="Total Posts" 
             color="#8b5cf6"
+            type="posts"
           />
           <StatCard 
             icon={faExclamationTriangle} 
             value={stats.lostPosts} 
             label="Lost Items" 
             color="#ef4444"
+            type="lost"
           />
           <StatCard 
             icon={faSearch} 
             value={stats.foundPosts} 
             label="Found Items" 
             color="#10b981"
+            type="found"
           />
           <StatCard 
             icon={faEye} 
             value={stats.activePosts} 
             label="Active Posts" 
             color="#f59e0b"
+            type="active"
           />
           <StatCard 
             icon={faCheckCircle} 
             value={stats.resolvedPosts} 
             label="Resolved Cases" 
             color="#06b6d4"
+            type="resolved"
           />
         </section>
 

@@ -146,6 +146,7 @@
     border-radius: 6px;
     transition: all 0.3s ease;
     margin: 0 0.5rem;
+    position: relative;
 }
 
 .admin-links:hover {
@@ -200,6 +201,7 @@
 .admin-nav-container.closed .admin-links {
     justify-content: center;
     padding: 0.75rem;
+    margin: 0 0.5rem;
 }
 
 .admin-nav-container.closed .nav-link span {
@@ -216,7 +218,100 @@
     border-left: 3px solid white;
 }
 
-/* Responsive Design - FIXED */
+/* 🎯 Notification Navigation Item */
+.notification-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.nav-notif-badge {
+    position: absolute;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    padding: 0 4px;
+    border: 2px solid #FF8904;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: navPulse 2s infinite;
+    z-index: 10;
+}
+
+@keyframes navPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Open state - Notification badge positioned to the right */
+.admin-nav-container.open .notification-nav-item {
+    padding-right: 20px;
+}
+
+.admin-nav-container.open .nav-notif-badge {
+    top: -10px;
+    left: 120px;
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+}
+
+/* Closed state - Notification badge positioned at top-right corner */
+.admin-nav-container.closed .notification-nav-item {
+    justify-content: center;
+    position: relative;
+}
+
+.admin-nav-container.closed .nav-notif-badge {
+    top: -10px;
+    left: 10px;
+    min-width: 16px;
+    height: 16px;
+    font-size: 0.6rem;
+    border-width: 1px;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure notification badge stays visible in closed state */
+.admin-nav-container.closed .admin-links .nav-notif-badge {
+    display: flex !important;
+}
+
+/* Hover effects for notification item */
+.admin-links:hover .nav-notif-badge {
+    background: #dc2626;
+    transform: scale(1.1);
+    transition: all 0.3s ease;
+}
+
+/* Ensure consistent icon alignment in closed state */
+.admin-nav-container.closed .nav-link {
+    justify-content: center;
+    position: relative;
+}
+
+/* Make sure the notification link has proper positioning in closed state */
+.admin-nav-container.closed .admin-links[href*="notifications"] {
+    position: relative;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .admin-nav-container.open {
         width: 280px;
@@ -255,6 +350,15 @@
     .nav-link {
         font-size: 0.85rem;
     }
+
+    /* Mobile closed state notification badge */
+    .admin-nav-container.closed .nav-notif-badge {
+        top: 4px;
+        right: 6px;
+        min-width: 15px;
+        height: 15px;
+        font-size: 0.55rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -274,7 +378,6 @@
         visibility: hidden;
     }
     
-    /* Remove the fixed toggle button in closed state */
     .admin-nav-container.closed .toggle {
         position: static;
         background-color: transparent;
@@ -286,7 +389,6 @@
         margin: 0;
     }
     
-    /* Add overlay when sidebar is open */
     .admin-nav-container.open::before {
         content: '';
         position: fixed;
@@ -299,7 +401,7 @@
     }
 }
 
-/* Smooth transitions for all interactive elements */
+/* Smooth transitions */
 .admin-nav-container {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -309,17 +411,13 @@
 }
 
 /* Focus states for accessibility */
-.admin-links:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.5);
-    outline-offset: 2px;
-}
-
+.admin-links:focus,
 .toggle-icon:focus {
     outline: 2px solid rgba(255, 255, 255, 0.5);
     outline-offset: 2px;
 }
 
-/* Scrollbar styling for the navigation */
+/* Scrollbar styling */
 .admin-link-container::-webkit-scrollbar {
     width: 4px;
 }
