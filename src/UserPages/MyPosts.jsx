@@ -316,23 +316,25 @@ export default function MyPosts() {
                                 <strong>Location:</strong> {post.barangay_name}
                               </div>
                               
-                              {/* 🎯 Contact with Read More */}
+                              {/* 🎯 Contact with Read More - UPDATED */}
                               <div className="meta-item">
                                 <strong>Contact:</strong>
-                                <div className={`contact-text ${expandedContacts[post.id] ? 'expanded' : ''}`}>
-                                  {expandedContacts[post.id] 
-                                    ? post.contact_info 
-                                    : getTruncatedContact(post.contact_info)
-                                  }
+                                <div className="contact-container">
+                                  <div className={`contact-text ${expandedContacts[post.id] ? 'expanded' : ''}`}>
+                                    {expandedContacts[post.id] 
+                                      ? post.contact_info 
+                                      : getTruncatedContact(post.contact_info)
+                                    }
+                                  </div>
+                                  {needsContactReadMore(post.contact_info) && (
+                                    <button 
+                                      className="contact-read-more-btn"
+                                      onClick={(e) => toggleContact(post.id, e)}
+                                    >
+                                      {expandedContacts[post.id] ? 'Read Less' : 'Read More'}
+                                    </button>
+                                  )}
                                 </div>
-                                {needsContactReadMore(post.contact_info) && (
-                                  <button 
-                                    className="contact-read-more-btn"
-                                    onClick={(e) => toggleContact(post.id, e)}
-                                  >
-                                    {expandedContacts[post.id] ? 'Read Less' : 'Read More'}
-                                  </button>
-                                )}
                               </div>
                               
                               {post.color && (

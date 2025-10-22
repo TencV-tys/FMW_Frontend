@@ -183,7 +183,8 @@
     align-items: flex-start;
     flex: 1;
     gap: 12px;
-    max-width: 100%;
+    max-width: 50%;
+    min-width: 0;
 }
 
 .post-title {
@@ -194,6 +195,7 @@
     line-height: 1.3;
     word-wrap: break-word;
     word-break: break-word;
+    width: 100%;
 }
 
 /* 🎯 Post Description with proper line breaking */
@@ -201,13 +203,13 @@
     color: #666;
     line-height: 1.5;
     margin: 0 0 12px 0;
-    font-size: 1rem;
+    font-size: 0.9rem;
     position: relative;
     overflow: hidden;
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
-    max-width: 100%;
+    width: 100%;
 }
 
 /* 🎯 Read More Functionality for MyPosts */
@@ -217,6 +219,7 @@
     overflow: hidden;
     max-height: 4.5em;
     position: relative;
+    width: 100%;
 }
 
 .description-text.expanded {
@@ -251,18 +254,29 @@
 .meta-item {
     padding: 6px 0;
     border-bottom: 1px solid rgba(139, 90, 43, 0.1);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: #5D4037;
     word-wrap: break-word;
-    word-break: break-word;
-    max-width: 100%;
+    word-break: normal; /* Changed from break-word to normal */
+    width: 100%;
+    line-height: 1.4;
 }
 
 .meta-item strong {
     color: #8B5A2B;
+    font-weight: 600;
+    white-space: nowrap; /* Prevent breaking of labels like "Contact:" */
 }
 
-/* 🎯 Contact Info with Read More */
+/* 🎯 Contact Info with Read More - FIXED TEXT BREAKING */
+.contact-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    margin-top: 4px;
+}
+
 .contact-text {
     display: block;
     line-height: 1.4;
@@ -270,7 +284,10 @@
     max-height: 2.8em;
     position: relative;
     word-wrap: break-word;
-    word-break: break-word;
+    word-break: break-word; /* Allow breaking long words */
+    overflow-wrap: break-word; /* Additional breaking support */
+    color: #5D4037;
+    width: 100%;
 }
 
 .contact-text.expanded {
@@ -288,6 +305,7 @@
     margin-top: 2px;
     text-align: left;
     transition: color 0.2s ease;
+    align-self: flex-start;
 }
 
 .contact-read-more-btn:hover {
@@ -296,8 +314,8 @@
 }
 
 .mypost-image{
-    width: 250px;
-    height: 200px;
+    width: 320px;
+    height: 240px;
     border-radius: 6px;
     overflow: hidden;
     flex-shrink: 0;
@@ -437,12 +455,13 @@
         flex-direction: column;
     }
     
-    .mypost-details,
-    .mypost-image {
+    .mypost-details {
         width: 100%;
+        max-width: 100%;
     }
     
     .mypost-image {
+        width: 100%;
         height: 250px;
         order: -1;
     }
