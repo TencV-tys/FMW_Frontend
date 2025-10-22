@@ -10,7 +10,7 @@ export default function EditPost() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const nav = useNavigate();
-  const { id } = useParams(); // Get post ID from URL
+  const { id } = useParams();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -21,16 +21,22 @@ export default function EditPost() {
     description: '',
     contact_info: '',
     photo: null,
-    currentPhoto: null // For displaying current image
+    currentPhoto: null
   });
 
-  // 🎯 Fetch post data and form data
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [charCount, setCharCount] = useState({
+    description: 0,
+    contact_info: 0
+  });
+
+  const MAX_CHARS = 200;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setFetching(true);
         
-        // Fetch post data
         const postResponse = await fetch(`http://localhost:8000/api/posts/${id}`, {
           credentials: 'include'
         });
@@ -45,7 +51,6 @@ export default function EditPost() {
           throw new Error(postResult.error || 'Failed to load post');
         }
 
-        // Fetch categories and barangays
         const formResponse = await fetch('http://localhost:8000/api/posts/form-data', {
           credentials: 'include'
         });
@@ -61,7 +66,6 @@ export default function EditPost() {
           setBarangays(formResult.barangays);
         }
 
-        // 🎯 Populate form with existing post data
         const post = postResult.post;
         setFormData({
           title: post.title || '',
@@ -71,14 +75,19 @@ export default function EditPost() {
           color: post.color || '',
           description: post.description || '',
           contact_info: post.contact_info || '',
-          photo: null, // New photo file
-          currentPhoto: post.photo // Current photo filename
+          photo: null,
+          currentPhoto: post.photo
+        });
+
+        setCharCount({
+          description: post.description?.length || 0,
+          contact_info: post.contact_info?.length || 0
         });
 
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error('Failed to load post data');
-        nav('/user/myposts'); // Redirect back to my posts
+        nav('/user/myposts');
       } finally {
         setFetching(false);
       }
@@ -89,6 +98,14 @@ export default function EditPost() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    if (name === 'description' || name === 'contact_info') {
+      setCharCount(prev => ({
+        ...prev,
+        [name]: value.length
+      }));
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -96,18 +113,48 @@ export default function EditPost() {
   };
 
   const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        photo: file
+      }));
+
+      // Create preview for new photo
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
     setFormData(prev => ({
       ...prev,
-      photo: e.target.files[0]
+      currentPhoto: null,
+      photo: null
     }));
+    setPhotoPreview(null);
+    // Reset file input
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) fileInput.value = '';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.title || !formData.category_id || !formData.barangay_id || !formData.description || !formData.contact_info) {
       toast.error('Please fill in all required fields', {
+        position: 'top-center',
+        autoClose: 1000
+      });
+      return;
+    }
+
+    // Validate character limits
+    if (formData.description.length > MAX_CHARS || formData.contact_info.length > MAX_CHARS) {
+      toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`, {
         position: 'top-center',
         autoClose: 1000
       });
@@ -130,6 +177,11 @@ export default function EditPost() {
         formDataToSend.append('photo', formData.photo);
       }
 
+      // If current photo was removed, send a flag
+      if (!formData.currentPhoto && !formData.photo) {
+        formDataToSend.append('remove_photo', 'true');
+      }
+
       const res = await fetch(`http://localhost:8000/api/posts/${id}`, {
         method: 'PUT',
         body: formDataToSend,
@@ -143,7 +195,6 @@ export default function EditPost() {
           position: 'top-center',
           autoClose: 1000
         });
-        // Redirect to my posts
         nav('/user/myposts');
       } else {
         toast.error('Error updating post: ' + (result.error || 'Unknown error'), {
@@ -162,16 +213,12 @@ export default function EditPost() {
     }
   };
 
-  // 🎯 Remove current photo
-  const handleRemovePhoto = () => {
-    setFormData(prev => ({
-      ...prev,
-      currentPhoto: null,
-      photo: null
-    }));
+  const getCharCounterClass = (count) => {
+    if (count > MAX_CHARS) return 'error';
+    if (count > MAX_CHARS * 0.8) return 'warning';
+    return '';
   };
 
-  // 🎯 Loading state while fetching data
   if (fetching) {
     return (
       <div className="create-container">
@@ -249,8 +296,12 @@ export default function EditPost() {
                 placeholder='Additional details (description, identifying features, etc.) *'
                 value={formData.description}
                 onChange={handleChange}
+                maxLength={MAX_CHARS}
                 required
               />
+              <div className={`char-counter ${getCharCounterClass(charCount.description)}`}>
+                {charCount.description}/{MAX_CHARS}
+              </div>
             </div>
 
             <div className='create-textarea-group'>
@@ -260,18 +311,23 @@ export default function EditPost() {
                 placeholder='How can people reach you? (e.g., Call me: 09877666677, Email: example@example.com) *'
                 value={formData.contact_info}
                 onChange={handleChange}
+                maxLength={MAX_CHARS}
                 required
               />
+              <div className={`char-counter ${getCharCounterClass(charCount.contact_info)}`}>
+                {charCount.contact_info}/{MAX_CHARS}
+              </div>
             </div>
 
-            {/* 🎯 Current Photo Display */}
-            {formData.currentPhoto && (
+            {/* Current Photo Display */}
+            {formData.currentPhoto && !photoPreview && (
               <div className="current-photo-container">
                 <label>Current Photo:</label>
                 <div className="current-photo">
                   <img
                     src={`http://localhost:8000/uploads/${formData.currentPhoto}`}
                     alt="Current"
+                    className="photo-preview"
                     onError={(e) => {
                       e.target.style.display = 'none';
                     }}
@@ -287,8 +343,29 @@ export default function EditPost() {
               </div>
             )}
 
+            {/* New Photo Preview */}
+            {photoPreview && (
+              <div className="current-photo-container">
+                <label>New Photo Preview:</label>
+                <div className="current-photo">
+                  <img
+                    src={photoPreview}
+                    alt="Preview"
+                    className="photo-preview"
+                  />
+                  <button
+                    type="button"
+                    className="remove-photo-btn"
+                    onClick={handleRemovePhoto}
+                  >
+                    Remove Photo
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className='image-uploader-container'>
-              <label>{formData.currentPhoto ? 'Change Photo (optional):' : 'Upload Photo (optional):'}</label>
+              <label>{formData.currentPhoto || photoPreview ? 'Change Photo (optional):' : 'Upload Photo (optional):'}</label>
               <input
                 type='file'
                 name='image'
