@@ -12,6 +12,7 @@ export default function MyPosts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [expandedContacts, setExpandedContacts] = useState({});
   const nav = useNavigate();
 
   useEffect(() => {
@@ -148,15 +149,35 @@ export default function MyPosts() {
     }));
   };
 
+  // 🎯 Toggle contact expansion
+  const toggleContact = (postId, e) => {
+    if (e) e.stopPropagation();
+    setExpandedContacts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
   // 🎯 Check if description needs "Read More"
   const needsReadMore = (description) => {
     return description.length > 120;
+  };
+
+  // 🎯 Check if contact needs "Read More"
+  const needsContactReadMore = (contact) => {
+    return contact.length > 50;
   };
 
   // 🎯 Get truncated description
   const getTruncatedDescription = (description) => {
     if (description.length <= 120) return description;
     return description.substring(0, 120) + '...';
+  };
+
+  // 🎯 Get truncated contact
+  const getTruncatedContact = (contact) => {
+    if (contact.length <= 50) return contact;
+    return contact.substring(0, 50) + '...';
   };
 
   // Loading state
@@ -294,9 +315,26 @@ export default function MyPosts() {
                               <div className="meta-item">
                                 <strong>Location:</strong> {post.barangay_name}
                               </div>
+                              
+                              {/* 🎯 Contact with Read More */}
                               <div className="meta-item">
-                                <strong>Contact:</strong> {post.contact_info}
+                                <strong>Contact:</strong>
+                                <div className={`contact-text ${expandedContacts[post.id] ? 'expanded' : ''}`}>
+                                  {expandedContacts[post.id] 
+                                    ? post.contact_info 
+                                    : getTruncatedContact(post.contact_info)
+                                  }
+                                </div>
+                                {needsContactReadMore(post.contact_info) && (
+                                  <button 
+                                    className="contact-read-more-btn"
+                                    onClick={(e) => toggleContact(post.id, e)}
+                                  >
+                                    {expandedContacts[post.id] ? 'Read Less' : 'Read More'}
+                                  </button>
+                                )}
                               </div>
+                              
                               {post.color && (
                                 <div className="meta-item">
                                   <strong>Color:</strong> {post.color}

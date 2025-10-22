@@ -55,6 +55,8 @@
   margin: 0;
   color: #e74c3c;
   font-size: 1.25rem;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .report-icon {
@@ -95,6 +97,8 @@
   color: #495057;
   font-size: 0.9rem;
   font-weight: 600;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .preview-content {
@@ -105,12 +109,18 @@
   color: #2c3e50;
   display: block;
   margin-bottom: 0.5rem;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .preview-description {
   color: #6c757d;
   margin: 0.5rem 0;
-  line-height: 1.4;
+  line-height: 1.5;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .preview-meta {
@@ -119,6 +129,12 @@
   font-size: 0.8rem;
   color: #6c757d;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.preview-meta span {
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .report-form {
@@ -140,6 +156,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .form-group label.required::after {
@@ -156,6 +175,8 @@
   font-size: 0.9rem;
   transition: border-color 0.2s ease;
   font-family: inherit;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .form-group select:focus,
@@ -168,6 +189,10 @@
 .form-group textarea {
   resize: vertical;
   min-height: 80px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .report-note {
@@ -180,11 +205,20 @@
   gap: 0.5rem;
   font-size: 0.85rem;
   color: #856404;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .report-note svg {
   margin-top: 0.1rem;
   flex-shrink: 0;
+}
+
+.report-note p {
+  margin: 0;
+  line-height: 1.5;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .modal-actions {
@@ -203,6 +237,9 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.9rem;
+  word-wrap: break-word;
+  word-break: break-word;
+  text-align: center;
 }
 
 .btn-cancel {
@@ -229,6 +266,62 @@
   cursor: not-allowed;
 }
 
+/* Add to existing ReportModal.css */
+
+.self-report-warning {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  padding: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: #721c24;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.self-report-warning svg {
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.self-report-warning strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.self-report-warning p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Disabled state styles */
+.form-group select:disabled,
+.form-group textarea:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-submit:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-submit:disabled:hover {
+  background-color: #6c757d;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .modal-overlay {
@@ -237,6 +330,7 @@
   
   .report-modal-content {
     margin: 0.5rem;
+    max-width: 95%;
   }
   
   .report-modal-header {
@@ -254,5 +348,40 @@
   .btn-cancel,
   .btn-submit {
     width: 100%;
+  }
+  
+  .preview-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-modal-content {
+    max-width: 100%;
+    margin: 0.25rem;
+  }
+  
+  .report-modal-header {
+    padding: 0.75rem;
+  }
+  
+  .report-modal-body {
+    padding: 0.75rem;
+  }
+  
+  .post-preview {
+    padding: 0.75rem;
+  }
+  
+  .form-group select,
+  .form-group textarea {
+    padding: 0.6rem;
+  }
+  
+  .btn-cancel,
+  .btn-submit {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
   }
 }

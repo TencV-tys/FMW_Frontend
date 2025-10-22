@@ -1,7 +1,6 @@
-// components/ReportModal.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faFlag, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faFlag, faExclamationTriangle, faUserSlash } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import './styles/ReportModal.css';
 
@@ -9,6 +8,8 @@ export default function ReportModal({ isOpen, onClose, post }) {
   const [reason, setReason] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isOwnPost, setIsOwnPost] = useState(false);
 
   const reportReasons = [
     'Inappropriate content',
@@ -19,9 +20,48 @@ export default function ReportModal({ isOpen, onClose, post }) {
     'Other'
   ];
 
+  // Fetch current user data to check if they're reporting their own post
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/user', {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          if (userData.success) {
+            setCurrentUser(userData.user);
+            // Check if the current user is the post owner
+            if (post && userData.user.id === post.user_id) {
+              setIsOwnPost(true);
+            } else {
+              setIsOwnPost(false);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+
+    if (isOpen && post) {
+      fetchCurrentUser();
+    }
+  }, [isOpen, post]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Prevent self-reporting
+    if (isOwnPost) {
+      toast.error('You cannot report your own post', {
+        position: 'top-center',
+        autoClose: 2000
+      });
+      return;
+    }
+
     if (!reason) {
       toast.error('Please select a reason for reporting', {
         position: 'top-center',
@@ -90,6 +130,17 @@ export default function ReportModal({ isOpen, onClose, post }) {
         </div>
 
         <div className="report-modal-body">
+          {/* Self-reporting warning */}
+          {isOwnPost && (
+            <div className="self-report-warning">
+              <FontAwesomeIcon icon={faUserSlash} />
+              <div>
+                <strong>Cannot Report Your Own Post</strong>
+                <p>You are the owner of this post. You cannot report your own content.</p>
+              </div>
+            </div>
+          )}
+
           {/* Post Preview */}
           <div className="post-preview">
             <h4>Post you're reporting:</h4>
@@ -119,6 +170,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 required
+                disabled={isOwnPost || loading}
               >
                 <option value="">Select a reason</option>
                 {reportReasons.map((reasonOption, index) => (
@@ -139,6 +191,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
                 onChange={(e) => setAdditionalInfo(e.target.value)}
                 placeholder="Please provide any additional details that might help us review this post..."
                 rows="4"
+                disabled={isOwnPost || loading}
               />
             </div>
 
@@ -159,9 +212,9 @@ export default function ReportModal({ isOpen, onClose, post }) {
               <button 
                 type="submit" 
                 className="btn-submit"
-                disabled={loading}
+                disabled={isOwnPost || loading || !reason}
               >
-                {loading ? 'Submitting...' : 'Submit Report'}
+                {loading ? 'Submitting...' : isOwnPost ? 'Cannot Report Own Post' : 'Submit Report'}
               </button>
             </div>
           </form>
