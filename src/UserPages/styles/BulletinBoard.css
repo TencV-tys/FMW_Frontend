@@ -208,6 +208,7 @@
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     transition: transform 0.2s, box-shadow 0.2s;
+    max-width: 100%;
 }
 
 .lost-found-cards:hover {
@@ -250,6 +251,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .user-avatar img {
@@ -325,12 +327,18 @@
   border-radius: 6px;
   overflow: hidden;
   background: #FBFCF8;
+  position: relative;
 }
 
 .post-image-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.lost-found-cards:hover .post-image-container img {
+  transform: scale(1.05);
 }
 
 /* 🎯 Post Content */
@@ -360,14 +368,55 @@
   font-size: 1.2rem;
   font-weight: 700;
   text-align: center;
+  line-height: 1.3;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
+/* 🎯 Post Description with proper line breaking */
 .post-description {
   margin: 0;
   color: #666;
-  line-height: 1.4;
+  line-height: 1.5;
   font-size: 0.9rem;
-  text-align: center;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  max-width: 100%;
+}
+
+/* 🎯 Read More Functionality */
+.description-text {
+  display: block;
+  line-height: 1.5;
+  overflow: hidden;
+  max-height: 4.5em;
+  position: relative;
+}
+
+.description-text.expanded {
+  max-height: none;
+}
+
+.read-more-btn {
+  background: none;
+  border: none;
+  color: #8B5A2B;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.read-more-btn:hover {
+  color: #654321;
+  text-decoration: underline;
 }
 
 /* 🎯 Post Meta Info */
@@ -384,6 +433,7 @@
   gap: 8px;
   font-size: 0.85rem;
   color: #5D4037;
+  max-width: 100%;
 }
 
 .meta-item.location,
@@ -394,6 +444,7 @@
 .meta-item svg {
   color: #8B5A2B;
   width: 14px;
+  flex-shrink: 0;
 }
 
 .meta-item.color {
@@ -401,6 +452,41 @@
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.8rem;
+  display: inline-block;
+  max-width: fit-content;
+}
+
+/* 🎯 Contact Info with Read More */
+.contact-text {
+  display: block;
+  line-height: 1.4;
+  overflow: hidden;
+  max-height: 2.8em;
+  position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.contact-text.expanded {
+  max-height: none;
+}
+
+.contact-read-more-btn {
+  background: none;
+  border: none;
+  color: #8B5A2B;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  font-size: 0.75rem;
+  margin-top: 2px;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.contact-read-more-btn:hover {
+  color: #654321;
+  text-decoration: underline;
 }
 
 /* 🎯 Loading and Error States */
@@ -478,88 +564,45 @@
   transform: translateY(-1px);
 }
 
-/* 🎯 Responsive Design */
-@media (max-width: 1200px) {
-  .lost-found-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* 🎯 Expand Overlay - Much reduced darkness */
+.expand-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(139, 90, 43, 0.3); /* Reduced from 0.9 to 0.3 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  pointer-events: none;
 }
 
-@media (max-width: 768px) {
-  .bulletin-container {
-    padding: 20px;
-  }
-  
-  .lost-found-container {
-    grid-template-columns: 1fr;
-  }
-  
-  .search-filters-section {
-    width: 95%;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .search-input-container {
-    width: 100%;
-  }
-  
-  .filters-container {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .filter-group {
-    flex: 1;
-    min-width: 150px;
-  }
-  
-  .bulletin-board-title,
-  .search-filters-section {
-    width: 95%;
-  }
-  
-  .posts-info {
-    width: 95%;
-  }
-  
-  .active-filters {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    text-align: center;
-  }
+.post-card:hover .expand-overlay {
+  opacity: 1;
 }
 
-@media (max-width: 480px) {
-  .bulletin-container {
-    padding: 10px;
-  }
-  
-  .bulletin-board-container-darkbrown {
-    padding: 10px;
-  }
-  
-  .bulletin-board-container-lightbrown {
-    padding: 15px;
-  }
-  
-  .filters-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .filter-group {
-    width: 100%;
-  }
-  
-  .filter-select {
-    width: 100%;
-  }
-  
-  .search-bar-input::placeholder {
-    font-size: 14px;
-  }
+.expand-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.expand-overlay span {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Make post cards clickable */
+.post-card {
+  cursor: pointer;
+  position: relative;
 }
 
 /* 🎯 Post Modal Styles */
@@ -700,6 +743,7 @@
   overflow: hidden;
   background: #FBFCF8;
   height: 400px;
+  position: relative;
 }
 
 .post-modal-image img {
@@ -720,6 +764,8 @@
   font-weight: 700;
   margin: 0;
   line-height: 1.2;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .post-modal-description {
@@ -727,6 +773,9 @@
   font-size: 1.1rem;
   line-height: 1.6;
   margin: 0;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .post-modal-meta {
@@ -754,6 +803,8 @@
   padding: 8px 12px;
   background: rgba(251, 252, 248, 0.7);
   border-radius: 6px;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .post-modal-meta .meta-item svg {
@@ -761,48 +812,113 @@
   width: 16px;
 }
 
-/* 🎯 Expand Overlay */
-.expand-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(139, 90, 43, 0.9);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 8px;
-  color: white;
-  text-align: center;
-  padding: 20px;
-  pointer-events: none;
+/* 🎯 Responsive Design */
+@media (max-width: 1200px) {
+  .lost-found-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.post-card:hover .expand-overlay {
-  opacity: 1;
+@media (max-width: 768px) {
+  .bulletin-container {
+    padding: 20px;
+  }
+  
+  .lost-found-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .search-filters-section {
+    width: 95%;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .search-input-container {
+    width: 100%;
+  }
+  
+  .filters-container {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filter-group {
+    flex: 1;
+    min-width: 150px;
+  }
+  
+  .bulletin-board-title,
+  .search-filters-section {
+    width: 95%;
+  }
+  
+  .posts-info {
+    width: 95%;
+  }
+  
+  .active-filters {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .post-image-container {
+    height: 180px;
+  }
 }
 
-.expand-icon {
-  font-size: 2rem;
-  margin-bottom: 10px;
+@media (max-width: 480px) {
+  .bulletin-container {
+    padding: 10px;
+  }
+  
+  .bulletin-board-container-darkbrown {
+    padding: 10px;
+  }
+  
+  .bulletin-board-container-lightbrown {
+    padding: 15px;
+  }
+  
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .filter-select {
+    width: 100%;
+  }
+  
+  .search-bar-input::placeholder {
+    font-size: 14px;
+  }
+
+  .post-image-container {
+    height: 160px;
+  }
+
+  .lost-found-cards {
+    padding: 15px;
+    margin: 5px;
+  }
+
+  .user-avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  .avatar-fallback {
+    font-size: 20px;
+  }
 }
 
-.expand-overlay span {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-/* Make post cards clickable */
-.post-card {
-  cursor: pointer;
-  position: relative;
-}
-
-/* 🎯 Responsive Design for Modal */
+/* 🎯 Post Modal Responsive */
 @media (max-width: 768px) {
   .post-modal-overlay {
     padding: 10px;
@@ -882,5 +998,9 @@
   
   .post-modal-description {
     font-size: 1rem;
+  }
+
+  .post-modal-image {
+    height: 250px;
   }
 }

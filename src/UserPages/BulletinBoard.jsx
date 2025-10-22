@@ -29,6 +29,8 @@ export default function BulletinBoard() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterBarangay, setFilterBarangay] = useState('all');
   const [selectedPost, setSelectedPost] = useState(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [expandedContacts, setExpandedContacts] = useState({});
 
   useEffect(() => {
     fetchPosts();
@@ -166,6 +168,46 @@ export default function BulletinBoard() {
 
   const handleModalClick = (e) => {
     e.stopPropagation();
+  };
+
+  // 🎯 Toggle description expansion
+  const toggleDescription = (postId, e) => {
+    if (e) e.stopPropagation();
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  // 🎯 Toggle contact expansion
+  const toggleContact = (postId, e) => {
+    if (e) e.stopPropagation();
+    setExpandedContacts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  // 🎯 Check if description needs "Read More"
+  const needsReadMore = (description) => {
+    return description.length > 120;
+  };
+
+  // 🎯 Check if contact needs "Read More"
+  const needsContactReadMore = (contact) => {
+    return contact.length > 50;
+  };
+
+  // 🎯 Get truncated description
+  const getTruncatedDescription = (description) => {
+    if (description.length <= 120) return description;
+    return description.substring(0, 120) + '...';
+  };
+
+  // 🎯 Get truncated contact
+  const getTruncatedContact = (contact) => {
+    if (contact.length <= 50) return contact;
+    return contact.substring(0, 50) + '...';
   };
 
   if (loading) {
@@ -357,6 +399,10 @@ export default function BulletinBoard() {
                               <img 
                                 src={getUserImage(post)} 
                                 alt={`${post.first_name} ${post.last_name}`}
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
                               />
                             ) : (
                               <FontAwesomeIcon icon={faUserCircle} className="avatar-fallback" />
@@ -406,7 +452,26 @@ export default function BulletinBoard() {
                         
                         <div className='lost-found-details'>
                           <h3 className="post-title">{post.title}</h3>
-                          <p className="post-description">{post.description}</p>
+                          
+                          {/* 🎯 Description with Read More */}
+                          <div className="post-description">
+                            <div 
+                              className={`description-text ${expandedDescriptions[post.id] ? 'expanded' : ''}`}
+                            >
+                              {expandedDescriptions[post.id] 
+                                ? post.description 
+                                : getTruncatedDescription(post.description)
+                              }
+                            </div>
+                            {needsReadMore(post.description) && (
+                              <button 
+                                className="read-more-btn"
+                                onClick={(e) => toggleDescription(post.id, e)}
+                              >
+                                {expandedDescriptions[post.id] ? 'Read Less' : 'Read More'}
+                              </button>
+                            )}
+                          </div>
                           
                           <div className="post-meta-info">
                             <div className="meta-item location">
@@ -420,9 +485,25 @@ export default function BulletinBoard() {
                               </div>
                             )}
                             
+                            {/* 🎯 Contact with Read More */}
                             <div className="meta-item contact">
                               <FontAwesomeIcon icon={faPhone} />
-                              <span>{post.contact_info}</span>
+                              <span>
+                                <div className={`contact-text ${expandedContacts[post.id] ? 'expanded' : ''}`}>
+                                  {expandedContacts[post.id] 
+                                    ? post.contact_info 
+                                    : getTruncatedContact(post.contact_info)
+                                  }
+                                </div>
+                                {needsContactReadMore(post.contact_info) && (
+                                  <button 
+                                    className="contact-read-more-btn"
+                                    onClick={(e) => toggleContact(post.id, e)}
+                                  >
+                                    {expandedContacts[post.id] ? 'Read Less' : 'Read More'}
+                                  </button>
+                                )}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -458,6 +539,10 @@ export default function BulletinBoard() {
                           <img 
                             src={getUserImage(selectedPost)} 
                             alt={`${selectedPost.first_name} ${selectedPost.last_name}`}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
                           />
                         ) : (
                           <FontAwesomeIcon icon={faUserCircle} className="avatar-fallback" />

@@ -78,6 +78,7 @@
     position: relative;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     transition: transform 0.2s, box-shadow 0.2s;
+    max-width: 100%;
 }
 
 .mypost-cards:hover {
@@ -112,6 +113,8 @@
     margin: 0;
     text-align: center;
     flex: 1;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .mypost-actions{
@@ -119,7 +122,7 @@
     gap: 12px;
 }
 
-.edit-btn, .mypost-delete-btn {
+.edit-btn, .mypost-delete-btn, .resolve-btn {
     padding: 10px 12px;
     border: none;
     border-radius: 6px;
@@ -128,6 +131,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.resolve-btn {
+    background: #22c55e;
+    color: white;
+}
+
+.resolve-btn:hover {
+    background: #16a34a;
+    transform: scale(1.05);
 }
 
 .edit-btn {
@@ -170,6 +183,7 @@
     align-items: flex-start;
     flex: 1;
     gap: 12px;
+    max-width: 100%;
 }
 
 .post-title {
@@ -177,13 +191,54 @@
     font-size: 1.4rem;
     margin: 0 0 8px 0;
     font-weight: 700;
+    line-height: 1.3;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
+/* 🎯 Post Description with proper line breaking */
 .post-description {
     color: #666;
     line-height: 1.5;
     margin: 0 0 12px 0;
     font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    max-width: 100%;
+}
+
+/* 🎯 Read More Functionality for MyPosts */
+.description-text {
+    display: block;
+    line-height: 1.5;
+    overflow: hidden;
+    max-height: 4.5em;
+    position: relative;
+}
+
+.description-text.expanded {
+    max-height: none;
+}
+
+.read-more-btn {
+    background: none;
+    border: none;
+    color: #8B5A2B;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    text-align: left;
+    transition: color 0.2s ease;
+}
+
+.read-more-btn:hover {
+    color: #654321;
+    text-decoration: underline;
 }
 
 .post-meta {
@@ -198,10 +253,46 @@
     border-bottom: 1px solid rgba(139, 90, 43, 0.1);
     font-size: 0.95rem;
     color: #5D4037;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
 }
 
 .meta-item strong {
     color: #8B5A2B;
+}
+
+/* 🎯 Contact Info with Read More */
+.contact-text {
+    display: block;
+    line-height: 1.4;
+    overflow: hidden;
+    max-height: 2.8em;
+    position: relative;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.contact-text.expanded {
+    max-height: none;
+}
+
+.contact-read-more-btn {
+    background: none;
+    border: none;
+    color: #8B5A2B;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 0;
+    font-size: 0.75rem;
+    margin-top: 2px;
+    text-align: left;
+    transition: color 0.2s ease;
+}
+
+.contact-read-more-btn:hover {
+    color: #654321;
+    text-decoration: underline;
 }
 
 .mypost-image{
@@ -212,12 +303,18 @@
     flex-shrink: 0;
     background: #FBFCF8;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
 }
 
 .mypost-image img{
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.mypost-cards:hover .mypost-image img {
+    transform: scale(1.05);
 }
 
 /* 🎯 Status Badges */
@@ -323,78 +420,7 @@
 .create-first-post-btn:hover {
     background: #654321;
 }
-/* Add these styles to your existing MyPosts.css */
 
-.mypost-actions{
-    display: flex;
-    gap: 12px;
-}
-
-.resolve-btn, .edit-btn, .mypost-delete-btn {
-    padding: 10px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.resolve-btn {
-    background: #22c55e;
-    color: white;
-}
-
-.resolve-btn:hover {
-    background: #16a34a;
-    transform: scale(1.05);
-}
-
-.edit-btn {
-    background: #3b82f6;
-    color: white;
-}
-
-.edit-btn:hover:not(:disabled) {
-    background: #2563eb;
-    transform: scale(1.05);
-}
-
-.edit-btn:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.mypost-delete-btn {
-    background: #ef4444;
-    color: white;
-}
-
-.mypost-delete-btn:hover {
-    background: #dc2626;
-    transform: scale(1.05);
-}
-/* Add this to your existing MyPosts.css */
-
-.resolve-btn {
-    background: #22c55e;
-    color: white;
-    padding: 10px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.resolve-btn:hover {
-    background: #16a34a;
-    transform: scale(1.05);
-}
 /* 🎯 Responsive Design */
 @media (max-width: 768px) {
     .myposts-content {
@@ -418,6 +444,7 @@
     
     .mypost-image {
         height: 250px;
+        order: -1;
     }
     
     .lost-type {
@@ -434,6 +461,11 @@
     .mypost-cards {
         width: 95%;
         padding: 20px;
+    }
+
+    .mypost-actions {
+        width: 100%;
+        justify-content: center;
     }
 }
 
@@ -455,5 +487,29 @@
     .error-container,
     .empty-state {
         width: 95%;
+    }
+
+    .mypost-image {
+        height: 200px;
+    }
+
+    .lost-type h1 {
+        font-size: 1.2rem;
+    }
+
+    .post-title {
+        font-size: 1.2rem;
+    }
+
+    .mypost-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .resolve-btn,
+    .edit-btn,
+    .mypost-delete-btn {
+        padding: 8px 10px;
+        font-size: 0.8rem;
     }
 }

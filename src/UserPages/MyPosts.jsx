@@ -11,6 +11,7 @@ export default function MyPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const nav = useNavigate();
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export default function MyPosts() {
     nav(`/user/edit-post/${postId}`);
   };
 
-  // Handle marking post as resolved - FIXED
+  // Handle marking post as resolved
   const handleMarkAsResolved = async (postId) => {
     if (!window.confirm('Are you sure you want to mark this post as resolved? This will close the post.')) {
       return;
@@ -136,6 +137,26 @@ export default function MyPosts() {
     };
 
     return statusConfig[status] || { class: 'status-default', text: status };
+  };
+
+  // 🎯 Toggle description expansion
+  const toggleDescription = (postId, e) => {
+    if (e) e.stopPropagation();
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  // 🎯 Check if description needs "Read More"
+  const needsReadMore = (description) => {
+    return description.length > 120;
+  };
+
+  // 🎯 Get truncated description
+  const getTruncatedDescription = (description) => {
+    if (description.length <= 120) return description;
+    return description.substring(0, 120) + '...';
   };
 
   // Loading state
@@ -245,7 +266,27 @@ export default function MyPosts() {
                         <div className='mypost-details-container'>
                           <div className='mypost-details'>
                             <h2 className="post-title">{post.title}</h2>
-                            <p className="post-description">{post.description}</p>
+                            
+                            {/* 🎯 Description with Read More */}
+                            <div className="post-description">
+                              <div 
+                                className={`description-text ${expandedDescriptions[post.id] ? 'expanded' : ''}`}
+                              >
+                                {expandedDescriptions[post.id] 
+                                  ? post.description 
+                                  : getTruncatedDescription(post.description)
+                                }
+                              </div>
+                              {needsReadMore(post.description) && (
+                                <button 
+                                  className="read-more-btn"
+                                  onClick={(e) => toggleDescription(post.id, e)}
+                                >
+                                  {expandedDescriptions[post.id] ? 'Read Less' : 'Read More'}
+                                </button>
+                              )}
+                            </div>
+                            
                             <div className="post-meta">
                               <div className="meta-item">
                                 <strong>Category:</strong> {post.category_name}
