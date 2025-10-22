@@ -24,7 +24,12 @@
   color: #e74c3c;
   margin-bottom: 2rem;
 }
-
+.error-message{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
 /* Error Message */
 .error-message h1 {
   font-size: 5rem;
