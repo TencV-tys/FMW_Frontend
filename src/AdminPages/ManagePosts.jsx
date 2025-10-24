@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -12,7 +11,10 @@ import {
   faCheckCircle,
   faList,
   faTimes,
-  faSave
+  faSave,
+  faMapMarkerAlt,
+  faUndo,
+  faImage
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManagePosts.css';
 
@@ -122,7 +124,9 @@ export default function ManagePosts() {
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
+                         post.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.barangay_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.purok_name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -252,6 +256,10 @@ export default function ManagePosts() {
         confirmationMessage = `Are you sure you want to permanently delete ${selectedPosts.size} post(s)? This action cannot be undone.`;
         actionText = 'delete';
         break;
+      case 'restore':
+        confirmationMessage = `Are you sure you want to restore ${selectedPosts.size} post(s)?`;
+        actionText = 'restore';
+        break;
       default:
         return;
     }
@@ -303,16 +311,38 @@ export default function ManagePosts() {
   // Get status badge class
   const getStatusClass = (status) => {
     const statusMap = {
-      active: 'status-active',
-      removed: 'status-removed',
-      resolved: 'status-resolved'
+      'Active': 'status-active',
+      'Removed': 'status-removed',
+      'Resolved': 'status-resolved'
     };
     return statusMap[status] || 'status-active';
   };
 
+  // Render location information with purok
+  const renderLocationInfo = (post) => {
+    let locationText = post.barangay_name;
+    if (post.purok_name) {
+      locationText += `, ${post.purok_name}`;
+    }
+    return locationText;
+  };
+
+  // Get photo URL
+  const getPhotoUrl = (post) => {
+    if (post.photo) {
+      return `http://localhost:8000/uploads/${post.photo}`;
+    }
+    return null;
+  };
+
+  // Handle stat card click for filtering
+  const handleStatCardClick = (status) => {
+    setStatusFilter(status === 'all' ? 'all' : status);
+  };
+
   // Get action buttons based on post status
   const getActionButtons = (post) => {
-    if (post.status === 'removed') {
+    if (post.status === 'Removed') {
       return (
         <>
           <button
@@ -320,7 +350,7 @@ export default function ManagePosts() {
             onClick={() => handlePostAction(post.id, 'restore')}
             title="Restore Post"
           >
-            <FontAwesomeIcon icon={faRefresh} />
+            <FontAwesomeIcon icon={faUndo} />
           </button>
           <button
             className="action-btn delete"
@@ -331,7 +361,7 @@ export default function ManagePosts() {
           </button>
         </>
       );
-    } else if (post.status === 'resolved') {
+    } else if (post.status === 'Resolved') {
       return (
         <>
           <button
@@ -340,6 +370,13 @@ export default function ManagePosts() {
             title="Remove Post"
           >
             <FontAwesomeIcon icon={faBan} />
+          </button>
+          <button
+            className="action-btn restore"
+            onClick={() => handlePostAction(post.id, 'restore')}
+            title="Restore to Active"
+          >
+            <FontAwesomeIcon icon={faUndo} />
           </button>
           <button
             className="action-btn delete"
@@ -404,8 +441,8 @@ export default function ManagePosts() {
           <span className="detail-value">{post.category_name}</span>
         </div>
         <div className="mobile-card-detail">
-          <span className="detail-label">Barangay</span>
-          <span className="detail-value">{post.barangay_name}</span>
+          <span className="detail-label">Location</span>
+          <span className="detail-value">{renderLocationInfo(post)}</span>
         </div>
         <div className="mobile-card-detail">
           <span className="detail-label">Date</span>
@@ -457,7 +494,7 @@ export default function ManagePosts() {
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
-            placeholder="Search posts, authors..."
+            placeholder="Search posts, authors, locations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -500,6 +537,13 @@ export default function ManagePosts() {
               Remove
             </button>
             <button 
+              className="bulk-btn restore"
+              onClick={() => handleBulkAction('restore')}
+            >
+              <FontAwesomeIcon icon={faUndo} />
+              Restore
+            </button>
+            <button 
               className="bulk-btn delete"
               onClick={() => handleBulkAction('delete')}
             >
@@ -510,21 +554,37 @@ export default function ManagePosts() {
         )}
       </div>
 
-      {/* Stats Summary */}
+      {/* Stats Summary - Now Clickable */}
       <div className="posts-stats">
-        <div className="stat-card">
+        <div 
+          className={`stat-card ${statusFilter === 'all' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('all')}
+          style={{ cursor: 'pointer' }}
+        >
           <span className="post-stat-number">{posts.length}</span>
           <span className="stat-label">Total Posts</span>
         </div>
-        <div className="stat-card">
+        <div 
+          className={`stat-card ${statusFilter === 'Active' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('Active')}
+          style={{ cursor: 'pointer' }}
+        >
           <span className="post-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
           <span className="stat-label">Active</span>
         </div>
-        <div className="stat-card">
+        <div 
+          className={`stat-card ${statusFilter === 'Resolved' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('Resolved')}
+          style={{ cursor: 'pointer' }}
+        >
           <span className="post-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
           <span className="stat-label">Resolved</span>
         </div>
-        <div className="stat-card">
+        <div 
+          className={`stat-card ${statusFilter === 'Removed' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('Removed')}
+          style={{ cursor: 'pointer' }}
+        >
           <span className="post-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
           <span className="stat-label">Removed</span>
         </div>
@@ -538,6 +598,7 @@ export default function ManagePosts() {
               <h2>Posts Management</h2>
               <span className="posts-count">
                 {filteredPosts.length} of {posts.length} posts
+                {statusFilter !== 'all' && ` (Filtered by: ${statusFilter})`}
               </span>
             </div>
 
@@ -549,6 +610,14 @@ export default function ManagePosts() {
             ) : filteredPosts.length === 0 ? (
               <div className="empty-state">
                 <p>No posts found matching your criteria.</p>
+                {statusFilter !== 'all' && (
+                  <button 
+                    className="retry-btn" 
+                    onClick={() => setStatusFilter('all')}
+                  >
+                    Clear Filter
+                  </button>
+                )}
               </div>
             ) : (
               <>
@@ -567,7 +636,7 @@ export default function ManagePosts() {
                         <th>ID</th>
                         <th>Title & Author</th>
                         <th>Category</th>
-                        <th>Barangay</th>
+                        <th>Location</th>
                         <th>Date Posted</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -593,7 +662,12 @@ export default function ManagePosts() {
                             </div>
                           </td>
                           <td>{post.category_name}</td>
-                          <td>{post.barangay_name}</td>
+                          <td>
+                            <div className="location-info">
+                              <FontAwesomeIcon icon={faMapMarkerAlt} className="location-icon" />
+                              <span>{renderLocationInfo(post)}</span>
+                            </div>
+                          </td>
                           <td>{formatDate(post.created_at)}</td>
                           <td>
                             <span className={`status-badge ${getStatusClass(post.status)}`}>
@@ -637,7 +711,7 @@ export default function ManagePosts() {
         </div>
       </div>
 
-      {/* View Post Modal */}
+      {/* View Post Modal with Photo */}
       {viewModal.isOpen && viewModal.post && (
         <div className="modal-overlay" onClick={closeModals}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -648,6 +722,28 @@ export default function ManagePosts() {
               </button>
             </div>
             <div className="modal-body">
+              {/* Photo Display */}
+              {getPhotoUrl(viewModal.post) && (
+                <div className="post-photo-container">
+                  <label>Post Photo:</label>
+                  <div className="post-photo">
+                    <img
+                      src={getPhotoUrl(viewModal.post)}
+                      alt={viewModal.post.title}
+                      className="photo-display"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="photo-fallback" style={{ display: 'none' }}>
+                      <FontAwesomeIcon icon={faImage} />
+                      <span>Photo not available</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="post-details">
                 <div className="detail-row">
                   <label>Title:</label>
@@ -662,8 +758,8 @@ export default function ManagePosts() {
                   <span>{viewModal.post.category_name}</span>
                 </div>
                 <div className="detail-row">
-                  <label>Barangay:</label>
-                  <span>{viewModal.post.barangay_name}</span>
+                  <label>Location:</label>
+                  <span>{renderLocationInfo(viewModal.post)}</span>
                 </div>
                 <div className="detail-row">
                   <label>Status:</label>
@@ -681,6 +777,18 @@ export default function ManagePosts() {
                     {viewModal.post.description}
                   </div>
                 </div>
+                {viewModal.post.color && (
+                  <div className="detail-row">
+                    <label>Color:</label>
+                    <span>{viewModal.post.color}</span>
+                  </div>
+                )}
+                <div className="detail-row full-width">
+                  <label>Contact Info:</label>
+                  <div className="contact-info">
+                    {viewModal.post.contact_info}
+                  </div>
+                </div>
               </div>
             </div>
             <div className="modal-footer">
@@ -692,7 +800,7 @@ export default function ManagePosts() {
         </div>
       )}
 
-      {/* Edit Post Modal */}
+      {/* Edit Post Modal with Photo Display (Read-only) */}
       {editModal.isOpen && editModal.post && (
         <div className="modal-overlay" onClick={closeModals}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -704,6 +812,28 @@ export default function ManagePosts() {
                 </button>
               </div>
               <div className="modal-body">
+                {/* Photo Display (Read-only) */}
+                {getPhotoUrl(editModal.post) && (
+                  <div className="post-photo-container">
+                    <label>Post Photo (Cannot be edited):</label>
+                    <div className="post-photo">
+                      <img
+                        src={getPhotoUrl(editModal.post)}
+                        alt={editModal.post.title}
+                        className="photo-display"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="photo-fallback" style={{ display: 'none' }}>
+                        <FontAwesomeIcon icon={faImage} />
+                        <span>Photo not available</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="form-group">
                   <label htmlFor="post-title">Title:</label>
                   <input
@@ -744,10 +874,18 @@ export default function ManagePosts() {
                     <strong>Category:</strong> {editModal.post.category_name}
                   </div>
                   <div className="info-item">
-                    <strong>Barangay:</strong> {editModal.post.barangay_name}
+                    <strong>Location:</strong> {renderLocationInfo(editModal.post)}
                   </div>
                   <div className="info-item">
                     <strong>Date Posted:</strong> {formatDate(editModal.post.created_at)}
+                  </div>
+                  {editModal.post.color && (
+                    <div className="info-item">
+                      <strong>Color:</strong> {editModal.post.color}
+                    </div>
+                  )}
+                  <div className="info-item">
+                    <strong>Contact:</strong> {editModal.post.contact_info}
                   </div>
                 </div>
               </div>

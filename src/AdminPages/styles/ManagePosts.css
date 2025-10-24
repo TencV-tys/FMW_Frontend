@@ -1,6 +1,5 @@
 /* Improved ManagePosts.css */
 
-
 /* Header */
 .manage-posts-header {
   display: flex;
@@ -139,6 +138,12 @@
   border: 1px solid #ffeaa7;
 }
 
+.bulk-btn.restore {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
 .bulk-btn.delete {
   background: #f8d7da;
   color: #721c24;
@@ -171,7 +176,7 @@
   display: block;
   font-size: 1.5rem;
   font-weight: 700;
- color:#FF8904;
+  color: #FF8904;
   line-height: 1.2;
 }
 
@@ -308,6 +313,18 @@
   font-weight: 600;
   color: #8B5A2B;
   font-family: monospace;
+}
+
+/* 🎯 Location Info with Icon */
+.location-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.location-icon {
+  color: #8B5A2B;
+  font-size: 0.8rem;
 }
 
 /* Status Badges */
@@ -450,7 +467,7 @@
 
 .mobile-card-header {
   display: flex;
-  justify-content: between;
+  justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.75rem;
   gap: 0.75rem;
@@ -530,7 +547,54 @@
   transition: all 0.2s ease;
 }
 
-/* Responsive Design - UPDATED: Removed margin-left overrides */
+.mobile-action-btn.view {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #bbdefb;
+}
+
+.mobile-action-btn.edit {
+  background: #fff3cd;
+  color: #f57c00;
+  border: 1px solid #ffeaa7;
+}
+
+.mobile-action-btn.restore {
+  background: #d4edda;
+  color: #388e3c;
+  border: 1px solid #c3e6cb;
+}
+
+.mobile-action-btn.remove {
+  background: #f8d7da;
+  color: #d32f2f;
+  border: 1px solid #f5c6cb;
+}
+
+.mobile-action-btn.delete {
+  background: #f8d7da;
+  color: #d32f2f;
+  border: 1px solid #f5c6cb;
+}
+
+.mobile-action-btn.resolve {
+  background: #d1edff;
+  color: #0c5460;
+  border: 1px solid #b3d7ff;
+}
+
+/* Contact Info in View Modal */
+.contact-info {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .manage-posts-content {
     padding: 1rem;
@@ -566,7 +630,7 @@
     padding: 0.75rem;
   }
   
-  .stat-number {
+  .post-stat-number {
     font-size: 1.25rem;
   }
   
@@ -663,6 +727,109 @@
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+}
+/* Add to your existing ManagePosts.css */
+
+/* Active stat card */
+.stat-card.active {
+  border-left: 4px solid #FF8904;
+  background: #fff9e6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Photo display in modals */
+.post-photo-container {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.post-photo-container label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.post-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.photo-display {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  object-fit: contain;
+}
+
+.photo-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #666;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px dashed #ddd;
+}
+
+.photo-fallback svg {
+  font-size: 2rem;
+  color: #8B5A2B;
+}
+
+/* Retry button for empty state */
+.retry-btn {
+  background: #8B5A2B;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #6d451f;
+  transform: translateY(-1px);
+}
+
+/* Enhanced modal content for photos */
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Responsive photo display */
+@media (max-width: 768px) {
+  .photo-display {
+    max-height: 200px;
+  }
+  
+  .post-photo-container {
+    padding: 0.75rem;
+  }
+}
+
+/* Hover effects for stat cards */
+.stat-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .modal-content {

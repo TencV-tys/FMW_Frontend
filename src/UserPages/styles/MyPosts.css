@@ -257,7 +257,7 @@
     font-size: 0.85rem;
     color: #5D4037;
     word-wrap: break-word;
-    word-break: normal; /* Changed from break-word to normal */
+    word-break: normal;
     width: 100%;
     line-height: 1.4;
 }
@@ -265,10 +265,10 @@
 .meta-item strong {
     color: #8B5A2B;
     font-weight: 600;
-    white-space: nowrap; /* Prevent breaking of labels like "Contact:" */
+    white-space: nowrap;
 }
 
-/* 🎯 Contact Info with Read More - FIXED TEXT BREAKING */
+/* 🎯 Contact Info with Read More */
 .contact-container {
     display: flex;
     flex-direction: column;
@@ -284,8 +284,8 @@
     max-height: 2.8em;
     position: relative;
     word-wrap: break-word;
-    word-break: break-word; /* Allow breaking long words */
-    overflow-wrap: break-word; /* Additional breaking support */
+    word-break: break-word;
+    overflow-wrap: break-word;
     color: #5D4037;
     width: 100%;
 }

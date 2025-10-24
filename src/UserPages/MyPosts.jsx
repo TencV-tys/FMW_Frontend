@@ -180,6 +180,15 @@ export default function MyPosts() {
     return contact.substring(0, 50) + '...';
   };
 
+  // 🎯 Render location information with purok
+  const renderLocationInfo = (post) => {
+    let locationText = post.barangay_name;
+    if (post.purok_name) {
+      locationText += `, ${post.purok_name}`;
+    }
+    return locationText;
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -313,10 +322,10 @@ export default function MyPosts() {
                                 <strong>Category:</strong> {post.category_name}
                               </div>
                               <div className="meta-item">
-                                <strong>Location:</strong> {post.barangay_name}
+                                <strong>Location:</strong> {renderLocationInfo(post)}
                               </div>
                               
-                              {/* 🎯 Contact with Read More - UPDATED */}
+                              {/* 🎯 Contact with Read More */}
                               <div className="meta-item">
                                 <strong>Contact:</strong>
                                 <div className="contact-container">
