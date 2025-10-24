@@ -13,7 +13,8 @@ import {
   faList,
   faEnvelope,
   faVenusMars,
-  faCalendar
+  faCalendar,
+  faPauseCircle
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
@@ -146,6 +147,18 @@ export default function ManageUsers() {
     }
   };
 
+  // Handle stat card click for filtering
+  const handleStatCardClick = (filterType, value) => {
+    if (filterType === 'status') {
+      setStatusFilter(value === 'all' ? 'all' : value);
+    } else if (filterType === 'role') {
+      setRoleFilter(value === 'all' ? 'all' : value);
+    } else if (filterType === 'all') {
+      setStatusFilter('all');
+      setRoleFilter('all');
+    }
+  };
+
   // Filter users based on search and filters
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -157,10 +170,9 @@ export default function ManageUsers() {
     return matchesSearch && matchesStatus && matchesRole;
   });
 
-  // Stats calculation
+  // Stats calculation - Updated to match new requirements
   const userStats = {
     total: users.length,
-    admin: users.filter(u => u.role === 'admin').length,
     active: users.filter(u => u.status === 'active').length,
     suspended: users.filter(u => u.status === 'suspended').length,
     banned: users.filter(u => u.status === 'banned').length
@@ -184,6 +196,17 @@ export default function ManageUsers() {
   // Get user full name
   const getUserName = (user) => {
     return `${user.first_name} ${user.last_name}`;
+  };
+
+  // Check if any filter is active
+  const isFilterActive = () => {
+    return statusFilter !== 'all' || roleFilter !== 'all';
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setStatusFilter('all');
+    setRoleFilter('all');
   };
 
   // Mobile User Card Component
@@ -232,7 +255,7 @@ export default function ManageUsers() {
               onClick={() => handleSuspend(user.id, getUserName(user))}
               title="Suspend User"
             >
-              <FontAwesomeIcon icon={faBan} />
+              <FontAwesomeIcon icon={faPauseCircle} />
               Suspend
             </button>
             <button
@@ -332,25 +355,56 @@ export default function ManageUsers() {
               <option value="card">Card View</option>
             </select>
           </div>
+
+          {/* Clear Filters Button */}
+          {isFilterActive() && (
+            <button 
+              className="clear-filters-btn"
+              onClick={clearAllFilters}
+              title="Clear all filters"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
 
-        {/* Stats Summary */}
+        {/* Stats Summary - Updated with 4 cards: Total, Active, Suspended, Banned */}
         <div className="users-stats">
-          <div className="stat-card">
+          <div 
+            className={`stat-card ${!isFilterActive() ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('all', 'all')}
+            style={{ cursor: 'pointer' }}
+            title="Show all users"
+          >
             <span className="user-stat-number">{userStats.total}</span>
             <span className="stat-label">Total Users</span>
           </div>
-          <div className="stat-card">
-            <span className="user-stat-number">{userStats.admin}</span>
-            <span className="stat-label">Admin Users</span>
-          </div>
-          <div className="stat-card">
+          <div 
+            className={`stat-card ${statusFilter === 'active' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('status', 'active')}
+            style={{ cursor: 'pointer' }}
+            title="Filter by Active status"
+          >
             <span className="user-stat-number">{userStats.active}</span>
-            <span className="stat-label">Active</span>
+            <span className="stat-label">Active Users</span>
           </div>
-          <div className="stat-card">
-            <span className="user-stat-number">{userStats.suspended + userStats.banned}</span>
-            <span className="stat-label">Restricted</span>
+          <div 
+            className={`stat-card ${statusFilter === 'suspended' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('status', 'suspended')}
+            style={{ cursor: 'pointer' }}
+            title="Filter by Suspended status"
+          >
+            <span className="user-stat-number">{userStats.suspended}</span>
+            <span className="stat-label">Suspended Users</span>
+          </div>
+          <div 
+            className={`stat-card ${statusFilter === 'banned' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('status', 'banned')}
+            style={{ cursor: 'pointer' }}
+            title="Filter by Banned status"
+          >
+            <span className="user-stat-number">{userStats.banned}</span>
+            <span className="stat-label">Banned Users</span>
           </div>
         </div>
 
@@ -360,9 +414,22 @@ export default function ManageUsers() {
             <div className='manage-users-table-content'>
               <div className='manage-users-table-title'>
                 <h2>Users Management</h2>
-                <span className="users-count">
-                  {filteredUsers.length} of {users.length} users
-                </span>
+                <div className="users-header-info">
+                  <span className="users-count">
+                    {filteredUsers.length} of {users.length} users
+                  </span>
+                  {isFilterActive() && (
+                    <div className="active-filters">
+                      <span>Active filters:</span>
+                      {statusFilter !== 'all' && (
+                        <span className="filter-tag">Status: {statusFilter}</span>
+                      )}
+                      {roleFilter !== 'all' && (
+                        <span className="filter-tag">Role: {roleFilter}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {loading ? (
@@ -373,6 +440,14 @@ export default function ManageUsers() {
               ) : filteredUsers.length === 0 ? (
                 <div className="empty-state">
                   <p>No users found matching your criteria.</p>
+                  {isFilterActive() && (
+                    <button 
+                      className="retry-btn" 
+                      onClick={clearAllFilters}
+                    >
+                      Clear Filters
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>
@@ -428,7 +503,7 @@ export default function ManageUsers() {
                                       onClick={() => handleSuspend(user.id, getUserName(user))}
                                       title="Suspend User"
                                     >
-                                      <FontAwesomeIcon icon={faBan} />
+                                      <FontAwesomeIcon icon={faPauseCircle} />
                                     </button>
                                     <button
                                       className="action-btn ban"
