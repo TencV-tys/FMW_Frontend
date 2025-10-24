@@ -7,6 +7,7 @@ import './styles/CreatePost.css';
 export default function CreatePost() {
   const [categories, setCategories] = useState([]);
   const [barangays, setBarangays] = useState([]);
+  const [puroks, setPuroks] = useState([]);
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
 
@@ -15,6 +16,7 @@ export default function CreatePost() {
     type: 'Lost',
     category_id: '',
     barangay_id: '',
+    purok_id: '', 
     color: '',
     description: '',
     contact_info: '',
@@ -40,6 +42,7 @@ export default function CreatePost() {
           if (data.success) {
             setCategories(data.categories);
             setBarangays(data.barangays);
+             setPuroks(data.puroks || []);
           } else {
             console.error('Failed to fetch form data');
           }
@@ -126,6 +129,7 @@ export default function CreatePost() {
       formDataToSend.append('type', formData.type);
       formDataToSend.append('category_id', formData.category_id);
       formDataToSend.append('barangay_id', formData.barangay_id);
+       formDataToSend.append('purok_id', formData.purok_id);
       formDataToSend.append('color', formData.color);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('contact_info', formData.contact_info);
@@ -153,6 +157,7 @@ export default function CreatePost() {
           type: 'Lost',
           category_id: '',
           barangay_id: '',
+          purok_id: '',
           color: '',
           description: '',
           contact_info: '',
@@ -229,6 +234,14 @@ export default function CreatePost() {
                   ))}
                 </select>
               </div>
+            </div>
+            <div className='create-select-group' style={{width: '400px', margin: '10px 0'}}>
+                <select name='purok_id' value={formData.purok_id} onChange={handleChange}>
+                  <option value="">Select Purok (Optional)</option>
+                  {puroks.map(purok => (
+                    <option key={purok.id} value={purok.id}>{purok.name}</option>
+                  ))}
+                </select>
             </div>
 
             <div className='create-input-group'>

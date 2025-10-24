@@ -9,7 +9,8 @@ import {
   faFlag,
   faFilter,
   faTimes,
-  faExpand
+  faExpand,
+  faLocationDot
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav.jsx';
 import ReportModal from '../UserComponents/ReportModal';
@@ -22,12 +23,14 @@ export default function BulletinBoard() {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [barangays, setBarangays] = useState([]);
+  const [puroks, setPuroks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterBarangay, setFilterBarangay] = useState('all');
+   const [filterPurok, setFilterPurok] = useState('all');
   const [selectedPost, setSelectedPost] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [expandedContacts, setExpandedContacts] = useState({});
@@ -39,7 +42,7 @@ export default function BulletinBoard() {
 
   useEffect(() => {
     filterPosts();
-  }, [posts, searchTerm, filterType, filterCategory, filterBarangay]);
+  }, [posts, searchTerm, filterType, filterCategory, filterBarangay, filterPurok]);
 
   const fetchPosts = async () => {
     try {
@@ -83,6 +86,7 @@ export default function BulletinBoard() {
         if (data.success) {
           setCategories(data.categories || []);
           setBarangays(data.barangays || []);
+           setPuroks(data.puroks || []); 
         }
       }
     } catch (error) {
@@ -98,6 +102,7 @@ export default function BulletinBoard() {
         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.barangay_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         post.purok_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.last_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -115,7 +120,9 @@ export default function BulletinBoard() {
     if (filterBarangay !== 'all') {
       filtered = filtered.filter(post => post.barangay_id.toString() === filterBarangay);
     }
-
+      if (filterPurok !== 'all') {
+      filtered = filtered.filter(post => post.purok_id?.toString() === filterPurok); 
+    }
     setFilteredPosts(filtered);
   };
 
@@ -124,13 +131,22 @@ export default function BulletinBoard() {
     setFilterType('all');
     setFilterCategory('all');
     setFilterBarangay('all');
+     setFilterPurok('all'); 
   };
 
   const isFilterActive = () => {
     return searchTerm !== '' || 
            filterType !== 'all' || 
            filterCategory !== 'all' || 
-           filterBarangay !== 'all';
+           filterBarangay !== 'all' ||
+             filterPurok !== 'all';;
+  };
+ const renderLocationInfo = (post) => {
+    let locationText = post.barangay_name;
+    if (post.purok_name) {
+      locationText += `, ${post.purok_name}`;
+    }
+    return locationText;
   };
 
   const formatDate = (dateString) => {
@@ -148,7 +164,7 @@ export default function BulletinBoard() {
     }
     return null;
   };
-
+ 
   const openReportModal = (post, e) => {
     if (e) e.stopPropagation();
     setReportModal({ isOpen: true, post });
@@ -323,7 +339,21 @@ export default function BulletinBoard() {
                       ))}
                     </select>
                   </div>
-
+                  <div className="filter-group">
+                    <FontAwesomeIcon icon={faLocationDot} className="filter-icon" />
+                    <select 
+                      value={filterPurok} 
+                      onChange={(e) => setFilterPurok(e.target.value)}
+                      className="filter-select"
+                    >
+                      <option value="all">All Puroks</option>
+                      {puroks.map(purok => (
+                        <option key={purok.id} value={purok.id}>
+                          {purok.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   {isFilterActive() && (
                     <button 
                       className="clear-filters-btn"
@@ -359,6 +389,11 @@ export default function BulletinBoard() {
                     {filterBarangay !== 'all' && (
                       <span className="filter-tag">
                         Barangay: {barangays.find(b => b.id.toString() === filterBarangay)?.name}
+                      </span>
+                    )}
+                     {filterPurok !== 'all' && (
+                      <span className="filter-tag">
+                        Purok: {puroks.find(p => p.id.toString() === filterPurok)?.name}
                       </span>
                     )}
                   </div>
@@ -476,7 +511,7 @@ export default function BulletinBoard() {
                           <div className="post-meta-info">
                             <div className="meta-item location">
                               <FontAwesomeIcon icon={faMapMarkerAlt} />
-                              <span>{post.barangay_name}</span>
+                              <span>{renderLocationInfo(post)}</span>
                             </div>
                             
                             {post.color && (
@@ -604,9 +639,17 @@ export default function BulletinBoard() {
                           <div className="meta-item location">
                             <FontAwesomeIcon icon={faMapMarkerAlt} />
                             <span><strong>Barangay:</strong> {selectedPost.barangay_name}</span>
+                         
                           </div>
-                        </div>
                         
+                         {selectedPost.purok_name && (
+                            <div className="meta-item location">
+                              <FontAwesomeIcon icon={faLocationDot} />
+                              <span><strong>Purok:</strong> {selectedPost.purok_name}</span>
+                            </div>
+                          )}
+                        </div>
+
                         {selectedPost.color && (
                           <div className="meta-section">
                             <h4>Item Details</h4>

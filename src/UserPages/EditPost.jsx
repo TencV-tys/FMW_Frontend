@@ -7,6 +7,7 @@ import './styles/CreatePost.css';
 export default function EditPost() {
   const [categories, setCategories] = useState([]);
   const [barangays, setBarangays] = useState([]);
+  const [puroks, setPuroks] = useState([]); // Add puroks state
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const nav = useNavigate();
@@ -17,6 +18,7 @@ export default function EditPost() {
     type: 'Lost',
     category_id: '',
     barangay_id: '',
+    purok_id: '', // Add purok_id
     color: '',
     description: '',
     contact_info: '',
@@ -64,6 +66,7 @@ export default function EditPost() {
         if (formResult.success) {
           setCategories(formResult.categories);
           setBarangays(formResult.barangays);
+          setPuroks(formResult.puroks || []); // Set puroks data
         }
 
         const post = postResult.post;
@@ -72,6 +75,7 @@ export default function EditPost() {
           type: post.type || 'Lost',
           category_id: post.category_id || '',
           barangay_id: post.barangay_id || '',
+          purok_id: post.purok_id || '', // Set purok_id from post data
           color: post.color || '',
           description: post.description || '',
           contact_info: post.contact_info || '',
@@ -169,6 +173,7 @@ export default function EditPost() {
       formDataToSend.append('type', formData.type);
       formDataToSend.append('category_id', formData.category_id);
       formDataToSend.append('barangay_id', formData.barangay_id);
+      formDataToSend.append('purok_id', formData.purok_id); // Add purok_id
       formDataToSend.append('color', formData.color);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('contact_info', formData.contact_info);
@@ -277,6 +282,16 @@ export default function EditPost() {
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* Add Purok Select Field */}
+            <div className='create-select-group' style={{width: '400px', margin: '10px 0'}}>
+                <select name='purok_id' value={formData.purok_id} onChange={handleChange}>
+                  <option value="">Select Purok (Optional)</option>
+                  {puroks.map(purok => (
+                    <option key={purok.id} value={purok.id}>{purok.name}</option>
+                  ))}
+                </select>
             </div>
 
             <div className='create-input-group'>

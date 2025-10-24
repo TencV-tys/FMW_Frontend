@@ -30,6 +30,7 @@
     justify-content: space-between;
     align-items: center;
     width: 400px;
+    flex-wrap: wrap;
 }
 .create-select-container .create-select-group{
     padding: 5px;
@@ -45,6 +46,32 @@
     border: none;
     outline: none;
     font-weight: 600;
+}
+
+/* Purok Select Field Styles */
+.create-select-group {
+    padding: 5px;
+    background-color: #FF8904;
+    border: none;
+    border-radius: 4px;
+    width: 400px; /* Match other fields */
+}
+
+.create-select-group select {
+    color: white;
+    width: 100%;
+    background: transparent;
+    background-color: #FF8904;
+    border: none;
+    outline: none;
+    font-weight: 600;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+/* Style for the purok select specifically */
+.create-select-group:not(.create-select-container .create-select-group) {
+    margin: 10px 0;
 }
 
 .create-input-group{
@@ -251,6 +278,11 @@
   border-left: 3px solid #FF8904;
 }
 
+/* Purok select doesn't need required indicator since it's optional */
+.create-select-group select:not([required]) {
+  border-left: 3px solid transparent;
+}
+
 /* Error states */
 .input-error {
   border-color: #ff4444 !important;
@@ -262,6 +294,23 @@
   margin-top: 5px;
   text-align: left;
   width: 100%;
+}
+
+/* Select dropdown styling */
+.create-select-group select option {
+  background-color: white;
+  color: #333;
+  padding: 8px;
+}
+
+.create-select-group select:focus {
+  background-color: #e67e22; /* Slightly darker on focus */
+}
+
+/* Hover states for select */
+.create-select-group:hover {
+  background-color: #e67e22;
+  transition: background-color 0.3s ease;
 }
 
 /* Responsive adjustments */
@@ -280,11 +329,20 @@
     width: 100%;
     gap: 15px;
   }
-  .create-select-group{
+  
+  .create-select-group {
+    width: 100% !important; /* Ensure purok select is full width on mobile */
+  }
+  
+  .create-select-group,
+  .create-select-container .create-select-group {
     width: 100%;
   }
-  .create-select-group select{
+  
+  .create-select-group select,
+  .create-select-container .create-select-group select {
     text-align: center;
+    width: 100%;
   }
   
   .create-input-group,
@@ -305,4 +363,49 @@
     width: 100%;
     max-width: 300px;
   }
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 480px) {
+  .create-content {
+    padding: 30px 15px;
+  }
+  
+  .create-post-form {
+    padding: 15px 20px;
+  }
+  
+  .create-select-group select {
+    font-size: 14px; /* Slightly smaller font on very small screens */
+    padding: 10px 8px;
+  }
+  
+  .create-input-group input,
+  .create-textarea-group textarea {
+    font-size: 14px;
+  }
+}
+
+/* Enhanced select dropdown appearance */
+.create-select-group select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 35px;
+}
+
+/* Ensure proper contrast for accessibility */
+.create-select-group select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Focus states for accessibility */
+.create-select-group select:focus-visible {
+  outline: 2px solid #e67e22;
+  outline-offset: 2px;
 }
