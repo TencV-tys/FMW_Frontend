@@ -110,41 +110,29 @@ export default function Notifications() {
       markAsRead(notification.id);
     }
 
-    // Navigate based on notification type and metadata
+    // Navigate based on notification type
     const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
     
     switch (notification.type) {
       case 'report_submitted':
-        if (metadata.report_id) {
-          // Navigate to reports page and highlight the specific report
-          window.location.href = `/admin/reports?highlight=${metadata.report_id}&status=pending`;
-        } else {
-          window.location.href = '/admin/reports';
-        }
+        // Navigate to reports page
+        window.location.href = '/admin/reports';
         break;
       
       case 'post_removed':
       case 'post_deleted':
       case 'post_restored':
       case 'post_resolved':
-        if (metadata.post_id) {
-          // Navigate to manage posts and highlight the specific post
-          window.location.href = `/admin/manage-posts?highlight=${metadata.post_id}`;
-        } else {
-          window.location.href = '/admin/manage-posts';
-        }
+        // Navigate to manage posts
+        window.location.href = '/admin/manage-posts';
         break;
       
       case 'user_suspended':
       case 'user_banned':
       case 'user_activated':
       case 'user_deleted':
-        if (metadata.target_user_id) {
-          // Navigate to manage users and highlight the specific user
-          window.location.href = `/admin/manage-users?highlight=${metadata.target_user_id}`;
-        } else {
-          window.location.href = '/admin/manage-users';
-        }
+        // Navigate to manage users
+        window.location.href = '/admin/manage-users';
         break;
       
       default:
@@ -234,7 +222,6 @@ export default function Notifications() {
         return faBell;
       case 'report_submitted':
         return faExclamationTriangle;
-      // 🎯 ADD USER ACTION ICONS
       case 'user_suspended':
         return faUserSlash;
       case 'user_banned':
@@ -262,7 +249,6 @@ export default function Notifications() {
         return '#3b82f6';
       case 'report_submitted':
         return '#8b5cf6';
-      // 🎯 ADD USER ACTION COLORS
       case 'user_suspended':
         return '#f59e0b';
       case 'user_banned':
@@ -349,7 +335,7 @@ export default function Notifications() {
         </div>
       </header>
 
-      {/* Stats Cards - Now with User Actions */}
+      {/* Stats Cards */}
       <section className="notification-stats">
         <div 
           className={`stat-card ${filter === 'all' ? 'active' : ''}`}
@@ -394,7 +380,7 @@ export default function Notifications() {
           </div>
         </div>
         
-        {/* 🎯 ADD USER ACTION STATS CARDS */}
+        {/* User Action Stats Cards */}
         <div 
           className={`stat-card ${filter === 'user_suspended' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('user_suspended')}
@@ -455,7 +441,6 @@ export default function Notifications() {
             <option value="post_deleted">Deleted Posts</option>
             <option value="post_restored">Restored Posts</option>
             <option value="report_submitted">Reports</option>
-            {/* 🎯 ADD USER ACTION FILTERS */}
             <option value="user_suspended">User Suspensions</option>
             <option value="user_banned">User Bans</option>
             <option value="user_activated">User Activations</option>
