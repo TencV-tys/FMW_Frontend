@@ -108,15 +108,15 @@ export default function Dashboard() {
     }
   };
 
-  const generateRecentActivities = (posts) => {
-    const recentPosts = posts.slice(0, 5); // Get 5 most recent posts
-    return recentPosts.map(post => ({
-      id: post.id,
-      message: `${post.first_name} ${post.last_name} ${(post.type === 'Lost' || post.type === 'lost') ? 'reported a lost item' : 'found an item'}: "${post.title}"`,
-      time: new Date(post.created_at).toLocaleDateString(),
-      type: post.type
-    }));
-  };
+const generateRecentActivities = (posts) => {
+  const recentPosts = posts.slice(0, 5); // Get 5 most recent posts
+  return recentPosts.map(post => ({
+    id: post.id,
+    message: `${post.first_name} ${post.last_name} ${(post.type === 'Lost' || post.type === 'lost') ? 'reported a lost' : 'found a'} ${post.category_name}: "${post.title}"`,
+    time: new Date(post.created_at).toLocaleDateString(),
+    type: post.type
+  }));
+};
 
   const handleNotificationClick = () => {
     navigate('/admin/notifications');

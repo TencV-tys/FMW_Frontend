@@ -45,7 +45,43 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
+/* Add to your existing Notifications.css */
+.stat-icon.user-suspended { background: #f59e0b; }
+.stat-icon.user-banned { background: #ef4444; }
+.stat-icon.user-activated { background: #10b981; }
+.stat-icon.user-deleted { background: #dc2626; }
 
+/* Update grid for more stat cards */
+.notification-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Ensure stat cards are properly sized */
+.stat-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-left: 4px solid #8B5A2B;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.stat-card.active {
+  border-left: 4px solid #FF8904;
+  background: #fff9e6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
 .btn-mark-all-read {
   background: #3b82f6;
   color: white;

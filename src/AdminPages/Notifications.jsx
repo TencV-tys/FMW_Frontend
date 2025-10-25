@@ -1,4 +1,3 @@
-// AdminPages/Notifications.jsx - UPDATED WITH NAVIGATION
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -9,7 +8,11 @@ import {
   faFilter,
   faCheckDouble,
   faExclamationTriangle,
-  faExternalLinkAlt
+  faExternalLinkAlt,
+  faUserSlash,
+  faBan,
+  faUserCheck,
+  faUserTimes
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Notifications.css';
 
@@ -20,7 +23,11 @@ export default function Notifications() {
   const [stats, setStats] = useState({
     total: 0,
     unread: 0,
-    reports: 0
+    reports: 0,
+    user_suspended: 0,
+    user_banned: 0,
+    user_activated: 0,
+    user_deleted: 0
   });
 
   useEffect(() => {
@@ -63,7 +70,11 @@ export default function Notifications() {
         setStats(data.stats || {
           total: 0,
           unread: 0,
-          reports: 0
+          reports: 0,
+          user_suspended: 0,
+          user_banned: 0,
+          user_activated: 0,
+          user_deleted: 0
         });
       }
     } catch (error) {
@@ -79,6 +90,14 @@ export default function Notifications() {
       setFilter('unread');
     } else if (filterType === 'reports') {
       setFilter('report_submitted');
+    } else if (filterType === 'user_suspended') {
+      setFilter('user_suspended');
+    } else if (filterType === 'user_banned') {
+      setFilter('user_banned');
+    } else if (filterType === 'user_activated') {
+      setFilter('user_activated');
+    } else if (filterType === 'user_deleted') {
+      setFilter('user_deleted');
     }
   };
 
@@ -119,9 +138,10 @@ export default function Notifications() {
       case 'user_suspended':
       case 'user_banned':
       case 'user_activated':
-        if (metadata.user_id) {
+      case 'user_deleted':
+        if (metadata.target_user_id) {
           // Navigate to manage users and highlight the specific user
-          window.location.href = `/admin/manage-users?highlight=${metadata.user_id}`;
+          window.location.href = `/admin/manage-users?highlight=${metadata.target_user_id}`;
         } else {
           window.location.href = '/admin/manage-users';
         }
@@ -214,11 +234,15 @@ export default function Notifications() {
         return faBell;
       case 'report_submitted':
         return faExclamationTriangle;
+      // 🎯 ADD USER ACTION ICONS
       case 'user_suspended':
+        return faUserSlash;
       case 'user_banned':
-        return faExclamationTriangle;
+        return faBan;
       case 'user_activated':
-        return faCheckCircle;
+        return faUserCheck;
+      case 'user_deleted':
+        return faUserTimes;
       case 'general':
         return faBell;
       default:
@@ -238,12 +262,15 @@ export default function Notifications() {
         return '#3b82f6';
       case 'report_submitted':
         return '#8b5cf6';
+      // 🎯 ADD USER ACTION COLORS
       case 'user_suspended':
         return '#f59e0b';
       case 'user_banned':
         return '#ef4444';
       case 'user_activated':
         return '#10b981';
+      case 'user_deleted':
+        return '#dc2626';
       case 'general':
         return '#6b7280';
       default:
@@ -285,7 +312,8 @@ export default function Notifications() {
       'post_resolved',
       'user_suspended',
       'user_banned',
-      'user_activated'
+      'user_activated',
+      'user_deleted'
     ];
     return clickableTypes.includes(notification.type);
   };
@@ -321,7 +349,7 @@ export default function Notifications() {
         </div>
       </header>
 
-      {/* Stats Cards - ONLY 3 CARDS - Now Clickable */}
+      {/* Stats Cards - Now with User Actions */}
       <section className="notification-stats">
         <div 
           className={`stat-card ${filter === 'all' ? 'active' : ''}`}
@@ -365,6 +393,50 @@ export default function Notifications() {
             <p>Reports</p>
           </div>
         </div>
+        
+        {/* 🎯 ADD USER ACTION STATS CARDS */}
+        <div 
+          className={`stat-card ${filter === 'user_suspended' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('user_suspended')}
+          style={{ cursor: 'pointer' }}
+          title="Show user suspension notifications"
+        >
+          <div className="stat-icon user-suspended">
+            <FontAwesomeIcon icon={faUserSlash} />
+          </div>
+          <div className="stat-info">
+            <h3>{stats.user_suspended}</h3>
+            <p>User Suspensions</p>
+          </div>
+        </div>
+        <div 
+          className={`stat-card ${filter === 'user_banned' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('user_banned')}
+          style={{ cursor: 'pointer' }}
+          title="Show user ban notifications"
+        >
+          <div className="stat-icon user-banned">
+            <FontAwesomeIcon icon={faBan} />
+          </div>
+          <div className="stat-info">
+            <h3>{stats.user_banned}</h3>
+            <p>User Bans</p>
+          </div>
+        </div>
+        <div 
+          className={`stat-card ${filter === 'user_activated' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('user_activated')}
+          style={{ cursor: 'pointer' }}
+          title="Show user activation notifications"
+        >
+          <div className="stat-icon user-activated">
+            <FontAwesomeIcon icon={faUserCheck} />
+          </div>
+          <div className="stat-info">
+            <h3>{stats.user_activated}</h3>
+            <p>User Activations</p>
+          </div>
+        </div>
       </section>
 
       {/* Filters */}
@@ -383,9 +455,11 @@ export default function Notifications() {
             <option value="post_deleted">Deleted Posts</option>
             <option value="post_restored">Restored Posts</option>
             <option value="report_submitted">Reports</option>
+            {/* 🎯 ADD USER ACTION FILTERS */}
             <option value="user_suspended">User Suspensions</option>
             <option value="user_banned">User Bans</option>
             <option value="user_activated">User Activations</option>
+            <option value="user_deleted">User Deletions</option>
             <option value="general">General</option>
           </select>
         </div>
@@ -417,6 +491,7 @@ export default function Notifications() {
               {filter === 'user_suspended' && 'User Suspensions'}
               {filter === 'user_banned' && 'User Bans'}
               {filter === 'user_activated' && 'User Activations'}
+              {filter === 'user_deleted' && 'User Deletions'}
               {filter === 'general' && 'General'}
             </span>
           </div>
