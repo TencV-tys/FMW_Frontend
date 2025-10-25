@@ -218,7 +218,54 @@
   background: #10b981;
   color: white;
 }
+/* Add to your existing UserNotification.css */
 
+/* Delete All Button */
+.btn-delete-all {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-delete-all:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+.btn-delete-all:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Header Actions Layout */
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-mark-all-read,
+  .btn-delete-all {
+    width: 100%;
+    justify-content: center;
+  }
+}
 /* Loading and Empty States */
 .loading-state,
 .empty-state {

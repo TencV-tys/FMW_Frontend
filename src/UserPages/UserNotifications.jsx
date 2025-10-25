@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx - UPDATED
+// UserPages/UserNotifications.jsx - UPDATED WITH DELETE ALL
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -11,11 +11,11 @@ import {
   faCheckDouble,
   faExclamationTriangle,
   faEye,
-  faEyeSlash
+  faEyeSlash,
+  faTrashAlt
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
-
 
 export default function UserNotifications() {
   const [notifications, setNotifications] = useState([]);
@@ -108,7 +108,7 @@ export default function UserNotifications() {
     }
   };
 
-  // ADD THIS: User deletes their own notification
+  // Delete single notification
   const deleteNotification = async (notificationId) => {
     if (!window.confirm('Are you sure you want to delete this notification?')) return;
     
@@ -129,6 +129,30 @@ export default function UserNotifications() {
       }
     } catch (error) {
       console.error('Error deleting notification:', error);
+    }
+  };
+
+  // 🆕 DELETE ALL NOTIFICATIONS
+  const deleteAllNotifications = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL notifications? This action cannot be undone.')) return;
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/notifications/delete-all', {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        // Clear all notifications from state
+        setNotifications([]);
+        // Reset unread count
+        setUnreadCount(0);
+      } else {
+        alert('Failed to delete all notifications');
+      }
+    } catch (error) {
+      console.error('Error deleting all notifications:', error);
+      alert('Error deleting all notifications');
     }
   };
 
@@ -190,127 +214,135 @@ export default function UserNotifications() {
 
   return (
     <section className='user-notification-page'>
-    <div className="user-notifications-page">
-      <UserNav/>
-      {/* Header */}
-      <header className="notifications-header">
-        <div className="header-content">
-          <h1>
-            <FontAwesomeIcon icon={faBell} />
-            Notifications
-          </h1>
-          <p>Stay updated with your account activities</p>
-        </div>
-        <div className="header-actions">
-          <button 
-            className="btn-mark-all-read"
-            onClick={markAllAsRead}
-            disabled={unreadCount === 0}
-          >
-            <FontAwesomeIcon icon={faCheckDouble} />
-            Mark All as Read
-          </button>
-        </div>
-      </header>
-
-      {/* Stats */}
-      <section className="notification-stats">
-        <div className="stat-card">
-          <div className="stat-icon total">
-            <FontAwesomeIcon icon={faBell} />
+      <div className="user-notifications-page">
+        <UserNav/>
+        {/* Header */}
+        <header className="notifications-header">
+          <div className="header-content">
+            <h1>
+              <FontAwesomeIcon icon={faBell} />
+              Notifications
+            </h1>
+            <p>Stay updated with your account activities</p>
           </div>
-          <div className="stat-info">
-            <h3>{notifications.length}</h3>
-            <p>Total</p>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon unread">
-            <FontAwesomeIcon icon={faBell} />
-          </div>
-          <div className="stat-info">
-            <h3>{unreadCount}</h3>
-            <p>Unread</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Filters */}
-      <section className="notification-filters">
-        <div className="filter-group">
-          <FontAwesomeIcon icon={faFilter} />
-          <select 
-            value={filter} 
-            onChange={(e) => setFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Notifications</option>
-            <option value="post_resolved">Resolved Posts</option>
-            <option value="post_removed">Removed Posts</option>
-            <option value="post_deleted">Deleted Posts</option>
-            <option value="post_restored">Restored Posts</option>
-            <option value="report_submitted">Reports</option>
-            <option value="report_status_update">Report Updates</option>
-            <option value="account_suspended">Account Status</option>
-          </select>
-        </div>
-      </section>
-
-      {/* Notifications List */}
-      <section className="notifications-list">
-        {loading ? (
-          <div className="loading-state">
-            <p>Loading notifications...</p>
-          </div>
-        ) : notifications.length > 0 ? (
-          notifications.map(notification => (
-            <div 
-              key={notification.id} 
-              className={`notification-item ${notification.is_read ? 'read' : 'unread'}`}
+          <div className="header-actions">
+            <button 
+              className="btn-mark-all-read"
+              onClick={markAllAsRead}
+              disabled={unreadCount === 0}
             >
-              <div className="notification-icon">
-                <FontAwesomeIcon 
-                  icon={getNotificationIcon(notification.type)} 
-                  style={{ color: getNotificationColor(notification.type) }}
-                />
-              </div>
-              <div className="notification-content">
-                <h4>{notification.title}</h4>
-                <p>{notification.message}</p>
-                <div className="notification-meta">
-                  <span className="time">{formatTime(notification.created_at)}</span>
+              <FontAwesomeIcon icon={faCheckDouble} />
+              Mark All as Read
+            </button>
+            {/* 🆕 DELETE ALL BUTTON */}
+            <button 
+              className="btn-delete-all"
+              onClick={deleteAllNotifications}
+              disabled={notifications.length === 0}
+            >
+              <FontAwesomeIcon icon={faTrashAlt} />
+              Delete All
+            </button>
+          </div>
+        </header>
+
+        {/* Stats */}
+        <section className="notification-stats">
+          <div className="stat-card">
+            <div className="stat-icon total">
+              <FontAwesomeIcon icon={faBell} />
+            </div>
+            <div className="stat-info">
+              <h3>{notifications.length}</h3>
+              <p>Total</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon unread">
+              <FontAwesomeIcon icon={faBell} />
+            </div>
+            <div className="stat-info">
+              <h3>{unreadCount}</h3>
+              <p>Unread</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Filters */}
+        <section className="notification-filters">
+          <div className="filter-group">
+            <FontAwesomeIcon icon={faFilter} />
+            <select 
+              value={filter} 
+              onChange={(e) => setFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All Notifications</option>
+              <option value="post_resolved">Resolved Posts</option>
+              <option value="post_removed">Removed Posts</option>
+              <option value="post_deleted">Deleted Posts</option>
+              <option value="post_restored">Restored Posts</option>
+              <option value="report_submitted">Reports</option>
+              <option value="report_status_update">Report Updates</option>
+              <option value="account_suspended">Account Status</option>
+            </select>
+          </div>
+        </section>
+
+        {/* Notifications List */}
+        <section className="notifications-list">
+          {loading ? (
+            <div className="loading-state">
+              <p>Loading notifications...</p>
+            </div>
+          ) : notifications.length > 0 ? (
+            notifications.map(notification => (
+              <div 
+                key={notification.id} 
+                className={`notification-item ${notification.is_read ? 'read' : 'unread'}`}
+              >
+                <div className="notification-icon">
+                  <FontAwesomeIcon 
+                    icon={getNotificationIcon(notification.type)} 
+                    style={{ color: getNotificationColor(notification.type) }}
+                  />
+                </div>
+                <div className="notification-content">
+                  <h4>{notification.title}</h4>
+                  <p>{notification.message}</p>
+                  <div className="notification-meta">
+                    <span className="time">{formatTime(notification.created_at)}</span>
+                  </div>
+                </div>
+                <div className="notification-actions">
+                  {!notification.is_read && (
+                    <button 
+                      className="btn-mark-read"
+                      onClick={() => markAsRead(notification.id)}
+                      title="Mark as read"
+                    >
+                      <FontAwesomeIcon icon={faCheckCircle} />
+                    </button>
+                  )}
+                  <button 
+                    className="btn-delete"
+                    onClick={() => deleteNotification(notification.id)}
+                    title="Delete notification"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
                 </div>
               </div>
-              <div className="notification-actions">
-                {!notification.is_read && (
-                  <button 
-                    className="btn-mark-read"
-                    onClick={() => markAsRead(notification.id)}
-                    title="Mark as read"
-                  >
-                    <FontAwesomeIcon icon={faCheckCircle} />
-                  </button>
-                )}
-                {/* ADD DELETE BUTTON */}
-                <button 
-                  className="btn-delete"
-                  onClick={() => deleteNotification(notification.id)}
-                  title="Delete notification"
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </div>
+            ))
+          ) : (
+            <div className="empty-state">
+              <FontAwesomeIcon icon={faBell} size="3x" />
+              <h3>No notifications</h3>
+              <p>You're all caught up! New notifications will appear here.</p>
             </div>
-          ))
-        ) : (
-          <div className="empty-state">
-            <FontAwesomeIcon icon={faBell} size="3x" />
-            <h3>No notifications</h3>
-            <p>You're all caught up! New notifications will appear here.</p>
-          </div>
-        )}
-      </section>
-    </div>
+          )}
+        </section>
+      </div>
     </section>
   );
 }
