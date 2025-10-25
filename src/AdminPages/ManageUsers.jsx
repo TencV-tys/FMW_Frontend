@@ -27,10 +27,12 @@ export default function ManageUsers() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [viewMode, setViewMode] = useState('table');
   const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [showBanModal, setShowBanModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [suspensionDuration, setSuspensionDuration] = useState('7');
   const [customDays, setCustomDays] = useState('');
   const [suspensionReason, setSuspensionReason] = useState('');
+  const [banReason, setBanReason] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -79,6 +81,13 @@ export default function ManageUsers() {
     setCustomDays('');
     setSuspensionReason('');
     setShowSuspendModal(true);
+  };
+
+  // 🎯 OPEN BAN MODAL
+  const openBanModal = (user) => {
+    setSelectedUser(user);
+    setBanReason('');
+    setShowBanModal(true);
   };
 
   // 🎯 SUSPEND USER with duration
@@ -135,18 +144,17 @@ export default function ManageUsers() {
     }
   };
 
-  // 🎯 BAN USER with confirmation
-  const handleBan = async (userId, userName) => {
-    const reason = prompt(`Please provide a reason for banning user "${userName}":`);
-    if (reason === null) return;
+  // 🎯 BAN USER with modal
+  const handleBan = async () => {
+    if (!selectedUser) return;
     
-    if (!reason.trim()) {
+    if (!banReason.trim()) {
       alert('Please provide a reason for banning.');
       return;
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/api/users/${userId}/status`, {
+      const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}/status`, {
         method: "PUT",
         credentials: 'include',
         headers: {
@@ -154,15 +162,17 @@ export default function ManageUsers() {
         },
         body: JSON.stringify({ 
           status: 'banned',
-          reason: reason.trim()
+          reason: banReason.trim()
         })
       });
       
       if (res.ok) {
         setUsers(users.map(user => 
-          user.id === userId ? { ...user, status: 'banned' } : user
+          user.id === selectedUser.id ? { ...user, status: 'banned' } : user
         ));
-        alert(`User "${userName}" banned successfully!`);
+        alert(`User "${getUserName(selectedUser)}" banned successfully!`);
+        setShowBanModal(false);
+        setSelectedUser(null);
       } else {
         alert('Failed to ban user');
       }
@@ -305,7 +315,7 @@ export default function ManageUsers() {
           </button>
           <button
             className="action-btn ban"
-            onClick={() => handleBan(user.id, getUserName(user))}
+            onClick={() => openBanModal(user)}
             title="Ban User"
           >
             <FontAwesomeIcon icon={faUserSlash} />
@@ -697,6 +707,67 @@ export default function ManageUsers() {
                 disabled={!suspensionReason.trim() || (suspensionDuration === 'custom' && !customDays)}
               >
                 Confirm Suspension
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ban User Modal */}
+      {showBanModal && selectedUser && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Ban User</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowBanModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="warning-banner">
+                <FontAwesomeIcon icon={faBan} />
+                <strong>Warning: This action is permanent!</strong>
+              </div>
+              <p>You are about to <strong>permanently ban</strong> <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
+              
+              <div className="ban-consequences">
+                <h4>Consequences of Banning:</h4>
+                <ul>
+                  <li>User will be permanently blocked from the platform</li>
+                  <li>All their posts and content will be removed</li>
+                  <li>They will not be able to create a new account with the same email</li>
+                  <li>This action cannot be undone</li>
+                </ul>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="banReason">Reason for Ban *</label>
+                <textarea
+                  id="banReason"
+                  value={banReason}
+                  onChange={(e) => setBanReason(e.target.value)}
+                  placeholder="Enter the reason for permanent ban..."
+                  rows="3"
+                  required
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn-secondary"
+                onClick={() => setShowBanModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn-primary ban"
+                onClick={handleBan}
+                disabled={!banReason.trim()}
+              >
+                Confirm Permanent Ban
               </button>
             </div>
           </div>
