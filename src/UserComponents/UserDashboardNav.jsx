@@ -1,6 +1,6 @@
-// components/UserDashboardNav.jsx - Updated version
+// components/UserDashboardNav.jsx - Updated with unique class names
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // Add useLocation
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faUser, 
@@ -24,7 +24,7 @@ export default function UserDashboardNav() {
   const [notificationCount, setNotificationCount] = useState(0);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   // 🎯 Fetch user data
   useEffect(() => {
@@ -118,46 +118,46 @@ export default function UserDashboardNav() {
   };
 
   return (
-    <header className={`nav-container ${isSticky ? 'sticky' : ''}`}>
-      <nav className='user-nav'>
+    <header className={`user-nav-container ${isSticky ? 'sticky' : ''}`}>
+      <nav className='user-dashboard-nav'>
         
         {/* 🎯 Left Side - Logo & Navigation Links */}
-        <div className='user-links'>
-          <div className='user-page-logo-container'>
+        <div className='user-dashboard-links'>
+          <div className='user-dashboard-logo-container'>
             <img 
               src={Logo} 
-              className='user-page-Logo' 
+              className='user-dashboard-logo' 
               alt="FindMyWay Logo"
               onClick={() => navigate('/user')}
               style={{ cursor: 'pointer' }}
             />
           </div>
           
-          <div className='nav-links-group'>
-            <div className='user-link-container'>
+          <div className='user-nav-links-group'>
+            <div className='user-dashboard-link-container'>
               <Link 
                 to='/user' 
-                className={`user-nav-link ${isActiveLink('/user') ? 'active' : ''}`}
+                className={`user-dashboard-nav-link ${isActiveLink('/user') ? 'active' : ''}`}
               >
                 <FontAwesomeIcon icon={faBullhorn} />
                 <span>Bulletin Board</span>
               </Link>
             </div>
             
-            <div className='user-link-container'>
+            <div className='user-dashboard-link-container'>
               <Link 
                 to='/user/myposts' 
-                className={`user-nav-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
+                className={`user-dashboard-nav-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
               >
                 <FontAwesomeIcon icon={faFileAlt} />
                 <span>My Posts</span>
               </Link>
             </div>
             
-            <div className='user-link-container'>
+            <div className='user-dashboard-link-container'>
               <Link 
                 to='/user/create' 
-                className={`user-nav-link create-post-link ${isActiveLink('/user/create') ? 'active' : ''}`}
+                className={`user-dashboard-nav-link user-create-post-link ${isActiveLink('/user/create') ? 'active' : ''}`}
               >
                 <FontAwesomeIcon icon={faPlus} />
                 <span>Create Post</span>
@@ -167,17 +167,17 @@ export default function UserDashboardNav() {
         </div>
 
         {/* 🎯 Right Side - User Profile & Dropdown */}
-        <div className='user-profile-container' ref={dropdownRef}>
+        <div className='user-dashboard-profile-container' ref={dropdownRef}>
           {/* 🎯 Notification Bell with Badge */}
-          <div className="notification-bell-container">
+          <div className="user-notification-bell-container">
             <Link 
               to="/user/user-notification" 
-              className={`notification-bell ${isActiveLink('/user/user-notification') ? 'active' : ''}`}
+              className={`user-notification-bell ${isActiveLink('/user/user-notification') ? 'active' : ''}`}
               title="Notifications"
             >
               <FontAwesomeIcon icon={faBell} />
               {notificationCount > 0 && (
-                <span className="notification-badge">
+                <span className="user-notification-badge">
                   {notificationCount > 99 ? '99+' : notificationCount}
                 </span>
               )}
@@ -185,19 +185,19 @@ export default function UserDashboardNav() {
           </div>
 
           <div 
-            className='user-profile-sub' 
+            className='user-dashboard-profile-sub' 
             onClick={() => setOpen(!open)}
             onMouseEnter={() => setOpen(true)}
           >
-            <div className="user-info">
-              <p className="user-name">{getUserName()}</p>
-              <p className="user-role">{user?.role === 'admin' ? 'Administrator' : 'Community Member'}</p>
+            <div className="user-dashboard-info">
+              <p className="user-dashboard-name">{getUserName()}</p>
+              <p className="user-dashboard-role">{user?.role === 'admin' ? 'Administrator' : 'Community Member'}</p>
             </div>
             
-            <div className="profile-image-container">
+            <div className="user-dashboard-profile-image-container">
               <img 
                 src={getUserImage()} 
-                className='Profile'
+                className='user-dashboard-profile-img'
                 alt="User Profile"
                 onError={(e) => {
                   e.target.src = Profile;
@@ -205,7 +205,7 @@ export default function UserDashboardNav() {
               />
               <FontAwesomeIcon 
                 icon={faCaretDown} 
-                className={`dropdown-arrow ${open ? 'open' : ''}`}
+                className={`user-dropdown-arrow ${open ? 'open' : ''}`}
               />
             </div>
           </div>
@@ -213,11 +213,11 @@ export default function UserDashboardNav() {
           {/* 🎯 Dropdown Menu */}
           {open && (
             <div 
-              className='profile-dropdown-menu'
+              className='user-profile-dropdown-menu'
               onMouseLeave={() => setOpen(false)}
             >
-              <div className="dropdown-header">
-                <div className="dropdown-user-info">
+              <div className="user-dropdown-header">
+                <div className="user-dropdown-user-info">
                   <img 
                     src={getUserImage()} 
                     alt="Profile"
@@ -226,18 +226,18 @@ export default function UserDashboardNav() {
                     }}
                   />
                   <div>
-                    <p className="dropdown-name">{getUserName()}</p>
-                    <p className="dropdown-email">{user?.email}</p>
+                    <p className="user-dropdown-name">{getUserName()}</p>
+                    <p className="user-dropdown-email">{user?.email}</p>
                   </div>
                 </div>
               </div>
               
-              <div className="dropdown-divider"></div>
+              <div className="user-dropdown-divider"></div>
               
-              <div className='dropdown-link-container'>
+              <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/profile' 
-                  className={`dropdown-link ${isActiveLink('/user/profile') ? 'active' : ''}`}
+                  className={`user-dropdown-link ${isActiveLink('/user/profile') ? 'active' : ''}`}
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faUser} />
@@ -245,10 +245,10 @@ export default function UserDashboardNav() {
                 </Link>
               </div>
               
-              <div className='dropdown-link-container'>
+              <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/myposts' 
-                  className={`dropdown-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
+                  className={`user-dropdown-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faFileAlt} />
@@ -256,10 +256,10 @@ export default function UserDashboardNav() {
                 </Link>
               </div>
               
-              <div className='dropdown-link-container'>
+              <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/my-reports' 
-                  className={`dropdown-link ${isActiveLink('/user/my-reports') ? 'active' : ''}`}
+                  className={`user-dropdown-link ${isActiveLink('/user/my-reports') ? 'active' : ''}`}
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faFlag} />
@@ -267,28 +267,28 @@ export default function UserDashboardNav() {
                 </Link>
               </div>
               
-              <div className='dropdown-link-container'>
+              <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/user-notification' 
-                  className={`dropdown-link notification-dropdown-link ${isActiveLink('/user/user-notification') ? 'active' : ''}`}
+                  className={`user-dropdown-link user-notification-dropdown-link ${isActiveLink('/user/user-notification') ? 'active' : ''}`}
                   onClick={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faBell} />
                   <span>Notifications</span>
                   {notificationCount > 0 && (
-                    <span className="dropdown-notification-badge">
+                    <span className="user-dropdown-notification-badge">
                       {notificationCount}
                     </span>
                   )}
                 </Link>
               </div>
               
-              <div className="dropdown-divider"></div>
+              <div className="user-dropdown-divider"></div>
               
-              <div className='dropdown-link-container logout-container'>
+              <div className='user-dropdown-link-container user-dropdown-logout-container'>
                 <LogoutButton 
                   isDropdown={true}
-                  className="dropdown-link logout-link"
+                  className="user-dropdown-logout-link"
                   onLogout={() => setOpen(false)}
                 >
                   <FontAwesomeIcon icon={faSignOutAlt} />

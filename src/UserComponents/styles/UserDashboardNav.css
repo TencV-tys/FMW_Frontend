@@ -1,6 +1,6 @@
-/* UserDashboardNav.css */
+/* UserDashboardNav.css - Unique Classes */
 
-.nav-container {
+.user-nav-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -12,7 +12,7 @@
   height: 60px;
 }
 
-.nav-container .user-nav {
+.user-nav-container .user-dashboard-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,8 +22,23 @@
   height: 100%;
 }
 
+.user-nav-container.sticky {
+  position: fixed;
+  top: 0;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 /* 🎯 Logo */
-.user-page-Logo {
+.user-dashboard-logo {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -31,13 +46,13 @@
   cursor: pointer;
 }
 
-.user-page-logo-container {
+.user-dashboard-logo-container {
   display: flex;
   align-items: center;
 }
 
 /* 🎯 Navigation Links */
-.user-links {
+.user-dashboard-links {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -45,22 +60,22 @@
   padding: 10px;
 }
 
-.nav-links-group {
+.user-nav-links-group {
   display: flex;
   gap: 25px;
 }
 
-.user-link-container {
+.user-dashboard-link-container {
   display: flex;
   align-items: center;
   transition: all 0.3s ease;
 }
 
-.user-link-container:hover {
+.user-dashboard-link-container:hover {
   transform: scale(1.2);
 }
 
-.user-nav-link {
+.user-dashboard-nav-link {
   font-weight: bold;
   text-decoration: none;
   color: white;
@@ -74,20 +89,20 @@
   position: relative;
 }
 
-.user-nav-link:hover {
+.user-dashboard-nav-link:hover {
   color: black;
   background: rgba(255, 255, 255, 0.2);
 }
 
 /* 🎯 Active Link Styles */
-.user-nav-link.active {
+.user-dashboard-nav-link.active {
   background: rgba(255, 255, 255, 0.25);
   color: #1a1a1a;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.user-nav-link.active::after {
+.user-dashboard-nav-link.active::after {
   content: '';
   position: absolute;
   bottom: -8px;
@@ -99,34 +114,34 @@
   border-radius: 50%;
 }
 
-.user-nav-link.active svg {
+.user-dashboard-nav-link.active svg {
   color: #1a1a1a;
 }
 
 /* 🎯 Create Post Link Special Style */
-.create-post-link {
+.user-create-post-link {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.create-post-link:hover {
+.user-create-post-link:hover {
   background: rgba(255, 255, 255, 0.25);
 }
 
-.create-post-link.active {
+.user-create-post-link.active {
   background: rgba(255, 255, 255, 0.35);
   border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* 🎯 User Profile Section */
-.user-profile-container {
+.user-dashboard-profile-container {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.user-profile-sub {
+.user-dashboard-profile-sub {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -139,17 +154,17 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.user-profile-sub:hover {
+.user-dashboard-profile-sub:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.user-info {
+.user-dashboard-info {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 }
 
-.user-name {
+.user-dashboard-name {
   color: white;
   font-weight: 600;
   font-size: 0.9rem;
@@ -157,20 +172,20 @@
   line-height: 1.2;
 }
 
-.user-role {
+.user-dashboard-role {
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.7rem;
   margin: 0;
   line-height: 1.2;
 }
 
-.profile-image-container {
+.user-dashboard-profile-image-container {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.Profile {
+.user-dashboard-profile-img {
   width: 35px;
   height: 35px;
   border-radius: 50%;
@@ -178,18 +193,18 @@
   border: 2px solid white;
 }
 
-.dropdown-arrow {
+.user-dropdown-arrow {
   color: white;
   font-size: 0.8rem;
   transition: transform 0.3s ease;
 }
 
-.dropdown-arrow.open {
+.user-dropdown-arrow.open {
   transform: rotate(180deg);
 }
 
 /* 🎯 Dropdown Menu */
-.profile-dropdown-menu {
+.user-profile-dropdown-menu {
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -201,12 +216,12 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   border-radius: 12px;
   z-index: 1001;
-  animation: fadeInUp 0.2s ease;
+  animation: userFadeInUp 0.2s ease;
   border: 1px solid #e5e7eb;
   margin-top: 10px;
 }
 
-@keyframes fadeInUp {
+@keyframes userFadeInUp {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -218,18 +233,18 @@
 }
 
 /* 🎯 Dropdown Header */
-.dropdown-header {
+.user-dropdown-header {
   padding: 0 20px 15px 20px;
   border-bottom: 1px solid #f3f4f6;
 }
 
-.dropdown-user-info {
+.user-dropdown-user-info {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.dropdown-user-info img {
+.user-dropdown-user-info img {
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -237,26 +252,26 @@
   border: 2px solid #FF8904;
 }
 
-.dropdown-name {
+.user-dropdown-name {
   margin: 0;
   font-weight: 600;
   color: #1f2937;
   font-size: 0.9rem;
 }
 
-.dropdown-email {
+.user-dropdown-email {
   margin: 2px 0 0 0;
   color: #6b7280;
   font-size: 0.8rem;
 }
 
-.dropdown-divider {
+.user-dropdown-divider {
   height: 1px;
   background: #f3f4f6;
   margin: 8px 0;
 }
 
-.dropdown-link-container {
+.user-dropdown-link-container {
   transition: all 0.2s ease;
   display: flex;
   justify-content: flex-start;
@@ -266,11 +281,11 @@
   padding: 0;
 }
 
-.dropdown-link-container:hover {
+.user-dropdown-link-container:hover {
   background-color: #f8f9fa;
 }
 
-.dropdown-link {
+.user-dropdown-link {
   text-decoration: none;
   color: #374151;
   font-weight: 500;
@@ -284,40 +299,40 @@
   position: relative;
 }
 
-.dropdown-link:hover {
+.user-dropdown-link:hover {
   color: #FF8904;
   background: #f8f9fa;
 }
 
-.dropdown-link svg {
+.user-dropdown-link svg {
   width: 14px;
   color: #9ca3af;
 }
 
-.dropdown-link:hover svg {
+.user-dropdown-link:hover svg {
   color: #FF8904;
 }
 
 /* 🎯 Active Dropdown Link */
-.dropdown-link.active {
+.user-dropdown-link.active {
   color: #FF8904;
   background: #fff7ed;
   border-right: 3px solid #FF8904;
   font-weight: 600;
 }
 
-.dropdown-link.active svg {
+.user-dropdown-link.active svg {
   color: #FF8904;
 }
 
 /* 🎯 Logout Section */
-.logout-container {
+.user-dropdown-logout-container {
   border-top: 1px solid #f3f4f6;
   margin-top: 5px;
   padding-top: 5px;
 }
 
-.logout-link {
+.user-dropdown-logout-link {
   color: #ef4444 !important;
   background: none !important;
   border: none !important;
@@ -333,27 +348,27 @@
   cursor: pointer;
 }
 
-.logout-link:hover {
+.user-dropdown-logout-link:hover {
   color: #dc2626 !important;
   background: #fef2f2 !important;
 }
 
-.logout-link svg {
+.user-dropdown-logout-link svg {
   width: 14px;
   color: #ef4444 !important;
 }
 
-.logout-link:hover svg {
+.user-dropdown-logout-link:hover svg {
   color: #dc2626 !important;
 }
 
 /* 🎯 Notification Bell Styles */
-.notification-bell-container {
+.user-notification-bell-container {
   margin-right: 15px;
   position: relative;
 }
 
-.notification-bell {
+.user-notification-bell {
   position: relative;
   color: white;
   font-size: 1.2rem;
@@ -366,17 +381,17 @@
   text-decoration: none;
 }
 
-.notification-bell:hover {
+.user-notification-bell:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
 }
 
-.notification-bell.active {
+.user-notification-bell.active {
   background: rgba(255, 255, 255, 0.25);
   color: #1a1a1a;
 }
 
-.notification-badge {
+.user-notification-badge {
   position: absolute;
   top: -2px;
   right: -2px;
@@ -391,10 +406,10 @@
   justify-content: center;
   font-weight: 600;
   border: 2px solid #FF8904;
-  animation: pulse 2s infinite;
+  animation: userPulse 2s infinite;
 }
 
-@keyframes pulse {
+@keyframes userPulse {
   0% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
@@ -410,11 +425,11 @@
 }
 
 /* 🎯 Dropdown Notification Badge */
-.notification-dropdown-link {
+.user-notification-dropdown-link {
   position: relative;
 }
 
-.dropdown-notification-badge {
+.user-dropdown-notification-badge {
   position: absolute;
   right: 20px;
   background: #ef4444;
@@ -432,46 +447,46 @@
 
 /* 🎯 Responsive Design */
 @media (max-width: 768px) {
-  .nav-container .user-nav {
+  .user-nav-container .user-dashboard-nav {
     padding: 0 20px;
   }
   
-  .user-links {
+  .user-dashboard-links {
     gap: 20px;
   }
   
-  .nav-links-group {
+  .user-nav-links-group {
     gap: 15px;
   }
   
-  .user-nav-link span {
+  .user-dashboard-nav-link span {
     display: none;
   }
   
-  .user-info {
+  .user-dashboard-info {
     display: none;
   }
   
-  .profile-dropdown-menu {
+  .user-profile-dropdown-menu {
     min-width: 200px;
     right: -10px;
   }
   
-  .dropdown-user-info {
+  .user-dropdown-user-info {
     flex-direction: column;
     text-align: center;
   }
   
-  .notification-bell-container {
+  .user-notification-bell-container {
     margin-right: 10px;
   }
   
-  .notification-bell {
+  .user-notification-bell {
     font-size: 1.1rem;
     padding: 6px;
   }
   
-  .notification-badge {
+  .user-notification-badge {
     min-width: 16px;
     height: 16px;
     font-size: 0.6rem;
@@ -479,37 +494,37 @@
 }
 
 @media (max-width: 480px) {
-  .nav-container .user-nav {
+  .user-nav-container .user-dashboard-nav {
     padding: 0 15px;
   }
   
-  .user-links {
+  .user-dashboard-links {
     gap: 15px;
   }
   
-  .nav-links-group {
+  .user-nav-links-group {
     gap: 10px;
   }
   
-  .user-page-Logo {
+  .user-dashboard-logo {
     width: 35px;
     height: 35px;
   }
   
-  .Profile {
+  .user-dashboard-profile-img {
     width: 30px;
     height: 30px;
   }
   
-  .profile-dropdown-menu {
+  .user-profile-dropdown-menu {
     min-width: 180px;
   }
   
-  .notification-bell span {
+  .user-notification-bell span {
     display: none;
   }
   
-  .dropdown-notification-badge {
+  .user-dropdown-notification-badge {
     right: 15px;
     min-width: 18px;
     height: 18px;
