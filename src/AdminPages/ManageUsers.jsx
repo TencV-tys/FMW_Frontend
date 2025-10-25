@@ -14,7 +14,8 @@ import {
   faEnvelope,
   faVenusMars,
   faCalendar,
-  faPauseCircle
+  faPauseCircle,
+  faClock
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
@@ -25,6 +26,11 @@ export default function ManageUsers() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
   const [viewMode, setViewMode] = useState('table');
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [suspensionDuration, setSuspensionDuration] = useState('7');
+  const [customDays, setCustomDays] = useState('');
+  const [suspensionReason, setSuspensionReason] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -66,25 +72,61 @@ export default function ManageUsers() {
     }
   };
 
-  // 🎯 SUSPEND USER with confirmation
-  const handleSuspend = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to suspend user "${userName}"? They will not be able to login until restored.`)) return;
+  // 🎯 OPEN SUSPEND MODAL
+  const openSuspendModal = (user) => {
+    setSelectedUser(user);
+    setSuspensionDuration('7');
+    setCustomDays('');
+    setSuspensionReason('');
+    setShowSuspendModal(true);
+  };
+
+  // 🎯 SUSPEND USER with duration
+  const handleSuspend = async () => {
+    if (!selectedUser) return;
     
+    if (!suspensionReason.trim()) {
+      alert('Please provide a reason for suspension.');
+      return;
+    }
+
+    if (suspensionDuration === 'custom' && (!customDays || customDays < 1)) {
+      alert('Please enter a valid number of days for custom suspension.');
+      return;
+    }
+
     try {
-      const res = await fetch(`http://localhost:8000/api/users/${userId}/status`, {
+      const suspendData = {
+        status: 'suspended',
+        reason: suspensionReason,
+        duration: suspensionDuration
+      };
+
+      if (suspensionDuration === 'custom') {
+        suspendData.customDays = customDays;
+      }
+
+      const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}/status`, {
         method: "PUT",
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: 'suspended' })
+        body: JSON.stringify(suspendData)
       });
       
       if (res.ok) {
+        const result = await res.json();
         setUsers(users.map(user => 
-          user.id === userId ? { ...user, status: 'suspended' } : user
+          user.id === selectedUser.id ? { 
+            ...user, 
+            status: 'suspended',
+            suspended_until: result.data.suspended_until
+          } : user
         ));
-        alert(`User "${userName}" suspended successfully!`);
+        alert(`User "${getUserName(selectedUser)}" suspended for ${result.data.duration} day(s)!`);
+        setShowSuspendModal(false);
+        setSelectedUser(null);
       } else {
         alert('Failed to suspend user');
       }
@@ -95,8 +137,14 @@ export default function ManageUsers() {
 
   // 🎯 BAN USER with confirmation
   const handleBan = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to permanently ban user "${userName}"? This action is irreversible.`)) return;
+    const reason = prompt(`Please provide a reason for banning user "${userName}":`);
+    if (reason === null) return;
     
+    if (!reason.trim()) {
+      alert('Please provide a reason for banning.');
+      return;
+    }
+
     try {
       const res = await fetch(`http://localhost:8000/api/users/${userId}/status`, {
         method: "PUT",
@@ -104,7 +152,10 @@ export default function ManageUsers() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: 'banned' })
+        body: JSON.stringify({ 
+          status: 'banned',
+          reason: reason.trim()
+        })
       });
       
       if (res.ok) {
@@ -136,7 +187,7 @@ export default function ManageUsers() {
       
       if (res.ok) {
         setUsers(users.map(user => 
-          user.id === userId ? { ...user, status: 'active' } : user
+          user.id === userId ? { ...user, status: 'active', suspended_until: null } : user
         ));
         alert(`User "${userName}" activated successfully!`);
       } else {
@@ -170,7 +221,7 @@ export default function ManageUsers() {
     return matchesSearch && matchesStatus && matchesRole;
   });
 
-  // Stats calculation - Updated to match new requirements
+  // Stats calculation
   const userStats = {
     total: users.length,
     active: users.filter(u => u.status === 'active').length,
@@ -178,7 +229,7 @@ export default function ManageUsers() {
     banned: users.filter(u => u.status === 'banned').length
   };
 
-  // Get status badge class - UPDATED WITH UNIQUE CLASS NAMES
+  // Get status badge class
   const getStatusClass = (status) => {
     const statusMap = {
       active: 'user-status-active',
@@ -189,13 +240,24 @@ export default function ManageUsers() {
   };
 
   // Get status display text
-  const getStatusDisplayText = (status) => {
+  const getStatusDisplayText = (user) => {
+    if (user.status === 'suspended' && user.suspended_until) {
+      const untilDate = new Date(user.suspended_until);
+      const now = new Date();
+      const diffTime = untilDate - now;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 0) {
+        return `Suspended (${diffDays} day${diffDays !== 1 ? 's' : ''} left)`;
+      }
+    }
+    
     const statusMap = {
       active: 'Active',
       suspended: 'Suspended',
       banned: 'Banned'
     };
-    return statusMap[status] || 'Active';
+    return statusMap[user.status] || 'Active';
   };
 
   // Get status icon
@@ -236,7 +298,7 @@ export default function ManageUsers() {
         <>
           <button
             className="action-btn suspend"
-            onClick={() => handleSuspend(user.id, getUserName(user))}
+            onClick={() => openSuspendModal(user)}
             title="Suspend User"
           >
             <FontAwesomeIcon icon={faPauseCircle} />
@@ -263,7 +325,7 @@ export default function ManageUsers() {
     }
   };
 
-  // Mobile User Card Component - UPDATED WITH UNIQUE STATUS
+  // Mobile User Card Component
   const MobileUserCard = ({ user }) => (
     <div className="mobile-user-card">
       <div className="mobile-card-header">
@@ -274,7 +336,7 @@ export default function ManageUsers() {
         <div className="mobile-card-badges">
           <span className={`mobile-card-status ${getStatusClass(user.status)}`}>
             <FontAwesomeIcon icon={getStatusIcon(user.status)} />
-            {getStatusDisplayText(user.status)}
+            {getStatusDisplayText(user)}
           </span>
           <span className={`mobile-card-role ${getRoleClass(user.role)}`}>
             <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
@@ -300,6 +362,12 @@ export default function ManageUsers() {
             day: 'numeric'
           })}</span>
         </div>
+        {user.status === 'suspended' && user.suspended_until && (
+          <div className="mobile-card-detail">
+            <FontAwesomeIcon icon={faClock} />
+            <span>Until: {new Date(user.suspended_until).toLocaleDateString()}</span>
+          </div>
+        )}
       </div>
       
       <div className="mobile-card-actions">
@@ -317,240 +385,323 @@ export default function ManageUsers() {
   );
 
   return (
-   <>
-        {/* Header Section */}
-        <div className="manage-users-header">
-          <div className="header-content">
-            <h1>Manage Users</h1>
-            <p>Admin panel for user management and moderation</p>
-          </div>
+    <>
+      {/* Header Section */}
+      <div className="manage-users-header">
+        <div className="header-content">
+          <h1>Manage Users</h1>
+          <p>Admin panel for user management and moderation</p>
+        </div>
+        <button 
+          className="refresh-btn"
+          onClick={fetchUsers}
+          disabled={loading}
+        >
+          <FontAwesomeIcon icon={faRefresh} spin={loading} />
+          Refresh
+        </button>
+      </div>
+
+      {/* Filters and Search */}
+      <div className="users-filters">
+        <div className="search-box">
+          <FontAwesomeIcon icon={faSearch} />
+          <input
+            type="text"
+            placeholder="Search users by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div className="filter-group">
+          <FontAwesomeIcon icon={faFilter} />
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="banned">Banned</option>
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <FontAwesomeIcon icon={faUser} />
+          <select 
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="all">All Roles</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        {/* View Toggle */}
+        <div className="filter-group">
+          <FontAwesomeIcon icon={faList} />
+          <select 
+            value={viewMode}
+            onChange={(e) => setViewMode(e.target.value)}
+          >
+            <option value="table">Table View</option>
+            <option value="card">Card View</option>
+          </select>
+        </div>
+
+        {/* Clear Filters Button */}
+        {isFilterActive() && (
           <button 
-            className="refresh-btn"
-            onClick={fetchUsers}
-            disabled={loading}
+            className="clear-filters-btn"
+            onClick={clearAllFilters}
+            title="Clear all filters"
           >
-            <FontAwesomeIcon icon={faRefresh} spin={loading} />
-            Refresh
+            Clear Filters
           </button>
+        )}
+      </div>
+
+      {/* Stats Summary */}
+      <div className="users-stats">
+        <div 
+          className={`stat-card ${!isFilterActive() ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('all', 'all')}
+          style={{ cursor: 'pointer' }}
+          title="Show all users"
+        >
+          <span className="user-stat-number">{userStats.total}</span>
+          <span className="stat-label">Total Users</span>
         </div>
-
-        {/* Filters and Search */}
-        <div className="users-filters">
-          <div className="search-box">
-            <FontAwesomeIcon icon={faSearch} />
-            <input
-              type="text"
-              placeholder="Search users by name or email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          <div className="filter-group">
-            <FontAwesomeIcon icon={faFilter} />
-            <select 
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="suspended">Suspended</option>
-              <option value="banned">Banned</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <FontAwesomeIcon icon={faUser} />
-            <select 
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-            >
-              <option value="all">All Roles</option>
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          {/* View Toggle */}
-          <div className="filter-group">
-            <FontAwesomeIcon icon={faList} />
-            <select 
-              value={viewMode}
-              onChange={(e) => setViewMode(e.target.value)}
-            >
-              <option value="table">Table View</option>
-              <option value="card">Card View</option>
-            </select>
-          </div>
-
-          {/* Clear Filters Button */}
-          {isFilterActive() && (
-            <button 
-              className="clear-filters-btn"
-              onClick={clearAllFilters}
-              title="Clear all filters"
-            >
-              Clear Filters
-            </button>
-          )}
+        <div 
+          className={`stat-card ${statusFilter === 'active' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('status', 'active')}
+          style={{ cursor: 'pointer' }}
+          title="Filter by Active status"
+        >
+          <span className="user-stat-number">{userStats.active}</span>
+          <span className="stat-label">Active Users</span>
         </div>
-
-        {/* Stats Summary - Updated with 4 cards: Total, Active, Suspended, Banned */}
-        <div className="users-stats">
-          <div 
-            className={`stat-card ${!isFilterActive() ? 'active' : ''}`}
-            onClick={() => handleStatCardClick('all', 'all')}
-            style={{ cursor: 'pointer' }}
-            title="Show all users"
-          >
-            <span className="user-stat-number">{userStats.total}</span>
-            <span className="stat-label">Total Users</span>
-          </div>
-          <div 
-            className={`stat-card ${statusFilter === 'active' ? 'active' : ''}`}
-            onClick={() => handleStatCardClick('status', 'active')}
-            style={{ cursor: 'pointer' }}
-            title="Filter by Active status"
-          >
-            <span className="user-stat-number">{userStats.active}</span>
-            <span className="stat-label">Active Users</span>
-          </div>
-          <div 
-            className={`stat-card ${statusFilter === 'suspended' ? 'active' : ''}`}
-            onClick={() => handleStatCardClick('status', 'suspended')}
-            style={{ cursor: 'pointer' }}
-            title="Filter by Suspended status"
-          >
-            <span className="user-stat-number">{userStats.suspended}</span>
-            <span className="stat-label">Suspended Users</span>
-          </div>
-          <div 
-            className={`stat-card ${statusFilter === 'banned' ? 'active' : ''}`}
-            onClick={() => handleStatCardClick('status', 'banned')}
-            style={{ cursor: 'pointer' }}
-            title="Filter by Banned status"
-          >
-            <span className="user-stat-number">{userStats.banned}</span>
-            <span className="stat-label">Banned Users</span>
-          </div>
+        <div 
+          className={`stat-card ${statusFilter === 'suspended' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('status', 'suspended')}
+          style={{ cursor: 'pointer' }}
+          title="Filter by Suspended status"
+        >
+          <span className="user-stat-number">{userStats.suspended}</span>
+          <span className="stat-label">Suspended Users</span>
         </div>
+        <div 
+          className={`stat-card ${statusFilter === 'banned' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('status', 'banned')}
+          style={{ cursor: 'pointer' }}
+          title="Filter by Banned status"
+        >
+          <span className="user-stat-number">{userStats.banned}</span>
+          <span className="stat-label">Banned Users</span>
+        </div>
+      </div>
 
-        {/* Users Table */}
-        <div className='manage-users-table-darkbrown'>
-          <div className='manage-users-table-lightbrown'>
-            <div className='manage-users-table-content'>
-              <div className='manage-users-table-title'>
-                <h2>Users Management</h2>
-                <div className="users-header-info">
-                  <span className="users-count">
-                    {filteredUsers.length} of {users.length} users
-                  </span>
-                  {isFilterActive() && (
-                    <div className="active-filters">
-                      <span>Active filters:</span>
-                      {statusFilter !== 'all' && (
-                        <span className="filter-tag">Status: {getStatusDisplayText(statusFilter)}</span>
-                      )}
-                      {roleFilter !== 'all' && (
-                        <span className="filter-tag">Role: {roleFilter}</span>
-                      )}
-                    </div>
-                  )}
+      {/* Users Table */}
+      <div className='manage-users-table-darkbrown'>
+        <div className='manage-users-table-lightbrown'>
+          <div className='manage-users-table-content'>
+            <div className='manage-users-table-title'>
+              <h2>Users Management</h2>
+              <div className="users-header-info">
+                <span className="users-count">
+                  {filteredUsers.length} of {users.length} users
+                </span>
+                {isFilterActive() && (
+                  <div className="active-filters">
+                    <span>Active filters:</span>
+                    {statusFilter !== 'all' && (
+                      <span className="filter-tag">Status: {statusFilter}</span>
+                    )}
+                    {roleFilter !== 'all' && (
+                      <span className="filter-tag">Role: {roleFilter}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="loading-state">
+                <div className="loading-spinner"></div>
+                <p>Loading users...</p>
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="empty-state">
+                <p>No users found matching your criteria.</p>
+                {isFilterActive() && (
+                  <button 
+                    className="retry-btn" 
+                    onClick={clearAllFilters}
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div className="table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
+                  <table className='users-table'>
+                    <thead>
+                      <tr>
+                        <th>User Info</th>
+                        <th>Contact</th>
+                        <th>Gender</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Joined Date</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map((user) => (
+                        <tr key={user.id}>
+                          <td>
+                            <div className="user-info">
+                              <strong>{user.first_name} {user.last_name}</strong>
+                              <small>ID: #{user.id}</small>
+                            </div>
+                          </td>
+                          <td>{user.email}</td>
+                          <td>{user.gender || '-'}</td>
+                          <td>
+                            <span className={`role-badge ${getRoleClass(user.role)}`}>
+                              <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
+                              {user.role}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`user-status-badge ${getStatusClass(user.status)}`}>
+                              <FontAwesomeIcon icon={getStatusIcon(user.status)} />
+                              {getStatusDisplayText(user)}
+                            </span>
+                          </td>
+                          <td>
+                            {new Date(user.created_at).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </td>
+                          <td>
+                            <div className='users-table-actions'>
+                              {getActionButtons(user)}
+                              <button
+                                className="action-btn delete"
+                                onClick={() => handleDelete(user.id, getUserName(user))}
+                                title="Delete User"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+
+                {/* Mobile Card View */}
+                <div className="mobile-users-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
+                  {filteredUsers.map(user => (
+                    <MobileUserCard key={user.id} user={user} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Suspend User Modal */}
+      {showSuspendModal && selectedUser && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Suspend User</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowSuspendModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>You are about to suspend <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
+              
+              <div className="form-group">
+                <label htmlFor="suspensionReason">Reason for Suspension *</label>
+                <textarea
+                  id="suspensionReason"
+                  value={suspensionReason}
+                  onChange={(e) => setSuspensionReason(e.target.value)}
+                  placeholder="Enter the reason for suspension..."
+                  rows="3"
+                  required
+                />
               </div>
 
-              {loading ? (
-                <div className="loading-state">
-                  <div className="loading-spinner"></div>
-                  <p>Loading users...</p>
-                </div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="empty-state">
-                  <p>No users found matching your criteria.</p>
-                  {isFilterActive() && (
-                    <button 
-                      className="retry-btn" 
-                      onClick={clearAllFilters}
-                    >
-                      Clear Filters
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {/* Desktop Table View */}
-                  <div className="table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
-                    <table className='users-table'>
-                      <thead>
-                        <tr>
-                          <th>User Info</th>
-                          <th>Contact</th>
-                          <th>Gender</th>
-                          <th>Role</th>
-                          <th>Status</th>
-                          <th>Joined Date</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredUsers.map((user) => (
-                          <tr key={user.id}>
-                            <td>
-                              <div className="user-info">
-                                <strong>{user.first_name} {user.last_name}</strong>
-                                <small>ID: #{user.id}</small>
-                              </div>
-                            </td>
-                            <td>{user.email}</td>
-                            <td>{user.gender || '-'}</td>
-                            <td>
-                              <span className={`role-badge ${getRoleClass(user.role)}`}>
-                                <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
-                                {user.role}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={`user-status-badge ${getStatusClass(user.status)}`}>
-                                <FontAwesomeIcon icon={getStatusIcon(user.status)} />
-                                {getStatusDisplayText(user.status)}
-                              </span>
-                            </td>
-                            <td>
-                              {new Date(user.created_at).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </td>
-                            <td>
-                              <div className='users-table-actions'>
-                                {getActionButtons(user)}
-                                <button
-                                  className="action-btn delete"
-                                  onClick={() => handleDelete(user.id, getUserName(user))}
-                                  title="Delete User"
-                                >
-                                  <FontAwesomeIcon icon={faTrash} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+              <div className="form-group">
+                <label htmlFor="suspensionDuration">Suspension Duration *</label>
+                <select
+                  id="suspensionDuration"
+                  value={suspensionDuration}
+                  onChange={(e) => setSuspensionDuration(e.target.value)}
+                >
+                  <option value="3">3 days</option>
+                  <option value="7">7 days</option>
+                  <option value="30">30 days</option>
+                  <option value="custom">Custom duration</option>
+                </select>
+              </div>
 
-                  {/* Mobile Card View */}
-                  <div className="mobile-users-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
-                    {filteredUsers.map(user => (
-                      <MobileUserCard key={user.id} user={user} />
-                    ))}
-                  </div>
-                </>
+              {suspensionDuration === 'custom' && (
+                <div className="form-group">
+                  <label htmlFor="customDays">Number of Days *</label>
+                  <input
+                    type="number"
+                    id="customDays"
+                    value={customDays}
+                    onChange={(e) => setCustomDays(e.target.value)}
+                    placeholder="Enter number of days"
+                    min="1"
+                    max="365"
+                    required
+                  />
+                </div>
               )}
+
+              <div className="suspension-preview">
+                <p><strong>Preview:</strong> User will be suspended for {
+                  suspensionDuration === 'custom' ? `${customDays} day(s)` : `${suspensionDuration} day(s)`
+                }</p>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn-secondary"
+                onClick={() => setShowSuspendModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn-primary suspend"
+                onClick={handleSuspend}
+                disabled={!suspensionReason.trim() || (suspensionDuration === 'custom' && !customDays)}
+              >
+                Confirm Suspension
+              </button>
             </div>
           </div>
         </div>
+      )}
     </>
   );
 }
