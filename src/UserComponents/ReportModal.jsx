@@ -64,7 +64,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
 
     if (!reason) {
       toast.error('Please select a reason for reporting', {
-        position: 'top-center',
+        position: 'top-right',
         autoClose: 2000
       });
       return;
@@ -90,7 +90,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
 
       if (result.success) {
         toast.success('Report submitted successfully!', {
-          position: 'top-center',
+          position: 'top-right',
           autoClose: 2000
         });
         onClose();
@@ -99,14 +99,14 @@ export default function ReportModal({ isOpen, onClose, post }) {
         setAdditionalInfo('');
       } else {
         toast.error(result.error || 'Failed to submit report', {
-          position: 'top-center',
+          position: 'top-right',
           autoClose: 2000
         });
       }
     } catch (error) {
       console.error('Error submitting report:', error);
       toast.error('Error submitting report. Please try again.', {
-        position: 'top-center',
+        position: 'top-right',
         autoClose: 2000
       });
     } finally {

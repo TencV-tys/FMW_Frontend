@@ -13,6 +13,7 @@ import Dashboard from './AdminPages/Dashboard';
 import ManageUsers from './AdminPages/ManageUsers';
 import ManagePosts from './AdminPages/ManagePosts';
 import Notifications from './AdminPages/Notifications';
+import Reports from './AdminPages/Reports';
 
 import NotFound from './components/NotFound';
 import ProtectedRoute from './components/ProtectedRoutes';
@@ -68,6 +69,7 @@ function App() {
           <Route path='manage-users' element={<ManageUsers/>} />
           <Route path='manage-posts' element={<ManagePosts/>} />
           <Route path='notifications' element={<Notifications/>} />
+          <Route path='reports' element={<Reports/> } />
         </Route>
 
         <Route path='*' element={<NotFound/>} />
