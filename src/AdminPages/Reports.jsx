@@ -49,6 +49,7 @@ export default function Reports() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched reports:', data.reports); // Debug log
         setReports(data.reports || []);
       } else {
         console.error('Failed to fetch reports');
@@ -120,6 +121,7 @@ export default function Reports() {
 
   // Open view modal
   const openViewModal = (report) => {
+    console.log('Opening modal with report:', report); // Debug log
     setViewModal({ isOpen: true, report });
   };
 
@@ -552,7 +554,8 @@ export default function Reports() {
                   </div>
                   <div className="detail-row">
                     <label>Post Author:</label>
-                    <span>{viewModal.report.post_author}</span>
+                    {/* FIXED THIS LINE - using post_author_name instead of post_author */}
+                    <span>{viewModal.report.post_author_name || 'Unknown Author'}</span>
                   </div>
                 </div>
               </div>
