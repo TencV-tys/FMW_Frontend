@@ -178,14 +178,34 @@ export default function ManageUsers() {
     banned: users.filter(u => u.status === 'banned').length
   };
 
-  // Get status badge class
+  // Get status badge class - UPDATED WITH UNIQUE CLASS NAMES
   const getStatusClass = (status) => {
     const statusMap = {
-      active: 'status-active',
-      suspended: 'status-suspended',
-      banned: 'status-banned'
+      active: 'user-status-active',
+      suspended: 'user-status-suspended',
+      banned: 'user-status-banned'
     };
-    return statusMap[status] || 'status-active';
+    return statusMap[status] || 'user-status-active';
+  };
+
+  // Get status display text
+  const getStatusDisplayText = (status) => {
+    const statusMap = {
+      active: 'Active',
+      suspended: 'Suspended',
+      banned: 'Banned'
+    };
+    return statusMap[status] || 'Active';
+  };
+
+  // Get status icon
+  const getStatusIcon = (status) => {
+    const iconMap = {
+      active: faCheckCircle,
+      suspended: faPauseCircle,
+      banned: faUserSlash
+    };
+    return iconMap[status] || faCheckCircle;
   };
 
   // Get role badge class
@@ -209,7 +229,41 @@ export default function ManageUsers() {
     setRoleFilter('all');
   };
 
-  // Mobile User Card Component
+  // Get appropriate action buttons based on user status
+  const getActionButtons = (user) => {
+    if (user.status === 'active') {
+      return (
+        <>
+          <button
+            className="action-btn suspend"
+            onClick={() => handleSuspend(user.id, getUserName(user))}
+            title="Suspend User"
+          >
+            <FontAwesomeIcon icon={faPauseCircle} />
+          </button>
+          <button
+            className="action-btn ban"
+            onClick={() => handleBan(user.id, getUserName(user))}
+            title="Ban User"
+          >
+            <FontAwesomeIcon icon={faUserSlash} />
+          </button>
+        </>
+      );
+    } else {
+      return (
+        <button
+          className="action-btn activate"
+          onClick={() => handleActivate(user.id, getUserName(user))}
+          title="Activate User"
+        >
+          <FontAwesomeIcon icon={faCheckCircle} />
+        </button>
+      );
+    }
+  };
+
+  // Mobile User Card Component - UPDATED WITH UNIQUE STATUS
   const MobileUserCard = ({ user }) => (
     <div className="mobile-user-card">
       <div className="mobile-card-header">
@@ -219,7 +273,8 @@ export default function ManageUsers() {
         </div>
         <div className="mobile-card-badges">
           <span className={`mobile-card-status ${getStatusClass(user.status)}`}>
-            {user.status}
+            <FontAwesomeIcon icon={getStatusIcon(user.status)} />
+            {getStatusDisplayText(user.status)}
           </span>
           <span className={`mobile-card-role ${getRoleClass(user.role)}`}>
             <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
@@ -248,35 +303,7 @@ export default function ManageUsers() {
       </div>
       
       <div className="mobile-card-actions">
-        {user.status === 'active' ? (
-          <>
-            <button
-              className="mobile-action-btn suspend"
-              onClick={() => handleSuspend(user.id, getUserName(user))}
-              title="Suspend User"
-            >
-              <FontAwesomeIcon icon={faPauseCircle} />
-              Suspend
-            </button>
-            <button
-              className="mobile-action-btn ban"
-              onClick={() => handleBan(user.id, getUserName(user))}
-              title="Ban User"
-            >
-              <FontAwesomeIcon icon={faUserSlash} />
-              Ban
-            </button>
-          </>
-        ) : (
-          <button
-            className="mobile-action-btn activate"
-            onClick={() => handleActivate(user.id, getUserName(user))}
-            title="Activate User"
-          >
-            <FontAwesomeIcon icon={faCheckCircle} />
-            Activate
-          </button>
-        )}
+        {getActionButtons(user)}
         <button
           className="mobile-action-btn delete"
           onClick={() => handleDelete(user.id, getUserName(user))}
@@ -422,7 +449,7 @@ export default function ManageUsers() {
                     <div className="active-filters">
                       <span>Active filters:</span>
                       {statusFilter !== 'all' && (
-                        <span className="filter-tag">Status: {statusFilter}</span>
+                        <span className="filter-tag">Status: {getStatusDisplayText(statusFilter)}</span>
                       )}
                       {roleFilter !== 'all' && (
                         <span className="filter-tag">Role: {roleFilter}</span>
@@ -483,8 +510,9 @@ export default function ManageUsers() {
                               </span>
                             </td>
                             <td>
-                              <span className={`status-badge ${getStatusClass(user.status)}`}>
-                                {user.status}
+                              <span className={`user-status-badge ${getStatusClass(user.status)}`}>
+                                <FontAwesomeIcon icon={getStatusIcon(user.status)} />
+                                {getStatusDisplayText(user.status)}
                               </span>
                             </td>
                             <td>
@@ -496,32 +524,7 @@ export default function ManageUsers() {
                             </td>
                             <td>
                               <div className='users-table-actions'>
-                                {user.status === 'active' ? (
-                                  <>
-                                    <button
-                                      className="action-btn suspend"
-                                      onClick={() => handleSuspend(user.id, getUserName(user))}
-                                      title="Suspend User"
-                                    >
-                                      <FontAwesomeIcon icon={faPauseCircle} />
-                                    </button>
-                                    <button
-                                      className="action-btn ban"
-                                      onClick={() => handleBan(user.id, getUserName(user))}
-                                      title="Ban User"
-                                    >
-                                      <FontAwesomeIcon icon={faUserSlash} />
-                                    </button>
-                                  </>
-                                ) : (
-                                  <button
-                                    className="action-btn activate"
-                                    onClick={() => handleActivate(user.id, getUserName(user))}
-                                    title="Activate User"
-                                  >
-                                    <FontAwesomeIcon icon={faCheckCircle} />
-                                  </button>
-                                )}
+                                {getActionButtons(user)}
                                 <button
                                   className="action-btn delete"
                                   onClick={() => handleDelete(user.id, getUserName(user))}

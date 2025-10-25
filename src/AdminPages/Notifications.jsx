@@ -1,4 +1,4 @@
-// AdminPages/Notifications.jsx - SIMPLIFIED (ONLY 3 CARDS)
+// AdminPages/Notifications.jsx - UPDATED WITH NAVIGATION
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -8,7 +8,8 @@ import {
   faSearch,
   faFilter,
   faCheckDouble,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faExternalLinkAlt
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Notifications.css';
 
@@ -78,6 +79,58 @@ export default function Notifications() {
       setFilter('unread');
     } else if (filterType === 'reports') {
       setFilter('report_submitted');
+    }
+  };
+
+  // Handle notification click - Navigate to relevant page
+  const handleNotificationClick = (notification) => {
+    console.log('Notification clicked:', notification);
+    
+    // Mark as read when clicked
+    if (!notification.is_read) {
+      markAsRead(notification.id);
+    }
+
+    // Navigate based on notification type and metadata
+    const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
+    
+    switch (notification.type) {
+      case 'report_submitted':
+        if (metadata.report_id) {
+          // Navigate to reports page and highlight the specific report
+          window.location.href = `/admin/reports?highlight=${metadata.report_id}&status=pending`;
+        } else {
+          window.location.href = '/admin/reports';
+        }
+        break;
+      
+      case 'post_removed':
+      case 'post_deleted':
+      case 'post_restored':
+      case 'post_resolved':
+        if (metadata.post_id) {
+          // Navigate to manage posts and highlight the specific post
+          window.location.href = `/admin/manage-posts?highlight=${metadata.post_id}`;
+        } else {
+          window.location.href = '/admin/manage-posts';
+        }
+        break;
+      
+      case 'user_suspended':
+      case 'user_banned':
+      case 'user_activated':
+        if (metadata.user_id) {
+          // Navigate to manage users and highlight the specific user
+          window.location.href = `/admin/manage-users?highlight=${metadata.user_id}`;
+        } else {
+          window.location.href = '/admin/manage-users';
+        }
+        break;
+      
+      default:
+        // For general notifications, just mark as read
+        console.log('General notification clicked');
+        break;
     }
   };
 
@@ -161,6 +214,11 @@ export default function Notifications() {
         return faBell;
       case 'report_submitted':
         return faExclamationTriangle;
+      case 'user_suspended':
+      case 'user_banned':
+        return faExclamationTriangle;
+      case 'user_activated':
+        return faCheckCircle;
       case 'general':
         return faBell;
       default:
@@ -180,6 +238,12 @@ export default function Notifications() {
         return '#3b82f6';
       case 'report_submitted':
         return '#8b5cf6';
+      case 'user_suspended':
+        return '#f59e0b';
+      case 'user_banned':
+        return '#ef4444';
+      case 'user_activated':
+        return '#10b981';
       case 'general':
         return '#6b7280';
       default:
@@ -209,6 +273,21 @@ export default function Notifications() {
   // Clear all filters
   const clearAllFilters = () => {
     setFilter('all');
+  };
+
+  // Check if notification is clickable (has navigation)
+  const isClickable = (notification) => {
+    const clickableTypes = [
+      'report_submitted',
+      'post_removed',
+      'post_deleted',
+      'post_restored',
+      'post_resolved',
+      'user_suspended',
+      'user_banned',
+      'user_activated'
+    ];
+    return clickableTypes.includes(notification.type);
   };
 
   return (
@@ -304,6 +383,9 @@ export default function Notifications() {
             <option value="post_deleted">Deleted Posts</option>
             <option value="post_restored">Restored Posts</option>
             <option value="report_submitted">Reports</option>
+            <option value="user_suspended">User Suspensions</option>
+            <option value="user_banned">User Bans</option>
+            <option value="user_activated">User Activations</option>
             <option value="general">General</option>
           </select>
         </div>
@@ -332,6 +414,9 @@ export default function Notifications() {
               {filter === 'post_removed' && 'Removed Posts'}
               {filter === 'post_deleted' && 'Deleted Posts'}
               {filter === 'post_restored' && 'Restored Posts'}
+              {filter === 'user_suspended' && 'User Suspensions'}
+              {filter === 'user_banned' && 'User Bans'}
+              {filter === 'user_activated' && 'User Activations'}
               {filter === 'general' && 'General'}
             </span>
           </div>
@@ -355,7 +440,10 @@ export default function Notifications() {
             {notifications.map(notification => (
               <div 
                 key={notification.id} 
-                className={`notification-item ${notification.is_read ? 'read' : 'unread'}`}
+                className={`notification-item ${notification.is_read ? 'read' : 'unread'} ${
+                  isClickable(notification) ? 'clickable' : ''
+                }`}
+                onClick={() => isClickable(notification) && handleNotificationClick(notification)}
               >
                 <div className="notification-icon">
                   <FontAwesomeIcon 
@@ -364,7 +452,16 @@ export default function Notifications() {
                   />
                 </div>
                 <div className="notification-content">
-                  <h4>{notification.title}</h4>
+                  <h4>
+                    {notification.title}
+                    {isClickable(notification) && (
+                      <FontAwesomeIcon 
+                        icon={faExternalLinkAlt} 
+                        className="external-link-icon"
+                        title="Click to view related content"
+                      />
+                    )}
+                  </h4>
                   <p>{notification.message}</p>
                   <div className="notification-meta">
                     <span className="user">
@@ -379,7 +476,10 @@ export default function Notifications() {
                   {!notification.is_read && (
                     <button 
                       className="btn-mark-read"
-                      onClick={() => markAsRead(notification.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        markAsRead(notification.id);
+                      }}
                       title="Mark as read"
                     >
                       <FontAwesomeIcon icon={faCheckCircle} />
@@ -387,7 +487,10 @@ export default function Notifications() {
                   )}
                   <button 
                     className="btn-delete"
-                    onClick={() => deleteNotification(notification.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteNotification(notification.id);
+                    }}
                     title="Delete notification"
                   >
                     <FontAwesomeIcon icon={faTrash} />

@@ -190,7 +190,7 @@ export default function Reports() {
         </button>
       </div>
 
-      {/* Stats Summary - Clickable Cards */}
+      {/* Stats Summary - UPDATED TO MATCH MANAGEUSERS */}
       <div className="reports-management-stats">
         <div 
           className={`reports-stat-card ${statusFilter === 'all' ? 'reports-stat-active' : ''}`}
@@ -198,13 +198,8 @@ export default function Reports() {
           style={{ cursor: 'pointer' }}
           title="Show all reports"
         >
-          <div className="reports-stat-icon total">
-            <FontAwesomeIcon icon={faExclamationTriangle} />
-          </div>
-          <div className="reports-stat-info">
-            <h3>{stats.total}</h3>
-            <p>Total Reports</p>
-          </div>
+          <span className="reports-stat-number">{stats.total}</span>
+          <span className="reports-stat-label">Total Reports</span>
         </div>
         <div 
           className={`reports-stat-card ${statusFilter === 'pending' ? 'reports-stat-active' : ''}`}
@@ -212,13 +207,8 @@ export default function Reports() {
           style={{ cursor: 'pointer' }}
           title="Show pending reports"
         >
-          <div className="reports-stat-icon pending">
-            <FontAwesomeIcon icon={faClock} />
-          </div>
-          <div className="reports-stat-info">
-            <h3>{stats.pending}</h3>
-            <p>Pending</p>
-          </div>
+          <span className="reports-stat-number">{stats.pending}</span>
+          <span className="reports-stat-label">Pending</span>
         </div>
         <div 
           className={`reports-stat-card ${statusFilter === 'under_review' ? 'reports-stat-active' : ''}`}
@@ -226,13 +216,8 @@ export default function Reports() {
           style={{ cursor: 'pointer' }}
           title="Show reports under review"
         >
-          <div className="reports-stat-icon under-review">
-            <FontAwesomeIcon icon={faExclamationTriangle} />
-          </div>
-          <div className="reports-stat-info">
-            <h3>{stats.under_review}</h3>
-            <p>Under Review</p>
-          </div>
+          <span className="reports-stat-number">{stats.under_review}</span>
+          <span className="reports-stat-label">Under Review</span>
         </div>
         <div 
           className={`reports-stat-card ${statusFilter === 'resolved' ? 'reports-stat-active' : ''}`}
@@ -240,13 +225,8 @@ export default function Reports() {
           style={{ cursor: 'pointer' }}
           title="Show resolved reports"
         >
-          <div className="reports-stat-icon resolved">
-            <FontAwesomeIcon icon={faCheckCircle} />
-          </div>
-          <div className="reports-stat-info">
-            <h3>{stats.resolved}</h3>
-            <p>Resolved</p>
-          </div>
+          <span className="reports-stat-number">{stats.resolved}</span>
+          <span className="reports-stat-label">Resolved</span>
         </div>
         <div 
           className={`reports-stat-card ${statusFilter === 'dismissed' ? 'reports-stat-active' : ''}`}
@@ -254,13 +234,8 @@ export default function Reports() {
           style={{ cursor: 'pointer' }}
           title="Show dismissed reports"
         >
-          <div className="reports-stat-icon dismissed">
-            <FontAwesomeIcon icon={faTimesCircle} />
-          </div>
-          <div className="reports-stat-info">
-            <h3>{stats.dismissed}</h3>
-            <p>Dismissed</p>
-          </div>
+          <span className="reports-stat-number">{stats.dismissed}</span>
+          <span className="reports-stat-label">Dismissed</span>
         </div>
       </div>
 
