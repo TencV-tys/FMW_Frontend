@@ -177,7 +177,7 @@ export default function Reports() {
       {/* Header Section */}
       <div className="reports-management-header">
         <div className="reports-header-content">
-          <h1>Reports Management</h1>
+        
           <p>Review and manage user-submitted reports</p>
         </div>
         <button 

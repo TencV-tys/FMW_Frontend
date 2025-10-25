@@ -4,7 +4,6 @@ import {
   faBell,
   faCheckCircle,
   faTrash,
-  faSearch,
   faFilter,
   faCheckDouble,
   faExclamationTriangle,
@@ -309,10 +308,6 @@ export default function Notifications() {
       {/* Header */}
       <header className="notifications-header">
         <div className="header-content">
-          <h1>
-            <FontAwesomeIcon icon={faBell} />
-            Notifications
-          </h1>
           <p>Manage and view system notifications</p>
         </div>
         <div className="header-actions">

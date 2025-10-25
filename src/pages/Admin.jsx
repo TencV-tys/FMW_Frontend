@@ -1,7 +1,9 @@
 import { Outlet } from "react-router-dom";
 import AdminNav from "../AdminComponents/AdminNav";
+import AdminHeader from "../AdminComponents/AdminHeader";
 import { useState } from 'react';
 import './styles/Admin.css';
+
 export default function Admin() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
 
@@ -13,10 +15,12 @@ export default function Admin() {
         style={{
           marginLeft: isSideBarOpen ? '200px' : '70px',
           transition: 'margin-left 0.4s ease',
-          padding: '20px'
         }}
       >
-        <Outlet/>
+        <AdminHeader />
+        <div className="admin-page-content">
+          <Outlet/>
+        </div>
       </main>
     </div>
   );

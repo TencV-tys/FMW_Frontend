@@ -12,7 +12,6 @@ import {
 
 import './AdminStyles/AdminNav.css';
 import Logo from '../assets/Admin.png';
-import LogoutButton from '../components/LogoutButton';
 import { useState, useEffect } from 'react';
 
 export default function AdminNav({isOpen, setIsOpen}){
@@ -32,12 +31,10 @@ export default function AdminNav({isOpen, setIsOpen}){
         const data = await response.json();
         setNotificationCount(data.stats?.unread || 0);
       } else {
-        // Fallback to user notifications if admin endpoint fails
         fetchUserNotificationCount();
       }
     } catch (error) {
       console.error('Error fetching notification count:', error);
-      // Fallback to user notifications
       fetchUserNotificationCount();
     }
   };
@@ -110,7 +107,7 @@ return(
               </div>
             </Link>
             
-            {/* 🎯 Notifications with Count */}
+            {/* Notifications with Count */}
             <Link to='/admin/notifications' className='admin-links'>
               <div className='nav-link'>
                 <div className='notification-nav-item'>
@@ -126,10 +123,7 @@ return(
             </Link>
           </div>
 
-          {/* Logout Button - Fixed Integration */}
-          <div className='logout-container'>
-            <LogoutButton isOpen={isOpen} className="admin-logout"/>
-          </div>
+       
         </nav>
     </header>
 )

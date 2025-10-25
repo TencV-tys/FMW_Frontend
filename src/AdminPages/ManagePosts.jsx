@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
   faEye, 
-  faEdit, 
   faTrash, 
   faBan, 
   faRefresh, 
@@ -11,10 +10,11 @@ import {
   faCheckCircle,
   faList,
   faTimes,
-  faSave,
   faMapMarkerAlt,
   faUndo,
-  faImage
+  faImage,
+  faExclamationTriangle,
+  faFlag
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManagePosts.css';
 
@@ -26,7 +26,14 @@ export default function ManagePosts() {
   const [selectedPosts, setSelectedPosts] = useState(new Set());
   const [viewMode, setViewMode] = useState('table');
   const [viewModal, setViewModal] = useState({ isOpen: false, post: null });
-  const [editModal, setEditModal] = useState({ isOpen: false, post: null, loading: false });
+  const [actionModal, setActionModal] = useState({ 
+    isOpen: false, 
+    post: null, 
+    action: '', 
+    message: '', 
+    reportCount: 0, 
+    requiredCount: 0 
+  });
 
   // Fetch posts data
   useEffect(() => {
@@ -58,66 +65,203 @@ export default function ManagePosts() {
     setViewModal({ isOpen: true, post });
   };
 
-  // Open Edit Modal
-  const openEditModal = (post) => {
-    setEditModal({ isOpen: true, post: { ...post }, loading: false });
-  };
-
   // Close Modals
-  const closeModals = () => {
+  const closeModal = () => {
     setViewModal({ isOpen: false, post: null });
-    setEditModal({ isOpen: false, post: null, loading: false });
+    setActionModal({ isOpen: false, post: null, action: '', message: '', reportCount: 0, requiredCount: 0 });
   };
 
-  // Handle Edit Form Submit
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    if (!editModal.post) return;
+  // Handle post actions with report validation modal
+  const handlePostAction = async (postId, action, force = false) => {
+    if (force) {
+      await executePostAction(postId, action, force);
+      return;
+    }
 
     try {
-      setEditModal(prev => ({ ...prev, loading: true }));
+      let url, method, body;
       
-      const response = await fetch(`http://localhost:8000/api/admin/posts/${editModal.post.id}`, {
-        method: 'PUT',
-        credentials: 'include',
+      switch (action) {
+        case 'remove':
+          url = `http://localhost:8000/api/admin/posts/${postId}/remove`;
+          method = 'PUT';
+          body = { reason: 'Violation of community guidelines', force: false };
+          break;
+        case 'delete':
+          url = `http://localhost:8000/api/admin/posts/${postId}`;
+          method = 'DELETE';
+          body = { reason: 'Severe violation', force: false };
+          break;
+        case 'restore':
+          url = `http://localhost:8000/api/admin/posts/${postId}/restore`;
+          method = 'PUT';
+          break;
+        case 'resolve':
+          url = `http://localhost:8000/api/admin/posts/${postId}/resolve`;
+          method = 'PUT';
+          body = { reason: 'Issue resolved' };
+          break;
+        default:
+          return;
+      }
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: editModal.post.title,
-          description: editModal.post.description,
-          status: editModal.post.status,
-        })
+        body: body ? JSON.stringify(body) : undefined,
+        credentials: 'include'
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        setPosts(currentPosts => 
-          currentPosts.map(post => 
-            post.id === editModal.post.id ? editModal.post : post
-          )
-        );
-        closeModals();
-        alert('Post updated successfully!');
+        updatePostsAfterAction(postId, action);
+        let successMessage = '';
+        switch (action) {
+          case 'remove':
+            successMessage = `Post removed from public view${data.forced ? ' (admin override)' : ''}!`;
+            break;
+          case 'delete':
+            successMessage = `Post deleted permanently${data.forced ? ' (admin override)' : ''}!`;
+            break;
+          case 'restore':
+            successMessage = 'Post restored successfully!';
+            break;
+          case 'resolve':
+            successMessage = 'Post marked as resolved!';
+            break;
+        }
+        alert(successMessage);
       } else {
-        alert('Failed to update post');
+        if (data.canForce) {
+          setActionModal({
+            isOpen: true,
+            post: posts.find(p => p.id === postId),
+            action: action,
+            message: data.error,
+            reportCount: data.reportCount,
+            requiredCount: data.requiredCount
+          });
+        } else {
+          alert(data.error || 'Failed to perform action');
+        }
       }
     } catch (error) {
-      console.error('Error updating post:', error);
-      alert('Error updating post');
-    } finally {
-      setEditModal(prev => ({ ...prev, loading: false }));
+      console.error('Error performing action:', error);
+      alert('Error performing action');
     }
   };
 
-  // Handle Edit Input Change
-  const handleEditChange = (field, value) => {
-    setEditModal(prev => ({
-      ...prev,
-      post: {
-        ...prev.post,
-        [field]: value
+  // Execute post action
+  const executePostAction = async (postId, action, force = false) => {
+    try {
+      let url, method, body;
+      
+      switch (action) {
+        case 'remove':
+          url = `http://localhost:8000/api/admin/posts/${postId}/remove`;
+          method = 'PUT';
+          body = { reason: 'Violation of community guidelines', force };
+          break;
+        case 'delete':
+          url = `http://localhost:8000/api/admin/posts/${postId}`;
+          method = 'DELETE';
+          body = { reason: 'Severe violation', force };
+          break;
+        case 'restore':
+          url = `http://localhost:8000/api/admin/posts/${postId}/restore`;
+          method = 'PUT';
+          break;
+        case 'resolve':
+          url = `http://localhost:8000/api/admin/posts/${postId}/resolve`;
+          method = 'PUT';
+          body = { reason: 'Issue resolved' };
+          break;
+        default:
+          return;
       }
-    }));
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        updatePostsAfterAction(postId, action);
+        let successMessage = '';
+        switch (action) {
+          case 'remove':
+            successMessage = `Post removed from public view${force ? ' (admin override)' : ''}!`;
+            break;
+          case 'delete':
+            successMessage = `Post deleted permanently${force ? ' (admin override)' : ''}!`;
+            break;
+          case 'restore':
+            successMessage = 'Post restored successfully!';
+            break;
+          case 'resolve':
+            successMessage = 'Post marked as resolved!';
+            break;
+        }
+        alert(successMessage);
+        closeModal();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to perform action');
+      }
+    } catch (error) {
+      console.error('Error performing action:', error);
+      alert('Error performing action');
+    }
+  };
+
+  // Update posts after successful action
+  const updatePostsAfterAction = (postId, action) => {
+    setPosts(currentPosts => {
+      if (action === 'delete') {
+        return currentPosts.filter(post => post.id !== postId);
+      }
+      
+      return currentPosts.map(post => {
+        if (post.id === postId) {
+          switch (action) {
+            case 'remove':
+              return { ...post, status: 'Removed' };
+            case 'restore':
+              return { ...post, status: 'Active' };
+            case 'resolve':
+              return { ...post, status: 'Resolved' };
+            default:
+              return post;
+          }
+        }
+        return post;
+      });
+    });
+    
+    setSelectedPosts(prev => {
+      const newSelected = new Set(prev);
+      newSelected.delete(postId);
+      return newSelected;
+    });
+  };
+
+  // Handle force action from modal
+  const handleForceAction = () => {
+    if (actionModal.post && actionModal.action) {
+      executePostAction(actionModal.post.id, actionModal.action, true);
+    }
+  };
+
+  // Handle cancel from modal
+  const handleCancelAction = () => {
+    closeModal();
   };
 
   // Filter posts based on search and status
@@ -130,115 +274,6 @@ export default function ManagePosts() {
     const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-
-  // Handle post actions with confirmation
-  const handlePostAction = async (postId, action) => {
-    let confirmationMessage = '';
-    
-    switch (action) {
-      case 'remove':
-        confirmationMessage = 'Are you sure you want to remove this post from public view?';
-        break;
-      case 'delete':
-        confirmationMessage = 'Are you sure you want to permanently delete this post? This action cannot be undone.';
-        break;
-      case 'restore':
-        confirmationMessage = 'Are you sure you want to restore this post?';
-        break;
-      case 'resolve':
-        confirmationMessage = 'Are you sure you want to mark this post as resolved?';
-        break;
-      default:
-        return;
-    }
-
-    if (!window.confirm(confirmationMessage)) return;
-
-    try {
-      let url, method;
-      
-      switch (action) {
-        case 'remove':
-          url = `http://localhost:8000/api/admin/posts/${postId}/remove`;
-          method = 'PUT';
-          break;
-        case 'restore':
-          url = `http://localhost:8000/api/admin/posts/${postId}/restore`;
-          method = 'PUT';
-          break;
-        case 'resolve':
-          url = `http://localhost:8000/api/admin/posts/${postId}/resolve`;
-          method = 'PUT';
-          break;
-        case 'delete':
-          url = `http://localhost:8000/api/admin/posts/${postId}`;
-          method = 'DELETE';
-          break;
-        default:
-          return;
-      }
-
-      const response = await fetch(url, {
-        method: method,
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        // Update local state based on action
-        setPosts(currentPosts => {
-          if (action === 'delete') {
-            return currentPosts.filter(post => post.id !== postId);
-          }
-          
-          return currentPosts.map(post => {
-            if (post.id === postId) {
-              switch (action) {
-                case 'remove':
-                  return { ...post, status: 'Removed' };
-                case 'restore':
-                  return { ...post, status: 'Active' };
-                case 'resolve':
-                  return { ...post, status: 'Resolved' };
-                default:
-                  return post;
-              }
-            }
-            return post;
-          });
-        });
-        
-        // Remove from selected posts
-        setSelectedPosts(prev => {
-          const newSelected = new Set(prev);
-          newSelected.delete(postId);
-          return newSelected;
-        });
-
-        // Show success message
-        let successMessage = '';
-        switch (action) {
-          case 'remove':
-            successMessage = 'Post removed from public view successfully!';
-            break;
-          case 'delete':
-            successMessage = 'Post deleted permanently!';
-            break;
-          case 'restore':
-            successMessage = 'Post restored successfully!';
-            break;
-          case 'resolve':
-            successMessage = 'Post marked as resolved!';
-            break;
-        }
-        alert(successMessage);
-      } else {
-        alert('Failed to perform action');
-      }
-    } catch (error) {
-      console.error('Error performing action:', error);
-      alert('Error performing action');
-    }
-  };
 
   // Bulk actions with confirmation
   const handleBulkAction = async (action) => {
@@ -458,13 +493,6 @@ export default function ManagePosts() {
           <FontAwesomeIcon icon={faEye} />
           View
         </button>
-        <button 
-          className="mobile-action-btn edit"
-          onClick={() => openEditModal(post)}
-        >
-          <FontAwesomeIcon icon={faEdit} />
-          Edit
-        </button>
         {getActionButtons(post)}
       </div>
     </div>
@@ -475,7 +503,7 @@ export default function ManagePosts() {
       {/* Header Section */}
       <div className="manage-posts-header">
         <div className="header-content">
-          <h1>Manage Posts</h1>
+        
           <p>Review and moderate community posts</p>
         </div>
         <button 
@@ -554,7 +582,7 @@ export default function ManagePosts() {
         )}
       </div>
 
-      {/* Stats Summary - Now Clickable */}
+      {/* Stats Summary */}
       <div className="posts-stats">
         <div 
           className={`stat-card ${statusFilter === 'all' ? 'active' : ''}`}
@@ -683,13 +711,6 @@ export default function ManagePosts() {
                               >
                                 <FontAwesomeIcon icon={faEye} />
                               </button>
-                              <button
-                                className="action-btn edit"
-                                onClick={() => openEditModal(post)}
-                                title="Edit Post"
-                              >
-                                <FontAwesomeIcon icon={faEdit} />
-                              </button>
                               {getActionButtons(post)}
                             </div>
                           </td>
@@ -711,13 +732,13 @@ export default function ManagePosts() {
         </div>
       </div>
 
-      {/* View Post Modal with Photo */}
+      {/* View Post Modal */}
       {viewModal.isOpen && viewModal.post && (
-        <div className="modal-overlay" onClick={closeModals}>
+        <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>View Post</h2>
-              <button className="modal-close" onClick={closeModals}>
+              <button className="modal-close" onClick={closeModal}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
@@ -792,7 +813,7 @@ export default function ManagePosts() {
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={closeModals}>
+              <button className="btn btn-secondary" onClick={closeModal}>
                 Close
               </button>
             </div>
@@ -800,105 +821,77 @@ export default function ManagePosts() {
         </div>
       )}
 
-      {/* Edit Post Modal with Photo Display (Read-only) */}
-      {editModal.isOpen && editModal.post && (
-        <div className="modal-overlay" onClick={closeModals}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <form onSubmit={handleEditSubmit}>
-              <div className="modal-header">
-                <h2>Edit Post</h2>
-                <button type="button" className="modal-close" onClick={closeModals}>
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
-              </div>
-              <div className="modal-body">
-                {/* Photo Display (Read-only) */}
-                {getPhotoUrl(editModal.post) && (
-                  <div className="post-photo-container">
-                    <label>Post Photo (Cannot be edited):</label>
-                    <div className="post-photo">
-                      <img
-                        src={getPhotoUrl(editModal.post)}
-                        alt={editModal.post.title}
-                        className="photo-display"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                      <div className="photo-fallback" style={{ display: 'none' }}>
-                        <FontAwesomeIcon icon={faImage} />
-                        <span>Photo not available</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
+      {/* Report Validation Modal */}
+      {actionModal.isOpen && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content report-validation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header warning">
+              <h2>
+                <FontAwesomeIcon icon={faExclamationTriangle} className="warning-icon" />
+                Action Requires Review
+              </h2>
+              <button className="modal-close" onClick={closeModal}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="report-validation-content">
+                <div className="warning-message">
+                  <p>{actionModal.message}</p>
+                </div>
                 
-                <div className="form-group">
-                  <label htmlFor="post-title">Title:</label>
-                  <input
-                    id="post-title"
-                    type="text"
-                    value={editModal.post.title}
-                    onChange={(e) => handleEditChange('title', e.target.value)}
-                    required
-                  />
+                <div className="report-stats">
+                  <div className="stat-item">
+                    <FontAwesomeIcon icon={faFlag} className="stat-icon" />
+                    <span className="stat-label">Current Reports:</span>
+                    <span className="stat-value">{actionModal.reportCount}</span>
+                  </div>
+                  <div className="stat-item">
+                    <FontAwesomeIcon icon={faCheckCircle} className="stat-icon required" />
+                    <span className="stat-label">Required Reports:</span>
+                    <span className="stat-value">{actionModal.requiredCount}</span>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="post-description">Description:</label>
-                  <textarea
-                    id="post-description"
-                    value={editModal.post.description}
-                    onChange={(e) => handleEditChange('description', e.target.value)}
-                    rows="6"
-                    required
-                  />
+
+                <div className="post-preview">
+                  <h4>Post Details:</h4>
+                  <div className="preview-content">
+                    <p><strong>Title:</strong> {actionModal.post?.title}</p>
+                    <p><strong>Author:</strong> {actionModal.post?.first_name} {actionModal.post?.last_name}</p>
+                    <p><strong>Status:</strong> 
+                      <span className={`status-badge ${getStatusClass(actionModal.post?.status)}`}>
+                        {actionModal.post?.status}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="post-status">Status:</label>
-                  <select
-                    id="post-status"
-                    value={editModal.post.status}
-                    onChange={(e) => handleEditChange('status', e.target.value)}
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Removed">Removed</option>
-                  </select>
-                </div>
-                <div className="readonly-info">
-                  <div className="info-item">
-                    <strong>Author:</strong> {editModal.post.first_name} {editModal.post.last_name}
-                  </div>
-                  <div className="info-item">
-                    <strong>Category:</strong> {editModal.post.category_name}
-                  </div>
-                  <div className="info-item">
-                    <strong>Location:</strong> {renderLocationInfo(editModal.post)}
-                  </div>
-                  <div className="info-item">
-                    <strong>Date Posted:</strong> {formatDate(editModal.post.created_at)}
-                  </div>
-                  {editModal.post.color && (
-                    <div className="info-item">
-                      <strong>Color:</strong> {editModal.post.color}
-                    </div>
-                  )}
-                  <div className="info-item">
-                    <strong>Contact:</strong> {editModal.post.contact_info}
-                  </div>
+
+                <div className="action-warning">
+                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                  <p>
+                    <strong>Warning:</strong> Proceeding with this action will override the community reporting system. 
+                    This should only be done in cases of severe policy violations.
+                  </p>
                 </div>
               </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={closeModals}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={editModal.loading}>
-                  <FontAwesomeIcon icon={editModal.loading ? faRefresh : faSave} spin={editModal.loading} />
-                  {editModal.loading ? 'Updating...' : 'Update Post'}
-                </button>
-              </div>
-            </form>
+            </div>
+            
+            <div className="modal-footer">
+              <button 
+                className="btn btn-secondary" 
+                onClick={handleCancelAction}
+              >
+                Cancel Action
+              </button>
+              <button 
+                className="btn btn-warning" 
+                onClick={handleForceAction}
+              >
+                <FontAwesomeIcon icon={faExclamationTriangle} />
+                Force {actionModal.action === 'remove' ? 'Remove' : 'Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}
