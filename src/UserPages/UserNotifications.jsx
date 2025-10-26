@@ -170,7 +170,7 @@ export default function UserNotifications() {
         return faExclamationTriangle;
       case 'report_status_update':
         return faCheckCircle;
-      case 'account_suspended':
+      case 'user_suspended':
         return faTimesCircle;
       default:
         return faBell;
@@ -284,7 +284,7 @@ export default function UserNotifications() {
               <option value="post_restored">Restored Posts</option>
               <option value="report_submitted">Reports</option>
               <option value="report_status_update">Report Updates</option>
-              <option value="account_suspended">Account Status</option>
+              <option value="user_suspended">Account Status</option>
             </select>
           </div>
         </section>

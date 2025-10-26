@@ -10,7 +10,8 @@ import {
   faCaretDown,
   faSignOutAlt,
   faBell,
-  faFlag
+  faFlag,
+  faCommentDots 
 } from '@fortawesome/free-solid-svg-icons';
 import Logo from '../assets/Logo2.jpg';
 import Profile from '../assets/download.png';
@@ -282,7 +283,17 @@ export default function UserDashboardNav() {
                   )}
                 </Link>
               </div>
-              
+              <div className='user-dropdown-link-container'>
+                <Link 
+                  to='/user/feedback' 
+                  className={`user-dropdown-link ${isActiveLink('/user/feedback') ? 'active' : ''}`}
+                  onClick={() => setOpen(false)}
+                >
+                  <FontAwesomeIcon icon={faCommentDots} />
+                  <span>Feedback & Support</span>
+                </Link>
+              </div>
+
               <div className="user-dropdown-divider"></div>
               
               <div className='user-dropdown-link-container user-dropdown-logout-container'>

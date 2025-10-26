@@ -30,7 +30,7 @@ export default function BulletinBoard() {
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterBarangay, setFilterBarangay] = useState('all');
-   const [filterPurok, setFilterPurok] = useState('all');
+  const [filterPurok, setFilterPurok] = useState('all');
   const [selectedPost, setSelectedPost] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [expandedContacts, setExpandedContacts] = useState({});
@@ -86,7 +86,7 @@ export default function BulletinBoard() {
         if (data.success) {
           setCategories(data.categories || []);
           setBarangays(data.barangays || []);
-           setPuroks(data.puroks || []); 
+          setPuroks(data.puroks || []); 
         }
       }
     } catch (error) {
@@ -102,7 +102,7 @@ export default function BulletinBoard() {
         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.barangay_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         post.purok_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.purok_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.last_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -120,7 +120,7 @@ export default function BulletinBoard() {
     if (filterBarangay !== 'all') {
       filtered = filtered.filter(post => post.barangay_id.toString() === filterBarangay);
     }
-      if (filterPurok !== 'all') {
+    if (filterPurok !== 'all') {
       filtered = filtered.filter(post => post.purok_id?.toString() === filterPurok); 
     }
     setFilteredPosts(filtered);
@@ -131,7 +131,7 @@ export default function BulletinBoard() {
     setFilterType('all');
     setFilterCategory('all');
     setFilterBarangay('all');
-     setFilterPurok('all'); 
+    setFilterPurok('all'); 
   };
 
   const isFilterActive = () => {
@@ -139,9 +139,10 @@ export default function BulletinBoard() {
            filterType !== 'all' || 
            filterCategory !== 'all' || 
            filterBarangay !== 'all' ||
-             filterPurok !== 'all';;
+           filterPurok !== 'all';
   };
- const renderLocationInfo = (post) => {
+
+  const renderLocationInfo = (post) => {
     let locationText = post.barangay_name;
     if (post.purok_name) {
       locationText += `, ${post.purok_name}`;
@@ -228,13 +229,13 @@ export default function BulletinBoard() {
 
   if (loading) {
     return (
-      <div className="bulletin-page-container">
+      <div className="bulletin-board-page-container">
         <UserNav />
-        <main className="bulletin-container">
-          <div className='bulletin-board-container-darkbrown'>
-            <div className='bulletin-board-container-lightbrown'>
-              <div className="loading-container">
-                <div className="loading-spinner"></div>
+        <main className="bulletin-board-main-container">
+          <div className='bulletin-board-darkbrown-container'>
+            <div className='bulletin-board-lightbrown-container'>
+              <div className="bulletin-loading-container">
+                <div className="bulletin-loading-spinner"></div>
                 <p>Loading posts...</p>
               </div>
             </div>
@@ -246,15 +247,15 @@ export default function BulletinBoard() {
 
   if (error) {
     return (
-      <div className="bulletin-page-container">
+      <div className="bulletin-board-page-container">
         <UserNav />
-        <main className="bulletin-container">
-          <div className='bulletin-board-container-darkbrown'>
-            <div className='bulletin-board-container-lightbrown'>
-              <div className="error-container">
+        <main className="bulletin-board-main-container">
+          <div className='bulletin-board-darkbrown-container'>
+            <div className='bulletin-board-lightbrown-container'>
+              <div className="bulletin-error-container">
                 <h3>Something went wrong</h3>
                 <p>{error}</p>
-                <button onClick={fetchPosts} className="retry-btn">
+                <button onClick={fetchPosts} className="bulletin-retry-btn">
                   Try Again
                 </button>
               </div>
@@ -266,41 +267,41 @@ export default function BulletinBoard() {
   }
 
   return (
-    <div className="bulletin-page-container">
+    <div className="bulletin-board-page-container">
       <UserNav />
-      <main className="bulletin-container">
-        <div className='bulletin-board-container-darkbrown'>
-          <div className='bulletin-board-container-lightbrown'>
-            <div className='bulletin-board-content'>
+      <main className="bulletin-board-main-container">
+        <div className='bulletin-board-darkbrown-container'>
+          <div className='bulletin-board-lightbrown-container'>
+            <div className='bulletin-board-content-container'>
               
               {/* Header Section */}
-              <div className='bulletin-board-title'>
+              <div className='bulletin-board-title-section'>
                 <h1>Lost & Found Bulletin</h1>
               </div>
 
               {/* Search and Filters Section */}
-              <div className="search-filters-section">
-                <div className='search-input-container'>
-                  <div className='search-bar'>
+              <div className="bulletin-search-filters-section">
+                <div className='bulletin-search-input-container'>
+                  <div className='bulletin-search-bar'>
                     <input 
-                      className='search-bar-input' 
+                      className='bulletin-search-input' 
                       type='text'
                       placeholder='Search items, descriptions, locations, names...'
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <FontAwesomeIcon className='search-icon' icon={faMagnifyingGlass} />
+                    <FontAwesomeIcon className='bulletin-search-icon' icon={faMagnifyingGlass} />
                   </div>
                 </div>
 
                 {/* Filter Controls */}
-                <div className="filters-container">
-                  <div className="filter-group">
-                    <FontAwesomeIcon icon={faFilter} className="filter-icon" />
+                <div className="bulletin-filters-container">
+                  <div className="bulletin-filter-group">
+                    <FontAwesomeIcon icon={faFilter} className="bulletin-filter-icon" />
                     <select 
                       value={filterType} 
                       onChange={(e) => setFilterType(e.target.value)}
-                      className="filter-select"
+                      className="bulletin-filter-select"
                     >
                       <option value="all">All Types</option>
                       <option value="Lost">Lost Items</option>
@@ -308,12 +309,12 @@ export default function BulletinBoard() {
                     </select>
                   </div>
 
-                  <div className="filter-group">
-                    <FontAwesomeIcon icon={faTag} className="filter-icon" />
+                  <div className="bulletin-filter-group">
+                    <FontAwesomeIcon icon={faTag} className="bulletin-filter-icon" />
                     <select 
                       value={filterCategory} 
                       onChange={(e) => setFilterCategory(e.target.value)}
-                      className="filter-select"
+                      className="bulletin-filter-select"
                     >
                       <option value="all">All Categories</option>
                       {categories.map(category => (
@@ -324,12 +325,12 @@ export default function BulletinBoard() {
                     </select>
                   </div>
 
-                  <div className="filter-group">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="filter-icon" />
+                  <div className="bulletin-filter-group">
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="bulletin-filter-icon" />
                     <select 
                       value={filterBarangay} 
                       onChange={(e) => setFilterBarangay(e.target.value)}
-                      className="filter-select"
+                      className="bulletin-filter-select"
                     >
                       <option value="all">All Barangays</option>
                       {barangays.map(barangay => (
@@ -339,12 +340,12 @@ export default function BulletinBoard() {
                       ))}
                     </select>
                   </div>
-                  <div className="filter-group">
-                    <FontAwesomeIcon icon={faLocationDot} className="filter-icon" />
+                  <div className="bulletin-filter-group">
+                    <FontAwesomeIcon icon={faLocationDot} className="bulletin-filter-icon" />
                     <select 
                       value={filterPurok} 
                       onChange={(e) => setFilterPurok(e.target.value)}
-                      className="filter-select"
+                      className="bulletin-filter-select"
                     >
                       <option value="all">All Puroks</option>
                       {puroks.map(purok => (
@@ -356,7 +357,7 @@ export default function BulletinBoard() {
                   </div>
                   {isFilterActive() && (
                     <button 
-                      className="clear-filters-btn"
+                      className="bulletin-clear-filters-btn"
                       onClick={resetFilters}
                       title="Clear all filters"
                     >
@@ -367,32 +368,32 @@ export default function BulletinBoard() {
               </div>
 
               {/* Posts Counter and Active Filters */}
-              <div className="posts-info">
-                <div className="posts-counter">
+              <div className="bulletin-posts-info">
+                <div className="bulletin-posts-counter">
                   Showing {filteredPosts.length} of {posts.length} posts
                 </div>
                 
                 {isFilterActive() && (
-                  <div className="active-filters">
+                  <div className="bulletin-active-filters">
                     <span>Active filters:</span>
                     {searchTerm && (
-                      <span className="filter-tag">Search: "{searchTerm}"</span>
+                      <span className="bulletin-filter-tag">Search: "{searchTerm}"</span>
                     )}
                     {filterType !== 'all' && (
-                      <span className="filter-tag">Type: {filterType}</span>
+                      <span className="bulletin-filter-tag">Type: {filterType}</span>
                     )}
                     {filterCategory !== 'all' && (
-                      <span className="filter-tag">
+                      <span className="bulletin-filter-tag">
                         Category: {categories.find(c => c.id.toString() === filterCategory)?.name}
                       </span>
                     )}
                     {filterBarangay !== 'all' && (
-                      <span className="filter-tag">
+                      <span className="bulletin-filter-tag">
                         Barangay: {barangays.find(b => b.id.toString() === filterBarangay)?.name}
                       </span>
                     )}
-                     {filterPurok !== 'all' && (
-                      <span className="filter-tag">
+                    {filterPurok !== 'all' && (
+                      <span className="bulletin-filter-tag">
                         Purok: {puroks.find(p => p.id.toString() === filterPurok)?.name}
                       </span>
                     )}
@@ -402,7 +403,7 @@ export default function BulletinBoard() {
 
               {/* Posts Grid */}
               {filteredPosts.length === 0 ? (
-                <div className="empty-state">
+                <div className="bulletin-empty-state">
                   <h3>No posts found</h3>
                   <p>
                     {posts.length === 0 
@@ -411,25 +412,25 @@ export default function BulletinBoard() {
                     }
                   </p>
                   {isFilterActive() && (
-                    <button onClick={resetFilters} className="retry-btn">
+                    <button onClick={resetFilters} className="bulletin-retry-btn">
                       Clear Filters
                     </button>
                   )}
                 </div>
               ) : (
-                <div className='lost-found-container'>
+                <div className='bulletin-posts-grid'>
                   {filteredPosts.map((post) => (
                     <div 
                       key={post.id} 
-                      className='lost-found-cards post-card'
+                      className='bulletin-post-card'
                       onClick={() => openPostModal(post)}
                     >
-                      <span className='pin'></span>
+                      <span className='bulletin-post-pin'></span>
                       
                       {/* Post Header with User Info */}
-                      <div className="post-header">
-                        <div className="user-info">
-                          <div className="user-avatar">
+                      <div className="bulletin-post-header">
+                        <div className="bulletin-user-info">
+                          <div className="bulletin-user-avatar">
                             {getUserImage(post) ? (
                               <img 
                                 src={getUserImage(post)} 
@@ -440,26 +441,26 @@ export default function BulletinBoard() {
                                 }}
                               />
                             ) : (
-                              <FontAwesomeIcon icon={faUserCircle} className="avatar-fallback" />
+                              <FontAwesomeIcon icon={faUserCircle} className="bulletin-avatar-fallback" />
                             )}
                           </div>
-                          <div className="user-details">
-                            <span className="user-name">
+                          <div className="bulletin-user-details">
+                            <span className="bulletin-user-name">
                               {post.first_name} {post.last_name}
                             </span>
-                            <span className="post-time">
+                            <span className="bulletin-post-time">
                               {formatDate(post.created_at)}
                             </span>
                           </div>
                         </div>
                         
                         {/* Post Header Actions */}
-                        <div className="post-header-actions">
-                          <div className={`post-type-badge ${post.type.toLowerCase()}`}>
+                        <div className="bulletin-post-header-actions">
+                          <div className={`bulletin-post-type-badge ${post.type.toLowerCase()}`}>
                             {post.type}
                           </div>
                           <button 
-                            className="report-btn"
+                            className="bulletin-report-btn"
                             onClick={(e) => openReportModal(post, e)}
                             title="Report this post"
                           >
@@ -469,7 +470,7 @@ export default function BulletinBoard() {
                       </div>
 
                       {/* Post Image */}
-                      <div className="post-image-container">
+                      <div className="bulletin-post-image-container">
                         <img 
                           src={post.photo ? `http://localhost:8000/uploads/${post.photo}` : OptionalPhoto} 
                           alt={post.title}
@@ -480,18 +481,18 @@ export default function BulletinBoard() {
                       </div>
 
                       {/* Post Content */}
-                      <div className='lost-found-contents'>
-                        <h2 className='lost-found-category'>
+                      <div className='bulletin-post-contents'>
+                        <h2 className='bulletin-post-category'>
                           <FontAwesomeIcon icon={faTag} /> {post.category_name}
                         </h2>
                         
-                        <div className='lost-found-details'>
-                          <h3 className="post-title">{post.title}</h3>
+                        <div className='bulletin-post-details'>
+                          <h3 className="bulletin-post-title">{post.title}</h3>
                           
                           {/* 🎯 Description with Read More */}
-                          <div className="post-description">
+                          <div className="bulletin-post-description">
                             <div 
-                              className={`description-text ${expandedDescriptions[post.id] ? 'expanded' : ''}`}
+                              className={`bulletin-description-text ${expandedDescriptions[post.id] ? 'expanded' : ''}`}
                             >
                               {expandedDescriptions[post.id] 
                                 ? post.description 
@@ -500,7 +501,7 @@ export default function BulletinBoard() {
                             </div>
                             {needsReadMore(post.description) && (
                               <button 
-                                className="read-more-btn"
+                                className="bulletin-read-more-btn"
                                 onClick={(e) => toggleDescription(post.id, e)}
                               >
                                 {expandedDescriptions[post.id] ? 'Read Less' : 'Read More'}
@@ -508,23 +509,23 @@ export default function BulletinBoard() {
                             )}
                           </div>
                           
-                          <div className="post-meta-info">
-                            <div className="meta-item location">
+                          <div className="bulletin-post-meta-info">
+                            <div className="bulletin-meta-item location">
                               <FontAwesomeIcon icon={faMapMarkerAlt} />
                               <span>{renderLocationInfo(post)}</span>
                             </div>
                             
                             {post.color && (
-                              <div className="meta-item color">
+                              <div className="bulletin-meta-item color">
                                 <strong>Color:</strong> {post.color}
                               </div>
                             )}
                             
                             {/* 🎯 Contact with Read More */}
-                            <div className="meta-item contact">
+                            <div className="bulletin-meta-item contact">
                               <FontAwesomeIcon icon={faPhone} />
                               <span>
-                                <div className={`contact-text ${expandedContacts[post.id] ? 'expanded' : ''}`}>
+                                <div className={`bulletin-contact-text ${expandedContacts[post.id] ? 'expanded' : ''}`}>
                                   {expandedContacts[post.id] 
                                     ? post.contact_info 
                                     : getTruncatedContact(post.contact_info)
@@ -532,7 +533,7 @@ export default function BulletinBoard() {
                                 </div>
                                 {needsContactReadMore(post.contact_info) && (
                                   <button 
-                                    className="contact-read-more-btn"
+                                    className="bulletin-contact-read-more-btn"
                                     onClick={(e) => toggleContact(post.id, e)}
                                   >
                                     {expandedContacts[post.id] ? 'Read Less' : 'Read More'}
@@ -545,8 +546,8 @@ export default function BulletinBoard() {
                       </div>
 
                       {/* Expand Overlay */}
-                      <div className="expand-overlay">
-                        <FontAwesomeIcon icon={faExpand} className="expand-icon" />
+                      <div className="bulletin-expand-overlay">
+                        <FontAwesomeIcon icon={faExpand} className="bulletin-expand-icon" />
                         <span>Click to view details</span>
                       </div>
                     </div>
@@ -564,12 +565,12 @@ export default function BulletinBoard() {
 
             {/* Post Detail Modal */}
             {selectedPost && (
-              <div className="post-modal-overlay" onClick={closePostModal}>
-                <div className="post-modal-content" onClick={handleModalClick}>
+              <div className="bulletin-post-modal-overlay" onClick={closePostModal}>
+                <div className="bulletin-post-modal-content" onClick={handleModalClick}>
                   {/* Fixed Header Layout */}
-                  <div className="post-modal-header">
-                    <div className="modal-user-info">
-                      <div className="user-avatar">
+                  <div className="bulletin-post-modal-header">
+                    <div className="bulletin-modal-user-info">
+                      <div className="bulletin-user-avatar">
                         {getUserImage(selectedPost) ? (
                           <img 
                             src={getUserImage(selectedPost)} 
@@ -580,25 +581,25 @@ export default function BulletinBoard() {
                             }}
                           />
                         ) : (
-                          <FontAwesomeIcon icon={faUserCircle} className="avatar-fallback" />
+                          <FontAwesomeIcon icon={faUserCircle} className="bulletin-avatar-fallback" />
                         )}
                       </div>
-                      <div className="modal-user-details">
-                        <span className="user-name">
+                      <div className="bulletin-modal-user-details">
+                        <span className="bulletin-user-name">
                           {selectedPost.first_name} {selectedPost.last_name}
                         </span>
-                        <span className="post-time">
+                        <span className="bulletin-post-time">
                           {formatDate(selectedPost.created_at)}
                         </span>
                       </div>
                     </div>
                     
-                    <div className="modal-actions-container">
-                      <div className={`post-type-badge ${selectedPost.type.toLowerCase()}`}>
+                    <div className="bulletin-modal-actions-container">
+                      <div className={`bulletin-post-type-badge ${selectedPost.type.toLowerCase()}`}>
                         {selectedPost.type}
                       </div>
                       <button 
-                        className="modal-report-btn"
+                        className="bulletin-modal-report-btn"
                         onClick={() => {
                           closePostModal();
                           openReportModal(selectedPost);
@@ -609,13 +610,13 @@ export default function BulletinBoard() {
                       </button>
                     </div>
 
-                    <button className="post-modal-close" onClick={closePostModal}>
+                    <button className="bulletin-post-modal-close" onClick={closePostModal}>
                       <FontAwesomeIcon icon={faTimes} />
                     </button>
                   </div>
 
-                  <div className="post-modal-body">
-                    <div className="post-modal-image">
+                  <div className="bulletin-post-modal-body">
+                    <div className="bulletin-post-modal-image">
                       <img 
                         src={selectedPost.photo ? `http://localhost:8000/uploads/${selectedPost.photo}` : OptionalPhoto} 
                         alt={selectedPost.title}
@@ -625,25 +626,24 @@ export default function BulletinBoard() {
                       />
                     </div>
                     
-                    <div className="post-modal-details">
-                      <h2 className='lost-found-category'>
+                    <div className="bulletin-post-modal-details">
+                      <h2 className='bulletin-post-category'>
                         <FontAwesomeIcon icon={faTag} /> {selectedPost.category_name}
                       </h2>
                       
-                      <h1 className="post-modal-title">{selectedPost.title}</h1>
-                      <p className="post-modal-description">{selectedPost.description}</p>
+                      <h1 className="bulletin-post-modal-title">{selectedPost.title}</h1>
+                      <p className="bulletin-post-modal-description">{selectedPost.description}</p>
                       
-                      <div className="post-modal-meta">
-                        <div className="meta-section">
+                      <div className="bulletin-post-modal-meta">
+                        <div className="bulletin-meta-section">
                           <h4>Location Information</h4>
-                          <div className="meta-item location">
+                          <div className="bulletin-meta-item location">
                             <FontAwesomeIcon icon={faMapMarkerAlt} />
                             <span><strong>Barangay:</strong> {selectedPost.barangay_name}</span>
-                         
                           </div>
                         
-                         {selectedPost.purok_name && (
-                            <div className="meta-item location">
+                          {selectedPost.purok_name && (
+                            <div className="bulletin-meta-item location">
                               <FontAwesomeIcon icon={faLocationDot} />
                               <span><strong>Purok:</strong> {selectedPost.purok_name}</span>
                             </div>
@@ -651,17 +651,17 @@ export default function BulletinBoard() {
                         </div>
 
                         {selectedPost.color && (
-                          <div className="meta-section">
+                          <div className="bulletin-meta-section">
                             <h4>Item Details</h4>
-                            <div className="meta-item color">
+                            <div className="bulletin-meta-item color">
                               <strong>Color:</strong> {selectedPost.color}
                             </div>
                           </div>
                         )}
                         
-                        <div className="meta-section">
+                        <div className="bulletin-meta-section">
                           <h4>Contact Information</h4>
-                          <div className="meta-item contact">
+                          <div className="bulletin-meta-item contact">
                             <FontAwesomeIcon icon={faPhone} />
                             <span><strong>Contact:</strong> {selectedPost.contact_info}</span>
                           </div>

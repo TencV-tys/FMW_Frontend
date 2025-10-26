@@ -14,6 +14,7 @@ import ManageUsers from './AdminPages/ManageUsers';
 import ManagePosts from './AdminPages/ManagePosts';
 import Notifications from './AdminPages/Notifications';
 import Reports from './AdminPages/Reports';
+import AdminFeedBack from './AdminPages/AdminFeedback';
 
 import NotFound from './components/NotFound';
 import ProtectedRoute from './components/ProtectedRoutes';
@@ -26,6 +27,7 @@ import Profile from './UserPages/Profile';
 import EditPost from './UserPages/EditPost';
 import MyReports from './UserPages/MyReports';
 import UserNotifications from './UserPages/UserNotifications';
+import Feedback from './UserPages/Feedback';
 
 
 import ForgotPassword from './components/ForgotPassword';
@@ -57,6 +59,7 @@ function App() {
           <Route path='user-notification' element={<UserNotifications/> } />
           <Route path='my-reports' element={<MyReports/>} />
           <Route path='edit-post/:id' element={<EditPost/>} />
+          <Route path='feedback' element={<Feedback />} />
         </Route>
 
         
@@ -70,6 +73,7 @@ function App() {
           <Route path='manage-posts' element={<ManagePosts/>} />
           <Route path='notifications' element={<Notifications/>} />
           <Route path='reports' element={<Reports/> } />
+          <Route path='feedback' element={<AdminFeedBack/> } />
         </Route>
 
         <Route path='*' element={<NotFound/>} />
