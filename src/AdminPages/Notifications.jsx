@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBell,
@@ -11,7 +12,11 @@ import {
   faUserSlash,
   faBan,
   faUserCheck,
-  faUserTimes
+  faUserTimes,
+  faCommentDots,
+  faLightbulb,
+  faBug,
+  faStar
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Notifications.css';
 
@@ -26,7 +31,11 @@ export default function Notifications() {
     user_suspended: 0,
     user_banned: 0,
     user_activated: 0,
-    user_deleted: 0
+    user_deleted: 0,
+    feedback_submitted: 0,
+    feedback_updated: 0,
+    feedback_assigned: 0,
+    feedback_deleted: 0
   });
 
   useEffect(() => {
@@ -73,7 +82,11 @@ export default function Notifications() {
           user_suspended: 0,
           user_banned: 0,
           user_activated: 0,
-          user_deleted: 0
+          user_deleted: 0,
+          feedback_submitted: 0,
+          feedback_updated: 0,
+          feedback_assigned: 0,
+          feedback_deleted: 0
         });
       }
     } catch (error) {
@@ -83,61 +96,14 @@ export default function Notifications() {
 
   // Handle stat card click for filtering
   const handleStatCardClick = (filterType) => {
-    if (filterType === 'all') {
-      setFilter('all');
-    } else if (filterType === 'unread') {
-      setFilter('unread');
-    } else if (filterType === 'reports') {
-      setFilter('report_submitted');
-    } else if (filterType === 'user_suspended') {
-      setFilter('user_suspended');
-    } else if (filterType === 'user_banned') {
-      setFilter('user_banned');
-    } else if (filterType === 'user_activated') {
-      setFilter('user_activated');
-    } else if (filterType === 'user_deleted') {
-      setFilter('user_deleted');
-    }
+    setFilter(filterType);
   };
 
-  // Handle notification click - Navigate to relevant page
+  // Handle notification click - Navigate to relevant page using Link
   const handleNotificationClick = (notification) => {
-    console.log('Notification clicked:', notification);
-    
     // Mark as read when clicked
     if (!notification.is_read) {
       markAsRead(notification.id);
-    }
-
-    // Navigate based on notification type
-    const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
-    
-    switch (notification.type) {
-      case 'report_submitted':
-        // Navigate to reports page
-        window.location.href = '/admin/reports';
-        break;
-      
-      case 'post_removed':
-      case 'post_deleted':
-      case 'post_restored':
-      case 'post_resolved':
-        // Navigate to manage posts
-        window.location.href = '/admin/manage-posts';
-        break;
-      
-      case 'user_suspended':
-      case 'user_banned':
-      case 'user_activated':
-      case 'user_deleted':
-        // Navigate to manage users
-        window.location.href = '/admin/manage-users';
-        break;
-      
-      default:
-        // For general notifications, just mark as read
-        console.log('General notification clicked');
-        break;
     }
   };
 
@@ -229,6 +195,11 @@ export default function Notifications() {
         return faUserCheck;
       case 'user_deleted':
         return faUserTimes;
+      case 'feedback_submitted':
+      case 'feedback_updated':
+      case 'feedback_assigned':
+      case 'feedback_deleted':
+        return faCommentDots;
       case 'general':
         return faBell;
       default:
@@ -256,10 +227,49 @@ export default function Notifications() {
         return '#10b981';
       case 'user_deleted':
         return '#dc2626';
+      case 'feedback_submitted':
+        return '#3b82f6';
+      case 'feedback_updated':
+        return '#8b5cf6';
+      case 'feedback_assigned':
+        return '#f59e0b';
+      case 'feedback_deleted':
+        return '#ef4444';
       case 'general':
         return '#6b7280';
       default:
         return '#6b7280';
+    }
+  };
+
+  // Get navigation link based on notification type
+  const getNotificationLink = (notification) => {
+    const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
+    
+    switch (notification.type) {
+      case 'report_submitted':
+        return '/admin/reports';
+      
+      case 'post_removed':
+      case 'post_deleted':
+      case 'post_restored':
+      case 'post_resolved':
+        return '/admin/manage-posts';
+      
+      case 'user_suspended':
+      case 'user_banned':
+      case 'user_activated':
+      case 'user_deleted':
+        return '/admin/manage-users';
+      
+      case 'feedback_submitted':
+      case 'feedback_updated':
+      case 'feedback_assigned':
+      case 'feedback_deleted':
+        return '/admin/feedback';
+      
+      default:
+        return null;
     }
   };
 
@@ -289,18 +299,7 @@ export default function Notifications() {
 
   // Check if notification is clickable (has navigation)
   const isClickable = (notification) => {
-    const clickableTypes = [
-      'report_submitted',
-      'post_removed',
-      'post_deleted',
-      'post_restored',
-      'post_resolved',
-      'user_suspended',
-      'user_banned',
-      'user_activated',
-      'user_deleted'
-    ];
-    return clickableTypes.includes(notification.type);
+    return getNotificationLink(notification) !== null;
   };
 
   return (
@@ -308,6 +307,10 @@ export default function Notifications() {
       {/* Header */}
       <header className="notifications-header">
         <div className="header-content">
+          <h1>
+            <FontAwesomeIcon icon={faBell} />
+            Notifications
+          </h1>
           <p>Manage and view system notifications</p>
         </div>
         <div className="header-actions">
@@ -330,7 +333,7 @@ export default function Notifications() {
         </div>
       </header>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - No Icons */}
       <section className="notification-stats">
         <div 
           className={`stat-card ${filter === 'all' ? 'active' : ''}`}
@@ -338,9 +341,6 @@ export default function Notifications() {
           style={{ cursor: 'pointer' }}
           title="Show all notifications"
         >
-          <div className="stat-icon total">
-            <FontAwesomeIcon icon={faBell} />
-          </div>
           <div className="stat-info">
             <h3>{stats.total}</h3>
             <p>Total</p>
@@ -352,9 +352,6 @@ export default function Notifications() {
           style={{ cursor: 'pointer' }}
           title="Show unread notifications"
         >
-          <div className="stat-icon unread">
-            <FontAwesomeIcon icon={faBell} />
-          </div>
           <div className="stat-info">
             <h3>{stats.unread}</h3>
             <p>Unread</p>
@@ -362,13 +359,10 @@ export default function Notifications() {
         </div>
         <div 
           className={`stat-card ${filter === 'report_submitted' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('reports')}
+          onClick={() => handleStatCardClick('report_submitted')}
           style={{ cursor: 'pointer' }}
           title="Show report notifications"
         >
-          <div className="stat-icon reports">
-            <FontAwesomeIcon icon={faExclamationTriangle} />
-          </div>
           <div className="stat-info">
             <h3>{stats.reports}</h3>
             <p>Reports</p>
@@ -382,9 +376,6 @@ export default function Notifications() {
           style={{ cursor: 'pointer' }}
           title="Show user suspension notifications"
         >
-          <div className="stat-icon user-suspended">
-            <FontAwesomeIcon icon={faUserSlash} />
-          </div>
           <div className="stat-info">
             <h3>{stats.user_suspended}</h3>
             <p>User Suspensions</p>
@@ -396,9 +387,6 @@ export default function Notifications() {
           style={{ cursor: 'pointer' }}
           title="Show user ban notifications"
         >
-          <div className="stat-icon user-banned">
-            <FontAwesomeIcon icon={faBan} />
-          </div>
           <div className="stat-info">
             <h3>{stats.user_banned}</h3>
             <p>User Bans</p>
@@ -410,12 +398,33 @@ export default function Notifications() {
           style={{ cursor: 'pointer' }}
           title="Show user activation notifications"
         >
-          <div className="stat-icon user-activated">
-            <FontAwesomeIcon icon={faUserCheck} />
-          </div>
           <div className="stat-info">
             <h3>{stats.user_activated}</h3>
             <p>User Activations</p>
+          </div>
+        </div>
+        
+        {/* Feedback Stats Cards */}
+        <div 
+          className={`stat-card ${filter === 'feedback_submitted' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('feedback_submitted')}
+          style={{ cursor: 'pointer' }}
+          title="Show feedback submitted notifications"
+        >
+          <div className="stat-info">
+            <h3>{stats.feedback_submitted}</h3>
+            <p>Feedback Submitted</p>
+          </div>
+        </div>
+        <div 
+          className={`stat-card ${filter === 'feedback_updated' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('feedback_updated')}
+          style={{ cursor: 'pointer' }}
+          title="Show feedback updated notifications"
+        >
+          <div className="stat-info">
+            <h3>{stats.feedback_updated}</h3>
+            <p>Feedback Updated</p>
           </div>
         </div>
       </section>
@@ -440,6 +449,10 @@ export default function Notifications() {
             <option value="user_banned">User Bans</option>
             <option value="user_activated">User Activations</option>
             <option value="user_deleted">User Deletions</option>
+            <option value="feedback_submitted">Feedback Submitted</option>
+            <option value="feedback_updated">Feedback Updated</option>
+            <option value="feedback_assigned">Feedback Assigned</option>
+            <option value="feedback_deleted">Feedback Deleted</option>
             <option value="general">General</option>
           </select>
         </div>
@@ -472,6 +485,10 @@ export default function Notifications() {
               {filter === 'user_banned' && 'User Bans'}
               {filter === 'user_activated' && 'User Activations'}
               {filter === 'user_deleted' && 'User Deletions'}
+              {filter === 'feedback_submitted' && 'Feedback Submitted'}
+              {filter === 'feedback_updated' && 'Feedback Updated'}
+              {filter === 'feedback_assigned' && 'Feedback Assigned'}
+              {filter === 'feedback_deleted' && 'Feedback Deleted'}
               {filter === 'general' && 'General'}
             </span>
           </div>
@@ -492,67 +509,81 @@ export default function Notifications() {
                 {isFilterActive() && ` (Filtered)`}
               </span>
             </div>
-            {notifications.map(notification => (
-              <div 
-                key={notification.id} 
-                className={`notification-item ${notification.is_read ? 'read' : 'unread'} ${
-                  isClickable(notification) ? 'clickable' : ''
-                }`}
-                onClick={() => isClickable(notification) && handleNotificationClick(notification)}
-              >
-                <div className="notification-icon">
-                  <FontAwesomeIcon 
-                    icon={getNotificationIcon(notification.type)} 
-                    style={{ color: getNotificationColor(notification.type) }}
-                  />
-                </div>
-                <div className="notification-content">
-                  <h4>
-                    {notification.title}
-                    {isClickable(notification) && (
-                      <FontAwesomeIcon 
-                        icon={faExternalLinkAlt} 
-                        className="external-link-icon"
-                        title="Click to view related content"
-                      />
-                    )}
-                  </h4>
-                  <p>{notification.message}</p>
-                  <div className="notification-meta">
-                    <span className="user">
-                      {notification.first_name} {notification.last_name}
-                      {notification.role === 'admin' && ' (Admin)'}
-                    </span>
-                    <span className="time">{formatTime(notification.created_at)}</span>
-                    <span className="type">{notification.type.replace('_', ' ')}</span>
+            {notifications.map(notification => {
+              const notificationLink = getNotificationLink(notification);
+              const isClickable = notificationLink !== null;
+              
+              return (
+                <div 
+                  key={notification.id} 
+                  className={`notification-item ${notification.is_read ? 'read' : 'unread'} ${
+                    isClickable ? 'clickable' : ''
+                  }`}
+                >
+                  <div className="notification-icon">
+                    <FontAwesomeIcon 
+                      icon={getNotificationIcon(notification.type)} 
+                      style={{ color: getNotificationColor(notification.type) }}
+                    />
                   </div>
-                </div>
-                <div className="notification-actions">
-                  {!notification.is_read && (
+                  <div className="notification-content">
+                    <h4>
+                      {isClickable ? (
+                        <Link 
+                          to={notificationLink} 
+                          className="notification-link"
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          {notification.title}
+                          <FontAwesomeIcon 
+                            icon={faExternalLinkAlt} 
+                            className="external-link-icon"
+                            title="Click to view related content"
+                          />
+                        </Link>
+                      ) : (
+                        <>
+                          {notification.title}
+                        </>
+                      )}
+                    </h4>
+                    <p>{notification.message}</p>
+                    <div className="notification-meta">
+                      <span className="user">
+                        {notification.first_name} {notification.last_name}
+                        {notification.role === 'admin' && ' (Admin)'}
+                      </span>
+                      <span className="time">{formatTime(notification.created_at)}</span>
+                      <span className="type">{notification.type.replace('_', ' ')}</span>
+                    </div>
+                  </div>
+                  <div className="notification-actions">
+                    {!notification.is_read && (
+                      <button 
+                        className="btn-mark-read"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAsRead(notification.id);
+                        }}
+                        title="Mark as read"
+                      >
+                        <FontAwesomeIcon icon={faCheckCircle} />
+                      </button>
+                    )}
                     <button 
-                      className="btn-mark-read"
+                      className="btn-delete"
                       onClick={(e) => {
                         e.stopPropagation();
-                        markAsRead(notification.id);
+                        deleteNotification(notification.id);
                       }}
-                      title="Mark as read"
+                      title="Delete notification"
                     >
-                      <FontAwesomeIcon icon={faCheckCircle} />
+                      <FontAwesomeIcon icon={faTrash} />
                     </button>
-                  )}
-                  <button 
-                    className="btn-delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteNotification(notification.id);
-                    }}
-                    title="Delete notification"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="empty-state">
