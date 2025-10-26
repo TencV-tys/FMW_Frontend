@@ -173,7 +173,7 @@ export default function Reports() {
   };
 
   return (
-    <div className="reports-management-page">
+    <>
       {/* Header Section */}
       <div className="reports-management-header">
         <div className="reports-header-content">
@@ -597,6 +597,6 @@ export default function Reports() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

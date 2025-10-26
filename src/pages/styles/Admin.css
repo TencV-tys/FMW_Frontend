@@ -1,7 +1,9 @@
+/* Admin.css */
 .admin-container {
   display: flex;
   min-height: 100dvh;
   background: #f8f9fa;
+  position: relative;
 }
 
 .admin-content {
@@ -9,6 +11,7 @@
   transition: margin-left 0.4s ease;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .admin-page-content {
@@ -17,7 +20,64 @@
   overflow-y: auto;
 }
 
-/* Ensure proper spacing for dashboard */
 .dashboard-content {
   padding: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-content {
+    margin-left: 70px !important;
+    width: calc(100% - 70px);
+  }
+  
+  .admin-nav-container.open ~ .admin-content {
+    margin-left: 200px !important;
+    width: calc(100% - 200px);
+  }
+  
+  /* Remove extra padding on mobile */
+  .admin-page-content {
+    padding: 15px;
+  }
+  
+  /* If using dashboard-specific class, remove its padding too */
+  .dashboard-content {
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-content {
+    margin-left: 70px !important;
+    width: calc(100% - 70px);
+  }
+  
+  .admin-nav-container.open ~ .admin-content {
+    margin-left: 200px !important;
+    width: calc(100% - 200px);
+  }
+  
+  /* Further reduce padding on very small screens */
+  .admin-page-content {
+    padding: 10px;
+  }
+}
+
+/* If there's still extra margin, target the specific dashboard components */
+@media (max-width: 768px) {
+  .admin-dashboard-grid,
+  .dashboard-stats,
+  .dashboard-cards,
+  .admin-dashboard-container {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Remove any container margins */
+  .container,
+  .admin-container {
+    margin: 0;
+    padding: 0;
+  }
 }

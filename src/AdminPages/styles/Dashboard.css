@@ -1,5 +1,3 @@
-
-
 /* Header - Keep profile on right */
 .dashboard-header {
   display: flex;
@@ -48,7 +46,7 @@
   font-size: 1.2rem;
 }
 
-* Enhanced Notification Badge */
+/* Enhanced Notification Badge */
 .notif-badge {
   position: absolute;
   top: -2px;
@@ -66,6 +64,7 @@
   padding: 0 4px;
   border: 2px solid white;
 }
+
 /* Pulse animation for unread notifications */
 .notification-btn.has-notifications .notif-icon {
   animation: pulse 2s infinite;
@@ -139,9 +138,9 @@
 .stat-content {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center everything horizontally */
+  justify-content: center;
   gap: 1rem;
-  text-align: center; /* Center text */
+  text-align: center;
 }
 
 .stat-icon {
@@ -159,7 +158,7 @@
 .stat-info {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center the info content */
+  align-items: center;
 }
 
 .stat-info h3 {
@@ -342,36 +341,7 @@
   font-size: 1rem;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .dashboard-main-content {
-    grid-template-columns: 1fr;
-  }
-  
-  .dashboard-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-content {
-    padding: 1rem;
-    margin-left: 70px !important;
-  }
-  
-  .dashboard-header {
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .dashboard-stats {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  /* Add to existing Dashboard.css */
-
-/* 🎯 Clickable Stat Cards */
+/* Clickable Stat Cards */
 .clickable-stat {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -403,32 +373,10 @@
   transform: translateY(-2px) scale(1.01);
 }
 
-/* 🎯 Enhanced Notification Styles */
-.notification-btn {
-  position: relative;
-  background: transparent;
-  border: none;
-  padding: 0.5rem;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
+/* Enhanced Notification Styles */
 .notification-btn.has-notifications .notif-icon {
   animation: pulse 2s infinite;
   color: #ef4444;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
 }
 
 .notification-btn:hover {
@@ -490,17 +438,73 @@
   z-index: 10;
 }
 
-/* Responsive adjustments for clickable stats */
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-main-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* MOBILE FIXES - Remove all extra padding/margin below 768px */
 @media (max-width: 768px) {
+  .dashboard-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  
+  .dashboard-header {
+    margin: 0 !important;
+    padding: 1rem 1rem 0.5rem 1rem !important;
+    width: 100% !important;
+  }
+  
+  .dashboard-stats {
+    margin: 0 !important;
+    padding: 0.5rem 1rem !important;
+    width: 100% !important;
+    gap: 1rem !important;
+    grid-template-columns: 1fr !important;
+  }
+  
+  .dashboard-main-content {
+    margin: 0 !important;
+    padding: 0.5rem 1rem 1rem 1rem !important;
+    width: 100% !important;
+    gap: 1rem !important;
+  }
+  
+  .stat-card {
+    margin: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 1.25rem !important;
+  }
+  
+  .section-content {
+    padding: 1rem !important;
+  }
+  
+  .section-title {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Remove tooltip on mobile */
+  .stat-card:hover::after {
+    display: none;
+  }
+  
+  /* Adjust clickable stats for mobile */
   .clickable-stat:hover {
     transform: translateY(-3px);
   }
   
-  .stat-card:hover::after {
-    display: none; /* Hide tooltip on mobile */
-  }
-}
-  /* FIXED: Ensure cards are always centered */
+  /* Ensure cards are always centered */
   .stat-card {
     display: flex;
     justify-content: center;
@@ -519,11 +523,22 @@
 
 @media (max-width: 480px) {
   .dashboard-content {
-    padding: 0.75rem;
+    padding: 0 !important;
   }
   
   .dashboard-header {
+    padding: 0.75rem 0.75rem 0.25rem 0.75rem !important;
     flex-wrap: nowrap;
+  }
+  
+  .dashboard-stats {
+    padding: 0.25rem 0.75rem !important;
+    gap: 0.75rem !important;
+  }
+  
+  .dashboard-main-content {
+    padding: 0.25rem 0.75rem 0.75rem 0.75rem !important;
+    gap: 0.75rem !important;
   }
   
   .header-content {
@@ -550,6 +565,7 @@
     flex-direction: column;
     text-align: center;
     gap: 0.75rem;
+    padding: 0.75rem !important;
   }
   
   .activity-content {
@@ -569,7 +585,11 @@
     font-size: 1rem;
   }
   
-  /* FIXED: Extra small screens card centering */
+  /* Reduce card padding further */
+  .stat-card {
+    padding: 1rem !important;
+  }
+  
   .stat-content {
     gap: 0.5rem;
   }
@@ -600,12 +620,31 @@
     height: 35px;
   }
   
-  /* FIXED: Ensure perfect centering on very small screens */
   .stat-card {
-    padding: 1rem;
+    padding: 0.75rem !important;
   }
   
   .stat-content {
     gap: 0.5rem;
+  }
+  
+  .dashboard-stats {
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  .dashboard-main-content {
+    padding: 0.25rem 0.5rem 0.5rem 0.5rem !important;
+  }
+}
+
+/* Nuclear option for any remaining spacing issues */
+@media (max-width: 768px) {
+  .dashboard-content > *,
+  .dashboard-content > div > * {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
   }
 }

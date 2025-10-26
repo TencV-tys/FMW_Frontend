@@ -304,7 +304,7 @@ export default function Notifications() {
   };
 
   return (
-    <div className="notifications-page">
+    <>
       {/* Header */}
       <header className="notifications-header">
         <div className="header-content">
@@ -575,6 +575,6 @@ export default function Notifications() {
           </div>
         )}
       </section>
-    </div>
+    </>
   );
 }
