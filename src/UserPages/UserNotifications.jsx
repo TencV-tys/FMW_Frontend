@@ -6,13 +6,15 @@ import {
   faCheckCircle,
   faTimesCircle,
   faTrash,
-  faSearch,
   faFilter,
   faCheckDouble,
   faExclamationTriangle,
   faEye,
   faEyeSlash,
-  faTrashAlt
+  faTrashAlt,
+  faComments,
+  faSyncAlt,
+  faUserShield
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
@@ -172,6 +174,12 @@ export default function UserNotifications() {
         return faCheckCircle;
       case 'user_suspended':
         return faTimesCircle;
+          case 'feedback_submitted':
+      return faComments;
+    case 'feedback_updated':
+      return faSyncAlt;
+    case 'feedback_assigned':
+      return faUserShield;
       default:
         return faBell;
     }
@@ -193,6 +201,12 @@ export default function UserNotifications() {
         return '#06b6d4';
       case 'account_suspended':
         return '#ef4444';
+        case 'feedback_submitted':
+      return '#10b981';
+    case 'feedback_updated':
+      return '#3b82f6';
+    case 'feedback_assigned':
+      return '#f59e0b';
       default:
         return '#6b7280';
     }
@@ -285,6 +299,9 @@ export default function UserNotifications() {
               <option value="report_submitted">Reports</option>
               <option value="report_status_update">Report Updates</option>
               <option value="user_suspended">Account Status</option>
+                <option value="feedback_submitted">Feedback Submitted</option>
+              <option value="feedback_updated">Feedback Updates</option>
+              <option value="feedback_assigned">Feedback Assignments</option>
             </select>
           </div>
         </section>

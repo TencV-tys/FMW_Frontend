@@ -599,7 +599,37 @@
     transform: translateY(0);
   }
 }
+/* Add to AdminFeedback.css */
+.feedback-status-reviewed {
+  background: #e0e7ff !important;
+  color: #3730a3 !important;
+  border: 1px solid #c7d2fe !important;
+}
 
+.feedback-status-rejected {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+.feedback-action-btn.delete {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.feedback-action-btn.delete:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* Update stats grid for 6 cards */
+.feedback-management-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
 .feedback-modal-header {
   display: flex;
   justify-content: space-between;

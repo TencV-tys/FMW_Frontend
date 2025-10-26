@@ -1,4 +1,3 @@
-// AdminPages/Feedback.jsx
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -16,7 +15,9 @@ import {
   faStar,
   faCommentDots,
   faRefresh,
-  faUserShield
+  faUserShield,
+  faTrash,
+  faBan
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/AdminFeedback.css';
 
@@ -116,6 +117,29 @@ export default function AdminFeedback() {
     }
   };
 
+  // 🆕 DELETE FEEDBACK
+  const deleteFeedback = async (feedbackId) => {
+    if (!window.confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) return;
+    
+    try {
+      const response = await fetch(`http://localhost:8000/api/feedback/${feedbackId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setFeedback(prev => prev.filter(item => item.id !== feedbackId));
+        fetchFeedbackStats();
+        alert('Feedback deleted successfully');
+      } else {
+        alert('Failed to delete feedback');
+      }
+    } catch (error) {
+      console.error('Error deleting feedback:', error);
+      alert('Error deleting feedback');
+    }
+  };
+
   const assignFeedback = async (feedbackId, adminId) => {
     try {
       const response = await fetch(`http://localhost:8000/api/feedback/${feedbackId}/assign`, {
@@ -175,7 +199,7 @@ export default function AdminFeedback() {
       reviewed: faEye,
       in_progress: faExclamationTriangle,
       completed: faCheckCircle,
-      rejected: faTimesCircle
+      rejected: faBan
     };
     return iconMap[status] || faClock;
   };
@@ -260,6 +284,15 @@ export default function AdminFeedback() {
           <span className="feedback-stat-label">Pending</span>
         </div>
         <div 
+          className={`feedback-stat-card ${statusFilter === 'reviewed' ? 'feedback-stat-active' : ''}`}
+          onClick={() => setStatusFilter('reviewed')}
+          style={{ cursor: 'pointer' }}
+          title="Show reviewed feedback"
+        >
+          <span className="feedback-stat-number">{stats.reviewed}</span>
+          <span className="feedback-stat-label">Reviewed</span>
+        </div>
+        <div 
           className={`feedback-stat-card ${statusFilter === 'in_progress' ? 'feedback-stat-active' : ''}`}
           onClick={() => setStatusFilter('in_progress')}
           style={{ cursor: 'pointer' }}
@@ -276,6 +309,15 @@ export default function AdminFeedback() {
         >
           <span className="feedback-stat-number">{stats.completed}</span>
           <span className="feedback-stat-label">Completed</span>
+        </div>
+        <div 
+          className={`feedback-stat-card ${statusFilter === 'rejected' ? 'feedback-stat-active' : ''}`}
+          onClick={() => setStatusFilter('rejected')}
+          style={{ cursor: 'pointer' }}
+          title="Show rejected feedback"
+        >
+          <span className="feedback-stat-number">{stats.rejected}</span>
+          <span className="feedback-stat-label">Rejected</span>
         </div>
       </div>
 
@@ -541,12 +583,26 @@ export default function AdminFeedback() {
                           {item.status !== 'rejected' && (
                             <button
                               className="feedback-action-btn reject"
-                              onClick={() => updateFeedbackStatus(item.id, 'rejected')}
+                              onClick={() => {
+                                const adminNotes = prompt('Please provide a reason for rejection:');
+                                if (adminNotes !== null) {
+                                  updateFeedbackStatus(item.id, 'rejected', adminNotes);
+                                }
+                              }}
                               title="Reject Feedback"
                             >
-                              <FontAwesomeIcon icon={faTimesCircle} />
+                              <FontAwesomeIcon icon={faBan} />
                             </button>
                           )}
+
+                          {/* 🆕 DELETE BUTTON */}
+                          <button
+                            className="feedback-action-btn delete"
+                            onClick={() => deleteFeedback(item.id)}
+                            title="Delete Feedback"
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -740,6 +796,18 @@ export default function AdminFeedback() {
                     Reject
                   </button>
                 )}
+                {/* 🆕 DELETE BUTTON IN MODAL */}
+                <button
+                  className="feedback-btn feedback-btn-danger"
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) {
+                      deleteFeedback(viewModal.feedback.id);
+                      closeModals();
+                    }
+                  }}
+                >
+                  Delete
+                </button>
                 <button className="feedback-btn feedback-btn-primary" onClick={closeModals}>
                   Close
                 </button>

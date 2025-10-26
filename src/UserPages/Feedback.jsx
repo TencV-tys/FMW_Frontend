@@ -1,4 +1,4 @@
-// UserPages/Feedback.jsx
+// UserPages/Feedback.jsx - UPDATED WITH DEBUGGING
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -9,13 +9,14 @@ import {
   faPaperPlane,
   faClock,
   faCheckCircle,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faCircle
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/Feedback.css';
 
 export default function Feedback() {
-  const [activeTab, setActiveTab] = useState('submit'); // 'submit' or 'my-feedback'
+  const [activeTab, setActiveTab] = useState('submit');
   const [formData, setFormData] = useState({
     type: 'general',
     title: '',
@@ -26,6 +27,7 @@ export default function Feedback() {
   const [loading, setLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [anonymous, setAnonymous] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
 
   useEffect(() => {
     if (activeTab === 'my-feedback') {
@@ -36,18 +38,36 @@ export default function Feedback() {
   const fetchMyFeedback = async () => {
     try {
       setLoading(true);
+      setDebugInfo('Fetching feedback...');
+      
+      console.log('🔄 Fetching user feedback from:', 'http://localhost:8000/api/feedback/my-feedback');
+      
       const response = await fetch('http://localhost:8000/api/feedback/my-feedback', {
         credentials: 'include'
       });
 
+      console.log('📡 Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('📦 API Response:', data);
+        
         if (data.success) {
-          setMyFeedback(data.feedback);
+          setMyFeedback(data.feedback || []);
+          setDebugInfo(`Found ${data.feedback?.length || 0} feedback items`);
+          console.log('✅ Feedback loaded:', data.feedback);
+        } else {
+          setDebugInfo(`Error: ${data.error}`);
+          console.error('❌ API error:', data.error);
         }
+      } else {
+        const errorText = await response.text();
+        setDebugInfo(`HTTP Error: ${response.status}`);
+        console.error('❌ HTTP error:', response.status, errorText);
       }
     } catch (error) {
-      console.error('Error fetching feedback:', error);
+      setDebugInfo(`Network error: ${error.message}`);
+      console.error('❌ Network error:', error);
     } finally {
       setLoading(false);
     }
@@ -63,6 +83,7 @@ export default function Feedback() {
 
     try {
       setLoading(true);
+      setDebugInfo('Submitting feedback...');
       
       const submitData = {
         ...formData,
@@ -73,7 +94,10 @@ export default function Feedback() {
         }
       };
 
-      // Remove user credentials if submitting anonymously
+      console.log('📤 Submitting feedback:', submitData);
+      console.log('🔐 Anonymous mode:', anonymous);
+      console.log('🔐 Using credentials:', !anonymous);
+
       const options = {
         method: 'POST',
         headers: {
@@ -82,15 +106,17 @@ export default function Feedback() {
         body: JSON.stringify(submitData)
       };
 
-      // Only include credentials if not anonymous
-      if (!anonymous) {
-        options.credentials = 'include';
-      }
+      // Always include credentials to ensure user is linked
+      options.credentials = 'include';
 
       const response = await fetch('http://localhost:8000/api/feedback', options);
 
+      console.log('📡 Submission response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Submission success:', data);
+        
         if (data.success) {
           setSubmitSuccess(true);
           setFormData({
@@ -99,18 +125,24 @@ export default function Feedback() {
             description: '',
             priority: 'medium'
           });
-          setTimeout(() => setSubmitSuccess(false), 5000);
+          setDebugInfo('Feedback submitted successfully!');
           
-          // Refresh my feedback list if user is logged in
-          if (!anonymous) {
+          // Always refresh the feedback list after submission
+          setTimeout(() => {
             fetchMyFeedback();
-          }
+            setActiveTab('my-feedback'); // Switch to my feedback tab
+          }, 1000);
+          
+          setTimeout(() => setSubmitSuccess(false), 5000);
         }
       } else {
-        alert('Failed to submit feedback. Please try again.');
+        const errorData = await response.json().catch(() => ({}));
+        setDebugInfo(`Submission failed: ${errorData.error || response.status}`);
+        alert(errorData.error || 'Failed to submit feedback. Please try again.');
       }
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      setDebugInfo(`Submission error: ${error.message}`);
+      console.error('❌ Error submitting feedback:', error);
       alert('Error submitting feedback. Please try again.');
     } finally {
       setLoading(false);
@@ -182,6 +214,21 @@ export default function Feedback() {
                 <p>Help us improve the platform by sharing your thoughts and reporting issues</p>
               </div>
 
+              {/* Debug Info */}
+              {debugInfo && (
+                <div className="debug-info" style={{
+                  background: '#f8f9fa',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  marginBottom: '15px',
+                  border: '1px solid #dee2e6',
+                  fontSize: '14px',
+                  color: '#6c757d'
+                }}>
+                  <strong>Debug:</strong> {debugInfo}
+                </div>
+              )}
+
               {/* Tabs */}
               <div className="feedback-tabs">
                 <button 
@@ -196,7 +243,7 @@ export default function Feedback() {
                   onClick={() => setActiveTab('my-feedback')}
                 >
                   <FontAwesomeIcon icon={faClock} />
-                  My Feedback
+                  My Feedback ({myFeedback.length})
                 </button>
               </div>
 
@@ -221,7 +268,12 @@ export default function Feedback() {
                         />
                         Submit anonymously
                       </label>
-                      <small>Your identity will be hidden from administrators</small>
+                      <small>
+                        {anonymous 
+                          ? "Your identity will be hidden from administrators" 
+                          : "Your feedback will be linked to your account"
+                        }
+                      </small>
                     </div>
 
                     {/* Feedback Type */}
@@ -327,6 +379,7 @@ export default function Feedback() {
                       <FontAwesomeIcon icon={faCommentDots} className="empty-icon" />
                       <h3>No feedback submitted yet</h3>
                       <p>Your submitted feedback will appear here once you submit some.</p>
+                      <p><small>Make sure you are logged in and not submitting anonymously.</small></p>
                     </div>
                   ) : (
                     <div className="feedback-list">
