@@ -1,4 +1,3 @@
-// UserPages/Feedback.jsx - UPDATED WITH DEBUGGING
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -10,7 +9,12 @@ import {
   faClock,
   faCheckCircle,
   faExclamationTriangle,
-  faCircle
+  faCircle,
+  faEye,
+  faBan,
+  faSyncAlt,
+  faTrash,
+  faWarning
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/Feedback.css';
@@ -28,6 +32,7 @@ export default function Feedback() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [anonymous, setAnonymous] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'my-feedback') {
@@ -96,18 +101,15 @@ export default function Feedback() {
 
       console.log('📤 Submitting feedback:', submitData);
       console.log('🔐 Anonymous mode:', anonymous);
-      console.log('🔐 Using credentials:', !anonymous);
 
       const options = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(submitData)
+        body: JSON.stringify(submitData),
+        credentials: 'include'
       };
-
-      // Always include credentials to ensure user is linked
-      options.credentials = 'include';
 
       const response = await fetch('http://localhost:8000/api/feedback', options);
 
@@ -127,10 +129,9 @@ export default function Feedback() {
           });
           setDebugInfo('Feedback submitted successfully!');
           
-          // Always refresh the feedback list after submission
           setTimeout(() => {
             fetchMyFeedback();
-            setActiveTab('my-feedback'); // Switch to my feedback tab
+            setActiveTab('my-feedback');
           }, 1000);
           
           setTimeout(() => setSubmitSuccess(false), 5000);
@@ -149,6 +150,41 @@ export default function Feedback() {
     }
   };
 
+  const handleDeleteFeedback = async (feedbackId, feedbackTitle) => {
+    try {
+      setDebugInfo(`Deleting feedback: ${feedbackTitle}`);
+      
+      const response = await fetch(`http://localhost:8000/api/feedback/my-feedback/${feedbackId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setDebugInfo('Feedback deleted successfully!');
+          setDeleteConfirm(null);
+          
+          // Remove from local state
+          setMyFeedback(prev => prev.filter(feedback => feedback.id !== feedbackId));
+          
+          // Show success message
+          setTimeout(() => {
+            setDebugInfo('');
+          }, 3000);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setDebugInfo(`Delete failed: ${errorData.error || response.status}`);
+        alert(errorData.error || 'Failed to delete feedback. Please try again.');
+      }
+    } catch (error) {
+      setDebugInfo(`Delete error: ${error.message}`);
+      console.error('❌ Error deleting feedback:', error);
+      alert('Error deleting feedback. Please try again.');
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -163,6 +199,17 @@ export default function Feedback() {
       case 'feature': return faLightbulb;
       case 'suggestion': return faStar;
       default: return faCommentDots;
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'pending': return faClock;
+      case 'reviewed': return faEye;
+      case 'in_progress': return faSyncAlt;
+      case 'completed': return faCheckCircle;
+      case 'rejected': return faBan;
+      default: return faClock;
     }
   };
 
@@ -185,6 +232,11 @@ export default function Feedback() {
       case 'low': return '#2ecc71';
       default: return '#95a5a6';
     }
+  };
+
+  const canDeleteFeedback = (feedback) => {
+    // Only allow deletion for pending or reviewed feedback
+    return ['pending', 'reviewed'].includes(feedback.status);
   };
 
   const formatDate = (dateString) => {
@@ -401,9 +453,18 @@ export default function Feedback() {
                                 className="status-badge"
                                 style={{ color: getStatusColor(feedback.status) }}
                               >
-                                <FontAwesomeIcon icon={faCircle} />
+                                <FontAwesomeIcon icon={getStatusIcon(feedback.status)} />
                                 {feedback.status.replace('_', ' ')}
                               </span>
+                              {canDeleteFeedback(feedback) && (
+                                <button
+                                  className="delete-feedback-btn"
+                                  onClick={() => setDeleteConfirm(feedback)}
+                                  title="Delete this feedback"
+                                >
+                                  <FontAwesomeIcon icon={faTrash} />
+                                </button>
+                              )}
                             </div>
                           </div>
                           
@@ -420,6 +481,36 @@ export default function Feedback() {
                               </div>
                             )}
                           </div>
+
+                          {/* Delete Confirmation Modal */}
+                          {deleteConfirm && deleteConfirm.id === feedback.id && (
+                            <div className="delete-confirmation-overlay">
+                              <div className="delete-confirmation-modal">
+                                <div className="delete-confirmation-header">
+                                  <FontAwesomeIcon icon={faWarning} className="warning-icon" />
+                                  <h3>Delete Feedback</h3>
+                                </div>
+                                <p>Are you sure you want to delete this feedback?</p>
+                                <p><strong>"{deleteConfirm.title}"</strong></p>
+                                <p className="warning-text">This action cannot be undone.</p>
+                                <div className="delete-confirmation-actions">
+                                  <button
+                                    className="cancel-btn"
+                                    onClick={() => setDeleteConfirm(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    className="confirm-delete-btn"
+                                    onClick={() => handleDeleteFeedback(deleteConfirm.id, deleteConfirm.title)}
+                                  >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
