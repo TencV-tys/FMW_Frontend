@@ -34,7 +34,6 @@ export default function Notifications() {
     user_deleted: 0,
     feedback_submitted: 0,
     feedback_updated: 0,
-    feedback_assigned: 0,
     feedback_deleted: 0
   });
 
@@ -85,7 +84,6 @@ export default function Notifications() {
           user_deleted: 0,
           feedback_submitted: 0,
           feedback_updated: 0,
-          feedback_assigned: 0,
           feedback_deleted: 0
         });
       }
@@ -197,7 +195,6 @@ export default function Notifications() {
         return faUserTimes;
       case 'feedback_submitted':
       case 'feedback_updated':
-      case 'feedback_assigned':
       case 'feedback_deleted':
         return faCommentDots;
       case 'general':
@@ -231,8 +228,6 @@ export default function Notifications() {
         return '#3b82f6';
       case 'feedback_updated':
         return '#8b5cf6';
-      case 'feedback_assigned':
-        return '#f59e0b';
       case 'feedback_deleted':
         return '#ef4444';
       case 'general':
@@ -254,19 +249,34 @@ export default function Notifications() {
       case 'post_deleted':
       case 'post_restored':
       case 'post_resolved':
+        // 🆕 ADD POST ID NAVIGATION IF AVAILABLE
+        if (metadata.post_id) {
+          return `/admin/manage-posts?highlight=${metadata.post_id}`;
+        }
         return '/admin/manage-posts';
       
       case 'user_suspended':
       case 'user_banned':
       case 'user_activated':
       case 'user_deleted':
+        // 🆕 ADD USER ID NAVIGATION IF AVAILABLE
+        if (metadata.user_id) {
+          return `/admin/manage-users?highlight=${metadata.user_id}`;
+        }
         return '/admin/manage-users';
       
       case 'feedback_submitted':
       case 'feedback_updated':
-      case 'feedback_assigned':
       case 'feedback_deleted':
+        // 🆕 ADD FEEDBACK ID NAVIGATION IF AVAILABLE
+        if (metadata.feedback_id) {
+          return `/admin/feedback?highlight=${metadata.feedback_id}`;
+        }
         return '/admin/feedback';
+      
+      case 'general':
+ 
+        return '/admin/manage-posts';
       
       default:
         return null;
@@ -451,7 +461,6 @@ export default function Notifications() {
             <option value="user_deleted">User Deletions</option>
             <option value="feedback_submitted">Feedback Submitted</option>
             <option value="feedback_updated">Feedback Updated</option>
-            <option value="feedback_assigned">Feedback Assigned</option>
             <option value="feedback_deleted">Feedback Deleted</option>
             <option value="general">General</option>
           </select>
@@ -487,7 +496,6 @@ export default function Notifications() {
               {filter === 'user_deleted' && 'User Deletions'}
               {filter === 'feedback_submitted' && 'Feedback Submitted'}
               {filter === 'feedback_updated' && 'Feedback Updated'}
-              {filter === 'feedback_assigned' && 'Feedback Assigned'}
               {filter === 'feedback_deleted' && 'Feedback Deleted'}
               {filter === 'general' && 'General'}
             </span>
