@@ -9,6 +9,7 @@ import Registration from './pages/Registration';
 import User from './pages/User';
 import Admin from './pages/Admin';
 import UserAgreement from './pages/UserAgreement';
+import About from './pages/About';
 
 import Dashboard from './AdminPages/Dashboard';
 import ManageUsers from './AdminPages/ManageUsers';
@@ -42,7 +43,9 @@ function App() {
         <Route path='/registration' element={<Registration/>}/>
         <Route path='/login' element={<Login/>}/>
         <Route path='/user-agreement' element={<UserAgreement/>}/>
-     
+        <Route path='/about' element={<About/>}/>
+
+        
         <Route path='/forgot-password' element={<ForgotPassword/>}/>
         <Route path='/reset-password' element={<ResetPassword/>}/>
 
