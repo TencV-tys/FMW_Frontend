@@ -3,7 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './styles/Registration.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserPlus, faSpinner, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCircleNotch } from "@fortawesome/free-solid-svg-icons";
+import { 
+  faUserPlus, 
+  faSpinner, 
+  faEye, 
+  faEyeSlash, 
+  faCheckCircle, 
+  faTimesCircle, 
+  faCircleNotch,
+  faFileContract,
+  faShieldAlt
+} from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 
 // Custom hook for registration form
@@ -15,6 +25,7 @@ const useRegistrationForm = () => {
     gender: "",
     password: "",
     password_confirmation: "",
+    agreedToTerms: false,
     isLoading: false,
     errors: {},
     touched: {},
@@ -58,6 +69,10 @@ const useRegistrationForm = () => {
     }));
   };
 
+  const setAgreedToTerms = (agreed) => {
+    setState(prev => ({ ...prev, agreedToTerms: agreed }));
+  };
+
   return {
     ...state,
     updateField,
@@ -65,7 +80,8 @@ const useRegistrationForm = () => {
     setLoading,
     togglePasswordVisibility,
     toggleConfirmPasswordVisibility,
-    setEmailVerificationStatus
+    setEmailVerificationStatus,
+    setAgreedToTerms
   };
 };
 
@@ -90,7 +106,8 @@ const validationService = {
         if (!val) return 'Please confirm your password';
         if (val !== state.password) return 'Passwords do not match';
         return '';
-      }
+      },
+      agreedToTerms: (val) => !val ? 'You must agree to the terms and conditions' : ''
     };
 
     return validators[field] ? validators[field](value, formState) : '';
@@ -98,7 +115,7 @@ const validationService = {
 
   validateForm: (formState) => {
     const errors = {};
-    const fields = ['first_name', 'last_name', 'email', 'password', 'password_confirmation'];
+    const fields = ['first_name', 'last_name', 'email', 'password', 'password_confirmation', 'agreedToTerms'];
     
     fields.forEach(field => {
       const error = validationService.validateField(field, formState[field], formState);
@@ -169,6 +186,7 @@ export default function Registration() {
     gender,
     password,
     password_confirmation,
+    agreedToTerms,
     isLoading,
     errors,
     touched,
@@ -181,7 +199,8 @@ export default function Registration() {
     setLoading,
     togglePasswordVisibility,
     toggleConfirmPasswordVisibility,
-    setEmailVerificationStatus
+    setEmailVerificationStatus,
+    setAgreedToTerms
   } = useRegistrationForm();
 
   const navigate = useNavigate();
@@ -221,22 +240,33 @@ export default function Registration() {
   useEffect(() => {
     if (Object.keys(touched).length > 0) {
       const newErrors = validationService.validateForm({
-        first_name, last_name, email, password, password_confirmation, gender
+        first_name, last_name, email, password, password_confirmation, gender, agreedToTerms
       });
       setErrors(newErrors);
     }
-  }, [first_name, last_name, email, password, password_confirmation, touched]);
+  }, [first_name, last_name, email, password, password_confirmation, agreedToTerms, touched]);
+
+  const handleViewTerms = () => {
+    sessionStorage.setItem('fromRegistration', 'true');
+    navigate('/user-agreement', { 
+      state: { from: 'registration' } 
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     const allTouched = {
-      first_name: true, last_name: true, email: true, 
-      password: true, password_confirmation: true
+      first_name: true, 
+      last_name: true, 
+      email: true, 
+      password: true, 
+      password_confirmation: true,
+      agreedToTerms: true
     };
     
     const formErrors = validationService.validateForm({
-      first_name, last_name, email, password, password_confirmation, gender
+      first_name, last_name, email, password, password_confirmation, gender, agreedToTerms
     });
 
     setErrors(formErrors);
@@ -321,7 +351,7 @@ export default function Registration() {
   };
 
   const getFieldClassName = (fieldName) => {
-    return `input-group ${errors[fieldName] ? 'has-error' : ''} ${touched[fieldName] ? 'touched' : ''}`;
+    return `input-group ${errors[fieldName] ? 'has-error' : ''} ${touched[fieldName] && !errors[fieldName] ? 'has-success' : ''}`;
   };
 
   const getEmailStatusIcon = () => {
@@ -363,6 +393,17 @@ export default function Registration() {
       );
     }
     return null;
+  };
+
+  const isFormValid = () => {
+    return first_name && 
+           last_name && 
+           email && 
+           password && 
+           password_confirmation && 
+           agreedToTerms && 
+           emailVerified && 
+           Object.keys(errors).length === 0;
   };
 
   return (
@@ -485,6 +526,12 @@ export default function Registration() {
                 {errors.password}
               </span>
             )}
+            {password && !errors.password && (
+              <div className="password-strength strong">
+                <FontAwesomeIcon icon={faCheckCircle} />
+                Password meets requirements
+              </div>
+            )}
           </div>
 
           {/* Confirm Password Field */}
@@ -519,13 +566,91 @@ export default function Registration() {
                 {errors.password_confirmation}
               </span>
             )}
+            {password_confirmation && !errors.password_confirmation && (
+              <div className="password-match success">
+                <FontAwesomeIcon icon={faCheckCircle} />
+                Passwords match
+              </div>
+            )}
+          </div>
+
+          {/* Terms Agreement Section */}
+          <div className={`terms-agreement-section ${errors.agreedToTerms ? 'has-error' : ''} ${agreedToTerms ? 'accepted' : ''}`}>
+            <div className="terms-header">
+              <FontAwesomeIcon icon={faFileContract} className="terms-icon" />
+              <h3>Terms & Conditions</h3>
+            </div>
+            
+            <div className="terms-content">
+              <p>
+                By creating an account, you agree to our Terms of Service and Privacy Policy. 
+                Please read them carefully before proceeding.
+              </p>
+              
+              <div className="terms-highlights">
+                <div className="term-highlight">
+                  <FontAwesomeIcon icon={faShieldAlt} />
+                  <span>Your data is protected and secure</span>
+                </div>
+                <div className="term-highlight">
+                  <FontAwesomeIcon icon={faUserPlus} />
+                  <span>One account per person is allowed</span>
+                </div>
+                <div className="term-highlight">
+                  <FontAwesomeIcon icon={faCheckCircle} />
+                  <span>You must follow community guidelines</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="terms-agreement">
+              <label className="terms-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  disabled={isLoading}
+                  className="terms-checkbox-input"
+                />
+                <span className="custom-checkbox">
+                  {agreedToTerms && <FontAwesomeIcon icon={faCheckCircle} className="check-icon" />}
+                </span>
+                <span className="terms-text">
+                  I have read and agree to the{' '}
+                  <button 
+                    type="button" 
+                    className="terms-link-button"
+                    onClick={handleViewTerms}
+                    disabled={isLoading}
+                  >
+                    Terms of Service
+                  </button>{' '}
+                  and{' '}
+                  <button 
+                    type="button" 
+                    className="terms-link-button"
+                    onClick={handleViewTerms}
+                    disabled={isLoading}
+                  >
+                    Privacy Policy
+                  </button>
+                </span>
+              </label>
+              
+              {errors.agreedToTerms && (
+                <div className="terms-error">
+                  <FontAwesomeIcon icon={faTimesCircle} />
+                  {errors.agreedToTerms}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            className={`register-button ${isLoading ? 'loading' : ''}`}
-            disabled={isLoading || (email && !emailVerified && !checkingEmail)}
+            className={`register-button ${isLoading ? 'loading' : ''} ${!isFormValid() ? 'disabled' : ''}`}
+            disabled={isLoading || !isFormValid()}
           >
             {isLoading ? (
               <>
