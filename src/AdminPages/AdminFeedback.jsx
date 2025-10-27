@@ -250,7 +250,7 @@ export default function AdminFeedback() {
       {/* Header Section */}
       <div className="feedback-management-header">
         <div className="feedback-header-content">
-          <h1>Feedback Management</h1>
+       
           <p>Review and manage user-submitted feedback and suggestions</p>
         </div>
         <button 

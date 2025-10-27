@@ -38,7 +38,9 @@ export default function AdminHeader() {
       case '/admin/manage-posts':
         return 'Manage Posts';
       case '/admin/reports':
-        return 'Reports & Analytics';
+        return 'Reports';
+         case '/admin/feedback':
+        return 'Feedback';
       case '/admin/notifications':
         return 'Notifications';
       default:

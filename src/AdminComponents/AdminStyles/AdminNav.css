@@ -1,5 +1,5 @@
-/* AdminNav.css */
-.admin-nav-container {
+/* AdminNav.css - Unique Class Names */
+.admin-nav-main {
     background-color: #FF8904;
     height: 100dvh;
     position: fixed;
@@ -13,7 +13,7 @@
 }
 
 /* Open state - Full sidebar */
-.admin-nav-container.open {
+.admin-nav-main.admin-nav-open {
     width: 200px;
     min-width: 200px;
     transform: translateX(0);
@@ -22,7 +22,7 @@
 }
 
 /* Closed state - Collapsed sidebar */
-.admin-nav-container.closed {
+.admin-nav-main.admin-nav-closed {
     width: 70px;
     min-width: 70px;
     transform: translateX(0);
@@ -30,7 +30,7 @@
     visibility: visible;
 }
 
-.admin-link-container {
+.admin-nav-inner {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -39,7 +39,7 @@
 }
 
 /* Toggle Button */
-.toggle {
+.admin-nav-toggle {
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -49,12 +49,12 @@
     margin-bottom: 1rem;
 }
 
-.admin-nav-container.closed .toggle {
+.admin-nav-main.admin-nav-closed .admin-nav-toggle {
     justify-content: center;
     padding: 0 0.5rem 1rem 0.5rem;
 }
 
-.toggle-icon {
+.admin-toggle-btn {
     border: none;
     background-color: transparent;
     padding: 0.5rem;
@@ -68,17 +68,17 @@
     height: 32px;
 }
 
-.toggle-icon:hover {
+.admin-toggle-btn:hover {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-.icon {
+.admin-toggle-icon {
     color: white;
     font-size: 1rem;
 }
 
 /* Profile Section */
-.admin-profile-container {
+.admin-profile-main {
     display: flex;
     align-items: center;
     text-decoration: none;
@@ -91,11 +91,11 @@
     margin: 0 1rem 1rem 1rem;
 }
 
-.admin-profile-container:hover {
+.admin-profile-main:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.admin-logo-container {
+.admin-logo-main {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -103,37 +103,37 @@
     flex-shrink: 0;
 }
 
-.admin-logo-container .logo {
+.admin-logo-main .admin-logo-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
 }
 
-.admin-name {
+.admin-profile-info {
     display: flex;
     flex-direction: column;
     margin-left: 12px;
     flex: 1;
 }
 
-.admin-name p {
+.admin-profile-info p {
     margin: 0;
     line-height: 1.3;
 }
 
-.admin-name p:first-child {
+.admin-welcome-text {
     font-size: 0.8rem;
     opacity: 0.9;
 }
 
-.admin-name p:last-child {
+.admin-role-text {
     font-size: 1rem;
     font-weight: 700;
 }
 
 /* Navigation Links Wrapper */
-.nav-links-wrapper {
+.admin-nav-links-wrapper {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -142,7 +142,7 @@
 }
 
 /* Navigation Links */
-.admin-links {
+.admin-nav-link-item {
     display: flex;
     align-items: center;
     text-decoration: none;
@@ -154,12 +154,12 @@
     position: relative;
 }
 
-.admin-links:hover {
+.admin-nav-link-item:hover {
     background-color: rgba(255, 255, 255, 0.2);
     transform: translateX(4px);
 }
 
-.nav-link {
+.admin-nav-link-content {
     display: flex;
     align-items: center;
     font-weight: 600;
@@ -168,7 +168,7 @@
     white-space: nowrap;
 }
 
-.nav-icons {
+.admin-nav-icon {
     margin-right: 12px;
     font-size: 1.1rem;
     width: 20px;
@@ -176,62 +176,55 @@
     flex-shrink: 0;
 }
 
-/* Logout Section */
-.logout-container {
-    margin-top: auto;
-    padding: 1rem 0.5rem 0 0.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.logout {
-    justify-content: center;
+.admin-nav-text {
+    flex: 1;
 }
 
 /* Closed State Specific Styles */
-.admin-nav-container.closed .admin-profile-container {
+.admin-nav-main.admin-nav-closed .admin-profile-main {
     justify-content: center;
     padding: 0.5rem;
     margin: 0 0.5rem 1rem 0.5rem;
 }
 
-.admin-nav-container.closed .admin-logo-container {
+.admin-nav-main.admin-nav-closed .admin-logo-main {
     width: 40px;
     height: 40px;
 }
 
-.admin-nav-container.closed .admin-name {
+.admin-nav-main.admin-nav-closed .admin-profile-info {
     display: none;
 }
 
-.admin-nav-container.closed .admin-links {
+.admin-nav-main.admin-nav-closed .admin-nav-link-item {
     justify-content: center;
     padding: 0.75rem;
     margin: 0 0.5rem;
 }
 
-.admin-nav-container.closed .nav-link span {
+.admin-nav-main.admin-nav-closed .admin-nav-text {
     display: none;
 }
 
-.admin-nav-container.closed .nav-icons {
+.admin-nav-main.admin-nav-closed .admin-nav-icon {
     margin-right: 0;
 }
 
 /* Active Link State */
-.admin-links.active {
+.admin-nav-link-item.active {
     background-color: rgba(255, 255, 255, 0.25);
     border-left: 3px solid white;
 }
 
 /* Notification Navigation Item */
-.notification-nav-item {
+.admin-notification-item {
     position: relative;
     display: flex;
     align-items: center;
     width: 100%;
 }
 
-.nav-notif-badge {
+.admin-nav-badge {
     position: absolute;
     background: #ef4444;
     color: white;
@@ -246,11 +239,11 @@
     padding: 0 4px;
     border: 2px solid #FF8904;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    animation: navPulse 2s infinite;
+    animation: adminNavPulse 2s infinite;
     z-index: 10;
 }
 
-@keyframes navPulse {
+@keyframes adminNavPulse {
     0% {
         transform: scale(1);
     }
@@ -263,11 +256,11 @@
 }
 
 /* Open state - Notification badge positioned to the right */
-.admin-nav-container.open .notification-nav-item {
+.admin-nav-main.admin-nav-open .admin-notification-item {
     padding-right: 20px;
 }
 
-.admin-nav-container.open .nav-notif-badge {
+.admin-nav-main.admin-nav-open .admin-nav-badge {
     top: -10px;
     left: 120px;
     min-width: 20px;
@@ -276,12 +269,12 @@
 }
 
 /* Closed state - Notification badge positioned at top-right corner */
-.admin-nav-container.closed .notification-nav-item {
+.admin-nav-main.admin-nav-closed .admin-notification-item {
     justify-content: center;
     position: relative;
 }
 
-.admin-nav-container.closed .nav-notif-badge {
+.admin-nav-main.admin-nav-closed .admin-nav-badge {
     top: -10px;
     left: 10px;
     min-width: 16px;
@@ -294,31 +287,31 @@
 }
 
 /* Ensure notification badge stays visible in closed state */
-.admin-nav-container.closed .admin-links .nav-notif-badge {
+.admin-nav-main.admin-nav-closed .admin-nav-link-item .admin-nav-badge {
     display: flex !important;
 }
 
 /* Hover effects for notification item */
-.admin-links:hover .nav-notif-badge {
+.admin-nav-link-item:hover .admin-nav-badge {
     background: #dc2626;
     transform: scale(1.1);
     transition: all 0.3s ease;
 }
 
 /* Ensure consistent icon alignment in closed state */
-.admin-nav-container.closed .nav-link {
+.admin-nav-main.admin-nav-closed .admin-nav-link-content {
     justify-content: center;
     position: relative;
 }
 
 /* Make sure the notification link has proper positioning in closed state */
-.admin-nav-container.closed .admin-links[href*="notifications"] {
+.admin-nav-main.admin-nav-closed .admin-nav-link-item[href*="notifications"] {
     position: relative;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .admin-nav-container.open {
+    .admin-nav-main.admin-nav-open {
         width: 200px;
         min-width: 200px;
         transform: translateX(0);
@@ -326,7 +319,7 @@
         visibility: visible;
     }
     
-    .admin-nav-container.closed {
+    .admin-nav-main.admin-nav-closed {
         width: 70px;
         min-width: 70px;
         transform: translateX(0);
@@ -334,34 +327,34 @@
         visibility: visible;
     }
     
-    .admin-link-container {
+    .admin-nav-inner {
         padding: 0.5rem 0;
     }
     
-    .toggle {
+    .admin-nav-toggle {
         padding: 0 0.75rem 0.75rem 0.75rem;
     }
     
-    .admin-nav-container.closed .toggle {
+    .admin-nav-main.admin-nav-closed .admin-nav-toggle {
         padding: 0 0.5rem 0.75rem 0.5rem;
     }
     
-    .admin-profile-container {
+    .admin-profile-main {
         margin: 0 0.75rem 0.75rem 0.75rem;
         padding: 0.75rem;
     }
     
-    .admin-links {
+    .admin-nav-link-item {
         padding: 0.6rem 0.75rem;
         margin: 0 0.25rem;
     }
     
-    .nav-link {
+    .admin-nav-link-content {
         font-size: 0.85rem;
     }
 
     /* Mobile closed state notification badge */
-    .admin-nav-container.closed .nav-notif-badge {
+    .admin-nav-main.admin-nav-closed .admin-nav-badge {
         top: 4px;
         right: 6px;
         min-width: 15px;
@@ -371,7 +364,7 @@
 }
 
 @media (max-width: 480px) {
-    .admin-nav-container.open {
+    .admin-nav-main.admin-nav-open {
         width: 200px;
         min-width: 200px;
         transform: translateX(0);
@@ -379,7 +372,7 @@
         visibility: visible;
     }
     
-    .admin-nav-container.closed {
+    .admin-nav-main.admin-nav-closed {
         width: 70px;
         min-width: 70px;
         transform: translateX(0);
@@ -387,41 +380,41 @@
         visibility: visible;
     }
     
-    .admin-nav-container.closed .toggle {
+    .admin-nav-main.admin-nav-closed .admin-nav-toggle {
         padding: 0 0.25rem 0.75rem 0.25rem;
     }
 }
 
 /* Smooth transitions */
-.admin-nav-container {
+.admin-nav-main {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.admin-nav-container * {
+.admin-nav-main * {
     transition: all 0.3s ease;
 }
 
 /* Focus states for accessibility */
-.admin-links:focus,
-.toggle-icon:focus {
+.admin-nav-link-item:focus,
+.admin-toggle-btn:focus {
     outline: 2px solid rgba(255, 255, 255, 0.5);
     outline-offset: 2px;
 }
 
 /* Scrollbar styling */
-.admin-link-container::-webkit-scrollbar {
+.admin-nav-inner::-webkit-scrollbar {
     width: 4px;
 }
 
-.admin-link-container::-webkit-scrollbar-track {
+.admin-nav-inner::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
 }
 
-.admin-link-container::-webkit-scrollbar-thumb {
+.admin-nav-inner::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 2px;
 }
 
-.admin-link-container::-webkit-scrollbar-thumb:hover {
+.admin-nav-inner::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }

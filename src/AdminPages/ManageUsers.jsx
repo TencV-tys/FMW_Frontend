@@ -398,8 +398,7 @@ export default function ManageUsers() {
     <>
       {/* Header Section */}
       <div className="manage-users-header">
-        <div className="header-content">
-          
+        <div className="manage-users-header-content">
           <p>Admin panel for user management and moderation</p>
         </div>
         <button 

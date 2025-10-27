@@ -502,7 +502,7 @@ export default function ManagePosts() {
     <>
       {/* Header Section */}
       <div className="manage-posts-header">
-        <div className="header-content">
+        <div className="manage-posts-header-content">
         
           <p>Review and moderate community posts</p>
         </div>
