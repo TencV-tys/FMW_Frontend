@@ -10,6 +10,9 @@ import User from './pages/User';
 import Admin from './pages/Admin';
 import UserAgreement from './pages/UserAgreement';
 import About from './pages/About';
+import Privacy from './pages/Privacy';
+import ContactUs from './pages/ContactUs';
+
 
 import Dashboard from './AdminPages/Dashboard';
 import ManageUsers from './AdminPages/ManageUsers';
@@ -44,8 +47,9 @@ function App() {
         <Route path='/login' element={<Login/>}/>
         <Route path='/user-agreement' element={<UserAgreement/>}/>
         <Route path='/about' element={<About/>}/>
+        <Route path='/privacy-policy'element={<Privacy />} />
+        <Route path='/contact' element={<ContactUs/>} />
 
-        
         <Route path='/forgot-password' element={<ForgotPassword/>}/>
         <Route path='/reset-password' element={<ResetPassword/>}/>
 
