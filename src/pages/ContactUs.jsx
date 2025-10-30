@@ -84,7 +84,7 @@ export default function ContactUs() {
                   <FontAwesomeIcon icon={faEnvelope} className="method-icon" />
                   <div className="method-info">
                     <h4>Email Us</h4>
-                    <p>support@findmyway.com</p>
+                    <p>afmw203@gmail.com</p>
                     <span>We'll respond within 24 hours</span>
                   </div>
                 </div>
@@ -102,8 +102,8 @@ export default function ContactUs() {
                   <FontAwesomeIcon icon={faMapMarkerAlt} className="method-icon" />
                   <div className="method-info">
                     <h4>Visit Us</h4>
-                    <p>123 Community Street</p>
-                    <span>Your City, State 12345</span>
+                    <p>San Antonio Poruk 1</p>
+                    <span>Trinidad, Panab-an </span>
                   </div>
                 </div>
                 

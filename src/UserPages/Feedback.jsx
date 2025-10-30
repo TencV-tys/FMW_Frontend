@@ -30,15 +30,20 @@ export default function Feedback() {
   const [myFeedback, setMyFeedback] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [anonymous, setAnonymous] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // Fetch feedback on component mount and when activeTab changes
   useEffect(() => {
     if (activeTab === 'my-feedback') {
       fetchMyFeedback();
     }
   }, [activeTab]);
+
+  // Fetch initial feedback count
+  useEffect(() => {
+    fetchMyFeedback();
+  }, []);
 
   const fetchMyFeedback = async () => {
     try {
@@ -94,24 +99,20 @@ export default function Feedback() {
         ...formData,
         metadata: {
           browser: navigator.userAgent,
-          timestamp: new Date().toISOString(),
-          anonymous: anonymous
+          timestamp: new Date().toISOString()
         }
       };
 
       console.log('📤 Submitting feedback:', submitData);
-      console.log('🔐 Anonymous mode:', anonymous);
 
-      const options = {
+      const response = await fetch('http://localhost:8000/api/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(submitData),
         credentials: 'include'
-      };
-
-      const response = await fetch('http://localhost:8000/api/feedback', options);
+      });
 
       console.log('📡 Submission response status:', response.status);
       
@@ -129,6 +130,7 @@ export default function Feedback() {
           });
           setDebugInfo('Feedback submitted successfully!');
           
+          // Refresh feedback list and switch to my-feedback tab
           setTimeout(() => {
             fetchMyFeedback();
             setActiveTab('my-feedback');
@@ -310,24 +312,6 @@ export default function Feedback() {
                   )}
 
                   <form onSubmit={handleSubmit} className="feedback-form">
-                    {/* Anonymous Toggle */}
-                    <div className="anonymous-toggle">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={anonymous}
-                          onChange={(e) => setAnonymous(e.target.checked)}
-                        />
-                        Submit anonymously
-                      </label>
-                      <small>
-                        {anonymous 
-                          ? "Your identity will be hidden from administrators" 
-                          : "Your feedback will be linked to your account"
-                        }
-                      </small>
-                    </div>
-
                     {/* Feedback Type */}
                     <div className="form-group">
                       <label>Feedback Type *</label>
@@ -431,7 +415,6 @@ export default function Feedback() {
                       <FontAwesomeIcon icon={faCommentDots} className="empty-icon" />
                       <h3>No feedback submitted yet</h3>
                       <p>Your submitted feedback will appear here once you submit some.</p>
-                      <p><small>Make sure you are logged in and not submitting anonymously.</small></p>
                     </div>
                   ) : (
                     <div className="feedback-list">
