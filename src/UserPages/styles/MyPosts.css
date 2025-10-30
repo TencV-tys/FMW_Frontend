@@ -438,6 +438,79 @@
 .create-first-post-btn:hover {
     background: #654321;
 }
+/* 🎯 Deletion Limit Styles */
+.posts-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.deletion-limit-info {
+  background: #f8f9fa;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  font-size: 0.85rem;
+}
+
+.deletion-limit-info.limit-reached {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+}
+
+.deletion-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deletion-icon {
+  font-size: 0.9rem;
+}
+
+.deletion-limit-info.limit-reached .deletion-icon {
+  color: #dc3545;
+}
+
+.deletion-text {
+  font-weight: 500;
+}
+
+.limit-warning {
+  color: #dc3545;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.remaining-text {
+  color: #28a745;
+  font-weight: 600;
+}
+
+/* Disabled delete button */
+.mypost-delete-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #6c757d !important;
+}
+
+.mypost-delete-btn.disabled:hover {
+  transform: none !important;
+  background: #6c757d !important;
+}
+
+/* Responsive deletion info */
+@media (max-width: 768px) {
+  .posts-header-info {
+    align-items: stretch;
+  }
+  
+  .deletion-limit-info {
+    text-align: center;
+  }
+}
 
 /* 🎯 Responsive Design */
 @media (max-width: 768px) {

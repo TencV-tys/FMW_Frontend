@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { faEdit, faTrash, faCheckCircle } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faTrash, faCheckCircle, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import UserNav from '../UserComponents/UserDashboardNav'
 import Logo1 from '../assets/Logo.jpg'
@@ -13,10 +13,12 @@ export default function MyPosts() {
   const [error, setError] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [expandedContacts, setExpandedContacts] = useState({});
+  const [deletionStats, setDeletionStats] = useState(null);
   const nav = useNavigate();
 
   useEffect(() => {
     fetchMyPosts();
+    fetchDeletionStats();
   }, []);
 
   const fetchMyPosts = async () => {
@@ -50,8 +52,43 @@ export default function MyPosts() {
     }
   };
 
-  // Handle post deletion
+  // 🎯 NEW: Fetch deletion statistics
+  const fetchDeletionStats = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/posts/deletion-stats', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setDeletionStats(result.stats);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching deletion stats:', error);
+    }
+  };
+
+  // Handle post deletion with limit checking
   const handleDeletePost = async (postId) => {
+    // 🎯 NEW: Check deletion stats before confirming
+    if (deletionStats && deletionStats.limitReached) {
+      toast.error(
+        <div>
+          <strong>Monthly Deletion Limit Reached!</strong>
+          <br />
+          You've already deleted {deletionStats.currentMonthDeletions} posts this month. 
+          The limit will reset next month.
+        </div>,
+        { autoClose: 5000 }
+      );
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
       return;
     }
@@ -65,15 +102,81 @@ export default function MyPosts() {
       const result = await response.json();
 
       if (result.success) {
-        toast.success('Post deleted successfully');
         // Remove the post from local state
         setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+        
+        // 🎯 NEW: Update deletion stats
+        if (result.deletionInfo) {
+          const { currentMonthDeletions, monthlyLimit, remainingDeletions } = result.deletionInfo;
+          setDeletionStats({
+            currentMonthDeletions,
+            monthlyLimit,
+            remainingDeletions,
+            limitReached: remainingDeletions <= 0
+          });
+
+          // Show appropriate message based on remaining deletions
+          if (remainingDeletions === 0) {
+            toast.warning(
+              <div>
+                <FontAwesomeIcon icon={faExclamationTriangle} style={{color: '#ffc107', marginRight: '8px'}} />
+                <strong>Monthly Deletion Limit Reached!</strong>
+                <br />
+                You've deleted {currentMonthDeletions} posts this month. 
+                The limit will reset at the start of next month.
+              </div>,
+              { autoClose: 6000 }
+            );
+          } else if (remainingDeletions === 1) {
+            toast.warning(
+              <div>
+                <FontAwesomeIcon icon={faExclamationTriangle} style={{color: '#ffc107', marginRight: '8px'}} />
+                <strong>One Deletion Remaining</strong>
+                <br />
+                You can delete 1 more post this month.
+              </div>,
+              { autoClose: 5000 }
+            );
+          } else {
+            toast.success(
+              <div>
+                <strong>Post deleted successfully!</strong>
+                <br />
+                You have {remainingDeletions} deletion(s) remaining this month.
+              </div>,
+              { autoClose: 4000 }
+            );
+          }
+        } else {
+          toast.success('Post deleted successfully!');
+        }
       } else {
-        throw new Error(result.error || 'Failed to delete post');
+        // 🎯 NEW: Handle deletion limit error specifically
+        if (result.limitReached) {
+          setDeletionStats({
+            currentMonthDeletions: result.currentMonthDeletions,
+            monthlyLimit: result.monthlyLimit,
+            remainingDeletions: 0,
+            limitReached: true
+          });
+          
+          toast.error(
+            <div>
+              <FontAwesomeIcon icon={faExclamationTriangle} style={{color: '#dc3545', marginRight: '8px'}} />
+              <strong>Monthly Deletion Limit Reached!</strong>
+              <br />
+              You can only delete {result.monthlyLimit} posts per month. 
+              Contact admin if you need to delete more posts.
+            </div>,
+            { autoClose: 6000 }
+          );
+        } else {
+          throw new Error(result.error || 'Failed to delete post');
+        }
       }
     } catch (err) {
       console.error('Error deleting post:', err);
-      toast.error('Failed to delete post');
+      toast.error(err.message || 'Failed to delete post');
     }
   };
 
@@ -189,6 +292,37 @@ export default function MyPosts() {
     return locationText;
   };
 
+  // 🎯 NEW: Render deletion limit info
+  const renderDeletionLimitInfo = () => {
+    if (!deletionStats) return null;
+
+    const { currentMonthDeletions, monthlyLimit, remainingDeletions, limitReached } = deletionStats;
+
+    return (
+      <div className={`deletion-limit-info ${limitReached ? 'limit-reached' : ''}`}>
+        <div className="deletion-stats">
+          <FontAwesomeIcon 
+            icon={limitReached ? faExclamationTriangle : faTrash} 
+            className="deletion-icon" 
+          />
+          <span className="deletion-text">
+            {limitReached ? (
+              <>
+                <strong>Monthly Limit Reached:</strong> {currentMonthDeletions}/{monthlyLimit} deletions
+                <span className="limit-warning"> - Resets next month</span>
+              </>
+            ) : (
+              <>
+                <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
+                <span className="remaining-text"> ({remainingDeletions} remaining)</span>
+              </>
+            )}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -232,8 +366,12 @@ export default function MyPosts() {
 
               <div className='myposts-content-title'>
                 <h1>My Posts</h1>
-                <div className="posts-counts">
-                  {posts.length} {posts.length <= 1 ? 'post' : 'posts'}
+                <div className="posts-header-info">
+                  <div className="posts-counts">
+                    {posts.length} {posts.length <= 1 ? 'post' : 'posts'}
+                  </div>
+                  {/* 🎯 NEW: Deletion limit info */}
+                  {renderDeletionLimitInfo()}
                 </div>
               </div>
 
@@ -285,8 +423,13 @@ export default function MyPosts() {
                             {/* Delete Button */}
                             <button
                               onClick={() => handleDeletePost(post.id)}
-                              className='mypost-delete-btn'
-                              title="Delete post"
+                              className={`mypost-delete-btn ${deletionStats?.limitReached ? 'disabled' : ''}`}
+                              disabled={deletionStats?.limitReached}
+                              title={
+                                deletionStats?.limitReached 
+                                  ? `Monthly deletion limit reached (${deletionStats.currentMonthDeletions}/${deletionStats.monthlyLimit})`
+                                  : "Delete post"
+                              }
                             >
                               <FontAwesomeIcon className='delete-icon' icon={faTrash} />
                             </button>
