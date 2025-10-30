@@ -20,6 +20,7 @@ import ManagePosts from './AdminPages/ManagePosts';
 import Notifications from './AdminPages/Notifications';
 import Reports from './AdminPages/Reports';
 import AdminFeedBack from './AdminPages/AdminFeedback';
+import AdminDeletionRequests from './AdminPages/AdminDeletionRequests';
 
 import NotFound from './components/NotFound';
 import ProtectedRoute from './components/ProtectedRoutes';
@@ -82,6 +83,7 @@ function App() {
           <Route path='notifications' element={<Notifications/>} />
           <Route path='reports' element={<Reports/> } />
           <Route path='feedback' element={<AdminFeedBack/> } />
+          <Route path="/admin/deletion-requests" element={<AdminDeletionRequests />} />
         </Route>
 
         <Route path='*' element={<NotFound/>} />

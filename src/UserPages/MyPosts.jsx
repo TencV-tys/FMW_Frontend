@@ -14,6 +14,7 @@ export default function MyPosts() {
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [expandedContacts, setExpandedContacts] = useState({});
   const [deletionStats, setDeletionStats] = useState(null);
+  const [contactAdminModal, setContactAdminModal] = useState({ isOpen: false, postId: null });
   const nav = useNavigate();
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function MyPosts() {
     }
   };
 
-  // 🎯 NEW: Fetch deletion statistics
+  // Fetch deletion statistics
   const fetchDeletionStats = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/posts/deletion-stats', {
@@ -67,6 +68,8 @@ export default function MyPosts() {
         if (result.success) {
           setDeletionStats(result.stats);
         }
+      } else {
+        console.error('Failed to fetch deletion stats');
       }
     } catch (error) {
       console.error('Error fetching deletion stats:', error);
@@ -75,17 +78,9 @@ export default function MyPosts() {
 
   // Handle post deletion with limit checking
   const handleDeletePost = async (postId) => {
-    // 🎯 NEW: Check deletion stats before confirming
+    // Check deletion stats before proceeding
     if (deletionStats && deletionStats.limitReached) {
-      toast.error(
-        <div>
-          <strong>Monthly Deletion Limit Reached!</strong>
-          <br />
-          You've already deleted {deletionStats.currentMonthDeletions} posts this month. 
-          The limit will reset next month.
-        </div>,
-        { autoClose: 5000 }
-      );
+      setContactAdminModal({ isOpen: true, postId });
       return;
     }
 
@@ -105,7 +100,7 @@ export default function MyPosts() {
         // Remove the post from local state
         setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
         
-        // 🎯 NEW: Update deletion stats
+        // Update deletion stats
         if (result.deletionInfo) {
           const { currentMonthDeletions, monthlyLimit, remainingDeletions } = result.deletionInfo;
           setDeletionStats({
@@ -115,43 +110,22 @@ export default function MyPosts() {
             limitReached: remainingDeletions <= 0
           });
 
-          // Show appropriate message based on remaining deletions
+          // Show appropriate message
           if (remainingDeletions === 0) {
-            toast.warning(
-              <div>
-                <FontAwesomeIcon icon={faExclamationTriangle} style={{color: '#ffc107', marginRight: '8px'}} />
-                <strong>Monthly Deletion Limit Reached!</strong>
-                <br />
-                You've deleted {currentMonthDeletions} posts this month. 
-                The limit will reset at the start of next month.
-              </div>,
-              { autoClose: 6000 }
-            );
+            toast.warning(`Monthly deletion limit reached! You've deleted ${currentMonthDeletions} posts this month.`);
           } else if (remainingDeletions === 1) {
-            toast.warning(
-              <div>
-                <FontAwesomeIcon icon={faExclamationTriangle} style={{color: '#ffc107', marginRight: '8px'}} />
-                <strong>One Deletion Remaining</strong>
-                <br />
-                You can delete 1 more post this month.
-              </div>,
-              { autoClose: 5000 }
-            );
+            toast.warning(`You have 1 deletion remaining this month.`);
           } else {
-            toast.success(
-              <div>
-                <strong>Post deleted successfully!</strong>
-                <br />
-                You have {remainingDeletions} deletion(s) remaining this month.
-              </div>,
-              { autoClose: 4000 }
-            );
+            toast.success(`Post deleted! You have ${remainingDeletions} deletion(s) remaining this month.`);
           }
         } else {
           toast.success('Post deleted successfully!');
         }
+        
+        // Refresh deletion stats
+        fetchDeletionStats();
       } else {
-        // 🎯 NEW: Handle deletion limit error specifically
+        // Handle deletion limit error
         if (result.limitReached) {
           setDeletionStats({
             currentMonthDeletions: result.currentMonthDeletions,
@@ -160,23 +134,52 @@ export default function MyPosts() {
             limitReached: true
           });
           
-          toast.error(
-            <div>
-              <FontAwesomeIcon icon={faExclamationTriangle} style={{color: '#dc3545', marginRight: '8px'}} />
-              <strong>Monthly Deletion Limit Reached!</strong>
-              <br />
-              You can only delete {result.monthlyLimit} posts per month. 
-              Contact admin if you need to delete more posts.
-            </div>,
-            { autoClose: 6000 }
-          );
+          toast.error(`Deletion limit reached! You can only delete ${result.monthlyLimit} posts per month.`);
+          setContactAdminModal({ isOpen: true, postId });
         } else {
           throw new Error(result.error || 'Failed to delete post');
         }
       }
     } catch (err) {
       console.error('Error deleting post:', err);
-      toast.error(err.message || 'Failed to delete post');
+      toast.error('Failed to delete post');
+    }
+  };
+
+  // Contact admin for additional deletions
+  const handleContactAdmin = async () => {
+    const reasonInput = document.getElementById('deletion-reason');
+    const reason = reasonInput?.value?.trim();
+
+    if (!reason) {
+      alert('Please provide a reason for your deletion request.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/api/contact-admin', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: reason,
+          type: 'deletion_request',
+          post_id: contactAdminModal.postId
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Your request has been sent to the admin. They will review it soon.');
+        setContactAdminModal({ isOpen: false, postId: null });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to send request. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error contacting admin:', error);
+      toast.error('Error sending request. Please try again.');
     }
   };
 
@@ -232,7 +235,7 @@ export default function MyPosts() {
     });
   };
 
-  // 🎯 Get status badge color
+  // Get status badge color
   const getStatusBadge = (status) => {
     const statusConfig = {
       'Active': { class: 'status-active', text: 'Active' },
@@ -243,7 +246,7 @@ export default function MyPosts() {
     return statusConfig[status] || { class: 'status-default', text: status };
   };
 
-  // 🎯 Toggle description expansion
+  // Toggle description expansion
   const toggleDescription = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedDescriptions(prev => ({
@@ -252,7 +255,7 @@ export default function MyPosts() {
     }));
   };
 
-  // 🎯 Toggle contact expansion
+  // Toggle contact expansion
   const toggleContact = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedContacts(prev => ({
@@ -261,38 +264,40 @@ export default function MyPosts() {
     }));
   };
 
-  // 🎯 Check if description needs "Read More"
+  // Check if description needs "Read More"
   const needsReadMore = (description) => {
-    return description.length > 120;
+    return description && description.length > 120;
   };
 
-  // 🎯 Check if contact needs "Read More"
+  // Check if contact needs "Read More"
   const needsContactReadMore = (contact) => {
-    return contact.length > 50;
+    return contact && contact.length > 50;
   };
 
-  // 🎯 Get truncated description
+  // Get truncated description
   const getTruncatedDescription = (description) => {
+    if (!description) return '';
     if (description.length <= 120) return description;
     return description.substring(0, 120) + '...';
   };
 
-  // 🎯 Get truncated contact
+  // Get truncated contact
   const getTruncatedContact = (contact) => {
+    if (!contact) return '';
     if (contact.length <= 50) return contact;
     return contact.substring(0, 50) + '...';
   };
 
-  // 🎯 Render location information with purok
+  // Render location information with purok
   const renderLocationInfo = (post) => {
-    let locationText = post.barangay_name;
+    let locationText = post.barangay_name || '';
     if (post.purok_name) {
       locationText += `, ${post.purok_name}`;
     }
     return locationText;
   };
 
-  // 🎯 NEW: Render deletion limit info
+  // Render deletion limit info
   const renderDeletionLimitInfo = () => {
     if (!deletionStats) return null;
 
@@ -309,7 +314,7 @@ export default function MyPosts() {
             {limitReached ? (
               <>
                 <strong>Monthly Limit Reached:</strong> {currentMonthDeletions}/{monthlyLimit} deletions
-                <span className="limit-warning"> - Resets next month</span>
+                <span className="limit-warning"> - Contact admin for additional deletions</span>
               </>
             ) : (
               <>
@@ -368,9 +373,9 @@ export default function MyPosts() {
                 <h1>My Posts</h1>
                 <div className="posts-header-info">
                   <div className="posts-counts">
-                    {posts.length} {posts.length <= 1 ? 'post' : 'posts'}
+                    {posts.length} {posts.length === 1 ? 'post' : 'posts'}
                   </div>
-                  {/* 🎯 NEW: Deletion limit info */}
+                  {/* Deletion limit info */}
                   {renderDeletionLimitInfo()}
                 </div>
               </div>
@@ -440,7 +445,7 @@ export default function MyPosts() {
                           <div className='mypost-details'>
                             <h2 className="post-title">{post.title}</h2>
                             
-                            {/* 🎯 Description with Read More */}
+                            {/* Description with Read More */}
                             <div className="post-description">
                               <div 
                                 className={`description-text ${expandedDescriptions[post.id] ? 'expanded' : ''}`}
@@ -468,7 +473,7 @@ export default function MyPosts() {
                                 <strong>Location:</strong> {renderLocationInfo(post)}
                               </div>
                               
-                              {/* 🎯 Contact with Read More */}
+                              {/* Contact with Read More */}
                               <div className="meta-item">
                                 <strong>Contact:</strong>
                                 <div className="contact-container">
@@ -517,6 +522,64 @@ export default function MyPosts() {
             </div>
           </div>
         </div>
+
+        {/* Contact Admin Modal */}
+        {contactAdminModal.isOpen && (
+          <div className="modal-overlay" onClick={() => setContactAdminModal({ isOpen: false, postId: null })}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Monthly Deletion Limit Reached</h3>
+                <button 
+                  className="modal-close"
+                  onClick={() => setContactAdminModal({ isOpen: false, postId: null })}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="warning-banner">
+                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                  You've reached your monthly deletion limit of {deletionStats?.monthlyLimit || 3} posts.
+                </div>
+                
+                <p>You have already deleted <strong>{deletionStats?.currentMonthDeletions || 0}</strong> posts this month.</p>
+                
+                <div className="form-group">
+                  <label>Reason for additional deletion request:</label>
+                  <textarea
+                    placeholder="Please explain why you need to delete this post..."
+                    rows="4"
+                    id="deletion-reason"
+                  />
+                </div>
+
+                <div className="info-box">
+                  <strong>What happens next:</strong>
+                  <ul>
+                    <li>Your request will be sent to administrators</li>
+                    <li>Admin will review your request within 24 hours</li>
+                    <li>You'll receive a notification when approved</li>
+                    <li>Limit resets automatically at the start of next month</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  className="btn-secondary"
+                  onClick={() => setContactAdminModal({ isOpen: false, postId: null })}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn-primary"
+                  onClick={handleContactAdmin}
+                >
+                  Send Request to Admin
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

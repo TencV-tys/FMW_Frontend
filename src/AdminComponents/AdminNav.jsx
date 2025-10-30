@@ -8,7 +8,8 @@ import {
     faNewspaper,
     faChartBar,
     faBell,
-    faComments
+    faComments,
+    faUserLock
 } from '@fortawesome/free-solid-svg-icons';
 
 import './AdminStyles/AdminNav.css';
@@ -114,7 +115,12 @@ return(
                 {isOpen && <span className='admin-nav-text'>Feedback</span>}
               </div>
             </Link>
-            
+            <Link to='/admin/deletion-requests' className='admin-nav-link-item'>
+              <div className='admin-nav-link-content'>
+              <FontAwesomeIcon icon={faUserLock} className='admin-nav-icon'/>
+                {isOpen && <span className='admin-nav-text'>Deletion Requests</span>}
+              </div>
+                 </Link>
             {/* Notifications with Count */}
             <Link to='/admin/notifications' className='admin-nav-link-item'>
               <div className='admin-nav-link-content'>
