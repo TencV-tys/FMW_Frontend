@@ -237,8 +237,8 @@ export default function Feedback() {
   };
 
   const canDeleteFeedback = (feedback) => {
-    // Only allow deletion for pending or reviewed feedback
-    return ['pending', 'reviewed'].includes(feedback.status);
+
+    return true;
   };
 
   const formatDate = (dateString) => {
