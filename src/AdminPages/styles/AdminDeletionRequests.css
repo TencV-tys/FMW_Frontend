@@ -2,25 +2,10 @@
 
 .admin-deletion-requests-page {
   display: flex;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #f5f5f5;
 }
 
-.admin-deletion-content {
-  flex: 1;
-  padding: 2rem;
-  transition: margin-left 0.3s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.admin-deletion-content.nav-open {
-  margin-left: 200px;
-}
-
-.admin-deletion-content.nav-closed {
-  margin-left: 70px;
-}
 
 /* Header */
 .manage-users-header {

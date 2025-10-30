@@ -41,6 +41,8 @@ export default function AdminHeader() {
         return 'Reports';
          case '/admin/feedback':
         return 'Feedback';
+         case '/admin/deletion-requests':
+        return 'Deletion Requests';
       case '/admin/notifications':
         return 'Notifications';
       default:
