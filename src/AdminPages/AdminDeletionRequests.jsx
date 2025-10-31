@@ -44,7 +44,7 @@ export default function AdminDeletionRequests() {
   const fetchUsersDeletionStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/api/admin/deletion-stats', {
+      const response = await fetch('http://localhost:8000/api/admin/users-deletion-stats', {
         credentials: 'include'
       });
 

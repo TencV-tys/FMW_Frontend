@@ -53,10 +53,10 @@ export default function MyPosts() {
     }
   };
 
-  // Fetch deletion statistics - store in localStorage for persistence
+  // Fetch deletion statistics
   const fetchDeletionStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/posts/deletion-stats', {
+      const response = await fetch('http://localhost:8000/api/posts/my-deletion-stats', {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -66,35 +66,15 @@ export default function MyPosts() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Store in localStorage for persistence
-          localStorage.setItem('deletionStats', JSON.stringify(result.stats));
           setDeletionStats(result.stats);
         }
       } else {
         console.error('Failed to fetch deletion stats');
-        // Try to load from localStorage if fetch fails
-        const storedStats = localStorage.getItem('deletionStats');
-        if (storedStats) {
-          setDeletionStats(JSON.parse(storedStats));
-        }
       }
     } catch (error) {
       console.error('Error fetching deletion stats:', error);
-      // Try to load from localStorage if fetch fails
-      const storedStats = localStorage.getItem('deletionStats');
-      if (storedStats) {
-        setDeletionStats(JSON.parse(storedStats));
-      }
     }
   };
-
-  // Load deletion stats from localStorage on component mount
-  useEffect(() => {
-    const storedStats = localStorage.getItem('deletionStats');
-    if (storedStats) {
-      setDeletionStats(JSON.parse(storedStats));
-    }
-  }, []);
 
   // Handle post deletion with limit checking
   const handleDeletePost = async (postId) => {
@@ -121,15 +101,13 @@ export default function MyPosts() {
             currentMonthDeletions,
             monthlyLimit,
             remainingDeletions,
-            limitReached: remainingDeletions <= 0
+            limitReached
           };
           
-          // Update both state and localStorage
           setDeletionStats(newStats);
-          localStorage.setItem('deletionStats', JSON.stringify(newStats));
 
           // Show appropriate message
-          if (remainingDeletions === 0) {
+          if (limitReached) {
             toast.warning(`Monthly deletion limit reached! You've deleted ${currentMonthDeletions} posts this month.`);
           } else if (remainingDeletions === 1) {
             toast.warning(`You have 1 deletion remaining this month.`);
@@ -152,9 +130,7 @@ export default function MyPosts() {
             limitReached: true
           };
           
-          // Update both state and localStorage
           setDeletionStats(newStats);
-          localStorage.setItem('deletionStats', JSON.stringify(newStats));
           
           toast.error(`Deletion limit reached! You can only delete ${result.monthlyLimit} posts per month.`);
           setContactAdminModal({ isOpen: true, postId });
@@ -319,17 +295,20 @@ export default function MyPosts() {
     return locationText;
   };
 
-  // Render deletion limit info
+  // Render deletion limit info - UPDATED LOGIC
   const renderDeletionLimitInfo = () => {
     if (!deletionStats) return null;
 
     const { currentMonthDeletions, monthlyLimit, remainingDeletions, limitReached } = deletionStats;
 
+    // Only show warning if user has actually used deletions
+    const hasUsedDeletions = currentMonthDeletions > 0;
+
     return (
-      <div className={`deletion-limit-info ${limitReached ? 'limit-reached' : ''}`}>
+      <div className={`deletion-limit-info ${limitReached ? 'limit-reached' : hasUsedDeletions ? 'limit-warning' : ''}`}>
         <div className="deletion-stats">
           <FontAwesomeIcon 
-            icon={limitReached ? faExclamationTriangle : faTrash} 
+            icon={limitReached ? faExclamationTriangle : hasUsedDeletions ? faTrash : faTrash} 
             className="deletion-icon" 
           />
           <span className="deletion-text">
@@ -338,10 +317,15 @@ export default function MyPosts() {
                 <strong>Monthly Limit Reached:</strong> {currentMonthDeletions}/{monthlyLimit} deletions
                 <span className="limit-warning"> - Contact admin for additional deletions</span>
               </>
-            ) : (
+            ) : hasUsedDeletions ? (
               <>
                 <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
                 <span className="remaining-text"> ({remainingDeletions} remaining)</span>
+              </>
+            ) : (
+              <>
+                <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
+                <span className="remaining-text"> (Full limit available)</span>
               </>
             )}
           </span>
@@ -416,6 +400,10 @@ export default function MyPosts() {
                   {posts.map((post) => {
                     const status = getStatusBadge(post.status);
                     const isLimitReached = deletionStats?.limitReached;
+                    
+                    // UPDATED LOGIC: Only show delete button if post is active AND limit not reached
+                    const canDelete = post.status === 'Active' && !isLimitReached;
+                    const showRequestButton = post.status === 'Active' && isLimitReached;
 
                     return (
                       <div key={post.id} className='mypost-cards'>
@@ -448,8 +436,8 @@ export default function MyPosts() {
                               <FontAwesomeIcon icon={faEdit} />
                             </button>
                             
-                            {/* DELETE BUTTON - Only show when limit NOT reached */}
-                            {!isLimitReached && (
+                            {/* UPDATED: DELETE BUTTON - Only show when limit NOT reached AND post is active */}
+                            {canDelete && (
                               <button
                                 onClick={() => handleDeletePost(post.id)}
                                 className="mypost-delete-btn"
@@ -459,8 +447,8 @@ export default function MyPosts() {
                               </button>
                             )}
                             
-                            {/* REQUEST DELETION BUTTON - Only show when limit IS reached */}
-                            {isLimitReached && (
+                            {/* UPDATED: REQUEST DELETION BUTTON - Only show when limit IS reached AND post is active */}
+                            {showRequestButton && (
                               <button
                                 onClick={() => setContactAdminModal({ isOpen: true, postId: post.id })}
                                 className="request-deletion-btn"
