@@ -572,7 +572,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(139, 90, 43, 0.3);
+  background: rgba(139, 90, 43, 0.6);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -596,8 +596,8 @@
 }
 
 .bulletin-expand-overlay span {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 800;
+  font-size: 1rem;
 }
 
 /* 🎯 Post Modal Styles */
