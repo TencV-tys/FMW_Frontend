@@ -1,4 +1,4 @@
-/* Profile.css - Orange Outside, Brown Inside Theme */
+/* Profile.css - Updated for Mobile/Tablet Responsiveness */
 
 .profile-page {
   min-height: 100vh;
@@ -425,7 +425,7 @@
   100% { transform: rotate(360deg); }
 }
 
-/* 🎯 Responsive Design */
+/* 🎯 Responsive Design - UPDATED FOR TABLET & MOBILE */
 @media (max-width: 768px) {
   .profile-content {
     padding: 20px;
@@ -455,11 +455,13 @@
     flex-direction: column;
     padding: 25px;
     gap: 25px;
+    text-align: center; /* Center all content */
   }
   
   .profile-pic-section {
     flex: none;
     width: 100%;
+    order: 1; /* Profile picture first */
   }
   
   .profile-pic {
@@ -467,14 +469,84 @@
     height: 150px;
   }
   
+  .profile-role-badge {
+    order: 3; /* Move role badge to bottom */
+    margin-top: 10px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+  
+  .profile-details {
+    order: 2; /* Profile details in the middle */
+    width: 100%;
+    gap: 20px;
+  }
+  
+  .detail-group {
+    text-align: center; /* Center the details */
+  }
+  
+  .detail-group h3 {
+    text-align: center;
+    border-bottom: 2px solid #8B5A2B;
+    display: inline-block;
+    padding-bottom: 8px;
+  }
+  
+  .detail-item {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    text-align: center;
+    padding: 12px 0;
+  }
+  
+  .detail-icon {
+    margin-top: 0;
+  }
+  
+  .detail-content {
+    text-align: center;
+  }
+  
+  .profile-actions {
+    text-align: center;
+  }
+  
+  .profile-actions h3 {
+    text-align: center;
+    border-bottom: 2px solid #8B5A2B;
+    display: inline-block;
+    padding-bottom: 8px;
+  }
+  
   .action-buttons {
     flex-direction: column;
+    align-items: center;
+  }
+  
+  .action-btns {
+    min-width: 200px;
+    max-width: 250px;
   }
   
   .profile-data-title {
     flex-direction: column;
     gap: 10px;
     text-align: center;
+  }
+  
+  .profile-pic-overlay {
+    transform: translateY(0); /* Always show on mobile */
+    position: relative;
+    background: transparent;
+    padding: 8px 0 0 0;
+  }
+  
+  .profile-pic-overlay a {
+    color: #8B5A2B;
+    font-weight: 600;
+    text-decoration: underline;
   }
 }
 
@@ -484,11 +556,61 @@
   }
   
   .profile-container {
-    padding: 20px;
+    padding: 20px 15px;
+    gap: 20px;
   }
   
-  .detail-item {
-    flex-direction: column;
-    gap: 8px;
+  .profile-pic {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .profile-data-title {
+    padding: 15px 20px;
+  }
+  
+  .profile-data-title h2 {
+    font-size: 1.4rem;
+  }
+  
+  .detail-content p {
+    font-size: 1rem;
+  }
+  
+  .action-btns {
+    min-width: 180px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .profile-role-badge {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+}
+
+/* Additional mobile optimization for very small screens */
+@media (max-width: 360px) {
+  .profile-container {
+    padding: 15px 10px;
+  }
+  
+  .profile-pic {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .profile-data-title h2 {
+    font-size: 1.2rem;
+  }
+  
+  .detail-group h3,
+  .profile-actions h3 {
+    font-size: 1.1rem;
+  }
+  
+  .action-btns {
+    min-width: 160px;
+    font-size: 0.85rem;
   }
 }

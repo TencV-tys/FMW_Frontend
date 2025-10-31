@@ -461,8 +461,7 @@
   font-weight: 600;
   padding: 0 6px;
 }
-
-/* 🎯 Responsive Design */
+/* 🎯 Responsive Design - CORRECTED */
 @media (max-width: 768px) {
   .user-nav-container .user-dashboard-nav {
     padding: 0 20px;
@@ -472,12 +471,13 @@
     gap: 20px;
   }
   
+  /* 🎯 HIDE main navigation links on mobile - they'll be in dropdown */
   .user-nav-links-group {
-    display: none; /* Hide desktop navigation links on mobile */
+    display: none;
   }
   
   .user-dashboard-info {
-    display: none; /* Hide user info text on mobile */
+    display: none;
   }
   
   .user-profile-dropdown-menu {
@@ -535,4 +535,4 @@
     height: 18px;
     font-size: 0.6rem;
   }
-}
+} 
