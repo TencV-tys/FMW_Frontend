@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx - UPDATED WITH DELETION REQUEST NOTIFICATIONS
+// UserPages/UserNotifications.jsx - FIXED FILTERING
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -43,11 +43,19 @@ export default function UserNotifications() {
         const data = await response.json();
         let filteredNotifications = data.notifications || [];
         
-        // Apply filter
+        // Apply filter - FIXED LOGIC
         if (filter !== 'all') {
-          filteredNotifications = filteredNotifications.filter(
-            notification => notification.type === filter
-          );
+          if (filter === 'unread') {
+            // Filter by read status
+            filteredNotifications = filteredNotifications.filter(
+              notification => !notification.is_read
+            );
+          } else {
+            // Filter by type
+            filteredNotifications = filteredNotifications.filter(
+              notification => notification.type === filter
+            );
+          }
         }
         
         // Limit to 50 notifications like admin

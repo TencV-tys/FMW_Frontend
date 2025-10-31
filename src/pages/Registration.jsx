@@ -592,10 +592,7 @@ export default function Registration() {
                   <FontAwesomeIcon icon={faShieldAlt} />
                   <span>Your data is protected and secure</span>
                 </div>
-                <div className="term-highlight">
-                  <FontAwesomeIcon icon={faUserPlus} />
-                  <span>One account per person is allowed</span>
-                </div>
+               
                 <div className="term-highlight">
                   <FontAwesomeIcon icon={faCheckCircle} />
                   <span>You must follow community guidelines</span>

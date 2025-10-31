@@ -227,6 +227,7 @@ export default function AdminDeletionRequests() {
   };
 
   const handleStatCardClick = (filterType) => {
+    setActiveTab('users');
     setFilterLimit(filterType);
   };
 
@@ -361,7 +362,7 @@ export default function AdminDeletionRequests() {
       {/* Stats Cards */}
       <div className="users-stats">
         <div 
-          className={`stat-card ${filterLimit === 'all' ? 'active' : ''}`}
+          className={`stat-card ${filterLimit === 'all' && activeTab === 'users' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('all')}
         >
           <span className="user-stat-number">{stats.totalUsers}</span>
@@ -369,7 +370,7 @@ export default function AdminDeletionRequests() {
         </div>
         
         <div 
-          className={`stat-card ${filterLimit === 'limit_reached' ? 'active' : ''}`}
+          className={`stat-card ${filterLimit === 'limit_reached' && activeTab === 'users' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('limit_reached')}
         >
           <span className="user-stat-number">{stats.limitReached}</span>
@@ -377,14 +378,17 @@ export default function AdminDeletionRequests() {
         </div>
         
         <div 
-          className={`stat-card ${filterLimit === 'approaching' ? 'active' : ''}`}
+          className={`stat-card ${filterLimit === 'approaching' && activeTab === 'users' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('approaching')}
         >
           <span className="user-stat-number">{stats.approachingLimit}</span>
           <span className="stat-label">Approaching Limit</span>
         </div>
         
-        <div className="stat-card">
+        <div 
+          className="stat-card"
+          onClick={() => handleStatCardClick('all')}
+        >
           <span className="user-stat-number">{stats.totalDeletions}</span>
           <span className="stat-label">Total Deletions</span>
         </div>

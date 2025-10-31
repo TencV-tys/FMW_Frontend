@@ -1,4 +1,4 @@
-// components/UserDashboardNav.jsx - Updated with unique class names
+// components/UserDashboardNav.jsx - Simplified with single dropdown
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,7 +11,7 @@ import {
   faSignOutAlt,
   faBell,
   faFlag,
-  faCommentDots 
+  faCommentDots
 } from '@fortawesome/free-solid-svg-icons';
 import Logo from '../assets/Logo2.jpg';
 import Profile from '../assets/download.png';
@@ -23,9 +23,21 @@ export default function UserDashboardNav() {
   const [isSticky, setIsSticky] = useState(false);
   const [user, setUser] = useState(null);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // 🎯 Check if mobile view
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 🎯 Fetch user data
   useEffect(() => {
@@ -118,11 +130,21 @@ export default function UserDashboardNav() {
     return 'User';
   };
 
+  // 🎯 Toggle dropdown
+  const toggleDropdown = () => {
+    setOpen(!open);
+  };
+
+  // 🎯 Close dropdown
+  const closeDropdown = () => {
+    setOpen(false);
+  };
+
   return (
     <header className={`user-nav-container ${isSticky ? 'sticky' : ''}`}>
       <nav className='user-dashboard-nav'>
         
-        {/* 🎯 Left Side - Logo & Navigation Links */}
+        {/* 🎯 Left Side - Logo & Navigation Links (Hidden on Mobile) */}
         <div className='user-dashboard-links'>
           <div className='user-dashboard-logo-container'>
             <img 
@@ -134,37 +156,40 @@ export default function UserDashboardNav() {
             />
           </div>
           
-          <div className='user-nav-links-group'>
-            <div className='user-dashboard-link-container'>
-              <Link 
-                to='/user' 
-                className={`user-dashboard-nav-link ${isActiveLink('/user') ? 'active' : ''}`}
-              >
-                <FontAwesomeIcon icon={faBullhorn} />
-                <span>Bulletin Board</span>
-              </Link>
+          {/* Desktop Navigation Links - Hidden on Mobile */}
+          {!isMobile && (
+            <div className='user-nav-links-group'>
+              <div className='user-dashboard-link-container'>
+                <Link 
+                  to='/user' 
+                  className={`user-dashboard-nav-link ${isActiveLink('/user') ? 'active' : ''}`}
+                >
+                  <FontAwesomeIcon icon={faBullhorn} />
+                  <span>Bulletin Board</span>
+                </Link>
+              </div>
+              
+              <div className='user-dashboard-link-container'>
+                <Link 
+                  to='/user/myposts' 
+                  className={`user-dashboard-nav-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
+                >
+                  <FontAwesomeIcon icon={faFileAlt} />
+                  <span>My Posts</span>
+                </Link>
+              </div>
+              
+              <div className='user-dashboard-link-container'>
+                <Link 
+                  to='/user/create' 
+                  className={`user-dashboard-nav-link user-create-post-link ${isActiveLink('/user/create') ? 'active' : ''}`}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                  <span>Create Post</span>
+                </Link>
+              </div>
             </div>
-            
-            <div className='user-dashboard-link-container'>
-              <Link 
-                to='/user/myposts' 
-                className={`user-dashboard-nav-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
-              >
-                <FontAwesomeIcon icon={faFileAlt} />
-                <span>My Posts</span>
-              </Link>
-            </div>
-            
-            <div className='user-dashboard-link-container'>
-              <Link 
-                to='/user/create' 
-                className={`user-dashboard-nav-link user-create-post-link ${isActiveLink('/user/create') ? 'active' : ''}`}
-              >
-                <FontAwesomeIcon icon={faPlus} />
-                <span>Create Post</span>
-              </Link>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* 🎯 Right Side - User Profile & Dropdown */}
@@ -175,6 +200,7 @@ export default function UserDashboardNav() {
               to="/user/user-notification" 
               className={`user-notification-bell ${isActiveLink('/user/user-notification') ? 'active' : ''}`}
               title="Notifications"
+              onClick={closeDropdown}
             >
               <FontAwesomeIcon icon={faBell} />
               {notificationCount > 0 && (
@@ -187,13 +213,15 @@ export default function UserDashboardNav() {
 
           <div 
             className='user-dashboard-profile-sub' 
-            onClick={() => setOpen(!open)}
-            onMouseEnter={() => setOpen(true)}
+            onClick={toggleDropdown}
+            onMouseEnter={!isMobile ? () => setOpen(true) : undefined}
           >
-            <div className="user-dashboard-info">
-              <p className="user-dashboard-name">{getUserName()}</p>
-              <p className="user-dashboard-role">{user?.role === 'admin' ? 'Administrator' : 'Community Member'}</p>
-            </div>
+            {!isMobile && (
+              <div className="user-dashboard-info">
+                <p className="user-dashboard-name">{getUserName()}</p>
+                <p className="user-dashboard-role">{user?.role === 'admin' ? 'Administrator' : 'Community Member'}</p>
+              </div>
+            )}
             
             <div className="user-dashboard-profile-image-container">
               <img 
@@ -211,11 +239,11 @@ export default function UserDashboardNav() {
             </div>
           </div>
 
-          {/* 🎯 Dropdown Menu */}
+          {/* 🎯 Single Dropdown Menu - Works for both Desktop & Mobile */}
           {open && (
             <div 
-              className='user-profile-dropdown-menu'
-              onMouseLeave={() => setOpen(false)}
+              className={`user-profile-dropdown-menu ${isMobile ? 'mobile' : ''}`}
+              onMouseLeave={!isMobile ? () => setOpen(false) : undefined}
             >
               <div className="user-dropdown-header">
                 <div className="user-dropdown-user-info">
@@ -229,17 +257,59 @@ export default function UserDashboardNav() {
                   <div>
                     <p className="user-dropdown-name">{getUserName()}</p>
                     <p className="user-dropdown-email">{user?.email}</p>
+                    {isMobile && (
+                      <p className="user-dropdown-role-mobile">
+                        {user?.role === 'admin' ? 'Administrator' : 'Community Member'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
               
               <div className="user-dropdown-divider"></div>
               
+              {/* 🎯 Main Navigation Links - Show on both desktop & mobile */}
+              <div className='user-dropdown-link-container'>
+                <Link 
+                  to='/user' 
+                  className={`user-dropdown-link ${isActiveLink('/user') ? 'active' : ''}`}
+                  onClick={closeDropdown}
+                >
+                  <FontAwesomeIcon icon={faBullhorn} />
+                  <span>Bulletin Board</span>
+                </Link>
+              </div>
+              
+              <div className='user-dropdown-link-container'>
+                <Link 
+                  to='/user/create' 
+                  className={`user-dropdown-link ${isActiveLink('/user/create') ? 'active' : ''}`}
+                  onClick={closeDropdown}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                  <span>Create Post</span>
+                </Link>
+              </div>
+              
+              <div className='user-dropdown-link-container'>
+                <Link 
+                  to='/user/myposts' 
+                  className={`user-dropdown-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
+                  onClick={closeDropdown}
+                >
+                  <FontAwesomeIcon icon={faFileAlt} />
+                  <span>My Posts</span>
+                </Link>
+              </div>
+              
+              <div className="user-dropdown-divider"></div>
+              
+              {/* 🎯 User Management Links */}
               <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/profile' 
                   className={`user-dropdown-link ${isActiveLink('/user/profile') ? 'active' : ''}`}
-                  onClick={() => setOpen(false)}
+                  onClick={closeDropdown}
                 >
                   <FontAwesomeIcon icon={faUser} />
                   <span>My Profile</span>
@@ -248,20 +318,9 @@ export default function UserDashboardNav() {
               
               <div className='user-dropdown-link-container'>
                 <Link 
-                  to='/user/myposts' 
-                  className={`user-dropdown-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
-                  onClick={() => setOpen(false)}
-                >
-                  <FontAwesomeIcon icon={faFileAlt} />
-                  <span>My Posts</span>
-                </Link>
-              </div>
-              
-              <div className='user-dropdown-link-container'>
-                <Link 
                   to='/user/my-reports' 
                   className={`user-dropdown-link ${isActiveLink('/user/my-reports') ? 'active' : ''}`}
-                  onClick={() => setOpen(false)}
+                  onClick={closeDropdown}
                 >
                   <FontAwesomeIcon icon={faFlag} />
                   <span>My Reports</span>
@@ -272,7 +331,7 @@ export default function UserDashboardNav() {
                 <Link 
                   to='/user/user-notification' 
                   className={`user-dropdown-link user-notification-dropdown-link ${isActiveLink('/user/user-notification') ? 'active' : ''}`}
-                  onClick={() => setOpen(false)}
+                  onClick={closeDropdown}
                 >
                   <FontAwesomeIcon icon={faBell} />
                   <span>Notifications</span>
@@ -283,11 +342,12 @@ export default function UserDashboardNav() {
                   )}
                 </Link>
               </div>
+              
               <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/feedback' 
                   className={`user-dropdown-link ${isActiveLink('/user/feedback') ? 'active' : ''}`}
-                  onClick={() => setOpen(false)}
+                  onClick={closeDropdown}
                 >
                   <FontAwesomeIcon icon={faCommentDots} />
                   <span>Feedback & Support</span>
@@ -300,7 +360,7 @@ export default function UserDashboardNav() {
                 <LogoutButton 
                   isDropdown={true}
                   className="user-dropdown-logout-link"
-                  onLogout={() => setOpen(false)}
+                  onLogout={closeDropdown}
                 >
                   <FontAwesomeIcon icon={faSignOutAlt} />
                   <span>Logout</span>
