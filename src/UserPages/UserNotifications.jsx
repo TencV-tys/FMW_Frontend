@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx - UPDATED WITH DELETE ALL
+// UserPages/UserNotifications.jsx - UPDATED WITH DELETION REQUEST NOTIFICATIONS
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,7 +14,9 @@ import {
   faTrashAlt,
   faComments,
   faSyncAlt,
-  faUserShield
+  faUserLock,
+  faUndo,
+  faPlusCircle
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
@@ -48,7 +50,8 @@ export default function UserNotifications() {
           );
         }
         
-        setNotifications(filteredNotifications);
+        // Limit to 50 notifications like admin
+        setNotifications(filteredNotifications.slice(0, 50));
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -134,7 +137,7 @@ export default function UserNotifications() {
     }
   };
 
-  // 🆕 DELETE ALL NOTIFICATIONS
+  // DELETE ALL NOTIFICATIONS
   const deleteAllNotifications = async () => {
     if (!window.confirm('Are you sure you want to delete ALL notifications? This action cannot be undone.')) return;
     
@@ -158,6 +161,11 @@ export default function UserNotifications() {
     }
   };
 
+  // Handle stat card click for filtering
+  const handleStatCardClick = (filterType) => {
+    setFilter(filterType);
+  };
+
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'post_resolved':
@@ -174,12 +182,19 @@ export default function UserNotifications() {
         return faCheckCircle;
       case 'user_suspended':
         return faTimesCircle;
-          case 'feedback_submitted':
-      return faComments;
-    case 'feedback_updated':
-      return faSyncAlt;
-    case 'feedback_assigned':
-      return faUserShield;
+      case 'feedback_submitted':
+        return faComments;
+      case 'feedback_updated':
+        return faSyncAlt;
+      // 🆕 DELETION REQUEST ICONS
+      case 'deletion_request_approved':
+        return faCheckCircle;
+      case 'deletion_request_rejected':
+        return faTimesCircle;
+      case 'deletion_limit_reset':
+        return faUndo;
+      case 'additional_deletions_granted':
+        return faPlusCircle;
       default:
         return faBell;
     }
@@ -201,12 +216,19 @@ export default function UserNotifications() {
         return '#06b6d4';
       case 'account_suspended':
         return '#ef4444';
-        case 'feedback_submitted':
-      return '#10b981';
-    case 'feedback_updated':
-      return '#3b82f6';
-    case 'feedback_assigned':
-      return '#f59e0b';
+      case 'feedback_submitted':
+        return '#10b981';
+      case 'feedback_updated':
+        return '#3b82f6';
+      // 🆕 DELETION REQUEST COLORS
+      case 'deletion_request_approved':
+        return '#10b981';
+      case 'deletion_request_rejected':
+        return '#ef4444';
+      case 'deletion_limit_reset':
+        return '#3b82f6';
+      case 'additional_deletions_granted':
+        return '#10b981';
       default:
         return '#6b7280';
     }
@@ -248,7 +270,6 @@ export default function UserNotifications() {
               <FontAwesomeIcon icon={faCheckDouble} />
               Mark All as Read
             </button>
-            {/* 🆕 DELETE ALL BUTTON */}
             <button 
               className="btn-delete-all"
               onClick={deleteAllNotifications}
@@ -260,9 +281,14 @@ export default function UserNotifications() {
           </div>
         </header>
 
-        {/* Stats */}
+        {/* Stats - Now Filterable */}
         <section className="notification-stats">
-          <div className="stat-card">
+          <div 
+            className={`stat-card ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('all')}
+            style={{ cursor: 'pointer' }}
+            title="Show all notifications"
+          >
             <div className="stat-icon total">
               <FontAwesomeIcon icon={faBell} />
             </div>
@@ -271,7 +297,12 @@ export default function UserNotifications() {
               <p>Total</p>
             </div>
           </div>
-          <div className="stat-card">
+          <div 
+            className={`stat-card ${filter === 'unread' ? 'active' : ''}`}
+            onClick={() => handleStatCardClick('unread')}
+            style={{ cursor: 'pointer' }}
+            title="Show unread notifications"
+          >
             <div className="stat-icon unread">
               <FontAwesomeIcon icon={faBell} />
             </div>
@@ -292,6 +323,7 @@ export default function UserNotifications() {
               className="filter-select"
             >
               <option value="all">All Notifications</option>
+              <option value="unread">Unread Only</option>
               <option value="post_resolved">Resolved Posts</option>
               <option value="post_removed">Removed Posts</option>
               <option value="post_deleted">Deleted Posts</option>
@@ -299,12 +331,42 @@ export default function UserNotifications() {
               <option value="report_submitted">Reports</option>
               <option value="report_status_update">Report Updates</option>
               <option value="user_suspended">Account Status</option>
-                <option value="feedback_submitted">Feedback Submitted</option>
+              <option value="feedback_submitted">Feedback Submitted</option>
               <option value="feedback_updated">Feedback Updates</option>
-              <option value="feedback_assigned">Feedback Assignments</option>
+              {/* 🆕 DELETION REQUEST FILTERS */}
+              <option value="deletion_request_approved">Approved Deletions</option>
+              <option value="deletion_request_rejected">Rejected Deletions</option>
+              <option value="deletion_limit_reset">Deletion Limit Reset</option>
+              <option value="additional_deletions_granted">Additional Deletions</option>
             </select>
           </div>
         </section>
+
+        {/* Active Filter Display */}
+        {filter !== 'all' && (
+          <div className="active-filter-section">
+            <span className="active-filter-label">Active filter:</span>
+            <div className="filter-tags">
+              <span className="filter-tag">
+                {filter === 'unread' && 'Unread Only'}
+                {filter === 'post_resolved' && 'Resolved Posts'}
+                {filter === 'post_removed' && 'Removed Posts'}
+                {filter === 'post_deleted' && 'Deleted Posts'}
+                {filter === 'post_restored' && 'Restored Posts'}
+                {filter === 'report_submitted' && 'Reports'}
+                {filter === 'report_status_update' && 'Report Updates'}
+                {filter === 'user_suspended' && 'Account Status'}
+                {filter === 'feedback_submitted' && 'Feedback Submitted'}
+                {filter === 'feedback_updated' && 'Feedback Updates'}
+                {/* 🆕 DELETION REQUEST FILTER LABELS */}
+                {filter === 'deletion_request_approved' && 'Approved Deletions'}
+                {filter === 'deletion_request_rejected' && 'Rejected Deletions'}
+                {filter === 'deletion_limit_reset' && 'Deletion Limit Reset'}
+                {filter === 'additional_deletions_granted' && 'Additional Deletions'}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Notifications List */}
         <section className="notifications-list">
@@ -313,49 +375,62 @@ export default function UserNotifications() {
               <p>Loading notifications...</p>
             </div>
           ) : notifications.length > 0 ? (
-            notifications.map(notification => (
-              <div 
-                key={notification.id} 
-                className={`notification-item ${notification.is_read ? 'read' : 'unread'}`}
-              >
-                <div className="notification-icon">
-                  <FontAwesomeIcon 
-                    icon={getNotificationIcon(notification.type)} 
-                    style={{ color: getNotificationColor(notification.type) }}
-                  />
-                </div>
-                <div className="notification-content">
-                  <h4>{notification.title}</h4>
-                  <p>{notification.message}</p>
-                  <div className="notification-meta">
-                    <span className="time">{formatTime(notification.created_at)}</span>
+            <div className="notifications-container">
+              <div className="notifications-header-info">
+                <span className="notifications-count">
+                  Showing {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
+                  {filter !== 'all' && ` (Filtered)`}
+                </span>
+              </div>
+              {notifications.map(notification => (
+                <div 
+                  key={notification.id} 
+                  className={`notification-item ${notification.is_read ? 'read' : 'unread'}`}
+                >
+                  <div className="notification-icon">
+                    <FontAwesomeIcon 
+                      icon={getNotificationIcon(notification.type)} 
+                      style={{ color: getNotificationColor(notification.type) }}
+                    />
+                  </div>
+                  <div className="notification-content">
+                    <h4>{notification.title}</h4>
+                    <p>{notification.message}</p>
+                    <div className="notification-meta">
+                      <span className="time">{formatTime(notification.created_at)}</span>
+                    </div>
+                  </div>
+                  <div className="notification-actions">
+                    {!notification.is_read && (
+                      <button 
+                        className="btn-mark-read"
+                        onClick={() => markAsRead(notification.id)}
+                        title="Mark as read"
+                      >
+                        <FontAwesomeIcon icon={faCheckCircle} />
+                      </button>
+                    )}
+                    <button 
+                      className="btn-delete"
+                      onClick={() => deleteNotification(notification.id)}
+                      title="Delete notification"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
                   </div>
                 </div>
-                <div className="notification-actions">
-                  {!notification.is_read && (
-                    <button 
-                      className="btn-mark-read"
-                      onClick={() => markAsRead(notification.id)}
-                      title="Mark as read"
-                    >
-                      <FontAwesomeIcon icon={faCheckCircle} />
-                    </button>
-                  )}
-                  <button 
-                    className="btn-delete"
-                    onClick={() => deleteNotification(notification.id)}
-                    title="Delete notification"
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
             <div className="empty-state">
               <FontAwesomeIcon icon={faBell} size="3x" />
               <h3>No notifications</h3>
-              <p>You're all caught up! New notifications will appear here.</p>
+              <p>
+                {filter === 'all' 
+                  ? "You're all caught up! New notifications will appear here." 
+                  : "No notifications match your filter criteria."
+                }
+              </p>
             </div>
           )}
         </section>

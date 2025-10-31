@@ -31,6 +31,18 @@ export default function CreatePost() {
 
   const MAX_CHARS = 200;
 
+  // Check if current category requires photo
+  const requiresPhoto = () => {
+    if (!formData.category_id) return false;
+    
+    const selectedCategory = categories.find(cat => cat.id == formData.category_id);
+    if (!selectedCategory) return false;
+
+    // Make photo required for "Person" or "Pets" categories
+    const categoryName = selectedCategory.name.toLowerCase();
+    return categoryName.includes('person') || categoryName.includes('pet');
+  };
+
   useEffect(() => {
     const fetchFormData = async () => {
       try {
@@ -42,7 +54,7 @@ export default function CreatePost() {
           if (data.success) {
             setCategories(data.categories);
             setBarangays(data.barangays);
-             setPuroks(data.puroks || []);
+            setPuroks(data.puroks || []);
           } else {
             console.error('Failed to fetch form data');
           }
@@ -112,6 +124,15 @@ export default function CreatePost() {
       return;
     }
 
+    // Validate photo requirement for Person/Pets categories
+    if (requiresPhoto() && !formData.photo) {
+      toast.error('Photo is required for Person or Pets categories', {
+        position: 'top-center',
+        autoClose: 1000
+      });
+      return;
+    }
+
     // Validate character limits
     if (formData.description.length > MAX_CHARS || formData.contact_info.length > MAX_CHARS) {
       toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`, {
@@ -129,7 +150,7 @@ export default function CreatePost() {
       formDataToSend.append('type', formData.type);
       formDataToSend.append('category_id', formData.category_id);
       formDataToSend.append('barangay_id', formData.barangay_id);
-       formDataToSend.append('purok_id', formData.purok_id);
+      formDataToSend.append('purok_id', formData.purok_id);
       formDataToSend.append('color', formData.color);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('contact_info', formData.contact_info);
@@ -306,13 +327,21 @@ export default function CreatePost() {
             )}
 
             <div className='image-uploader-container'>
-              <label>Upload Photo (optional):</label>
+              <label>
+                Upload Photo {requiresPhoto() ? '* (Required for Person/Pets)' : '(Optional)'}
+              </label>
               <input
                 type='file'
                 name='image'
                 accept='image/*'
                 onChange={handleFileChange}
+                required={requiresPhoto()}
               />
+              {requiresPhoto() && !formData.photo && (
+                <div className="error-message" style={{marginTop: '5px'}}>
+                  Photo is required for Person or Pets categories
+                </div>
+              )}
             </div>
 
             <button 

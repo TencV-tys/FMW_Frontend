@@ -103,7 +103,99 @@
   color: #666;
   font-weight: 600;
 }
+/* Add these styles to your existing UserNotification.css */
 
+/* Active stat card state */
+.stat-card.active {
+  border-left: 4px solid #FF8904;
+  background: #fff9e6;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Active Filter Section */
+.active-filter-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.active-filter-label {
+  font-weight: 600;
+  color: #FF8904;
+  font-size: 0.9rem;
+}
+
+.filter-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tag {
+  background: rgba(255, 137, 4, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  color: #FF8904;
+  border: 1px solid rgba(255, 137, 4, 0.2);
+  font-weight: 600;
+}
+
+/* Notifications Header Info */
+.notifications-header-info {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.notifications-count {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Clear Filters Button */
+.clear-filters-btn {
+  padding: 0.75rem 1rem;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.clear-filters-btn:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .active-filter-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .clear-filters-btn {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+  }
+}
 /* Filters */
 .notification-filters {
   margin-bottom: 2rem;
