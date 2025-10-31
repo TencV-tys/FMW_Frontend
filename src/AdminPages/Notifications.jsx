@@ -14,9 +14,10 @@ import {
   faUserCheck,
   faUserTimes,
   faCommentDots,
-  faLightbulb,
-  faBug,
-  faStar
+  faUserLock,
+  faUndo,
+  faPlusCircle,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Notifications.css';
 
@@ -30,11 +31,8 @@ export default function Notifications() {
     reports: 0,
     user_suspended: 0,
     user_banned: 0,
-    user_activated: 0,
-    user_deleted: 0,
     feedback_submitted: 0,
-    feedback_updated: 0,
-    feedback_deleted: 0
+    deletion_request: 0
   });
 
   useEffect(() => {
@@ -74,17 +72,14 @@ export default function Notifications() {
 
       if (response.ok) {
         const data = await response.json();
-        setStats(data.stats || {
-          total: 0,
-          unread: 0,
-          reports: 0,
-          user_suspended: 0,
-          user_banned: 0,
-          user_activated: 0,
-          user_deleted: 0,
-          feedback_submitted: 0,
-          feedback_updated: 0,
-          feedback_deleted: 0
+        setStats({
+          total: data.stats?.total || 0,
+          unread: data.stats?.unread || 0,
+          reports: data.stats?.reports || 0,
+          user_suspended: data.stats?.user_suspended || 0,
+          user_banned: data.stats?.user_banned || 0,
+          feedback_submitted: data.stats?.feedback_submitted || 0,
+          deletion_request: data.stats?.deletion_request || 0
         });
       }
     } catch (error) {
@@ -197,6 +192,19 @@ export default function Notifications() {
       case 'feedback_updated':
       case 'feedback_deleted':
         return faCommentDots;
+      case 'deletion_request':
+      case 'deletion_request_submitted':
+        return faUserLock;
+      case 'deletion_request_approved':
+        return faCheckCircle;
+      case 'deletion_request_rejected':
+        return faTimes;
+      case 'deletion_reset':
+        return faUndo;
+      case 'additional_deletions_granted':
+        return faPlusCircle;
+      case 'post_resolved_by_user':
+        return faCheckCircle;
       case 'general':
         return faBell;
       default:
@@ -230,6 +238,19 @@ export default function Notifications() {
         return '#8b5cf6';
       case 'feedback_deleted':
         return '#ef4444';
+      case 'deletion_request':
+      case 'deletion_request_submitted':
+        return '#FF8904';
+      case 'deletion_request_approved':
+        return '#10b981';
+      case 'deletion_request_rejected':
+        return '#ef4444';
+      case 'deletion_reset':
+        return '#3b82f6';
+      case 'additional_deletions_granted':
+        return '#10b981';
+      case 'post_resolved_by_user':
+        return '#10b981';
       case 'general':
         return '#6b7280';
       default:
@@ -237,10 +258,8 @@ export default function Notifications() {
     }
   };
 
-  // Get navigation link based on notification type
+  // Get navigation link based on notification type - SIMPLIFIED (no metadata highlights)
   const getNotificationLink = (notification) => {
-    const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
-    
     switch (notification.type) {
       case 'report_submitted':
         return '/admin/reports';
@@ -249,33 +268,29 @@ export default function Notifications() {
       case 'post_deleted':
       case 'post_restored':
       case 'post_resolved':
-        // 🆕 ADD POST ID NAVIGATION IF AVAILABLE
-        if (metadata.post_id) {
-          return `/admin/manage-posts?highlight=${metadata.post_id}`;
-        }
+      case 'post_resolved_by_user':
         return '/admin/manage-posts';
       
       case 'user_suspended':
       case 'user_banned':
       case 'user_activated':
       case 'user_deleted':
-        // 🆕 ADD USER ID NAVIGATION IF AVAILABLE
-        if (metadata.user_id) {
-          return `/admin/manage-users?highlight=${metadata.user_id}`;
-        }
         return '/admin/manage-users';
       
       case 'feedback_submitted':
       case 'feedback_updated':
       case 'feedback_deleted':
-        // 🆕 ADD FEEDBACK ID NAVIGATION IF AVAILABLE
-        if (metadata.feedback_id) {
-          return `/admin/feedback?highlight=${metadata.feedback_id}`;
-        }
         return '/admin/feedback';
       
+      case 'deletion_request':
+      case 'deletion_request_submitted':
+      case 'deletion_request_approved':
+      case 'deletion_request_rejected':
+      case 'deletion_reset':
+      case 'additional_deletions_granted':
+        return '/admin/deletion-requests';
+      
       case 'general':
- 
         return '/admin/manage-posts';
       
       default:
@@ -307,11 +322,6 @@ export default function Notifications() {
     setFilter('all');
   };
 
-  // Check if notification is clickable (has navigation)
-  const isClickable = (notification) => {
-    return getNotificationLink(notification) !== null;
-  };
-
   return (
     <>
       {/* Header */}
@@ -339,7 +349,7 @@ export default function Notifications() {
         </div>
       </header>
 
-      {/* Stats Cards - No Icons */}
+      {/* Stats Cards - Only Important Ones */}
       <section className="notification-stats">
         <div 
           className={`stat-card ${filter === 'all' ? 'active' : ''}`}
@@ -375,7 +385,20 @@ export default function Notifications() {
           </div>
         </div>
         
-        {/* User Action Stats Cards */}
+        {/* Deletion Request Stats */}
+        <div 
+          className={`stat-card ${filter === 'deletion_request' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('deletion_request')}
+          style={{ cursor: 'pointer' }}
+          title="Show deletion request notifications"
+        >
+          <div className="stat-info">
+            <h3>{stats.deletion_request}</h3>
+            <p>Deletion Requests</p>
+          </div>
+        </div>
+        
+        {/* User Action Stats */}
         <div 
           className={`stat-card ${filter === 'user_suspended' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('user_suspended')}
@@ -398,19 +421,8 @@ export default function Notifications() {
             <p>User Bans</p>
           </div>
         </div>
-        <div 
-          className={`stat-card ${filter === 'user_activated' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('user_activated')}
-          style={{ cursor: 'pointer' }}
-          title="Show user activation notifications"
-        >
-          <div className="stat-info">
-            <h3>{stats.user_activated}</h3>
-            <p>User Activations</p>
-          </div>
-        </div>
         
-        {/* Feedback Stats Cards */}
+        {/* Feedback Stats */}
         <div 
           className={`stat-card ${filter === 'feedback_submitted' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('feedback_submitted')}
@@ -419,18 +431,7 @@ export default function Notifications() {
         >
           <div className="stat-info">
             <h3>{stats.feedback_submitted}</h3>
-            <p>Feedback Submitted</p>
-          </div>
-        </div>
-        <div 
-          className={`stat-card ${filter === 'feedback_updated' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('feedback_updated')}
-          style={{ cursor: 'pointer' }}
-          title="Show feedback updated notifications"
-        >
-          <div className="stat-info">
-            <h3>{stats.feedback_updated}</h3>
-            <p>Feedback Updated</p>
+            <p>Feedback</p>
           </div>
         </div>
       </section>
@@ -455,6 +456,13 @@ export default function Notifications() {
             <option value="user_banned">User Bans</option>
             <option value="user_activated">User Activations</option>
             <option value="user_deleted">User Deletions</option>
+            <option value="deletion_request">Deletion Requests</option>
+            <option value="deletion_request_submitted">Request Submitted</option>
+            <option value="deletion_request_approved">Request Approved</option>
+            <option value="deletion_request_rejected">Request Rejected</option>
+            <option value="deletion_reset">Deletion Reset</option>
+            <option value="additional_deletions_granted">Additional Deletions</option>
+            <option value="post_resolved_by_user">User Resolved Posts</option>
             <option value="feedback_submitted">Feedback Submitted</option>
             <option value="feedback_updated">Feedback Updated</option>
             <option value="feedback_deleted">Feedback Deleted</option>
@@ -490,6 +498,13 @@ export default function Notifications() {
               {filter === 'user_banned' && 'User Bans'}
               {filter === 'user_activated' && 'User Activations'}
               {filter === 'user_deleted' && 'User Deletions'}
+              {filter === 'deletion_request' && 'Deletion Requests'}
+              {filter === 'deletion_request_submitted' && 'Request Submitted'}
+              {filter === 'deletion_request_approved' && 'Request Approved'}
+              {filter === 'deletion_request_rejected' && 'Request Rejected'}
+              {filter === 'deletion_reset' && 'Deletion Reset'}
+              {filter === 'additional_deletions_granted' && 'Additional Deletions'}
+              {filter === 'post_resolved_by_user' && 'User Resolved Posts'}
               {filter === 'feedback_submitted' && 'Feedback Submitted'}
               {filter === 'feedback_updated' && 'Feedback Updated'}
               {filter === 'feedback_deleted' && 'Feedback Deleted'}
@@ -558,7 +573,7 @@ export default function Notifications() {
                         {notification.role === 'admin' && ' (Admin)'}
                       </span>
                       <span className="time">{formatTime(notification.created_at)}</span>
-                      <span className="type">{notification.type.replace('_', ' ')}</span>
+                      <span className="type">{notification.type.replace(/_/g, ' ')}</span>
                     </div>
                   </div>
                   <div className="notification-actions">
