@@ -9,7 +9,8 @@ import {
   faUndo,
   faClock,
   faCheck,
-  faTimes
+  faTimes,
+  faUser
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/AdminDeletionRequests.css';
 
@@ -33,6 +34,7 @@ export default function AdminDeletionRequests() {
     action: '',
     adminNotes: ''
   });
+  const [recentlyApprovedUser, setRecentlyApprovedUser] = useState(null);
 
   useEffect(() => {
     fetchUsersDeletionStats();
@@ -115,42 +117,42 @@ export default function AdminDeletionRequests() {
   };
 
   const handleGrantAdditionalDeletions = async (userId, additionalCount = 1) => {
-    try {
-      const response = await fetch(`http://localhost:8000/api/admin/users/${userId}/grant-deletions`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ additional_count: additionalCount })
-      });
+  try {
+    const response = await fetch(`http://localhost:8000/api/admin/users/${userId}/grant-deletions`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ additional_count: additionalCount })
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        alert(data.message || 'Additional deletions granted successfully');
-        
-        setUsers(prevUsers => 
-          prevUsers.map(user => 
-            user.id === userId 
-              ? { 
-                  ...user, 
-                  deletion_count: Math.max(0, user.deletion_count - additionalCount),
-                  limit_reached: (user.deletion_count - additionalCount) >= 3,
-                  remaining_deletions: Math.max(0, 3 - (user.deletion_count - additionalCount))
-                }
-              : user
-          )
-        );
-        setActionModal({ isOpen: false, user: null, action: '', additionalCount: 1 });
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || 'Failed to grant additional deletions');
-      }
-    } catch (error) {
-      console.error('Error granting additional deletions:', error);
-      alert('Error granting additional deletions');
+    if (response.ok) {
+      const data = await response.json();
+      alert(data.message || 'Additional deletions granted successfully');
+      
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                deletion_count: data.user.deletion_count,
+                limit_reached: data.user.limit_reached,
+                remaining_deletions: data.user.remaining_deletions
+              }
+            : user
+        )
+      );
+      setActionModal({ isOpen: false, user: null, action: '', additionalCount: 1 });
+    } else {
+      const errorData = await response.json();
+      alert(errorData.error || 'Failed to grant additional deletions');
     }
-  };
+  } catch (error) {
+    console.error('Error granting additional deletions:', error);
+    alert('Error granting additional deletions');
+  }
+};
 
   const handleProcessDeletionRequest = async (requestId, action, adminNotes = '') => {
     try {
@@ -170,10 +172,24 @@ export default function AdminDeletionRequests() {
         const data = await response.json();
         alert(data.message || `Request ${action}d successfully`);
         
+        // Store the approved user info for easy navigation
+        if (action === 'approve') {
+          const approvedRequest = deletionRequests.find(request => request.id === requestId);
+          if (approvedRequest) {
+            setRecentlyApprovedUser({
+              id: approvedRequest.user_id,
+              name: `${approvedRequest.first_name} ${approvedRequest.last_name}`,
+              email: approvedRequest.email
+            });
+          }
+        }
+        
+        // Remove the processed request from the list
         setDeletionRequests(prevRequests => 
           prevRequests.filter(request => request.id !== requestId)
         );
         
+        // Refresh user stats to get updated deletion counts
         fetchUsersDeletionStats();
         
         setRequestModal({ isOpen: false, request: null, action: '', adminNotes: '' });
@@ -214,6 +230,23 @@ export default function AdminDeletionRequests() {
     setFilterLimit(filterType);
   };
 
+  const handleNavigateToUser = (userId) => {
+    setActiveTab('users');
+    setSearchTerm('');
+    setFilterLimit('all');
+    // Scroll to the specific user (this will be handled by the filtered list)
+    setTimeout(() => {
+      const userElement = document.getElementById(`user-${userId}`);
+      if (userElement) {
+        userElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        userElement.style.backgroundColor = '#fff5e6';
+        setTimeout(() => {
+          userElement.style.backgroundColor = '';
+        }, 3000);
+      }
+    }, 100);
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -240,6 +273,7 @@ export default function AdminDeletionRequests() {
   const clearFilters = () => {
     setSearchTerm('');
     setFilterLimit('all');
+    setRecentlyApprovedUser(null);
   };
 
   const getStatusClass = (user) => {
@@ -269,14 +303,30 @@ export default function AdminDeletionRequests() {
       {/* Header */}
       <div className="manage-users-header">
         <div className="manage-users-header-content">
-        
+          <h1>Deletion Requests Management</h1>
           <p>Manage user post deletion limits and approve additional deletions</p>
+          
+          {/* Recently Approved User Notification */}
+          {recentlyApprovedUser && (
+            <div className="recently-approved-banner">
+              <FontAwesomeIcon icon={faCheckCircle} />
+              Successfully approved request for {recentlyApprovedUser.name}
+              <button 
+                className="navigate-user-btn"
+                onClick={() => handleNavigateToUser(recentlyApprovedUser.id)}
+              >
+                <FontAwesomeIcon icon={faUser} />
+                Manage {recentlyApprovedUser.name}'s Deletions
+              </button>
+            </div>
+          )}
         </div>
         <button 
           className="refresh-btn"
           onClick={() => {
             fetchUsersDeletionStats();
             fetchDeletionRequests();
+            setRecentlyApprovedUser(null);
           }}
           disabled={loading || requestsLoading}
         >
@@ -296,10 +346,16 @@ export default function AdminDeletionRequests() {
         </button>
         <button 
           className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
+          onClick={() => {
+            setActiveTab('users');
+            setRecentlyApprovedUser(null);
+          }}
         >
           <FontAwesomeIcon icon={faExclamationTriangle} />
           User Statistics ({stats.totalUsers})
+          {recentlyApprovedUser && (
+            <span className="tab-notification-dot"></span>
+          )}
         </button>
       </div>
 
@@ -376,6 +432,17 @@ export default function AdminDeletionRequests() {
                             <div className="user-info">
                               <strong>{request.first_name} {request.last_name}</strong>
                               <small>{request.email}</small>
+                              <div className="user-deletion-info">
+                                Current Deletions: {request.current_deletions || 0}/3
+                                <button 
+                                  className="view-user-btn"
+                                  onClick={() => handleNavigateToUser(request.user_id)}
+                                  title="View and manage this user's deletion limits"
+                                >
+                                  <FontAwesomeIcon icon={faUser} />
+                                  Manage User
+                                </button>
+                              </div>
                             </div>
                           </td>
                           <td>
@@ -397,7 +464,7 @@ export default function AdminDeletionRequests() {
                               <button
                                 className="action-btn approve"
                                 onClick={() => openRequestModal(request, 'approve')}
-                                title="Approve request"
+                                title="Approve this deletion request"
                               >
                                 <FontAwesomeIcon icon={faCheck} />
                                 Approve
@@ -405,7 +472,7 @@ export default function AdminDeletionRequests() {
                               <button
                                 className="action-btn reject"
                                 onClick={() => openRequestModal(request, 'reject')}
-                                title="Reject request"
+                                title="Reject this deletion request"
                               >
                                 <FontAwesomeIcon icon={faTimes} />
                                 Reject
@@ -450,7 +517,7 @@ export default function AdminDeletionRequests() {
               </select>
             </div>
 
-            {(searchTerm || filterLimit !== 'all') && (
+            {(searchTerm || filterLimit !== 'all' || recentlyApprovedUser) && (
               <button className="clear-filters-btn" onClick={clearFilters}>
                 Clear Filters
               </button>
@@ -467,11 +534,12 @@ export default function AdminDeletionRequests() {
                     <span className="users-count">
                       {stats.filteredUsers} of {stats.totalUsers} users
                     </span>
-                    {(searchTerm || filterLimit !== 'all') && (
+                    {(searchTerm || filterLimit !== 'all' || recentlyApprovedUser) && (
                       <div className="active-filters">
                         <span>Active filters:</span>
                         {searchTerm && <span className="filter-tag">Search: "{searchTerm}"</span>}
                         {filterLimit !== 'all' && <span className="filter-tag">{filterLimit === 'limit_reached' ? 'Limit Reached' : 'Approaching Limit'}</span>}
+                        {recentlyApprovedUser && <span className="filter-tag highlight">Recently Approved: {recentlyApprovedUser.name}</span>}
                       </div>
                     )}
                   </div>
@@ -507,7 +575,11 @@ export default function AdminDeletionRequests() {
                       </thead>
                       <tbody>
                         {filteredUsers.map(user => (
-                          <tr key={user.id}>
+                          <tr 
+                            key={user.id} 
+                            id={`user-${user.id}`}
+                            className={recentlyApprovedUser && recentlyApprovedUser.id === user.id ? 'recently-approved-user' : ''}
+                          >
                             <td>
                               <div className="user-info">
                                 <strong>{user.first_name} {user.last_name}</strong>
@@ -676,6 +748,7 @@ export default function AdminDeletionRequests() {
               <div className="request-details-modal">
                 <p><strong>User:</strong> {requestModal.request.first_name} {requestModal.request.last_name} ({requestModal.request.email})</p>
                 <p><strong>Request Date:</strong> {formatDate(requestModal.request.created_at)}</p>
+                <p><strong>Current Deletions:</strong> {requestModal.request.current_deletions || 0}/3</p>
                 <div className="reason-section">
                   <strong>Reason:</strong>
                   <div className="reason-text">{requestModal.request.reason}</div>
@@ -702,8 +775,9 @@ export default function AdminDeletionRequests() {
                 <ul>
                   {requestModal.action === 'approve' ? (
                     <>
-                      <li>User's deletion count will be reset to 0</li>
-                      <li>User will be able to delete posts again</li>
+                      <li>This specific post deletion will be processed</li>
+                      <li>User's deletion count remains the same</li>
+                      <li>You can grant additional deletions to this user in the User Statistics tab</li>
                       <li>User will receive a notification</li>
                     </>
                   ) : (
