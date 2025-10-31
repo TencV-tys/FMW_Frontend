@@ -49,7 +49,15 @@ export default function BulletinBoard() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:8000/api/posts/active', {
+           // ✅ Simple detection based on current URL
+const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
+
+      const response = await fetch(`${wifi}/api/posts/active`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

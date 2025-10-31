@@ -8,7 +8,14 @@ export default function ProtectedRoute({ allowedRole, children }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('http://localhost:8000/auth/me', {
+             // ✅ Simple detection based on current URL
+const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
+        const res = await fetch(`${wifi}/auth/me`, {
           credentials: 'include', // include cookies
         });
 
