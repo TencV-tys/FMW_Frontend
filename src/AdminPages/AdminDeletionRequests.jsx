@@ -277,9 +277,9 @@ export default function AdminDeletionRequests() {
   };
 
   const getStatusClass = (user) => {
-    if (user.limit_reached) return 'user-status-banned';
-    if (user.deletion_count >= 2) return 'user-status-suspended';
-    return 'user-status-active';
+    if (user.limit_reached) return 'deletion-status-banned';
+    if (user.deletion_count >= 2) return 'deletion-status-suspended';
+    return 'deletion-status-active';
   };
 
   const getStatusText = (user) => {
@@ -299,20 +299,19 @@ export default function AdminDeletionRequests() {
   };
 
   return (
-    <div className="admin-deletion-content">
-      {/* Header */}
+    <>
+      {/* Header Section - With content like ManageUsers */}
       <div className="manage-users-header">
         <div className="manage-users-header-content">
-          <h1>Deletion Requests Management</h1>
           <p>Manage user post deletion limits and approve additional deletions</p>
           
           {/* Recently Approved User Notification */}
           {recentlyApprovedUser && (
-            <div className="recently-approved-banner">
+            <div className="deletion-recently-approved-banner">
               <FontAwesomeIcon icon={faCheckCircle} />
               Successfully approved request for {recentlyApprovedUser.name}
               <button 
-                className="navigate-user-btn"
+                className="deletion-navigate-user-btn"
                 onClick={() => handleNavigateToUser(recentlyApprovedUser.id)}
               >
                 <FontAwesomeIcon icon={faUser} />
@@ -336,16 +335,16 @@ export default function AdminDeletionRequests() {
       </div>
 
       {/* Tabs */}
-      <div className="deletion-tabs">
+      <div className="deletion-requests-tabs">
         <button 
-          className={`tab-button ${activeTab === 'requests' ? 'active' : ''}`}
+          className={`deletion-tab-button ${activeTab === 'requests' ? 'active' : ''}`}
           onClick={() => setActiveTab('requests')}
         >
           <FontAwesomeIcon icon={faClock} />
           Pending Requests ({stats.pendingRequests})
         </button>
         <button 
-          className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
+          className={`deletion-tab-button ${activeTab === 'users' ? 'active' : ''}`}
           onClick={() => {
             setActiveTab('users');
             setRecentlyApprovedUser(null);
@@ -354,7 +353,7 @@ export default function AdminDeletionRequests() {
           <FontAwesomeIcon icon={faExclamationTriangle} />
           User Statistics ({stats.totalUsers})
           {recentlyApprovedUser && (
-            <span className="tab-notification-dot"></span>
+            <span className="deletion-tab-notification-dot"></span>
           )}
         </button>
       </div>
@@ -432,10 +431,10 @@ export default function AdminDeletionRequests() {
                             <div className="user-info">
                               <strong>{request.first_name} {request.last_name}</strong>
                               <small>{request.email}</small>
-                              <div className="user-deletion-info">
+                              <div className="user-info">
                                 Current Deletions: {request.current_deletions || 0}/3
                                 <button 
-                                  className="view-user-btn"
+                                  className="deletion-view-user-btn"
                                   onClick={() => handleNavigateToUser(request.user_id)}
                                   title="View and manage this user's deletion limits"
                                 >
@@ -446,11 +445,11 @@ export default function AdminDeletionRequests() {
                             </div>
                           </td>
                           <td>
-                            <div className="request-details">
+                            <div className="deletion-request-details">
                               <strong>Reason:</strong>
-                              <p className="request-reason">{request.reason}</p>
+                              <p className="deletion-request-reason">{request.reason}</p>
                               {request.post_title && (
-                                <div className="post-info">
+                                <div className="deletion-post-info">
                                   <strong>Related Post:</strong> {request.post_title}
                                 </div>
                               )}
@@ -462,7 +461,7 @@ export default function AdminDeletionRequests() {
                           <td>
                             <div className="users-table-actions">
                               <button
-                                className="action-btn approve"
+                                className="deletion-action-btn approve"
                                 onClick={() => openRequestModal(request, 'approve')}
                                 title="Approve this deletion request"
                               >
@@ -470,7 +469,7 @@ export default function AdminDeletionRequests() {
                                 Approve
                               </button>
                               <button
-                                className="action-btn reject"
+                                className="deletion-action-btn reject"
                                 onClick={() => openRequestModal(request, 'reject')}
                                 title="Reject this deletion request"
                               >
@@ -578,7 +577,7 @@ export default function AdminDeletionRequests() {
                           <tr 
                             key={user.id} 
                             id={`user-${user.id}`}
-                            className={recentlyApprovedUser && recentlyApprovedUser.id === user.id ? 'recently-approved-user' : ''}
+                            className={recentlyApprovedUser && recentlyApprovedUser.id === user.id ? 'deletion-recently-approved-user' : ''}
                           >
                             <td>
                               <div className="user-info">
@@ -592,18 +591,18 @@ export default function AdminDeletionRequests() {
                               </div>
                             </td>
                             <td>
-                              <span className={`user-status-badge ${getStatusClass(user)}`}>
+                              <span className={`deletion-status-badge ${getStatusClass(user)}`}>
                                 {getStatusText(user)}
                               </span>
                             </td>
                             <td>
-                              <div className="progress-container">
-                                <span className="progress-text">
+                              <div className="deletion-progress-container">
+                                <span className="deletion-progress-text">
                                   {user.deletion_count || 0} / 3
                                 </span>
-                                <div className="progress-bar">
+                                <div className="deletion-progress-bar">
                                   <div 
-                                    className={`progress-fill ${
+                                    className={`deletion-progress-fill ${
                                       user.limit_reached 
                                         ? 'limit-reached' 
                                         : user.deletion_count >= 2 
@@ -656,7 +655,7 @@ export default function AdminDeletionRequests() {
                                   </button>
                                 )}
                                 {(user.deletion_count || 0) === 0 && (
-                                  <span className="no-actions">No actions needed</span>
+                                  <span className="deletion-no-actions">No actions needed</span>
                                 )}
                               </div>
                             </td>
@@ -686,12 +685,12 @@ export default function AdminDeletionRequests() {
               </button>
             </div>
             <div className="modal-body">
-              <div className="info-banner">
+              <div className="deletion-info-banner">
                 <FontAwesomeIcon icon={faCheckCircle} />
                 Grant additional deletion capacity to user
               </div>
               
-              <div className="user-details">
+              <div className="deletion-user-details">
                 <p><strong>User:</strong> {actionModal.user.first_name} {actionModal.user.last_name}</p>
                 <p><strong>Email:</strong> {actionModal.user.email}</p>
                 <p><strong>Current Deletions:</strong> {actionModal.user.deletion_count || 0}/3</p>
@@ -699,7 +698,7 @@ export default function AdminDeletionRequests() {
                 <p><strong>New Total:</strong> {Math.max(0, (actionModal.user.deletion_count || 0) - actionModal.additionalCount)}/3</p>
               </div>
 
-              <div className="info-box">
+              <div className="deletion-info-box">
                 <strong>Note:</strong>
                 <ul>
                   <li>Granting additional deletions reduces their current count</li>
@@ -740,18 +739,18 @@ export default function AdminDeletionRequests() {
               </button>
             </div>
             <div className="modal-body">
-              <div className={`info-banner ${requestModal.action === 'approve' ? 'approve' : 'reject'}`}>
+              <div className={`deletion-info-banner ${requestModal.action === 'approve' ? 'approve' : 'reject'}`}>
                 <FontAwesomeIcon icon={requestModal.action === 'approve' ? faCheck : faTimes} />
                 {requestModal.action === 'approve' ? 'Approve' : 'Reject'} deletion request from {requestModal.request.first_name} {requestModal.request.last_name}
               </div>
               
-              <div className="request-details-modal">
+              <div className="deletion-request-details-modal">
                 <p><strong>User:</strong> {requestModal.request.first_name} {requestModal.request.last_name} ({requestModal.request.email})</p>
                 <p><strong>Request Date:</strong> {formatDate(requestModal.request.created_at)}</p>
                 <p><strong>Current Deletions:</strong> {requestModal.request.current_deletions || 0}/3</p>
-                <div className="reason-section">
+                <div className="deletion-reason-section">
                   <strong>Reason:</strong>
-                  <div className="reason-text">{requestModal.request.reason}</div>
+                  <div className="deletion-reason-text">{requestModal.request.reason}</div>
                 </div>
                 {requestModal.request.post_title && (
                   <p><strong>Related Post:</strong> {requestModal.request.post_title}</p>
@@ -770,7 +769,7 @@ export default function AdminDeletionRequests() {
                 </div>
               )}
 
-              <div className="info-box">
+              <div className="deletion-info-box">
                 <strong>What happens when {requestModal.action === 'approve' ? 'approved' : 'rejected'}:</strong>
                 <ul>
                   {requestModal.action === 'approve' ? (
@@ -811,6 +810,6 @@ export default function AdminDeletionRequests() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

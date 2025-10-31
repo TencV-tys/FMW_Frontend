@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { faEdit, faTrash, faCheckCircle, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faTrash, faCheckCircle, faExclamationTriangle, faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import UserNav from '../UserComponents/UserDashboardNav'
 import Logo1 from '../assets/Logo.jpg'
@@ -53,7 +53,7 @@ export default function MyPosts() {
     }
   };
 
-  // Fetch deletion statistics
+  // Fetch deletion statistics - store in localStorage for persistence
   const fetchDeletionStats = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/posts/deletion-stats', {
@@ -66,24 +66,38 @@ export default function MyPosts() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
+          // Store in localStorage for persistence
+          localStorage.setItem('deletionStats', JSON.stringify(result.stats));
           setDeletionStats(result.stats);
         }
       } else {
         console.error('Failed to fetch deletion stats');
+        // Try to load from localStorage if fetch fails
+        const storedStats = localStorage.getItem('deletionStats');
+        if (storedStats) {
+          setDeletionStats(JSON.parse(storedStats));
+        }
       }
     } catch (error) {
       console.error('Error fetching deletion stats:', error);
+      // Try to load from localStorage if fetch fails
+      const storedStats = localStorage.getItem('deletionStats');
+      if (storedStats) {
+        setDeletionStats(JSON.parse(storedStats));
+      }
     }
   };
 
+  // Load deletion stats from localStorage on component mount
+  useEffect(() => {
+    const storedStats = localStorage.getItem('deletionStats');
+    if (storedStats) {
+      setDeletionStats(JSON.parse(storedStats));
+    }
+  }, []);
+
   // Handle post deletion with limit checking
   const handleDeletePost = async (postId) => {
-    // Check deletion stats before proceeding
-    if (deletionStats && deletionStats.limitReached) {
-      setContactAdminModal({ isOpen: true, postId });
-      return;
-    }
-
     if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
       return;
     }
@@ -102,13 +116,17 @@ export default function MyPosts() {
         
         // Update deletion stats
         if (result.deletionInfo) {
-          const { currentMonthDeletions, monthlyLimit, remainingDeletions } = result.deletionInfo;
-          setDeletionStats({
+          const { currentMonthDeletions, monthlyLimit, remainingDeletions, limitReached } = result.deletionInfo;
+          const newStats = {
             currentMonthDeletions,
             monthlyLimit,
             remainingDeletions,
             limitReached: remainingDeletions <= 0
-          });
+          };
+          
+          // Update both state and localStorage
+          setDeletionStats(newStats);
+          localStorage.setItem('deletionStats', JSON.stringify(newStats));
 
           // Show appropriate message
           if (remainingDeletions === 0) {
@@ -127,12 +145,16 @@ export default function MyPosts() {
       } else {
         // Handle deletion limit error
         if (result.limitReached) {
-          setDeletionStats({
+          const newStats = {
             currentMonthDeletions: result.currentMonthDeletions,
             monthlyLimit: result.monthlyLimit,
             remainingDeletions: 0,
             limitReached: true
-          });
+          };
+          
+          // Update both state and localStorage
+          setDeletionStats(newStats);
+          localStorage.setItem('deletionStats', JSON.stringify(newStats));
           
           toast.error(`Deletion limit reached! You can only delete ${result.monthlyLimit} posts per month.`);
           setContactAdminModal({ isOpen: true, postId });
@@ -393,6 +415,7 @@ export default function MyPosts() {
                 <div className='myposts-list'>
                   {posts.map((post) => {
                     const status = getStatusBadge(post.status);
+                    const isLimitReached = deletionStats?.limitReached;
 
                     return (
                       <div key={post.id} className='mypost-cards'>
@@ -425,19 +448,28 @@ export default function MyPosts() {
                               <FontAwesomeIcon icon={faEdit} />
                             </button>
                             
-                            {/* Delete Button */}
-                            <button
-                              onClick={() => handleDeletePost(post.id)}
-                              className={`mypost-delete-btn ${deletionStats?.limitReached ? 'disabled' : ''}`}
-                              disabled={deletionStats?.limitReached}
-                              title={
-                                deletionStats?.limitReached 
-                                  ? `Monthly deletion limit reached (${deletionStats.currentMonthDeletions}/${deletionStats.monthlyLimit})`
-                                  : "Delete post"
-                              }
-                            >
-                              <FontAwesomeIcon className='delete-icon' icon={faTrash} />
-                            </button>
+                            {/* DELETE BUTTON - Only show when limit NOT reached */}
+                            {!isLimitReached && (
+                              <button
+                                onClick={() => handleDeletePost(post.id)}
+                                className="mypost-delete-btn"
+                                title="Delete post"
+                              >
+                                <FontAwesomeIcon className='delete-icon' icon={faTrash} />
+                              </button>
+                            )}
+                            
+                            {/* REQUEST DELETION BUTTON - Only show when limit IS reached */}
+                            {isLimitReached && (
+                              <button
+                                onClick={() => setContactAdminModal({ isOpen: true, postId: post.id })}
+                                className="request-deletion-btn"
+                                title="Request deletion from admin"
+                              >
+                                <FontAwesomeIcon icon={faEnvelope} />
+                                Request
+                              </button>
+                            )}
                           </div>
                         </div>
 

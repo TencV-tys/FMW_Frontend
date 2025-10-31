@@ -622,6 +622,123 @@
     box-sizing: border-box;
     font-family: inherit;
 }
+/* Add these to your existing MyPosts.css */
+
+/* Request Deletion Button */
+.request-deletion-btn {
+    background: #FF8904;
+    color: white;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.request-deletion-btn:hover {
+    background: #e67a00;
+    transform: scale(1.05);
+}
+
+/* Make sure delete button is always visible when limit not reached */
+.mypost-delete-btn {
+    background: #ef4444;
+    color: white;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mypost-delete-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Remove the old disabled styles since we're using separate buttons */
+.mypost-delete-btn.disabled,
+.mypost-delete-btn:disabled {
+    display: none !important;
+}
+
+/* Ensure action buttons have consistent spacing */
+.mypost-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Deletion limit info improvements */
+.deletion-limit-info {
+    background: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    font-size: 0.85rem;
+    max-width: 300px;
+    transition: all 0.3s ease;
+}
+
+.deletion-limit-info.limit-reached {
+    background: #fff3cd;
+    border: 1px solid #FF8904;
+    color: #856404;
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0% { box-shadow: 0 0 0 0 rgba(255, 137, 4, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 137, 4, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 137, 4, 0); }
+}
+
+.limit-warning {
+    color: #FF8904;
+    font-weight: 600;
+    font-size: 0.7rem;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Responsive adjustments for new buttons */
+@media (max-width: 768px) {
+    .request-deletion-btn {
+        padding: 8px 10px;
+        font-size: 0.7rem;
+        min-width: 70px;
+    }
+    
+    .mypost-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .request-deletion-btn,
+    .mypost-delete-btn,
+    .edit-btn,
+    .resolve-btn {
+        padding: 8px 10px;
+        font-size: 0.7rem;
+    }
+    
+    .request-deletion-btn {
+        min-width: 60px;
+    }
+}
 
 .form-group textarea:focus {
     outline: none;
