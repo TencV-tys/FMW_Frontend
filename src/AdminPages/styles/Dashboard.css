@@ -341,7 +341,7 @@
   font-size: 1rem;
 }
 
-/* Clickable Stat Cards */
+/* FIXED: Clickable Stat Cards - Removed flashing animation */
 .clickable-stat {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -349,28 +349,14 @@
   overflow: hidden;
 }
 
-.clickable-stat::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s ease;
-}
-
-.clickable-stat:hover::before {
-  left: 100%;
-}
-
+/* REMOVED the problematic ::before animation that causes flashing */
 .clickable-stat:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
 }
 
 .clickable-stat:active {
-  transform: translateY(-2px) scale(1.01);
+  transform: translateY(-2px);
 }
 
 /* Enhanced Notification Styles */
@@ -418,24 +404,27 @@
   }
 }
 
-/* Tooltip for stat cards */
+/* FIXED: Tooltip for stat cards - only show on desktop */
 .stat-card {
   position: relative;
 }
 
-.stat-card:hover::after {
-  content: 'Click to view details';
-  position: absolute;
-  bottom: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  z-index: 10;
+/* Only show tooltip on larger screens */
+@media (min-width: 769px) {
+  .stat-card:hover::after {
+    content: 'Click to view details';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+  }
 }
 
 /* Responsive Design */
