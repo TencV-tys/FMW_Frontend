@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { faEdit, faTrash, faCheckCircle, faExclamationTriangle, faEnvelope } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faTrash, faCheckCircle, faExclamationTriangle, faEnvelope, faPlus, faTimes, faWarning } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import UserNav from '../UserComponents/UserDashboardNav'
 import Logo1 from '../assets/Logo.jpg'
@@ -15,13 +15,16 @@ export default function MyPosts() {
   const [expandedContacts, setExpandedContacts] = useState({});
   const [deletionStats, setDeletionStats] = useState(null);
   const [contactAdminModal, setContactAdminModal] = useState({ isOpen: false, postId: null });
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [resolveConfirm, setResolveConfirm] = useState(null);
   const nav = useNavigate();
-   const isLocalhost = window.location.hostname === 'localhost' || 
+  
+  const isLocalhost = window.location.hostname === 'localhost' || 
                     window.location.hostname === '127.0.0.1';
 
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+  const wifi = isLocalhost 
+    ? 'http://localhost:8000' 
+    : 'http://192.168.1.27:8000';
 
   useEffect(() => {
     fetchMyPosts();
@@ -59,7 +62,6 @@ export default function MyPosts() {
     }
   };
 
-  // Fetch deletion statistics
   const fetchDeletionStats = async () => {
     try {
       const response = await fetch(`${wifi}/api/posts/my-deletion-stats`, {
@@ -82,12 +84,7 @@ export default function MyPosts() {
     }
   };
 
-  // Handle post deletion with limit checking
-  const handleDeletePost = async (postId) => {
-    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-      return;
-    }
-
+  const handleDeletePost = async (postId, postTitle) => {
     try {
       const response = await fetch(`${wifi}/api/posts/${postId}`, {
         method: 'DELETE',
@@ -97,10 +94,8 @@ export default function MyPosts() {
       const result = await response.json();
 
       if (result.success) {
-        // Remove the post from local state
         setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
         
-        // Update deletion stats
         if (result.deletionInfo) {
           const { currentMonthDeletions, monthlyLimit, remainingDeletions, limitReached } = result.deletionInfo;
           const newStats = {
@@ -112,7 +107,6 @@ export default function MyPosts() {
           
           setDeletionStats(newStats);
 
-          // Show appropriate message
           if (limitReached) {
             toast.warning(`Monthly deletion limit reached! You've deleted ${currentMonthDeletions} posts this month.`);
           } else if (remainingDeletions === 1) {
@@ -124,10 +118,8 @@ export default function MyPosts() {
           toast.success('Post deleted successfully!');
         }
         
-        // Refresh deletion stats
         fetchDeletionStats();
       } else {
-        // Handle deletion limit error
         if (result.limitReached) {
           const newStats = {
             currentMonthDeletions: result.currentMonthDeletions,
@@ -150,7 +142,6 @@ export default function MyPosts() {
     }
   };
 
-  // Contact admin for additional deletions
   const handleContactAdmin = async () => {
     const reasonInput = document.getElementById('deletion-reason');
     const reason = reasonInput?.value?.trim();
@@ -187,17 +178,11 @@ export default function MyPosts() {
     }
   };
 
-  // Handle post editing
   const handleEditPost = (postId) => {
     nav(`/user/edit-post/${postId}`);
   };
 
-  // Handle marking post as resolved
-  const handleMarkAsResolved = async (postId) => {
-    if (!window.confirm('Are you sure you want to mark this post as resolved? This will close the post.')) {
-      return;
-    }
-
+  const handleMarkAsResolved = async (postId, postTitle) => {
     try {
       const response = await fetch(`${wifi}/api/posts/${postId}/status`, {
         method: 'PUT',
@@ -214,7 +199,6 @@ export default function MyPosts() {
 
       if (result.success) {
         toast.success('Post marked as resolved successfully');
-        // Update the post status in local state
         setPosts(prevPosts => 
           prevPosts.map(post => 
             post.id === postId ? { ...post, status: 'Resolved' } : post
@@ -239,18 +223,17 @@ export default function MyPosts() {
     });
   };
 
-  // Get status badge color
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      'Active': { class: 'status-active', text: 'Active' },
-      'Resolved': { class: 'status-resolved', text: 'Resolved' },
-      'Removed': { class: 'status-removed', text: 'Removed' }
-    };
 
-    return statusConfig[status] || { class: 'status-default', text: status };
+const getStatusBadge = (status) => {
+  const statusConfig = {
+    'Active': { class: 'myposts-status-active-fmw', text: 'Active' },
+    'Resolved': { class: 'myposts-status-resolved-fmw', text: 'Resolved' },
+    'Removed': { class: 'myposts-status-removed-fmw', text: 'Removed' }
   };
 
-  // Toggle description expansion
+  return statusConfig[status] || { class: 'myposts-status-default-fmw', text: status };
+};
+
   const toggleDescription = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedDescriptions(prev => ({
@@ -259,7 +242,6 @@ export default function MyPosts() {
     }));
   };
 
-  // Toggle contact expansion
   const toggleContact = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedContacts(prev => ({
@@ -268,31 +250,26 @@ export default function MyPosts() {
     }));
   };
 
-  // Check if description needs "Read More"
   const needsReadMore = (description) => {
     return description && description.length > 120;
   };
 
-  // Check if contact needs "Read More"
   const needsContactReadMore = (contact) => {
     return contact && contact.length > 50;
   };
 
-  // Get truncated description
   const getTruncatedDescription = (description) => {
     if (!description) return '';
     if (description.length <= 120) return description;
     return description.substring(0, 120) + '...';
   };
 
-  // Get truncated contact
   const getTruncatedContact = (contact) => {
     if (!contact) return '';
     if (contact.length <= 50) return contact;
     return contact.substring(0, 50) + '...';
   };
 
-  // Render location information with purok
   const renderLocationInfo = (post) => {
     let locationText = post.barangay_name || '';
     if (post.purok_name) {
@@ -301,37 +278,34 @@ export default function MyPosts() {
     return locationText;
   };
 
-  // Render deletion limit info - UPDATED LOGIC
   const renderDeletionLimitInfo = () => {
     if (!deletionStats) return null;
 
     const { currentMonthDeletions, monthlyLimit, remainingDeletions, limitReached } = deletionStats;
-
-    // Only show warning if user has actually used deletions
     const hasUsedDeletions = currentMonthDeletions > 0;
 
     return (
-      <div className={`deletion-limit-info ${limitReached ? 'limit-reached' : hasUsedDeletions ? 'limit-warning' : ''}`}>
-        <div className="deletion-stats">
+      <div className={`deletion-limit-info-fmw ${limitReached ? 'limit-reached-fmw' : hasUsedDeletions ? 'limit-warning-fmw' : ''}`}>
+        <div className="deletion-stats-fmw">
           <FontAwesomeIcon 
             icon={limitReached ? faExclamationTriangle : hasUsedDeletions ? faTrash : faTrash} 
-            className="deletion-icon" 
+            className="deletion-icon-fmw" 
           />
-          <span className="deletion-text">
+          <span className="deletion-text-fmw">
             {limitReached ? (
               <>
                 <strong>Monthly Limit Reached:</strong> {currentMonthDeletions}/{monthlyLimit} deletions
-                <span className="limit-warning"> - Contact admin for additional deletions</span>
+                <span className="limit-warning-text-fmw"> - Contact admin for additional deletions</span>
               </>
             ) : hasUsedDeletions ? (
               <>
                 <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
-                <span className="remaining-text"> ({remainingDeletions} remaining)</span>
+                <span className="remaining-text-fmw"> ({remainingDeletions} remaining)</span>
               </>
             ) : (
               <>
                 <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
-                <span className="remaining-text"> (Full limit available)</span>
+                <span className="remaining-text-fmw"> (Full limit available)</span>
               </>
             )}
           </span>
@@ -340,14 +314,13 @@ export default function MyPosts() {
     );
   };
 
-  // Loading state
   if (loading) {
     return (
-      <div className="myposts-container">
+      <div className="myposts-container-fmw">
         <UserNav />
-        <main className="myposts-content">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
+        <main className="myposts-content-fmw">
+          <div className="loading-container-fmw">
+            <div className="loading-spinner-fmw"></div>
             <p>Loading your posts...</p>
           </div>
         </main>
@@ -355,16 +328,15 @@ export default function MyPosts() {
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="myposts-container">
+      <div className="myposts-container-fmw">
         <UserNav />
-        <main className="myposts-content">
-          <div className="error-container">
+        <main className="myposts-content-fmw">
+          <div className="error-container-fmw">
             <h3>Something went wrong</h3>
             <p>{error}</p>
-            <button onClick={fetchMyPosts} className="retry-btn">
+            <button onClick={fetchMyPosts} className="retry-btn-fmw">
               Try Again
             </button>
           </div>
@@ -374,107 +346,109 @@ export default function MyPosts() {
   }
 
   return (
-    <div className="myposts-container">
+    <div className="myposts-container-fmw">
       <UserNav />
-      <main className="myposts-content">
-        <div className='myposts-content-darkbrown'>
-          <div className='myposts-content-lightbrown'>
-            <div className='myposts-content-container'>
+      <main className="myposts-content-fmw">
+        <div className='myposts-content-darkbrown-fmw'>
+          <div className='myposts-content-lightbrown-fmw'>
+            <div className='myposts-content-container-fmw'>
 
-              <div className='myposts-content-title'>
+              <div className='myposts-content-title-fmw'>
                 <h1>My Posts</h1>
-                <div className="posts-header-info">
-                  <div className="posts-counts">
+                <div className="posts-header-info-fmw">
+                  <div className="posts-counts-fmw">
                     {posts.length} {posts.length === 1 ? 'post' : 'posts'}
                   </div>
-                  {/* Deletion limit info */}
                   {renderDeletionLimitInfo()}
                 </div>
               </div>
 
               {posts.length === 0 ? (
-                <div className="empty-state">
+                <div className="empty-state-fmw">
                   <h3>No posts yet</h3>
                   <p>You haven't created any posts. Start by creating your first lost or found item post!</p>
-                  <Link to="/user/create" className="create-first-post-btn">
+                  <Link to="/user/create" className="create-first-post-btn-fmw">
                     Create Your First Post
                   </Link>
                 </div>
               ) : (
-                // Posts List
-                <div className='myposts-list'>
+                <div className='myposts-list-fmw'>
                   {posts.map((post) => {
                     const status = getStatusBadge(post.status);
                     const isLimitReached = deletionStats?.limitReached;
-                    
-                    // UPDATED LOGIC: Only show delete button if post is active AND limit not reached
                     const canDelete = post.status === 'Active' && !isLimitReached;
                     const showRequestButton = post.status === 'Active' && isLimitReached;
 
                     return (
-                      <div key={post.id} className='mypost-cards'>
-                        <span className='myposts-pins'></span>
+                      <div key={post.id} className='mypost-cards-fmw'>
+                        <span className='myposts-pins-fmw'></span>
 
-                        <div className='lost-type'>
-                          <div className={`status-badge ${status.class}`}>
-                            {status.text}
+                        <div className='lost-type-fmw'>
+                          <div className={`myposts-status-badge-fmw ${status.class}`}>
+                            <span className="myposts-status-text-fmw">{status.text}</span>
                           </div>
                           <h1>{post.type} {post.category_name}</h1>
-                          <div className='mypost-actions'>
-                            {/* Mark as Resolved Button */}
+                          <div className='mypost-actions-fmw'>
                             {post.status === 'Active' && (
                               <button
-                                onClick={() => handleMarkAsResolved(post.id)}
-                                className="resolve-btn"
+                                onClick={() => setResolveConfirm({ postId: post.id, postTitle: post.title })}
+                                className="resolve-btn-fmw"
                                 title="Mark as resolved"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
                               </button>
                             )}
                             
-                            {/* Edit Button */}
                             <button
                               onClick={() => handleEditPost(post.id)}
-                              className="edit-btn"
+                              className="edit-btn-fmw"
                               disabled={post.status !== 'Active'}
                               title={post.status !== 'Active' ? 'Cannot edit resolved or removed posts' : 'Edit post'}
                             >
                               <FontAwesomeIcon icon={faEdit} />
                             </button>
                             
-                            {/* UPDATED: DELETE BUTTON - Only show when limit NOT reached AND post is active */}
                             {canDelete && (
                               <button
-                                onClick={() => handleDeletePost(post.id)}
-                                className="mypost-delete-btn"
+                                onClick={() => setDeleteConfirm({ postId: post.id, postTitle: post.title })}
+                                className="mypost-delete-btn-fmw"
                                 title="Delete post"
                               >
-                                <FontAwesomeIcon className='delete-icon' icon={faTrash} />
+                                <FontAwesomeIcon icon={faTrash} />
+                              <span className="btn-text-fmw">Delete</span>
                               </button>
                             )}
                             
-                            {/* UPDATED: REQUEST DELETION BUTTON - Only show when limit IS reached AND post is active */}
                             {showRequestButton && (
                               <button
                                 onClick={() => setContactAdminModal({ isOpen: true, postId: post.id })}
-                                className="request-deletion-btn"
+                                className="request-deletion-btn-fmw"
                                 title="Request deletion from admin"
                               >
                                 <FontAwesomeIcon icon={faEnvelope} />
-                                Request
+                                <span className="btn-text-fmw">Request</span>
                               </button>
                             )}
                           </div>
                         </div>
 
-                        <div className='mypost-details-container'>
-                          <div className='mypost-details'>
-                            <h2 className="post-title">{post.title}</h2>
+                        <div className='mypost-details-container-fmw'>
+                          <div className='mypost-image-container-fmw'>
+                            <img
+                              src={post.photo ? `${wifi}/uploads/${post.photo}` : Logo1}
+                              alt={post.title}
+                              onError={(e) => {
+                                e.target.src = Logo1;
+                              }}
+                            />
+                          </div>
+                          
+                          <div className='mypost-details-fmw'>
+                            <h2 className="post-title-fmw">{post.title}</h2>
                             
-                            {/* Description with Read More */}
-                            <div className="post-description">
+                            <div className="post-description-fmw">
                               <div 
-                                className={`description-text ${expandedDescriptions[post.id] ? 'expanded' : ''}`}
+                                className={`description-text-fmw ${expandedDescriptions[post.id] ? 'expanded-fmw' : ''}`}
                               >
                                 {expandedDescriptions[post.id] 
                                   ? post.description 
@@ -483,7 +457,7 @@ export default function MyPosts() {
                               </div>
                               {needsReadMore(post.description) && (
                                 <button 
-                                  className="read-more-btn"
+                                  className="read-more-btn-fmw"
                                   onClick={(e) => toggleDescription(post.id, e)}
                                 >
                                   {expandedDescriptions[post.id] ? 'Read Less' : 'Read More'}
@@ -491,19 +465,18 @@ export default function MyPosts() {
                               )}
                             </div>
                             
-                            <div className="post-meta">
-                              <div className="meta-item">
+                            <div className="post-meta-fmw">
+                              <div className="meta-item-fmw">
                                 <strong>Category:</strong> {post.category_name}
                               </div>
-                              <div className="meta-item">
+                              <div className="meta-item-fmw">
                                 <strong>Location:</strong> {renderLocationInfo(post)}
                               </div>
                               
-                              {/* Contact with Read More */}
-                              <div className="meta-item">
+                              <div className="meta-item-fmw">
                                 <strong>Contact:</strong>
-                                <div className="contact-container">
-                                  <div className={`contact-text ${expandedContacts[post.id] ? 'expanded' : ''}`}>
+                                <div className="contact-container-fmw">
+                                  <div className={`contact-text-fmw ${expandedContacts[post.id] ? 'expanded-fmw' : ''}`}>
                                     {expandedContacts[post.id] 
                                       ? post.contact_info 
                                       : getTruncatedContact(post.contact_info)
@@ -511,7 +484,7 @@ export default function MyPosts() {
                                   </div>
                                   {needsContactReadMore(post.contact_info) && (
                                     <button 
-                                      className="contact-read-more-btn"
+                                      className="contact-read-more-btn-fmw"
                                       onClick={(e) => toggleContact(post.id, e)}
                                     >
                                       {expandedContacts[post.id] ? 'Read Less' : 'Read More'}
@@ -521,23 +494,14 @@ export default function MyPosts() {
                               </div>
                               
                               {post.color && (
-                                <div className="meta-item">
+                                <div className="meta-item-fmw">
                                   <strong>Color:</strong> {post.color}
                                 </div>
                               )}
-                              <div className="meta-item">
+                              <div className="meta-item-fmw">
                                 <strong>Posted:</strong> {formatDate(post.created_at)}
                               </div>
                             </div>
-                          </div>
-                          <div className='mypost-image'>
-                            <img
-                              src={post.photo ? `${wifi}/uploads/${post.photo}` : Logo1}
-                              alt={post.title}
-                              onError={(e) => {
-                                e.target.src = Logo1;
-                              }}
-                            />
                           </div>
                         </div>
                       </div>
@@ -549,37 +513,120 @@ export default function MyPosts() {
           </div>
         </div>
 
-        {/* Contact Admin Modal */}
-        {contactAdminModal.isOpen && (
-          <div className="modal-overlay" onClick={() => setContactAdminModal({ isOpen: false, postId: null })}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3>Monthly Deletion Limit Reached</h3>
+        <Link to="/user/create" className="mobile-create-post-btn-fmw">
+          <FontAwesomeIcon icon={faPlus} />
+        </Link>
+
+        {deleteConfirm && (
+          <div className="modal-overlay-fmw" onClick={() => setDeleteConfirm(null)}>
+            <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header-fmw">
+                <FontAwesomeIcon icon={faWarning} className="warning-icon-fmw" />
+                <h3>Delete Post</h3>
                 <button 
-                  className="modal-close"
-                  onClick={() => setContactAdminModal({ isOpen: false, postId: null })}
+                  className="modal-close-fmw"
+                  onClick={() => setDeleteConfirm(null)}
                 >
-                  ×
+                  <FontAwesomeIcon icon={faTimes} />
                 </button>
               </div>
-              <div className="modal-body">
-                <div className="warning-banner">
+              <div className="modal-body-fmw">
+                <p>Are you sure you want to delete this post?</p>
+                <p><strong>"{deleteConfirm.postTitle}"</strong></p>
+                <p className="warning-text-fmw">This action cannot be undone.</p>
+              </div>
+              <div className="modal-footer-fmw">
+                <button 
+                  className="btn-secondary-fmw"
+                  onClick={() => setDeleteConfirm(null)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn-primary-fmw delete-confirm-fmw"
+                  onClick={() => {
+                    handleDeletePost(deleteConfirm.postId, deleteConfirm.postTitle);
+                    setDeleteConfirm(null);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                  Delete Post
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {resolveConfirm && (
+          <div className="modal-overlay-fmw" onClick={() => setResolveConfirm(null)}>
+            <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header-fmw">
+                <FontAwesomeIcon icon={faCheckCircle} className="success-icon-fmw" />
+                <h3>Mark as Resolved</h3>
+                <button 
+                  className="modal-close-fmw"
+                  onClick={() => setResolveConfirm(null)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              <div className="modal-body-fmw">
+                <p>Are you sure you want to mark this post as resolved?</p>
+                <p><strong>"{resolveConfirm.postTitle}"</strong></p>
+                <p className="info-text-fmw">This will close the post and mark it as completed.</p>
+              </div>
+              <div className="modal-footer-fmw">
+                <button 
+                  className="btn-secondary-fmw"
+                  onClick={() => setResolveConfirm(null)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn-primary-fmw resolve-confirm-fmw"
+                  onClick={() => {
+                    handleMarkAsResolved(resolveConfirm.postId, resolveConfirm.postTitle);
+                    setResolveConfirm(null);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faCheckCircle} />
+                  Mark as Resolved
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {contactAdminModal.isOpen && (
+          <div className="modal-overlay-fmw" onClick={() => setContactAdminModal({ isOpen: false, postId: null })}>
+            <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header-fmw">
+                <h3>Monthly Deletion Limit Reached</h3>
+                <button 
+                  className="modal-close-fmw"
+                  onClick={() => setContactAdminModal({ isOpen: false, postId: null })}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              <div className="modal-body-fmw">
+                <div className="warning-banner-fmw">
                   <FontAwesomeIcon icon={faExclamationTriangle} />
                   You've reached your monthly deletion limit of {deletionStats?.monthlyLimit || 3} posts.
                 </div>
                 
                 <p>You have already deleted <strong>{deletionStats?.currentMonthDeletions || 0}</strong> posts this month.</p>
                 
-                <div className="form-group">
+                <div className="form-group-fmw">
                   <label>Reason for additional deletion request:</label>
                   <textarea
                     placeholder="Please explain why you need to delete this post..."
                     rows="4"
                     id="deletion-reason"
-                  />
+                  /> 
                 </div>
 
-                <div className="info-box">
+                <div className="info-box-fmw">
                   <strong>What happens next:</strong>
                   <ul>
                     <li>Your request will be sent to administrators</li>
@@ -589,15 +636,15 @@ export default function MyPosts() {
                   </ul>
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer-fmw">
                 <button 
-                  className="btn-secondary"
+                  className="btn-secondary-fmw"
                   onClick={() => setContactAdminModal({ isOpen: false, postId: null })}
                 >
                   Cancel
                 </button>
                 <button 
-                  className="btn-primary"
+                  className="btn-primary-fmw"
                   onClick={handleContactAdmin}
                 >
                   Send Request to Admin
