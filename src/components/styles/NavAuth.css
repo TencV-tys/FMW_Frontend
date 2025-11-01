@@ -1,29 +1,31 @@
-.nav-auth-header {
+/* NavAuth.css - Unique Class Names */
+.nav-auth-header-fmw {
   background: white;
   border-bottom: 1px solid #e0e0e0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
+  width: 100%;
 }
 
-.navigation-auth {
+.navigation-auth-fmw {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.5rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
   position: relative;
 }
 
-.nav-brand {
+.nav-brand-fmw {
   display: flex;
   align-items: center;
   z-index: 1002;
 }
 
-.logo-link {
+.logo-link-fmw {
   text-decoration: none;
   color: #333;
   font-weight: bold;
@@ -34,23 +36,23 @@
   transition: color 0.3s ease;
 }
 
-.logo-link:hover {
+.logo-link-fmw:hover {
   color: #FF8904;
 }
 
-.logo-pic {
+.logo-pic-fmw {
   border-radius: 50%;
   width: 3rem;
   height: 3rem;
   object-fit: cover;
 }
 
-.logo-text {
+.logo-text-fmw {
   font-weight: 700;
 }
 
 /* Mobile Menu Toggle */
-.mobile-menu-toggle {
+.mobile-menu-toggle-fmw {
   display: none;
   background: none;
   border: none;
@@ -63,19 +65,19 @@
 }
 
 /* Navigation Content */
-.nav-content {
+.nav-content-fmw {
   display: flex;
   align-items: center;
   gap: 2rem;
 }
 
-.nav-links {
+.nav-links-fmw {
   display: flex;
   gap: 2rem;
   align-items: center;
 }
 
-.nav-link {
+.nav-link-fmw {
   text-decoration: none;
   color: #666;
   font-weight: 500;
@@ -87,18 +89,18 @@
   border-radius: 6px;
 }
 
-.nav-link:hover {
+.nav-link-fmw:hover {
   color: #FF8904;
   background: #f8f9fa;
 }
 
-.auth-buttons {
+.auth-buttons-fmw {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.auth-button {
+.auth-button-fmw {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -110,54 +112,64 @@
   border: 2px solid transparent;
 }
 
-.signup-btn {
+.signup-btn-fmw {
   background: #FF8904;
   color: white;
 }
 
-.signup-btn:hover {
+.signup-btn-fmw:hover {
   background: #e67a00;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
 }
 
-.login-btn {
+.login-btn-fmw {
   background: transparent;
   color: #FF8904;
   border-color: #FF8904;
 }
 
-.login-btn:hover {
+.login-btn-fmw:hover {
   background: #FF8904;
   color: white;
 }
 
 /* Hide class for navigation */
-.Hide {
+.Hide-fmw {
   display: none;
 }
 
-.Show {
+.Show-fmw {
   display: flex;
 }
 
-/* 🎯 MOBILE RESPONSIVE STYLES - FIXED OVERFLOW */
+/* 🎯 MOBILE RESPONSIVE STYLES */
 @media (max-width: 768px) {
-  .navigation-auth {
-    padding: 1rem;
+  .nav-auth-header-fmw {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 1002;
   }
 
-  .mobile-menu-toggle {
+  .navigation-auth-fmw {
+    padding: 0.75rem 1rem;
+    min-height: 60px;
+  }
+
+  .mobile-menu-toggle-fmw {
     display: block;
   }
 
   /* Hide desktop navigation */
-  .nav-content {
+  .nav-content-fmw {
     display: none;
   }
 
   /* Mobile menu styles */
-  .nav-content.mobile-open {
+  .nav-content-fmw.mobile-open-fmw {
     display: flex;
     position: fixed;
     top: 0;
@@ -170,21 +182,21 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    padding: 80px 2rem 2rem; /* Push content down below header */
+    padding: 80px 2rem 2rem;
     box-sizing: border-box;
-    overflow-y: auto; /* Allow scrolling if content is too long */
+    overflow-y: auto;
     z-index: 1001;
     gap: 0;
   }
 
-  .nav-links {
+  .nav-links-fmw {
     flex-direction: column;
     gap: 0;
     width: 100%;
     margin-bottom: 2rem;
   }
 
-  .nav-link {
+  .nav-link-fmw {
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 0.5rem;
@@ -194,17 +206,17 @@
     border: 1px solid #f0f0f0;
   }
 
-  .nav-link:hover {
+  .nav-link-fmw:hover {
     background: #f8f9fa;
   }
 
-  .auth-buttons {
+  .auth-buttons-fmw {
     flex-direction: column;
     gap: 1rem;
     width: 100%;
   }
 
-  .auth-button {
+  .auth-button-fmw {
     justify-content: center;
     padding: 1rem;
     width: 100%;
@@ -212,58 +224,40 @@
     box-sizing: border-box;
   }
 
-  .mobile-menu-overlay {
-    display: none; /* We don't need overlay since menu takes full screen */
-  }
-}
-
-/* 🎯 FIXED HEADER POSITIONING FOR MOBILE */
-@media (max-width: 768px) {
-  .nav-auth-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    z-index: 1002;
-  }
-
-  .navigation-auth {
-    padding: 0.75rem 1rem;
-    min-height: 60px; /* Fixed height for header */
-  }
-
   /* Ensure body doesn't scroll when menu is open */
-  body.menu-open {
+  body.menu-open-fmw {
     overflow: hidden;
   }
 }
 
-/* 🎯 ADD BODY SCROLL LOCK (Add this to your main CSS or here) */
-body.menu-open {
-  overflow: hidden;
+/* 🎯 DESKTOP STYLES - FIXED POSITIONING */
+@media (min-width: 769px) {
+  .nav-auth-header-fmw {
+    position: sticky;
+    top: 0;
+  }
 }
 
 @media (max-width: 480px) {
-  .navigation-auth {
+  .navigation-auth-fmw {
     padding: 0.5rem 1rem;
   }
 
-  .logo-text {
+  .logo-text-fmw {
     font-size: 1.2rem;
   }
 
-  .logo-pic {
+  .logo-pic-fmw {
     width: 2.2rem;
     height: 2.2rem;
   }
 
-  .mobile-menu-toggle {
+  .mobile-menu-toggle-fmw {
     font-size: 1.3rem;
     padding: 0.4rem;
   }
 
-  .nav-content.mobile-open {
+  .nav-content-fmw.mobile-open-fmw {
     padding: 70px 1.5rem 1.5rem;
   }
 }

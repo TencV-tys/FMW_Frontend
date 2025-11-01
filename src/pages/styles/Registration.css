@@ -1,13 +1,13 @@
 /* Registration.css - Orange & White Theme */
 .registration-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #ffffff;
   display: flex;
   flex-direction: column;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding-top: 50px;
+  
 }
-
+ 
 .register-form-container {
   display: flex;
   justify-content: center;
@@ -480,7 +480,9 @@
     padding: 2rem 1.5rem;
     margin: 0.5rem;
   }
-
+  .registration-page{
+   padding-top: 60px;
+}
   .name-fields {
     grid-template-columns: 1fr;
   }

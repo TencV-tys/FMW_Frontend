@@ -18,14 +18,14 @@ export default function NavAuth({ disabled }) {
   // Prevent body scroll when menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
-      document.body.classList.add('menu-open');
+      document.body.classList.add('menu-open-fmw');
     } else {
-      document.body.classList.remove('menu-open');
+      document.body.classList.remove('menu-open-fmw');
     }
 
     // Cleanup on unmount
     return () => {
-      document.body.classList.remove('menu-open');
+      document.body.classList.remove('menu-open-fmw');
     };
   }, [isMobileMenuOpen]);
 
@@ -38,18 +38,18 @@ export default function NavAuth({ disabled }) {
   };
 
   return (
-    <header className='nav-auth-header'>
-      <nav className='navigation-auth'>
-        <div className="nav-brand">
-          <Link to="/" className='logo-link' onClick={closeMobileMenu}>
-            <img className='logo-pic' src={Logo} alt="FindMyWay Logo" />
-            <span className="logo-text">FindMyWay</span>
+    <header className='nav-auth-header-fmw'>
+      <nav className='navigation-auth-fmw'>
+        <div className="nav-brand-fmw">
+          <Link to="/" className='logo-link-fmw' onClick={closeMobileMenu}>
+            <img className='logo-pic-fmw' src={Logo} alt="FindMyWay Logo" />
+            <span className="logo-text-fmw">FindMyWay</span>
           </Link>
         </div>
         
         {/* Mobile Menu Button */}
         <button 
-          className="mobile-menu-toggle"
+          className="mobile-menu-toggle-fmw"
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
         >
@@ -57,24 +57,24 @@ export default function NavAuth({ disabled }) {
         </button>
 
         {/* Navigation Links and Auth Buttons */}
-        <div className={`nav-content ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-          <div className="nav-links">
-            <Link to="/" className="nav-link home-link" onClick={closeMobileMenu}>
+        <div className={`nav-content-fmw ${isMobileMenuOpen ? 'mobile-open-fmw' : ''}`}>
+          <div className="nav-links-fmw">
+            <Link to="/" className="nav-link-fmw home-link-fmw" onClick={closeMobileMenu}>
               <FontAwesomeIcon icon={faHome} />
               Home
             </Link>
-            <Link to="/about" className="nav-link about-link" onClick={closeMobileMenu}>
+            <Link to="/about" className="nav-link-fmw about-link-fmw" onClick={closeMobileMenu}>
               <FontAwesomeIcon icon={faInfoCircle} />
               About
             </Link>
           </div>
 
-          <div className={`auth-buttons ${disabled}`}>
-            <Link to="/registration" className='auth-button signup-btn' onClick={closeMobileMenu}>
+          <div className={`auth-buttons-fmw ${disabled}`}>
+            <Link to="/registration" className='auth-button-fmw signup-btn-fmw' onClick={closeMobileMenu}>
               <span>Sign Up</span>
               <FontAwesomeIcon icon={faSignIn} />
             </Link>
-            <Link to="/login" className='auth-button login-btn' onClick={closeMobileMenu}>
+            <Link to="/login" className='auth-button-fmw login-btn-fmw' onClick={closeMobileMenu}>
               <span>Login</span>
               <FontAwesomeIcon icon={faDoorOpen} />
             </Link>

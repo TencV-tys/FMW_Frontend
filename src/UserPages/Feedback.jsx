@@ -241,7 +241,6 @@ export default function Feedback() {
   };
 
   const canDeleteFeedback = (feedback) => {
-
     return true;
   };
 
@@ -256,15 +255,15 @@ export default function Feedback() {
   };
 
   return (
-    <div className="feedback-page">
+    <div className="feedback-page-fmw">
       <UserNav />
-      <main className="feedback-container">
-        <div className='feedback-container-darkbrown'>
-          <div className='feedback-container-lightbrown'>
-            <div className='feedback-content'>
+      <main className="feedback-container-fmw">
+        <div className='feedback-container-darkbrown-fmw'>
+          <div className='feedback-container-lightbrown-fmw'>
+            <div className='feedback-content-fmw'>
               
               {/* Header */}
-              <div className='feedback-header'>
+              <div className='feedback-header-fmw'>
                 <h1>
                   <FontAwesomeIcon icon={faCommentDots} />
                   Feedback & Support
@@ -274,30 +273,22 @@ export default function Feedback() {
 
               {/* Debug Info */}
               {debugInfo && (
-                <div className="debug-info" style={{
-                  background: '#f8f9fa',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  marginBottom: '15px',
-                  border: '1px solid #dee2e6',
-                  fontSize: '14px',
-                  color: '#6c757d'
-                }}>
+                <div className="debug-info-fmw">
                   <strong>Debug:</strong> {debugInfo}
                 </div>
               )}
 
               {/* Tabs */}
-              <div className="feedback-tabs">
+              <div className="feedback-tabs-fmw">
                 <button 
-                  className={`tab-button ${activeTab === 'submit' ? 'active' : ''}`}
+                  className={`tab-button-fmw ${activeTab === 'submit' ? 'active-fmw' : ''}`}
                   onClick={() => setActiveTab('submit')}
                 >
                   <FontAwesomeIcon icon={faPaperPlane} />
                   Submit Feedback
                 </button>
                 <button 
-                  className={`tab-button ${activeTab === 'my-feedback' ? 'active' : ''}`}
+                  className={`tab-button-fmw ${activeTab === 'my-feedback' ? 'active-fmw' : ''}`}
                   onClick={() => setActiveTab('my-feedback')}
                 >
                   <FontAwesomeIcon icon={faClock} />
@@ -307,19 +298,19 @@ export default function Feedback() {
 
               {/* Submit Feedback Form */}
               {activeTab === 'submit' && (
-                <div className="feedback-form-container">
+                <div className="feedback-form-container-fmw">
                   {submitSuccess && (
-                    <div className="success-message">
+                    <div className="success-message-fmw">
                       <FontAwesomeIcon icon={faCheckCircle} />
                       Thank you for your feedback! We'll review it soon.
                     </div>
                   )}
 
-                  <form onSubmit={handleSubmit} className="feedback-form">
+                  <form onSubmit={handleSubmit} className="feedback-form-fmw">
                     {/* Feedback Type */}
-                    <div className="form-group">
+                    <div className="form-group-fmw">
                       <label>Feedback Type *</label>
-                      <div className="type-options">
+                      <div className="type-options-fmw">
                         {[
                           { value: 'bug', label: 'Bug Report', icon: faBug, description: 'Something is not working' },
                           { value: 'feature', label: 'Feature Request', icon: faLightbulb, description: 'Suggest a new feature' },
@@ -328,11 +319,11 @@ export default function Feedback() {
                         ].map(type => (
                           <div 
                             key={type.value}
-                            className={`type-option ${formData.type === type.value ? 'selected' : ''}`}
+                            className={`type-option-fmw ${formData.type === type.value ? 'selected-fmw' : ''}`}
                             onClick={() => setFormData(prev => ({ ...prev, type: type.value }))}
                           >
                             <FontAwesomeIcon icon={type.icon} />
-                            <div className="type-info">
+                            <div className="type-info-fmw">
                               <strong>{type.label}</strong>
                               <span>{type.description}</span>
                             </div>
@@ -342,13 +333,13 @@ export default function Feedback() {
                     </div>
 
                     {/* Priority */}
-                    <div className="form-group">
+                    <div className="form-group-fmw">
                       <label>Priority</label>
                       <select 
                         name="priority"
                         value={formData.priority}
                         onChange={handleInputChange}
-                        className="priority-select"
+                        className="priority-select-fmw"
                       >
                         <option value="low">Low - Minor issue or enhancement</option>
                         <option value="medium">Medium - Standard issue</option>
@@ -358,7 +349,7 @@ export default function Feedback() {
                     </div>
 
                     {/* Title */}
-                    <div className="form-group">
+                    <div className="form-group-fmw">
                       <label>Title *</label>
                       <input
                         type="text"
@@ -372,7 +363,7 @@ export default function Feedback() {
                     </div>
 
                     {/* Description */}
-                    <div className="form-group">
+                    <div className="form-group-fmw">
                       <label>Detailed Description *</label>
                       <textarea
                         name="description"
@@ -387,12 +378,12 @@ export default function Feedback() {
                     {/* Submit Button */}
                     <button 
                       type="submit" 
-                      className="submit-button"
+                      className="submit-button-fmw"
                       disabled={loading}
                     >
                       {loading ? (
                         <>
-                          <div className="loading-spinner-small"></div>
+                          <div className="loading-spinner-small-fmw"></div>
                           Submitting...
                         </>
                       ) : (
@@ -408,36 +399,36 @@ export default function Feedback() {
 
               {/* My Feedback List */}
               {activeTab === 'my-feedback' && (
-                <div className="my-feedback-container">
+                <div className="my-feedback-container-fmw">
                   {loading ? (
-                    <div className="loading-container">
-                      <div className="loading-spinner"></div>
+                    <div className="loading-container-fmw">
+                      <div className="loading-spinner-fmw"></div>
                       <p>Loading your feedback...</p>
                     </div>
                   ) : myFeedback.length === 0 ? (
-                    <div className="empty-state">
-                      <FontAwesomeIcon icon={faCommentDots} className="empty-icon" />
+                    <div className="empty-state-fmw">
+                      <FontAwesomeIcon icon={faCommentDots} className="empty-icon-fmw" />
                       <h3>No feedback submitted yet</h3>
                       <p>Your submitted feedback will appear here once you submit some.</p>
                     </div>
                   ) : (
-                    <div className="feedback-list">
+                    <div className="feedback-list-fmw">
                       {myFeedback.map((feedback) => (
-                        <div key={feedback.id} className="feedback-card">
-                          <div className="feedback-header">
-                            <div className="feedback-type">
+                        <div key={feedback.id} className="feedback-card-fmw">
+                          <div className="feedback-card-header-fmw">
+                            <div className="feedback-type-fmw">
                               <FontAwesomeIcon icon={getTypeIcon(feedback.type)} />
                               <span>{feedback.type.replace('_', ' ')}</span>
                             </div>
-                            <div className="feedback-meta">
+                            <div className="feedback-meta-fmw">
                               <span 
-                                className="priority-badge"
+                                className="priority-badge-fmw"
                                 style={{ backgroundColor: getPriorityColor(feedback.priority) }}
                               >
                                 {feedback.priority}
                               </span>
                               <span 
-                                className="status-badge"
+                                className="status-badge-fmw"
                                 style={{ color: getStatusColor(feedback.status) }}
                               >
                                 <FontAwesomeIcon icon={getStatusIcon(feedback.status)} />
@@ -445,7 +436,7 @@ export default function Feedback() {
                               </span>
                               {canDeleteFeedback(feedback) && (
                                 <button
-                                  className="delete-feedback-btn"
+                                  className="delete-feedback-btn-fmw"
                                   onClick={() => setDeleteConfirm(feedback)}
                                   title="Delete this feedback"
                                 >
@@ -456,14 +447,14 @@ export default function Feedback() {
                           </div>
                           
                           <h3>{feedback.title}</h3>
-                          <p className="feedback-description">{feedback.description}</p>
+                          <p className="feedback-description-fmw">{feedback.description}</p>
                           
-                          <div className="feedback-footer">
-                            <span className="feedback-date">
+                          <div className="feedback-footer-fmw">
+                            <span className="feedback-date-fmw">
                               Submitted on {formatDate(feedback.created_at)}
                             </span>
                             {feedback.admin_notes && (
-                              <div className="admin-notes">
+                              <div className="admin-notes-fmw">
                                 <strong>Admin Response:</strong> {feedback.admin_notes}
                               </div>
                             )}
@@ -471,24 +462,24 @@ export default function Feedback() {
 
                           {/* Delete Confirmation Modal */}
                           {deleteConfirm && deleteConfirm.id === feedback.id && (
-                            <div className="delete-confirmation-overlay">
-                              <div className="delete-confirmation-modal">
-                                <div className="delete-confirmation-header">
-                                  <FontAwesomeIcon icon={faWarning} className="warning-icon" />
+                            <div className="delete-confirmation-overlay-fmw">
+                              <div className="delete-confirmation-modal-fmw">
+                                <div className="delete-confirmation-header-fmw">
+                                  <FontAwesomeIcon icon={faWarning} className="warning-icon-fmw" />
                                   <h3>Delete Feedback</h3>
                                 </div>
                                 <p>Are you sure you want to delete this feedback?</p>
                                 <p><strong>"{deleteConfirm.title}"</strong></p>
-                                <p className="warning-text">This action cannot be undone.</p>
-                                <div className="delete-confirmation-actions">
+                                <p className="warning-text-fmw">This action cannot be undone.</p>
+                                <div className="delete-confirmation-actions-fmw">
                                   <button
-                                    className="cancel-btn"
+                                    className="cancel-btn-fmw"
                                     onClick={() => setDeleteConfirm(null)}
                                   >
                                     Cancel
                                   </button>
                                   <button
-                                    className="confirm-delete-btn"
+                                    className="confirm-delete-btn-fmw"
                                     onClick={() => handleDeleteFeedback(deleteConfirm.id, deleteConfirm.title)}
                                   >
                                     <FontAwesomeIcon icon={faTrash} />

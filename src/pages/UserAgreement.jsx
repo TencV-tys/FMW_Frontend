@@ -68,7 +68,7 @@ export default function UserAgreement() {
         <header className="agreement-header">
           <button 
             className="back-button"
-            onClick={handleBack}
+            onClick={handleBack} 
           >
             <FontAwesomeIcon icon={faArrowLeft} />
             Back to {sessionStorage.getItem('fromRegistration') === 'true' ? 'Registration' : 'Previous'}
@@ -76,7 +76,7 @@ export default function UserAgreement() {
           <div className="header-content">
             <FontAwesomeIcon icon={faFileContract} className="header-icon" />
             <h1 className='terms'>Terms of Service & User Agreement</h1>
-            <p>Last Updated: {currentDate}</p>
+            <p className='date-updated'>Last Updated: {currentDate}</p>
           </div>
           <div className="header-actions">
             <button className="print-btn" onClick={handlePrint}>

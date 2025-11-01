@@ -26,15 +26,19 @@
 
 .header-content {
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 .header-icon {
   font-size: 2.5rem;
   margin-bottom: 1rem;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  
 }
 
-.header-content h1 {
+.header-content .terms{
   margin: 0 0 0.5rem 0;
   font-size: 2rem;
   font-weight: 700;
@@ -43,7 +47,7 @@
   line-height: 1.2;
 }
 
-.header-content p {
+.header-content .date-updated{
   margin: 0;
   opacity: 0.95;
   font-size: 0.9rem;
