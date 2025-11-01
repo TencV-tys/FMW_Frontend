@@ -683,7 +683,7 @@ export default function BulletinBoard() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> 
             )}
           </div>
         </div>

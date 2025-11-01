@@ -240,9 +240,12 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
   font-size: 0.9rem;
+  text-align: center;
+  min-width: 120px;
 }
 
 .logout-btn-secondary:hover:not(:disabled) {
@@ -260,9 +263,12 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
   font-size: 0.9rem;
+  text-align: center;
+  min-width: 120px;
 }
 
 .logout-btn-confirm:hover:not(:disabled) {
@@ -270,6 +276,7 @@
   border-color: #dc2626;
   transform: translateY(-1px);
 }
+
 /* Add loading state styles */
 .logout-btn:disabled,
 .logout-btn-confirm:disabled,
@@ -294,11 +301,13 @@
   font-weight: 500;
 }
 
-/* Responsive design */
+/* 🎯 RESPONSIVE DESIGN - CENTERED BUTTONS ON MOBILE */
 @media (max-width: 768px) {
   .logout-btn {
     padding: 10px 14px;
     font-size: 0.8rem;
+    justify-content: center;
+    text-align: center;
   }
 
   .logout-modal-content {
@@ -317,6 +326,33 @@
   .logout-modal-footer {
     padding: 1rem;
     flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* Center buttons content on mobile */
+  .logout-btn-secondary,
+  .logout-btn-confirm {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    min-width: auto;
+  }
+
+  /* Ensure icons and text are properly centered */
+  .logout-btn-secondary,
+  .logout-btn-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Adjust icon spacing for mobile */
+  .logout-btn-secondary .logout-icon,
+  .logout-btn-confirm .logout-icon {
+    margin-right: 0.5rem;
+    margin-left: 0;
   }
 }
 
@@ -331,7 +367,40 @@
 
   .logout-btn-secondary,
   .logout-btn-confirm {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.85rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Extra small devices - ensure perfect centering */
+  .logout-modal-footer {
+    padding: 1rem 0.75rem;
+  }
+
+  /* Center all button content */
+  .logout-btn-secondary,
+  .logout-btn-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Remove any side margins for perfect centering */
+  .logout-btn-secondary svg,
+  .logout-btn-confirm svg {
+    margin: 0 0.4rem 0 0;
+  }
+}
+
+/* 🎯 Special case for dropdown logout on mobile */
+@media (max-width: 768px) {
+  .logout-dropdown {
+    justify-content: center;
+    text-align: center;
+    padding: 12px 16px;
+  }
+
+  .logout-dropdown .logout-icon {
+    margin-right: 0.5rem;
   }
 }

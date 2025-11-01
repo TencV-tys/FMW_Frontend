@@ -7,7 +7,7 @@ import './styles/CreatePost.css';
 export default function EditPost() {
   const [categories, setCategories] = useState([]);
   const [barangays, setBarangays] = useState([]);
-  const [puroks, setPuroks] = useState([]); // Add puroks state
+  const [puroks, setPuroks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const nav = useNavigate();
@@ -24,7 +24,7 @@ export default function EditPost() {
     type: 'Lost',
     category_id: '',
     barangay_id: '',
-    purok_id: '', // Add purok_id
+    purok_id: '',
     color: '',
     description: '',
     contact_info: '',
@@ -39,6 +39,23 @@ export default function EditPost() {
   });
 
   const MAX_CHARS = 200;
+
+  // Check if current category requires photo
+  const requiresPhoto = () => {
+    if (!formData.category_id) return false;
+    
+    const selectedCategory = categories.find(cat => cat.id == formData.category_id);
+    if (!selectedCategory) return false;
+
+    // Make photo required for "Person" or "Pets" categories
+    const categoryName = selectedCategory.name.toLowerCase();
+    return categoryName.includes('person') || categoryName.includes('pet');
+  };
+
+  // Check if photo exists (either current photo or new photo)
+  const hasPhoto = () => {
+    return formData.currentPhoto || formData.photo;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,7 +89,7 @@ export default function EditPost() {
         if (formResult.success) {
           setCategories(formResult.categories);
           setBarangays(formResult.barangays);
-          setPuroks(formResult.puroks || []); // Set puroks data
+          setPuroks(formResult.puroks || []);
         }
 
         const post = postResult.post;
@@ -81,7 +98,7 @@ export default function EditPost() {
           type: post.type || 'Lost',
           category_id: post.category_id || '',
           barangay_id: post.barangay_id || '',
-          purok_id: post.purok_id || '', // Set purok_id from post data
+          purok_id: post.purok_id || '',
           color: post.color || '',
           description: post.description || '',
           contact_info: post.contact_info || '',
@@ -162,6 +179,15 @@ export default function EditPost() {
       return;
     }
 
+    // Validate photo requirement for Person/Pets categories
+    if (requiresPhoto() && !hasPhoto()) {
+      toast.error('Photo is required for Person or Pets categories', {
+        position: 'top-center',
+        autoClose: 1000
+      });
+      return;
+    }
+
     // Validate character limits
     if (formData.description.length > MAX_CHARS || formData.contact_info.length > MAX_CHARS) {
       toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`, {
@@ -179,13 +205,23 @@ export default function EditPost() {
       formDataToSend.append('type', formData.type);
       formDataToSend.append('category_id', formData.category_id);
       formDataToSend.append('barangay_id', formData.barangay_id);
-      formDataToSend.append('purok_id', formData.purok_id); // Add purok_id
+      formDataToSend.append('purok_id', formData.purok_id);
       formDataToSend.append('color', formData.color);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('contact_info', formData.contact_info);
 
       if (formData.photo) {
         formDataToSend.append('photo', formData.photo);
+      }
+
+      // If current photo was removed and category requires photo, send error
+      if (!formData.currentPhoto && !formData.photo && requiresPhoto()) {
+        toast.error('Photo is required for Person or Pets categories', {
+          position: 'top-center',
+          autoClose: 1000
+        });
+        setLoading(false);
+        return;
       }
 
       // If current photo was removed, send a flag
@@ -290,7 +326,7 @@ export default function EditPost() {
               </div>
             </div>
 
-            {/* Add Purok Select Field */}
+            {/* Purok Select Field */}
             <div className='create-select-group' style={{width: '400px', margin: '10px 0'}}>
                 <select name='purok_id' value={formData.purok_id} onChange={handleChange}>
                   <option value="">Select Purok (Optional)</option>
@@ -386,13 +422,21 @@ export default function EditPost() {
             )}
 
             <div className='image-uploader-container'>
-              <label>{formData.currentPhoto || photoPreview ? 'Change Photo (optional):' : 'Upload Photo (optional):'}</label>
+              <label>
+                {formData.currentPhoto || photoPreview ? 'Change Photo' : 'Upload Photo'} 
+                {requiresPhoto() ? ' * (Required for Person/Pets)' : ' (Optional)'}
+              </label>
               <input
                 type='file'
                 name='image'
                 accept='image/*'
                 onChange={handleFileChange}
               />
+              {requiresPhoto() && !hasPhoto() && (
+                <div className="error-message" style={{marginTop: '5px'}}>
+                  Photo is required for Person or Pets categories
+                </div>
+              )}
             </div>
 
             <div className="form-actions">
