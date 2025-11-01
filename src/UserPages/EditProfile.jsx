@@ -13,6 +13,12 @@ export default function EditProfile() {
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -29,7 +35,7 @@ export default function EditProfile() {
       try {
         setLoading(true);
         
-        const response = await fetch('http://localhost:8000/auth/me', {
+        const response = await fetch(`${wifi}/auth/me`, {
           credentials: 'include'
         });
 
@@ -51,7 +57,7 @@ export default function EditProfile() {
           });
 
           if (result.user.profile_photo) {
-            setImagePreview(`http://localhost:8000/uploads/${result.user.profile_photo}`);
+            setImagePreview(`${wifi}/uploads/${result.user.profile_photo}`);
           }
         }
 
@@ -136,7 +142,7 @@ export default function EditProfile() {
         formDataToSend.append('profile_photo', formData.profile_photo);
       }
 
-      const response = await fetch('http://localhost:8000/api/users/profile', {
+      const response = await fetch(`${wifi}/api/users/profile`, {
         method: 'PUT',
         body: formDataToSend,
         credentials: 'include'

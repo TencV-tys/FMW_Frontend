@@ -26,7 +26,12 @@ export default function UserNotifications() {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
 
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
   useEffect(() => {
     fetchNotifications();
     fetchUnreadCount();
@@ -35,7 +40,7 @@ export default function UserNotifications() {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/api/notifications', {
+      const response = await fetch(`${wifi}/api/notifications`, {
         credentials: 'include'
       });
 
@@ -70,7 +75,7 @@ export default function UserNotifications() {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/notifications/unread-count', {
+      const response = await fetch(`${wifi}/api/notifications/unread-count`, {
         credentials: 'include'
       });
 
@@ -85,7 +90,7 @@ export default function UserNotifications() {
 
   const markAsRead = async (notificationId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${wifi}/api/notifications/${notificationId}/read`, {
         method: 'PUT',
         credentials: 'include'
       });
@@ -105,7 +110,7 @@ export default function UserNotifications() {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/notifications/read-all', {
+      const response = await fetch(`${wifi}/api/notifications/read-all`, {
         method: 'PUT',
         credentials: 'include'
       });
@@ -126,7 +131,7 @@ export default function UserNotifications() {
     if (!window.confirm('Are you sure you want to delete this notification?')) return;
     
     try {
-      const response = await fetch(`http://localhost:8000/api/notifications/${notificationId}`, {
+      const response = await fetch(`${wifi}/api/notifications/${notificationId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -150,7 +155,7 @@ export default function UserNotifications() {
     if (!window.confirm('Are you sure you want to delete ALL notifications? This action cannot be undone.')) return;
     
     try {
-      const response = await fetch('http://localhost:8000/api/notifications/delete-all', {
+      const response = await fetch(`${wifi}/api/notifications/delete-all`, {
         method: 'DELETE',
         credentials: 'include'
       });

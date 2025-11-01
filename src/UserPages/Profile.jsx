@@ -14,7 +14,12 @@ export default function Profile() {
     activePosts: 0,
     resolvedPosts: 0
   });
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
 
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
   //  Fetch user data and statistics
   useEffect(() => {
     const fetchUserData = async () => {
@@ -22,7 +27,7 @@ export default function Profile() {
         setLoading(true);
         
         // Fetch user profile
-        const userResponse = await fetch('http://localhost:8000/api/users/profile', {
+        const userResponse = await fetch(`${wifi}/api/users/profile`, {
           credentials: 'include'
         });
 
@@ -34,7 +39,7 @@ export default function Profile() {
         setUser(userData.user);
 
         //  Fetch user statistics
-        const statsResponse = await fetch('http://localhost:8000/api/users/post-stats', {
+        const statsResponse = await fetch(`${wifi}/api/users/post-stats`, {
           credentials: 'include'
         });
 
@@ -163,7 +168,7 @@ export default function Profile() {
                   <div className='profile-pic-section'>
                     <div className='profile-pic'>
                       <img 
-                        src={user?.profile_photo ? `http://localhost:8000/uploads/${user.profile_photo}` : Logo2} 
+                        src={user?.profile_photo ? `${wifi}/uploads/${user.profile_photo}` : Logo2} 
                         alt={`${user?.first_name} ${user?.last_name}`}
                         onError={(e) => {
                           e.target.src = Logo2;

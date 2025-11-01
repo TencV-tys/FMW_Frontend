@@ -16,6 +16,12 @@ export default function MyPosts() {
   const [deletionStats, setDeletionStats] = useState(null);
   const [contactAdminModal, setContactAdminModal] = useState({ isOpen: false, postId: null });
   const nav = useNavigate();
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
 
   useEffect(() => {
     fetchMyPosts();
@@ -27,7 +33,7 @@ export default function MyPosts() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('http://localhost:8000/api/posts/my-posts', {
+      const response = await fetch(`${wifi}/api/posts/my-posts`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +62,7 @@ export default function MyPosts() {
   // Fetch deletion statistics
   const fetchDeletionStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/posts/my-deletion-stats', {
+      const response = await fetch(`${wifi}/api/posts/my-deletion-stats`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +89,7 @@ export default function MyPosts() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/posts/${postId}`, {
+      const response = await fetch(`${wifi}/api/posts/${postId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -155,7 +161,7 @@ export default function MyPosts() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/contact-admin', {
+      const response = await fetch(`${wifi}/api/contact-admin`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -193,7 +199,7 @@ export default function MyPosts() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/posts/${postId}/status`, {
+      const response = await fetch(`${wifi}/api/posts/${postId}/status`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -526,7 +532,7 @@ export default function MyPosts() {
                           </div>
                           <div className='mypost-image'>
                             <img
-                              src={post.photo ? `http://localhost:8000/uploads/${post.photo}` : Logo1}
+                              src={post.photo ? `${wifi}/uploads/${post.photo}` : Logo1}
                               alt={post.title}
                               onError={(e) => {
                                 e.target.src = Logo1;

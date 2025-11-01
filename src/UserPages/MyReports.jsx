@@ -16,7 +16,12 @@ export default function MyReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, pending, under_review, resolved, dismissed
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
 
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
   useEffect(() => {
     fetchMyReports();
   }, []);
@@ -24,7 +29,7 @@ export default function MyReports() {
   const fetchMyReports = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/api/reports/my-reports', {
+      const response = await fetch(`${wifi}/api/reports/my-reports`, {
         credentials: 'include'
       });
 

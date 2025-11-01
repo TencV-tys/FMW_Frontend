@@ -32,6 +32,12 @@ export default function Feedback() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
 
   // Fetch feedback on component mount and when activeTab changes
   useEffect(() => {
@@ -50,7 +56,7 @@ export default function Feedback() {
       setLoading(true);
       setDebugInfo('Fetching feedback...');
       
-      console.log('🔄 Fetching user feedback from:', 'http://localhost:8000/api/feedback/my-feedback');
+      console.log(`Fetching user feedback from:, ${wifi}/api/feedback/my-feedback`);
       
       const response = await fetch('http://localhost:8000/api/feedback/my-feedback', {
         credentials: 'include'
@@ -105,7 +111,7 @@ export default function Feedback() {
 
       console.log('📤 Submitting feedback:', submitData);
 
-      const response = await fetch('http://localhost:8000/api/feedback', {
+      const response = await fetch(`${wifi}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +162,7 @@ export default function Feedback() {
     try {
       setDebugInfo(`Deleting feedback: ${feedbackTitle}`);
       
-      const response = await fetch(`http://localhost:8000/api/feedback/my-feedback/${feedbackId}`, {
+      const response = await fetch(`${wifi}/api/feedback/my-feedback/${feedbackId}`, {
         method: 'DELETE',
         credentials: 'include'
       });

@@ -10,6 +10,12 @@ export default function CreatePost() {
   const [puroks, setPuroks] = useState([]);
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
 
   const [formData, setFormData] = useState({
     title: '',
@@ -46,7 +52,7 @@ export default function CreatePost() {
   useEffect(() => {
     const fetchFormData = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/posts/form-data', {
+        const res = await fetch(`${wifi}/api/posts/form-data`, {
           credentials: 'include'
         });
         if (res.ok) {
@@ -159,7 +165,7 @@ export default function CreatePost() {
         formDataToSend.append('photo', formData.photo);
       }
 
-      const res = await fetch('http://localhost:8000/api/posts', {
+      const res = await fetch(`${wifi}/api/posts`, {
         method: 'POST',
         body: formDataToSend,
         credentials: 'include'

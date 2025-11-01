@@ -12,6 +12,12 @@ export default function EditPost() {
   const [fetching, setFetching] = useState(true);
   const nav = useNavigate();
   const { id } = useParams();
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
 
   const [formData, setFormData] = useState({
     title: '',
@@ -39,7 +45,7 @@ export default function EditPost() {
       try {
         setFetching(true);
         
-        const postResponse = await fetch(`http://localhost:8000/api/posts/${id}`, {
+        const postResponse = await fetch(`${wifi}/api/posts/${id}`, {
           credentials: 'include'
         });
 
@@ -53,7 +59,7 @@ export default function EditPost() {
           throw new Error(postResult.error || 'Failed to load post');
         }
 
-        const formResponse = await fetch('http://localhost:8000/api/posts/form-data', {
+        const formResponse = await fetch(`${wifi}/api/posts/form-data`, {
           credentials: 'include'
         });
 
@@ -187,7 +193,7 @@ export default function EditPost() {
         formDataToSend.append('remove_photo', 'true');
       }
 
-      const res = await fetch(`http://localhost:8000/api/posts/${id}`, {
+      const res = await fetch(`${wifi}/api/posts/${id}`, {
         method: 'PUT',
         body: formDataToSend,
         credentials: 'include'
@@ -340,7 +346,7 @@ export default function EditPost() {
                 <label>Current Photo:</label>
                 <div className="current-photo">
                   <img
-                    src={`http://localhost:8000/uploads/${formData.currentPhoto}`}
+                    src={`${wifi}/uploads/${formData.currentPhoto}`}
                     alt="Current"
                     className="photo-preview"
                     onError={(e) => {

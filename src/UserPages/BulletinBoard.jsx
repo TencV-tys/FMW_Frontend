@@ -34,7 +34,12 @@ export default function BulletinBoard() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [expandedContacts, setExpandedContacts] = useState({});
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
 
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
   useEffect(() => {
     fetchPosts();
     fetchFormData();
@@ -49,14 +54,6 @@ export default function BulletinBoard() {
       setLoading(true);
       setError(null);
       
-           // ✅ Simple detection based on current URL
-const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
-
       const response = await fetch(`${wifi}/api/posts/active`, {
         credentials: 'include',
         headers: {
@@ -85,7 +82,8 @@ const wifi = isLocalhost
 
   const fetchFormData = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/posts/form-data', {
+    
+      const response = await fetch(`${wifi}/api/posts/form-data`, {
         credentials: 'include'
       });
       
@@ -168,8 +166,14 @@ const wifi = isLocalhost
   };
 
   const getUserImage = (user) => {
+     const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
     if (user.user_photo) {
-      return `http://localhost:8000/uploads/${user.user_photo}`;
+      return `${wifi}/uploads/${user.user_photo}`;
     }
     return null;
   };
@@ -428,6 +432,7 @@ const wifi = isLocalhost
               ) : (
                 <div className='bulletin-posts-grid'>
                   {filteredPosts.map((post) => (
+                    
                     <div 
                       key={post.id} 
                       className='bulletin-post-card'
@@ -480,7 +485,7 @@ const wifi = isLocalhost
                       {/* Post Image */}
                       <div className="bulletin-post-image-container">
                         <img 
-                          src={post.photo ? `http://localhost:8000/uploads/${post.photo}` : OptionalPhoto} 
+                          src={post.photo ? `${wifi}/uploads/${post.photo}` : OptionalPhoto} 
                           alt={post.title}
                           onError={(e) => {
                             e.target.src = OptionalPhoto;
@@ -626,7 +631,7 @@ const wifi = isLocalhost
                   <div className="bulletin-post-modal-body">
                     <div className="bulletin-post-modal-image">
                       <img 
-                        src={selectedPost.photo ? `http://localhost:8000/uploads/${selectedPost.photo}` : OptionalPhoto} 
+                        src={selectedPost.photo ? `${wifi}/uploads/${selectedPost.photo}` : OptionalPhoto} 
                         alt={selectedPost.title}
                         onError={(e) => {
                           e.target.src = OptionalPhoto;

@@ -34,6 +34,7 @@ const useRegistrationForm = () => {
     emailVerified: false,
     checkingEmail: false
   });
+ 
 
   const updateField = (field, value) => {
     setState(prev => ({
@@ -130,7 +131,13 @@ const validationService = {
 const emailVerificationService = {
   checkEmailAvailability: async (email) => {
     try {
-      const response = await fetch(`http://localhost:8000/auth/check-email?email=${encodeURIComponent(email)}`, {
+ const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
+      const response = await fetch(`${wifi}/auth/check-email?email=${encodeURIComponent(email)}`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -161,7 +168,14 @@ const emailVerificationService = {
 // API service
 const registrationService = {
   register: async (userData) => {
-    const response = await fetch("http://localhost:8000/auth/register", {
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
+
+    const response = await fetch(`${wifi}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: 'include',
