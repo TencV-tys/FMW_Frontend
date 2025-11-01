@@ -14,11 +14,13 @@
   padding: 1rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 }
 
 .nav-brand {
   display: flex;
   align-items: center;
+  z-index: 1002;
 }
 
 .logo-link {
@@ -45,6 +47,26 @@
 
 .logo-text {
   font-weight: 700;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #333;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1002;
+  position: relative;
+}
+
+/* Navigation Content */
+.nav-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
 .nav-links {
@@ -119,27 +141,129 @@
   display: flex;
 }
 
-/* Responsive Navigation */
+/* 🎯 MOBILE RESPONSIVE STYLES - FIXED OVERFLOW */
 @media (max-width: 768px) {
   .navigation-auth {
     padding: 1rem;
-    flex-wrap: wrap;
-    gap: 1rem;
   }
-  
-  .nav-links {
-    order: 3;
+
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  /* Hide desktop navigation */
+  .nav-content {
+    display: none;
+  }
+
+  /* Mobile menu styles */
+  .nav-content.mobile-open {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
-    justify-content: center;
-    margin-top: 1rem;
+    height: 100vh;
+    background: white;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 80px 2rem 2rem; /* Push content down below header */
+    box-sizing: border-box;
+    overflow-y: auto; /* Allow scrolling if content is too long */
+    z-index: 1001;
+    gap: 0;
   }
-  
+
+  .nav-links {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .nav-link {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    justify-content: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #f0f0f0;
+  }
+
+  .nav-link:hover {
+    background: #f8f9fa;
+  }
+
   .auth-buttons {
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
   }
-  
+
   .auth-button {
-    padding: 0.6rem 1rem;
-    font-size: 0.9rem;
+    justify-content: center;
+    padding: 1rem;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .mobile-menu-overlay {
+    display: none; /* We don't need overlay since menu takes full screen */
+  }
+}
+
+/* 🎯 FIXED HEADER POSITIONING FOR MOBILE */
+@media (max-width: 768px) {
+  .nav-auth-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 1002;
+  }
+
+  .navigation-auth {
+    padding: 0.75rem 1rem;
+    min-height: 60px; /* Fixed height for header */
+  }
+
+  /* Ensure body doesn't scroll when menu is open */
+  body.menu-open {
+    overflow: hidden;
+  }
+}
+
+/* 🎯 ADD BODY SCROLL LOCK (Add this to your main CSS or here) */
+body.menu-open {
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .navigation-auth {
+    padding: 0.5rem 1rem;
+  }
+
+  .logo-text {
+    font-size: 1.2rem;
+  }
+
+  .logo-pic {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .mobile-menu-toggle {
+    font-size: 1.3rem;
+    padding: 0.4rem;
+  }
+
+  .nav-content.mobile-open {
+    padding: 70px 1.5rem 1.5rem;
   }
 }
