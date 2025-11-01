@@ -17,7 +17,9 @@ import {
   faUndo,
   faPlusCircle,
   faCalendarAlt, // CHANGED FROM faCalendarExclamation
-  faUserShield
+  faUserShield,
+  faWarning,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
@@ -27,6 +29,8 @@ export default function UserNotifications() {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, notificationId: null, notificationTitle: null });
+  const [deleteAllModal, setDeleteAllModal] = useState({ isOpen: false });
    const isLocalhost = window.location.hostname === 'localhost' || 
                     window.location.hostname === '127.0.0.1';
 
@@ -129,8 +133,6 @@ export default function UserNotifications() {
 
   // Delete single notification
   const deleteNotification = async (notificationId) => {
-    if (!window.confirm('Are you sure you want to delete this notification?')) return;
-    
     try {
       const response = await fetch(`${wifi}/api/notifications/${notificationId}`, {
         method: 'DELETE',
@@ -145,6 +147,7 @@ export default function UserNotifications() {
         if (deletedNotif && !deletedNotif.is_read) {
           setUnreadCount(prev => Math.max(0, prev - 1));
         }
+        setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null });
       }
     } catch (error) {
       console.error('Error deleting notification:', error);
@@ -153,8 +156,6 @@ export default function UserNotifications() {
 
   // DELETE ALL NOTIFICATIONS
   const deleteAllNotifications = async () => {
-    if (!window.confirm('Are you sure you want to delete ALL notifications? This action cannot be undone.')) return;
-    
     try {
       const response = await fetch(`${wifi}/api/notifications/delete-all`, {
         method: 'DELETE',
@@ -166,6 +167,7 @@ export default function UserNotifications() {
         setNotifications([]);
         // Reset unread count
         setUnreadCount(0);
+        setDeleteAllModal({ isOpen: false });
       } else {
         alert('Failed to delete all notifications');
       }
@@ -312,7 +314,7 @@ export default function UserNotifications() {
             </button>
             <button 
               className="btn-delete-all"
-              onClick={deleteAllNotifications}
+              onClick={() => setDeleteAllModal({ isOpen: true })}
               disabled={notifications.length === 0}
             >
               <FontAwesomeIcon icon={faTrashAlt} />
@@ -464,7 +466,11 @@ export default function UserNotifications() {
                     )}
                     <button 
                       className="btn-delete"
-                      onClick={() => deleteNotification(notification.id)}
+                      onClick={() => setDeleteModal({ 
+                        isOpen: true, 
+                        notificationId: notification.id, 
+                        notificationTitle: notification.title 
+                      })}
                       title="Delete notification"
                     >
                       <FontAwesomeIcon icon={faTrash} />
@@ -486,6 +492,82 @@ export default function UserNotifications() {
             </div>
           )}
         </section>
+
+        {/* Delete Single Notification Modal */}
+        {deleteModal.isOpen && (
+          <div className="modal-overlay-fmw" onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}>
+            <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header-fmw">
+                <FontAwesomeIcon icon={faWarning} className="warning-icon-fmw" />
+                <h3>Delete Notification</h3>
+                <button 
+                  className="modal-close-fmw"
+                  onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              <div className="modal-body-fmw">
+                <p>Are you sure you want to delete this notification?</p>
+                <p><strong>"{deleteModal.notificationTitle}"</strong></p>
+                <p className="warning-text-fmw">This action cannot be undone.</p>
+              </div>
+              <div className="modal-footer-fmw">
+                <button 
+                  className="btn-secondary-fmw"
+                  onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn-primary-fmw delete-confirm-fmw"
+                  onClick={() => deleteNotification(deleteModal.notificationId)}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                  Delete Notification
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete All Notifications Modal */}
+        {deleteAllModal.isOpen && (
+          <div className="modal-overlay-fmw" onClick={() => setDeleteAllModal({ isOpen: false })}>
+            <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header-fmw">
+                <FontAwesomeIcon icon={faWarning} className="warning-icon-fmw" />
+                <h3>Delete All Notifications</h3>
+                <button 
+                  className="modal-close-fmw"
+                  onClick={() => setDeleteAllModal({ isOpen: false })}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              <div className="modal-body-fmw">
+                <p>Are you sure you want to delete ALL notifications?</p>
+                <p><strong>This will permanently delete {notifications.length} notification{notifications.length !== 1 ? 's' : ''}.</strong></p>
+                <p className="warning-text-fmw">This action cannot be undone and all notification history will be lost.</p>
+              </div>
+              <div className="modal-footer-fmw">
+                <button 
+                  className="btn-secondary-fmw"
+                  onClick={() => setDeleteAllModal({ isOpen: false })}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn-primary-fmw delete-confirm-fmw"
+                  onClick={deleteAllNotifications}
+                >
+                  <FontAwesomeIcon icon={faTrashAlt} />
+                  Delete All Notifications
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
