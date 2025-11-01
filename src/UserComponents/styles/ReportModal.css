@@ -12,7 +12,36 @@
   z-index: 10000;
   padding: 1rem;
 }
+/* 🆕 Monthly reporting limit warning */
+.monthly-limit-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #856404;
+}
 
+.monthly-limit-warning svg {
+  color: #f39c12;
+  margin-top: 2px;
+  font-size: 18px;
+}
+
+.monthly-limit-warning strong {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.monthly-limit-warning p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
 .report-modal-content {
   background: white;
   border-radius: 12px;

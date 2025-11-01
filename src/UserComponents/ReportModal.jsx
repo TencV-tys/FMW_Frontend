@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faFlag, faExclamationTriangle, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faFlag, faExclamationTriangle, faUserSlash, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import './styles/ReportModal.css';
 
@@ -10,12 +10,14 @@ export default function ReportModal({ isOpen, onClose, post }) {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [isOwnPost, setIsOwnPost] = useState(false);
-   const isLocalhost = window.location.hostname === 'localhost' || 
+  const [alreadyReportedThisMonth, setAlreadyReportedThisMonth] = useState(false);
+  
+  const isLocalhost = window.location.hostname === 'localhost' || 
                     window.location.hostname === '127.0.0.1';
 
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+  const wifi = isLocalhost 
+    ? 'http://localhost:8000' 
+    : 'http://192.168.1.27:8000';
 
   const reportReasons = [
     'Inappropriate content',
@@ -53,6 +55,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
 
     if (isOpen && post) {
       fetchCurrentUser();
+      setAlreadyReportedThisMonth(false); // Reset when modal opens
     }
   }, [isOpen, post]);
 
@@ -103,11 +106,21 @@ export default function ReportModal({ isOpen, onClose, post }) {
         // Reset form
         setReason('');
         setAdditionalInfo('');
+        setAlreadyReportedThisMonth(false);
       } else {
-        toast.error(result.error || 'Failed to submit report', {
-          position: 'top-right',
-          autoClose: 2000
-        });
+        // 🆕 CHECK IF ERROR IS ABOUT MONTHLY REPORTING LIMIT
+        if (result.error && result.error.includes('this month')) {
+          setAlreadyReportedThisMonth(true);
+          toast.error(result.error, {
+            position: 'top-right',
+            autoClose: 3000
+          });
+        } else {
+          toast.error(result.error || 'Failed to submit report', {
+            position: 'top-right',
+            autoClose: 2000
+          });
+        }
       }
     } catch (error) {
       console.error('Error submitting report:', error);
@@ -147,6 +160,17 @@ export default function ReportModal({ isOpen, onClose, post }) {
             </div>
           )}
 
+          {/* 🆕 Monthly reporting limit warning */}
+          {alreadyReportedThisMonth && (
+            <div className="monthly-limit-warning">
+              <FontAwesomeIcon icon={faCalendarAlt} />
+              <div>
+                <strong>Already Reported This Month</strong>
+                <p>You have already reported this post this month. You can report it again next month if the issue persists.</p>
+              </div>
+            </div>
+          )}
+
           {/* Post Preview */}
           <div className="post-preview">
             <h4>Post you're reporting:</h4>
@@ -176,7 +200,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 required
-                disabled={isOwnPost || loading}
+                disabled={isOwnPost || loading || alreadyReportedThisMonth}
               >
                 <option value="">Select a reason</option>
                 {reportReasons.map((reasonOption, index) => (
@@ -197,13 +221,18 @@ export default function ReportModal({ isOpen, onClose, post }) {
                 onChange={(e) => setAdditionalInfo(e.target.value)}
                 placeholder="Please provide any additional details that might help us review this post..."
                 rows="4"
-                disabled={isOwnPost || loading}
+                disabled={isOwnPost || loading || alreadyReportedThisMonth}
               />
             </div>
 
             <div className="report-note">
               <FontAwesomeIcon icon={faExclamationTriangle} />
-              <p>Your report will be reviewed by our admin team. We'll notify you of any updates.</p>
+              <p>
+                {alreadyReportedThisMonth 
+                  ? "You can report this post again next month if the issue persists."
+                  : "Your report will be reviewed by our admin team. We'll notify you of any updates."
+                }
+              </p>
             </div>
 
             <div className="modal-actions">
@@ -218,9 +247,16 @@ export default function ReportModal({ isOpen, onClose, post }) {
               <button 
                 type="submit" 
                 className="btn-submit"
-                disabled={isOwnPost || loading || !reason}
+                disabled={isOwnPost || loading || !reason || alreadyReportedThisMonth}
               >
-                {loading ? 'Submitting...' : isOwnPost ? 'Cannot Report Own Post' : 'Submit Report'}
+                {loading 
+                  ? 'Submitting...' 
+                  : isOwnPost 
+                    ? 'Cannot Report Own Post' 
+                    : alreadyReportedThisMonth
+                      ? 'Already Reported This Month'
+                      : 'Submit Report'
+                }
               </button>
             </div>
           </form>

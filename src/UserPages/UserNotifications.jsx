@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx - FIXED FILTERING
+// UserPages/UserNotifications.jsx - FIXED ICON ERROR
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,7 +15,9 @@ import {
   faComments,
   faSyncAlt,
   faUndo,
-  faPlusCircle
+  faPlusCircle,
+  faCalendarAlt, // CHANGED FROM faCalendarExclamation
+  faUserShield
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
@@ -207,6 +209,19 @@ export default function UserNotifications() {
         return faUndo;
       case 'additional_deletions_granted':
         return faPlusCircle;
+      // 🆕 NEW: MONTHLY REPORTING & WARNING ICONS
+      case 'post_removed_warning':
+        return faExclamationTriangle;
+      case 'post_deleted_warning':
+        return faExclamationTriangle;
+      case 'user_report_warning':
+        return faUserShield;
+      case 'report_threshold_reached':
+        return faCalendarAlt; // CHANGED TO faCalendarAlt
+      case 'deletion_limit_reached':
+        return faExclamationTriangle;
+      case 'deletion_warning':
+        return faExclamationTriangle;
       default:
         return faBell;
     }
@@ -226,7 +241,7 @@ export default function UserNotifications() {
         return '#8b5cf6';
       case 'report_status_update':
         return '#06b6d4';
-      case 'account_suspended':
+      case 'user_suspended':
         return '#ef4444';
       case 'feedback_submitted':
         return '#10b981';
@@ -241,6 +256,19 @@ export default function UserNotifications() {
         return '#3b82f6';
       case 'additional_deletions_granted':
         return '#10b981';
+      // 🆕 NEW: MONTHLY REPORTING & WARNING COLORS
+      case 'post_removed_warning':
+        return '#f59e0b';
+      case 'post_deleted_warning':
+        return '#ef4444';
+      case 'user_report_warning':
+        return '#f59e0b';
+      case 'report_threshold_reached':
+        return '#8b5cf6';
+      case 'deletion_limit_reached':
+        return '#ef4444';
+      case 'deletion_warning':
+        return '#f59e0b';
       default:
         return '#6b7280';
     }
@@ -350,6 +378,12 @@ export default function UserNotifications() {
               <option value="deletion_request_rejected">Rejected Deletions</option>
               <option value="deletion_limit_reset">Deletion Limit Reset</option>
               <option value="additional_deletions_granted">Additional Deletions</option>
+              {/* 🆕 NEW: MONTHLY REPORTING FILTERS */}
+              <option value="post_removed_warning">Post Removal Warnings</option>
+              <option value="post_deleted_warning">Post Deletion Warnings</option>
+              <option value="user_report_warning">Report Warnings</option>
+              <option value="deletion_limit_reached">Deletion Limits</option>
+              <option value="deletion_warning">Deletion Warnings</option>
             </select>
           </div>
         </section>
@@ -370,11 +404,17 @@ export default function UserNotifications() {
                 {filter === 'user_suspended' && 'Account Status'}
                 {filter === 'feedback_submitted' && 'Feedback Submitted'}
                 {filter === 'feedback_updated' && 'Feedback Updates'}
-                {/* 🆕 DELETION REQUEST FILTER LABELS */}
+            
                 {filter === 'deletion_request_approved' && 'Approved Deletions'}
                 {filter === 'deletion_request_rejected' && 'Rejected Deletions'}
                 {filter === 'deletion_limit_reset' && 'Deletion Limit Reset'}
                 {filter === 'additional_deletions_granted' && 'Additional Deletions'}
+            
+                {filter === 'post_removed_warning' && 'Post Removal Warnings'}
+                {filter === 'post_deleted_warning' && 'Post Deletion Warnings'}
+                {filter === 'user_report_warning' && 'Report Warnings'}
+                {filter === 'deletion_limit_reached' && 'Deletion Limits'}
+                {filter === 'deletion_warning' && 'Deletion Warnings'}
               </span>
             </div>
           </div>

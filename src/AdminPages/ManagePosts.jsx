@@ -14,7 +14,8 @@ import {
   faUndo,
   faImage,
   faExclamationTriangle,
-  faFlag
+  faFlag,
+  faHistory
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManagePosts.css';
 
@@ -31,8 +32,17 @@ export default function ManagePosts() {
     post: null, 
     action: '', 
     message: '', 
-    reportCount: 0, 
-    requiredCount: 0 
+    monthlyReportCount: 0,
+    totalReportCount: 0,
+    requiredCount: 0,
+    requiresForce: false
+  });
+  const [confirmationModal, setConfirmationModal] = useState({
+    isOpen: false,
+    post: null,
+    action: '',
+    title: '',
+    message: ''
   });
 
   // Fetch posts data
@@ -68,16 +78,61 @@ export default function ManagePosts() {
   // Close Modals
   const closeModal = () => {
     setViewModal({ isOpen: false, post: null });
-    setActionModal({ isOpen: false, post: null, action: '', message: '', reportCount: 0, requiredCount: 0 });
+    setActionModal({ isOpen: false, post: null, action: '', message: '', monthlyReportCount: 0, totalReportCount: 0, requiredCount: 0, requiresForce: false });
+    setConfirmationModal({ isOpen: false, post: null, action: '', title: '', message: '' });
   };
 
-  // Handle post actions with report validation modal
+  // Show confirmation modal for ALL actions
+  const showConfirmationModal = (post, action) => {
+    let title = '';
+    let message = '';
+    
+    switch (action) {
+      case 'remove':
+        title = 'Remove Post';
+        message = `Are you sure you want to remove the post "${post.title}" from public view?`;
+        break;
+      case 'delete':
+        title = 'Delete Post';
+        message = `Are you sure you want to permanently delete the post "${post.title}"? This action cannot be undone.`;
+        break;
+      case 'restore':
+        title = 'Restore Post';
+        message = `Are you sure you want to restore the post "${post.title}" to active status?`;
+        break;
+      case 'resolve':
+        title = 'Resolve Post';
+        message = `Are you sure you want to mark the post "${post.title}" as resolved?`;
+        break;
+      default:
+        return;
+    }
+
+    setConfirmationModal({
+      isOpen: true,
+      post,
+      action,
+      title,
+      message
+    });
+  };
+
+  // Handle post actions with confirmation modal
   const handlePostAction = async (postId, action, force = false) => {
-    if (force) {
-      await executePostAction(postId, action, force);
+    const post = posts.find(p => p.id === postId);
+    
+    // Show confirmation modal first for ALL actions
+    if (!force) {
+      showConfirmationModal(post, action);
       return;
     }
 
+    // If force is true, execute the action directly
+    await executePostAction(postId, action, force);
+  };
+
+  // Execute post action after confirmation
+  const executePostAction = async (postId, action, force = false) => {
     try {
       let url, method, body;
       
@@ -85,12 +140,12 @@ export default function ManagePosts() {
         case 'remove':
           url = `http://localhost:8000/api/admin/posts/${postId}/remove`;
           method = 'PUT';
-          body = { reason: 'Violation of community guidelines', force: false };
+          body = { reason: 'Violation of community guidelines', force };
           break;
         case 'delete':
           url = `http://localhost:8000/api/admin/posts/${postId}`;
           method = 'DELETE';
-          body = { reason: 'Severe violation', force: false };
+          body = { reason: 'Severe violation', force };
           break;
         case 'restore':
           url = `http://localhost:8000/api/admin/posts/${postId}/restore`;
@@ -134,6 +189,7 @@ export default function ManagePosts() {
             break;
         }
         alert(successMessage);
+        closeModal();
       } else {
         if (data.canForce) {
           setActionModal({
@@ -141,8 +197,10 @@ export default function ManagePosts() {
             post: posts.find(p => p.id === postId),
             action: action,
             message: data.error,
-            reportCount: data.reportCount,
-            requiredCount: data.requiredCount
+            monthlyReportCount: data.monthlyReportCount,
+            totalReportCount: data.totalReportCount,
+            requiredCount: data.requiredCount,
+            requiresForce: true
           });
         } else {
           alert(data.error || 'Failed to perform action');
@@ -154,70 +212,10 @@ export default function ManagePosts() {
     }
   };
 
-  // Execute post action
-  const executePostAction = async (postId, action, force = false) => {
-    try {
-      let url, method, body;
-      
-      switch (action) {
-        case 'remove':
-          url = `http://localhost:8000/api/admin/posts/${postId}/remove`;
-          method = 'PUT';
-          body = { reason: 'Violation of community guidelines', force };
-          break;
-        case 'delete':
-          url = `http://localhost:8000/api/admin/posts/${postId}`;
-          method = 'DELETE';
-          body = { reason: 'Severe violation', force };
-          break;
-        case 'restore':
-          url = `http://localhost:8000/api/admin/posts/${postId}/restore`;
-          method = 'PUT';
-          break;
-        case 'resolve':
-          url = `http://localhost:8000/api/admin/posts/${postId}/resolve`;
-          method = 'PUT';
-          body = { reason: 'Issue resolved' };
-          break;
-        default:
-          return;
-      }
-
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body ? JSON.stringify(body) : undefined,
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        updatePostsAfterAction(postId, action);
-        let successMessage = '';
-        switch (action) {
-          case 'remove':
-            successMessage = `Post removed from public view${force ? ' (admin override)' : ''}!`;
-            break;
-          case 'delete':
-            successMessage = `Post deleted permanently${force ? ' (admin override)' : ''}!`;
-            break;
-          case 'restore':
-            successMessage = 'Post restored successfully!';
-            break;
-          case 'resolve':
-            successMessage = 'Post marked as resolved!';
-            break;
-        }
-        alert(successMessage);
-        closeModal();
-      } else {
-        const data = await response.json();
-        alert(data.error || 'Failed to perform action');
-      }
-    } catch (error) {
-      console.error('Error performing action:', error);
-      alert('Error performing action');
+  // Handle confirmed action from confirmation modal
+  const handleConfirmedAction = () => {
+    if (confirmationModal.post && confirmationModal.action) {
+      executePostAction(confirmationModal.post.id, confirmationModal.action, false);
     }
   };
 
@@ -303,7 +301,7 @@ export default function ManagePosts() {
 
     try {
       const promises = Array.from(selectedPosts).map(postId => 
-        handlePostAction(postId, action)
+        executePostAction(postId, action)
       );
       await Promise.all(promises);
       setSelectedPosts(new Set());
@@ -511,7 +509,7 @@ export default function ManagePosts() {
       {/* Header Section */}
       <div className="posts-management-header">
         <div className="posts-header-content">
-          <h1>Manage Posts</h1>
+          
           <p>Review and moderate community posts</p>
         </div>
         <button 
@@ -807,16 +805,16 @@ export default function ManagePosts() {
                 {viewModal.post.color && (
                   <div className="posts-detail-row">
                     <label>Color:</label>
-                    <span>{viewModal.post.color}</span>
-                  </div>
-                )}
-                <div className="posts-detail-row posts-full-width">
-                  <label>Contact Info:</label>
-                  <div className="posts-contact-info">
-                    {viewModal.post.contact_info}
-                  </div>
+                  <span>{viewModal.post.color}</span>
+                </div>
+              )}
+              <div className="posts-detail-row posts-full-width">
+                <label>Contact Info:</label>
+                <div className="posts-contact-info">
+                  {viewModal.post.contact_info}
                 </div>
               </div>
+            </div>
             </div>
             <div className="posts-modal-footer">
               <div className="posts-modal-actions">
@@ -898,7 +896,57 @@ export default function ManagePosts() {
         </div>
       )}
 
-      {/* Report Validation Modal */}
+      {/* Confirmation Modal for ALL Actions */}
+      {confirmationModal.isOpen && (
+        <div className="posts-modal-overlay" onClick={closeModal}>
+          <div className="posts-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="posts-modal-header">
+              <h2>{confirmationModal.title}</h2>
+              <button className="posts-modal-close" onClick={closeModal}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="posts-modal-body">
+              <div className="posts-confirmation-content">
+                <div className="posts-warning-icon-large">
+                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                </div>
+                <p>{confirmationModal.message}</p>
+                {confirmationModal.action === 'delete' && (
+                  <div className="posts-deletion-warning">
+                    <FontAwesomeIcon icon={faExclamationTriangle} />
+                    <span>This action cannot be undone!</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="posts-modal-footer">
+              <button 
+                className="posts-modal-btn posts-modal-cancel" 
+                onClick={closeModal}
+              >
+                Cancel
+              </button>
+              <button 
+                className={`posts-modal-btn ${
+                  confirmationModal.action === 'delete' ? 'posts-modal-delete' :
+                  confirmationModal.action === 'remove' ? 'posts-modal-remove' :
+                  confirmationModal.action === 'restore' ? 'posts-modal-restore' :
+                  'posts-modal-resolve'
+                }`} 
+                onClick={handleConfirmedAction}
+              >
+                {confirmationModal.action === 'remove' && 'Remove Post'}
+                {confirmationModal.action === 'delete' && 'Delete Permanently'}
+                {confirmationModal.action === 'restore' && 'Restore Post'}
+                {confirmationModal.action === 'resolve' && 'Mark as Resolved'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Validation Modal (for low reports) */}
       {actionModal.isOpen && (
         <div className="posts-modal-overlay" onClick={closeModal}>
           <div className="posts-modal-content posts-report-validation-modal" onClick={(e) => e.stopPropagation()}>
@@ -921,13 +969,18 @@ export default function ManagePosts() {
                 <div className="posts-report-stats">
                   <div className="posts-stat-item">
                     <FontAwesomeIcon icon={faFlag} className="posts-stat-icon" />
-                    <span className="posts-stat-label">Current Reports:</span>
-                    <span className="posts-stat-value">{actionModal.reportCount}</span>
+                    <span className="posts-stat-label">Monthly Reports:</span>
+                    <span className="posts-stat-value">{actionModal.monthlyReportCount}</span>
                   </div>
                   <div className="posts-stat-item">
                     <FontAwesomeIcon icon={faCheckCircle} className="posts-stat-icon posts-required" />
-                    <span className="posts-stat-label">Required Reports:</span>
+                    <span className="posts-stat-label">Required Monthly:</span>
                     <span className="posts-stat-value">{actionModal.requiredCount}</span>
+                  </div>
+                  <div className="posts-stat-item">
+                    <FontAwesomeIcon icon={faHistory} className="posts-stat-icon" />
+                    <span className="posts-stat-label">All-Time Reports:</span>
+                    <span className="posts-stat-value">{actionModal.totalReportCount}</span>
                   </div>
                 </div>
 

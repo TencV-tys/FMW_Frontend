@@ -927,7 +927,45 @@
   color: #495057;
   font-size: 1rem;
 }
+/* Confirmation Modal Styles */
+.posts-confirmation-content {
+  text-align: center;
+  padding: 1rem;
+}
 
+.posts-warning-icon-large {
+  font-size: 3rem;
+  color: #ffc107;
+  margin-bottom: 1rem;
+}
+
+.posts-deletion-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #fff3cd;
+  border-radius: 6px;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  font-weight: 600;
+}
+
+/* Update for 3-column report stats */
+.posts-report-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Responsive adjustment */
+@media (max-width: 768px) {
+  .posts-report-stats {
+    grid-template-columns: 1fr;
+  }
+}
 .posts-preview-content {
   display: flex;
   flex-direction: column;
@@ -1059,6 +1097,180 @@
     min-width: auto;
   }
 }
+
+/* Update View Modal Footer - Make buttons in one line */
+.posts-modal-footer .posts-modal-actions {
+  display: flex;
+  flex-wrap: nowrap; /* Keep buttons in one line */
+  gap: 0.75rem;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  padding-bottom: 0.5rem;
+}
+
+/* Ensure buttons don't wrap */
+.posts-modal-footer .posts-modal-actions .posts-modal-btn {
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+  white-space: nowrap;
+}
+
+/* Improve Report Stats Spacing */
+.posts-report-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem; /* Increased gap for better spacing */
+  margin: 1.5rem 0;
+}
+
+.posts-stat-item {
+  display: flex;
+  flex-direction: column; /* Stack icon, label, and value vertically */
+  align-items: center;
+  gap: 0.75rem; /* Increased gap between items */
+  padding: 1.25rem; /* More padding */
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  text-align: center;
+  min-height: 100px; /* Ensure consistent height */
+}
+
+.posts-stat-icon {
+  color: #6c757d;
+  font-size: 1.25rem; /* Larger icons */
+  margin-bottom: 0.5rem;
+}
+
+.posts-stat-icon.posts-required {
+  color: #28a745;
+}
+
+.posts-stat-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.posts-stat-value {
+  font-weight: 700;
+  color: #212529;
+  font-size: 1.5rem; /* Larger values */
+  margin-top: auto; /* Push value to bottom */
+}
+
+/* Improve Report Validation Modal Layout */
+.posts-report-validation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* More space between sections */
+}
+
+.posts-warning-message {
+  background: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+  margin-bottom: 1rem;
+}
+
+.posts-preview {
+  background: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  margin: 1rem 0;
+}
+
+.posts-action-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem; /* More space between icon and text */
+  padding: 1.25rem;
+  background: #fff3cd;
+  border-radius: 8px;
+  border: 1px solid #ffeaa7;
+  margin-top: 1rem;
+}
+
+/* Responsive adjustments for report stats */
+@media (max-width: 768px) {
+  .posts-report-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .posts-stat-item {
+    flex-direction: row; /* Horizontal layout on mobile */
+    justify-content: space-between;
+    align-items: center;
+    min-height: auto;
+    padding: 1rem;
+    text-align: left;
+  }
+  
+  .posts-stat-icon {
+    margin-bottom: 0;
+    font-size: 1.1rem;
+  }
+  
+  .posts-stat-value {
+    margin-top: 0;
+    font-size: 1.25rem;
+  }
+  
+  /* View modal footer buttons wrap on mobile */
+  .posts-modal-footer .posts-modal-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Additional spacing improvements */
+.posts-modal-body {
+  padding: 2rem; /* More padding in modal body */
+}
+
+.posts-report-validation-modal .posts-modal-body {
+  padding: 1.5rem 2rem;
+}
+
+/* Ensure proper spacing in view modal */
+.posts-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem; /* Increased gap between detail rows */
+}
+
+/* Improve confirmation modal layout */
+.posts-confirmation-content {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.posts-warning-icon-large {
+  font-size: 3.5rem; /* Larger warning icon */
+  color: #ffc107;
+  margin-bottom: 1.5rem;
+}
+
+.posts-deletion-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fff3cd;
+  border-radius: 8px;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
 
 @media (max-width: 480px) {
   .posts-management-stats {
