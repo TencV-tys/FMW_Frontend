@@ -1,37 +1,35 @@
-/* styles/MyReports.css */
-.my-reports-page {
+/* styles/MyReports.css - Unique Class Names */
+.my-reports-page-fmw {
   min-height: 100dvh;
   background: #f5f5f5;
 }
 
-.my-reports-container {
+.my-reports-container-fmw {
   padding: 50px;
 }
 
-.reports-container-darkbrown {
+.reports-container-darkbrown-fmw {
   background-color: #8B5A2B;
   min-height: 100dvh;
   border-radius: 4px;
   padding: 20px;
 }
 
-.reports-container-lightbrown {
+.reports-container-lightbrown-fmw {
   background-color: #D6A96D;
   min-height: 100dvh;
   box-shadow: inset 0px 0px 10px 2px #8B5A2B;
-  
 }
 
-.reports-content {
+.reports-content-fmw {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 20px;
- 
 }
 
-.reports-header {
+.reports-header-fmw {
   background: #FBFCF8;
   padding: 2rem;
   border-radius: 8px;
@@ -40,7 +38,7 @@
   width: 95%;
 }
 
-.reports-header h1 {
+.reports-header-fmw h1 {
   color: #8B5A2B;
   margin: 0 0 0.5rem 0;
   display: flex;
@@ -50,13 +48,13 @@
   font-size: 2rem;
 }
 
-.reports-header p {
+.reports-header-fmw p {
   color: #666;
   margin: 0;
   font-size: 1rem;
 }
 
-.reports-filters {
+.reports-filters-fmw {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -67,7 +65,7 @@
   width: 90%;
 }
 
-.filter-select {
+.filter-select-fmw {
   padding: 0.75rem 1rem;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -78,27 +76,28 @@
   outline: none;
 }
 
-.reports-stats {
+.reports-stats-fmw {
   color: #5D4037;
   font-weight: 600;
 }
 
-.reports-list {
+.reports-list-fmw {
   display: flex;
   flex-direction: column;
   width: 80%;
   gap: 1rem;
 }
 
-.report-card {
+.report-card-fmw {
   background: #FBFCF8;
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   border-left: 4px solid #8B5A2B;
+  position: relative;
 }
 
-.report-header {
+.report-header-fmw {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -107,18 +106,24 @@
   gap: 1rem;
 }
 
-.report-post-info h3 {
+.report-header-actions-fmw {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-post-info-fmw h3 {
   margin: 0 0 0.5rem 0;
   color: #2c3e50;
   font-size: 1.1rem;
 }
 
-.report-date {
+.report-date-fmw {
   color: #7f8c8d;
   font-size: 0.85rem;
 }
 
-.report-status {
+.report-status-fmw {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -130,97 +135,295 @@
   font-size: 0.85rem;
 }
 
-.report-details {
+.report-details-fmw {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.report-reason,
-.report-additional-info {
+.report-reason-fmw,
+.report-additional-info-fmw {
   color: #2c3e50;
   line-height: 1.4;
 }
 
-.report-additional-info {
+.report-additional-info-fmw {
   background: #f8f9fa;
   padding: 0.75rem;
   border-radius: 4px;
   border-left: 3px solid #D6A96D;
 }
 
-.report-update {
+.report-update-fmw {
   text-align: right;
   color: #7f8c8d;
   font-size: 0.8rem;
 }
 
-.empty-state {
+/* Delete Button Styles */
+.delete-report-btn-fmw {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.delete-report-btn-fmw:hover {
+  background: #c0392b;
+  transform: scale(1.05);
+}
+
+/* Delete Confirmation Modal */
+.delete-confirmation-overlay-fmw {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete-confirmation-modal-fmw {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
   text-align: center;
-  padding: 4rem 2rem;
-  background: #FBFCF8;
-  border-radius: 8px;
-  width: 80%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
 
-.empty-icon {
-  font-size: 3rem;
-  color: #bdc3c7;
-  margin-bottom: 1rem;
+.delete-confirmation-header-fmw {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
-.empty-state h3 {
-  color: #8B5A2B;
-  margin-bottom: 0.5rem;
+.warning-icon-fmw {
+  color: #e74c3c;
+  font-size: 2rem;
 }
 
-.empty-state p {
-  color: #7f8c8d;
+.delete-confirmation-header-fmw h3 {
   margin: 0;
+  color: #e74c3c;
+  font-size: 1.3rem;
 }
 
-.loading-container {
+.delete-confirmation-modal-fmw p {
+  margin: 0.75rem 0;
+  color: #333;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.warning-text-fmw {
+  color: #e74c3c !important;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.delete-confirmation-actions-fmw {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.cancel-btn-fmw {
+  background: #95a5a6;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  min-width: 100px;
+  flex: 1;
+}
+
+.cancel-btn-fmw:hover:not(:disabled) {
+  background: #7f8c8d;
+}
+
+.cancel-btn-fmw:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.confirm-delete-btn-fmw {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease;
+  min-width: 120px;
+  justify-content: center;
+  flex: 1;
+}
+
+.confirm-delete-btn-fmw:hover:not(:disabled) {
+  background: #c0392b;
+}
+
+.confirm-delete-btn-fmw:disabled {
+  background: #eaa59d;
+  cursor: not-allowed;
+}
+
+.loading-spinner-small-fmw {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin-fmw 1s linear infinite;
+}
+
+/* Loading and Empty States */
+.loading-container-fmw,
+.empty-state-fmw {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
   text-align: center;
+  padding: 4rem 2rem;
+  width: 100%;
+  min-height: 300px;
 }
 
-.loading-spinner {
+.loading-spinner-fmw {
   width: 40px;
   height: 40px;
   border: 4px solid #D6A96D;
   border-top: 4px solid #8B5A2B;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+  animation: spin-fmw 1s linear infinite;
+  margin-bottom: 1.5rem;
 }
 
-@keyframes spin {
+.empty-icon-fmw {
+  font-size: 4rem;
+  color: #bdc3c7;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state-fmw h3 {
+  color: #8B5A2B;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.empty-state-fmw p {
+  color: #7f8c8d;
+  margin: 0;
+  font-size: 1rem;
+}
+
+@keyframes spin-fmw {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .my-reports-container {
+  .my-reports-container-fmw {
     padding: 20px;
   }
   
-  .reports-filters {
+  .reports-filters-fmw {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
   }
   
-  .report-header {
+  .report-header-fmw {
     flex-direction: column;
     align-items: stretch;
   }
   
-  .report-status {
+  .report-header-actions-fmw {
     align-self: flex-start;
+    margin-top: 1rem;
+  }
+  
+  .delete-confirmation-actions-fmw {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .cancel-btn-fmw,
+  .confirm-delete-btn-fmw {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .reports-content-fmw {
+    padding: 10px;
+  }
+  
+  .reports-header-fmw {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .reports-header-fmw h1 {
+    font-size: 1.5rem;
+  }
+  
+  .reports-list-fmw {
+    width: 95%;
+  }
+  
+  .report-card-fmw {
+    padding: 1.25rem;
+  }
+  
+  .report-header-actions-fmw {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .delete-report-btn-fmw {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .empty-state-fmw {
+    padding: 3rem 1rem;
+  }
+  
+  .empty-icon-fmw {
+    font-size: 3rem;
+  }
+  
+  .empty-state-fmw h3 {
+    font-size: 1.3rem;
   }
 }
