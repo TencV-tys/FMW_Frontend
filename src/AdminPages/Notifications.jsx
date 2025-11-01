@@ -205,8 +205,6 @@ export default function Notifications() {
         return faPlusCircle;
       case 'post_resolved_by_user':
         return faCheckCircle;
-      case 'general':
-        return faBell;
       default:
         return faBell;
     }
@@ -251,14 +249,12 @@ export default function Notifications() {
         return '#10b981';
       case 'post_resolved_by_user':
         return '#10b981';
-      case 'general':
-        return '#6b7280';
       default:
         return '#6b7280';
     }
   };
 
-  // Get navigation link based on notification type - SIMPLIFIED (no metadata highlights)
+  // Get navigation link based on notification type
   const getNotificationLink = (notification) => {
     switch (notification.type) {
       case 'report_submitted':
@@ -290,11 +286,8 @@ export default function Notifications() {
       case 'additional_deletions_granted':
         return '/admin/deletion-requests';
       
-      case 'general':
-        return '/admin/manage-posts';
-      
       default:
-        return null;
+        return '/admin/manage-posts';
     }
   };
 
@@ -466,7 +459,6 @@ export default function Notifications() {
             <option value="feedback_submitted">Feedback Submitted</option>
             <option value="feedback_updated">Feedback Updated</option>
             <option value="feedback_deleted">Feedback Deleted</option>
-            <option value="general">General</option>
           </select>
         </div>
         
@@ -508,7 +500,6 @@ export default function Notifications() {
               {filter === 'feedback_submitted' && 'Feedback Submitted'}
               {filter === 'feedback_updated' && 'Feedback Updated'}
               {filter === 'feedback_deleted' && 'Feedback Deleted'}
-              {filter === 'general' && 'General'}
             </span>
           </div>
         </div>
