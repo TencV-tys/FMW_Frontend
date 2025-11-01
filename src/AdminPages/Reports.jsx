@@ -23,6 +23,12 @@ export default function Reports() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedReport, setSelectedReport] = useState(null);
   const [viewModal, setViewModal] = useState({ isOpen: false, report: null });
+  const [confirmModal, setConfirmModal] = useState({ 
+    isOpen: false, 
+    report: null, 
+    action: '', 
+    message: '' 
+  });
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -121,8 +127,32 @@ export default function Reports() {
     setViewModal({ isOpen: true, report });
   };
 
+  const openConfirmModal = (report, action) => {
+    const actionMessages = {
+      'under_review': 'mark this report as Under Review?',
+      'resolved': 'mark this report as Resolved?',
+      'dismissed': 'dismiss this report?',
+      'pending': 'reopen this report?'
+    };
+
+    setConfirmModal({
+      isOpen: true,
+      report,
+      action,
+      message: `Are you sure you want to ${actionMessages[action]}`
+    });
+  };
+
   const closeModals = () => {
     setViewModal({ isOpen: false, report: null });
+    setConfirmModal({ isOpen: false, report: null, action: '', message: '' });
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmModal.report && confirmModal.action) {
+      updateReportStatus(confirmModal.report.id, confirmModal.action);
+      closeModals();
+    }
   };
 
   const filteredReports = reports.filter(report => {
@@ -172,12 +202,32 @@ export default function Reports() {
     setSearchTerm('');
   };
 
+  const getActionButtonClass = (action) => {
+    const classMap = {
+      'under_review': 'reports-action-btn review',
+      'resolved': 'reports-action-btn resolve',
+      'dismissed': 'reports-action-btn dismiss',
+      'pending': 'reports-action-btn pending'
+    };
+    return classMap[action] || 'reports-action-btn';
+  };
+
+  const getActionIcon = (action) => {
+    const iconMap = {
+      'under_review': faExclamationTriangle,
+      'resolved': faCheckCircle,
+      'dismissed': faTimesCircle,
+      'pending': faRefresh
+    };
+    return iconMap[action] || faExclamationTriangle;
+  };
+
   return (
     <>
       {/* Header Section */}
       <div className="reports-management-header">
         <div className="reports-header-content">
-        
+       
           <p>Review and manage user-submitted reports</p>
         </div>
         <button 
@@ -190,7 +240,7 @@ export default function Reports() {
         </button>
       </div>
 
-      {/* Stats Summary - UPDATED TO MATCH MANAGEUSERS */}
+      {/* Stats Summary */}
       <div className="reports-management-stats">
         <div 
           className={`reports-stat-card ${statusFilter === 'all' ? 'reports-stat-active' : ''}`}
@@ -390,21 +440,21 @@ export default function Reports() {
                             <>
                               <button
                                 className="reports-action-btn review"
-                                onClick={() => updateReportStatus(report.id, 'under_review')}
+                                onClick={() => openConfirmModal(report, 'under_review')}
                                 title="Mark as Under Review"
                               >
                                 <FontAwesomeIcon icon={faExclamationTriangle} />
                               </button>
                               <button
                                 className="reports-action-btn resolve"
-                                onClick={() => updateReportStatus(report.id, 'resolved')}
+                                onClick={() => openConfirmModal(report, 'resolved')}
                                 title="Mark as Resolved"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
                               </button>
                               <button
                                 className="reports-action-btn dismiss"
-                                onClick={() => updateReportStatus(report.id, 'dismissed')}
+                                onClick={() => openConfirmModal(report, 'dismissed')}
                                 title="Dismiss Report"
                               >
                                 <FontAwesomeIcon icon={faTimesCircle} />
@@ -416,14 +466,14 @@ export default function Reports() {
                             <>
                               <button
                                 className="reports-action-btn resolve"
-                                onClick={() => updateReportStatus(report.id, 'resolved')}
+                                onClick={() => openConfirmModal(report, 'resolved')}
                                 title="Mark as Resolved"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
                               </button>
                               <button
                                 className="reports-action-btn dismiss"
-                                onClick={() => updateReportStatus(report.id, 'dismissed')}
+                                onClick={() => openConfirmModal(report, 'dismissed')}
                                 title="Dismiss Report"
                               >
                                 <FontAwesomeIcon icon={faTimesCircle} />
@@ -434,7 +484,7 @@ export default function Reports() {
                           {(report.status === 'resolved' || report.status === 'dismissed') && (
                             <button
                               className="reports-action-btn pending"
-                              onClick={() => updateReportStatus(report.id, 'pending')}
+                              onClick={() => openConfirmModal(report, 'pending')}
                               title="Reopen Report"
                             >
                               <FontAwesomeIcon icon={faRefresh} />
@@ -529,28 +579,19 @@ export default function Reports() {
                   <>
                     <button
                       className="reports-btn reports-btn-warning"
-                      onClick={() => {
-                        updateReportStatus(viewModal.report.id, 'under_review');
-                        closeModals();
-                      }}
+                      onClick={() => openConfirmModal(viewModal.report, 'under_review')}
                     >
                       Mark Under Review
                     </button>
                     <button
                       className="reports-btn reports-btn-success"
-                      onClick={() => {
-                        updateReportStatus(viewModal.report.id, 'resolved');
-                        closeModals();
-                      }}
+                      onClick={() => openConfirmModal(viewModal.report, 'resolved')}
                     >
                       Mark Resolved
                     </button>
                     <button
                       className="reports-btn reports-btn-danger"
-                      onClick={() => {
-                        updateReportStatus(viewModal.report.id, 'dismissed');
-                        closeModals();
-                      }}
+                      onClick={() => openConfirmModal(viewModal.report, 'dismissed')}
                     >
                       Dismiss
                     </button>
@@ -560,19 +601,13 @@ export default function Reports() {
                   <>
                     <button
                       className="reports-btn reports-btn-success"
-                      onClick={() => {
-                        updateReportStatus(viewModal.report.id, 'resolved');
-                        closeModals();
-                      }}
+                      onClick={() => openConfirmModal(viewModal.report, 'resolved')}
                     >
                       Mark Resolved
                     </button>
                     <button
                       className="reports-btn reports-btn-danger"
-                      onClick={() => {
-                        updateReportStatus(viewModal.report.id, 'dismissed');
-                        closeModals();
-                      }}
+                      onClick={() => openConfirmModal(viewModal.report, 'dismissed')}
                     >
                       Dismiss
                     </button>
@@ -581,16 +616,58 @@ export default function Reports() {
                 {(viewModal.report.status === 'resolved' || viewModal.report.status === 'dismissed') && (
                   <button
                     className="reports-btn reports-btn-secondary"
-                    onClick={() => {
-                      updateReportStatus(viewModal.report.id, 'pending');
-                      closeModals();
-                    }}
+                    onClick={() => openConfirmModal(viewModal.report, 'pending')}
                   >
                     Reopen Report
                   </button>
                 )}
                 <button className="reports-btn reports-btn-primary" onClick={closeModals}>
                   Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal.isOpen && confirmModal.report && (
+        <div className="reports-modal-overlay" onClick={closeModals}>
+          <div className="reports-modal-content reports-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="reports-modal-header">
+              <h2>Confirm Action</h2>
+              <button className="reports-modal-close" onClick={closeModals}>
+                <FontAwesomeIcon icon={faTimesCircle} />
+              </button>
+            </div>
+            <div className="reports-modal-body">
+              <div className="reports-confirm-content">
+                <div className="reports-confirm-icon">
+                  <FontAwesomeIcon icon={getActionIcon(confirmModal.action)} />
+                </div>
+                <h3>Are you sure?</h3>
+                <p>{confirmModal.message}</p>
+                <div className="reports-confirm-details">
+                  <strong>Report #{confirmModal.report.id}</strong>
+                  <span>{confirmModal.report.reason}</span>
+                  <small>Reporter: {confirmModal.report.reporter_name}</small>
+                </div>
+              </div>
+            </div>
+            <div className="reports-modal-footer">
+              <div className="reports-modal-actions">
+                <button 
+                  className="reports-btn reports-btn-secondary" 
+                  onClick={closeModals}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className={`reports-btn ${getActionButtonClass(confirmModal.action)}`}
+                  onClick={handleConfirmAction}
+                >
+                  <FontAwesomeIcon icon={getActionIcon(confirmModal.action)} />
+                  Confirm
                 </button>
               </div>
             </div>

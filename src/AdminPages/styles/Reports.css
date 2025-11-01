@@ -625,6 +625,10 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
 .reports-btn-primary {
@@ -670,6 +674,105 @@
 
 .reports-btn-danger:hover {
   background: #dc2626;
+}
+
+/* Confirmation Modal Styles */
+.reports-confirm-modal {
+  max-width: 500px;
+}
+
+.reports-confirm-content {
+  text-align: center;
+  padding: 1rem;
+}
+
+.reports-confirm-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.reports-confirm-icon svg {
+  color: #FF8904; /* ORANGE */
+}
+
+.reports-confirm-content h3 {
+  color: #8B5A2B; /* BROWN */
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.reports-confirm-content p {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.reports-confirm-details {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  text-align: left;
+}
+
+.reports-confirm-details strong {
+  display: block;
+  color: #8B5A2B; /* BROWN */
+  margin-bottom: 0.5rem;
+}
+
+.reports-confirm-details span {
+  display: block;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.reports-confirm-details small {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Action-specific button styles for confirmation modal */
+.reports-btn.reports-action-btn.review {
+  background: #f59e0b;
+  color: white;
+   padding: 1.5rem 3rem;
+}
+
+.reports-btn.reports-action-btn.review:hover {
+  background: #d97706;
+}
+
+.reports-btn.reports-action-btn.resolve {
+  background: #10b981;
+  color: white;
+  padding: 1.5rem 3rem;
+}
+
+.reports-btn.reports-action-btn.resolve:hover {
+  background: #059669;
+}
+
+.reports-btn.reports-action-btn.dismiss {
+  background: #ef4444;
+  color: white;
+   padding: 1.5rem 3rem;
+}
+
+.reports-btn.reports-action-btn.dismiss:hover {
+  background: #dc2626;
+}
+
+.reports-btn.reports-action-btn.pending {
+  background: #6b7280;
+  color: white;
+  padding: 0.75rem 1.5rem;
+}
+
+.reports-btn.reports-action-btn.pending:hover {
+  background: #4b5563;
 }
 
 /* Responsive Design */
