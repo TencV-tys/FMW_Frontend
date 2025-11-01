@@ -873,7 +873,11 @@
   .myposts-content-fmw {
     padding: 10px;
   }
-  
+  .btn-primary-fmw.delete-confirm-fmw{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   .myposts-content-darkbrown-fmw {
     padding: 10px;
   }
