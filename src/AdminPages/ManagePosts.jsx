@@ -343,14 +343,14 @@ export default function ManagePosts() {
     });
   };
 
-  // Get status badge class
+  // Get status badge class - UNIQUE NAMES
   const getStatusClass = (status) => {
     const statusMap = {
-      'Active': 'status-active',
-      'Removed': 'status-removed',
-      'Resolved': 'status-resolved'
+      'Active': 'posts-status-active',
+      'Removed': 'posts-status-removed',
+      'Resolved': 'posts-status-resolved'
     };
-    return statusMap[status] || 'status-active';
+    return statusMap[status] || 'posts-status-active';
   };
 
   // Render location information with purok
@@ -381,14 +381,14 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="action-btn restore"
+            className="posts-action-btn posts-action-restore"
             onClick={() => handlePostAction(post.id, 'restore')}
             title="Restore Post"
           >
             <FontAwesomeIcon icon={faUndo} />
           </button>
           <button
-            className="action-btn delete"
+            className="posts-action-btn posts-action-delete"
             onClick={() => handlePostAction(post.id, 'delete')}
             title="Delete Permanently"
           >
@@ -400,21 +400,21 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="action-btn remove"
+            className="posts-action-btn posts-action-remove"
             onClick={() => handlePostAction(post.id, 'remove')}
             title="Remove Post"
           >
             <FontAwesomeIcon icon={faBan} />
           </button>
           <button
-            className="action-btn restore"
+            className="posts-action-btn posts-action-restore"
             onClick={() => handlePostAction(post.id, 'restore')}
             title="Restore to Active"
           >
             <FontAwesomeIcon icon={faUndo} />
           </button>
           <button
-            className="action-btn delete"
+            className="posts-action-btn posts-action-delete"
             onClick={() => handlePostAction(post.id, 'delete')}
             title="Delete Permanently"
           >
@@ -426,21 +426,21 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="action-btn resolve"
+            className="posts-action-btn posts-action-resolve"
             onClick={() => handlePostAction(post.id, 'resolve')}
             title="Mark as Resolved"
           >
             <FontAwesomeIcon icon={faCheckCircle} />
           </button>
           <button
-            className="action-btn remove"
+            className="posts-action-btn posts-action-remove"
             onClick={() => handlePostAction(post.id, 'remove')}
             title="Remove Post"
           >
             <FontAwesomeIcon icon={faBan} />
           </button>
           <button
-            className="action-btn delete"
+            className="posts-action-btn posts-action-delete"
             onClick={() => handlePostAction(post.id, 'delete')}
             title="Delete Permanently"
           >
@@ -451,43 +451,51 @@ export default function ManagePosts() {
     }
   };
 
+  // Handle action from view modal
+  const handleModalAction = (action) => {
+    if (viewModal.post) {
+      handlePostAction(viewModal.post.id, action);
+      closeModal();
+    }
+  };
+
   // Mobile card view
   const MobilePostCard = ({ post }) => (
-    <div className="mobile-post-card">
-      <div className="mobile-card-header">
-        <div className="mobile-card-title">
+    <div className="posts-mobile-card">
+      <div className="posts-mobile-header">
+        <div className="posts-mobile-title">
           <h3>{post.title}</h3>
-          <div className="mobile-card-author">
+          <div className="posts-mobile-author">
             by {post.first_name} {post.last_name}
           </div>
         </div>
-        <span className={`mobile-card-status ${getStatusClass(post.status)}`}>
+        <span className={`posts-mobile-status ${getStatusClass(post.status)}`}>
           {post.status}
         </span>
       </div>
       
-      <div className="mobile-card-details">
-        <div className="mobile-card-detail">
-          <span className="detail-label">ID</span>
-          <span className="detail-value">#{post.id}</span>
+      <div className="posts-mobile-details">
+        <div className="posts-mobile-detail">
+          <span className="posts-detail-label">ID</span>
+          <span className="posts-detail-value">#{post.id}</span>
         </div>
-        <div className="mobile-card-detail">
-          <span className="detail-label">Category</span>
-          <span className="detail-value">{post.category_name}</span>
+        <div className="posts-mobile-detail">
+          <span className="posts-detail-label">Category</span>
+          <span className="posts-detail-value">{post.category_name}</span>
         </div>
-        <div className="mobile-card-detail">
-          <span className="detail-label">Location</span>
-          <span className="detail-value">{renderLocationInfo(post)}</span>
+        <div className="posts-mobile-detail">
+          <span className="posts-detail-label">Location</span>
+          <span className="posts-detail-value">{renderLocationInfo(post)}</span>
         </div>
-        <div className="mobile-card-detail">
-          <span className="detail-label">Date</span>
-          <span className="detail-value">{formatDate(post.created_at)}</span>
+        <div className="posts-mobile-detail">
+          <span className="posts-detail-label">Date</span>
+          <span className="posts-detail-value">{formatDate(post.created_at)}</span>
         </div>
       </div>
       
-      <div className="mobile-card-actions">
+      <div className="posts-mobile-actions">
         <button 
-          className="mobile-action-btn view"
+          className="posts-mobile-btn posts-mobile-view"
           onClick={() => openViewModal(post)}
         >
           <FontAwesomeIcon icon={faEye} />
@@ -501,13 +509,13 @@ export default function ManagePosts() {
   return (
     <>
       {/* Header Section */}
-      <div className="manage-posts-header">
-        <div className="manage-posts-header-content">
-        
+      <div className="posts-management-header">
+        <div className="posts-header-content">
+          <h1>Manage Posts</h1>
           <p>Review and moderate community posts</p>
         </div>
         <button 
-          className="refresh-btn"
+          className="posts-refresh-btn"
           onClick={fetchPosts}
           disabled={loading}
         >
@@ -517,8 +525,8 @@ export default function ManagePosts() {
       </div>
 
       {/* Filters and Search */}
-      <div className="posts-filters">
-        <div className="search-box">
+      <div className="posts-management-filters">
+        <div className="posts-search-box">
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
@@ -528,7 +536,7 @@ export default function ManagePosts() {
           />
         </div>
         
-        <div className="filter-group">
+        <div className="posts-filter-group">
           <FontAwesomeIcon icon={faFilter} />
           <select 
             value={statusFilter}
@@ -542,7 +550,7 @@ export default function ManagePosts() {
         </div>
 
         {/* View Toggle for Mobile */}
-        <div className="filter-group">
+        <div className="posts-filter-group">
           <FontAwesomeIcon icon={faList} />
           <select 
             value={viewMode}
@@ -555,24 +563,24 @@ export default function ManagePosts() {
 
         {/* Bulk Actions */}
         {selectedPosts.size > 0 && (
-          <div className="bulk-actions">
+          <div className="posts-bulk-actions">
             <span>{selectedPosts.size} selected</span>
             <button 
-              className="bulk-btn remove"
+              className="posts-bulk-btn posts-bulk-remove"
               onClick={() => handleBulkAction('remove')}
             >
               <FontAwesomeIcon icon={faBan} />
               Remove
             </button>
             <button 
-              className="bulk-btn restore"
+              className="posts-bulk-btn posts-bulk-restore"
               onClick={() => handleBulkAction('restore')}
             >
               <FontAwesomeIcon icon={faUndo} />
               Restore
             </button>
             <button 
-              className="bulk-btn delete"
+              className="posts-bulk-btn posts-bulk-delete"
               onClick={() => handleBulkAction('delete')}
             >
               <FontAwesomeIcon icon={faTrash} />
@@ -583,181 +591,179 @@ export default function ManagePosts() {
       </div>
 
       {/* Stats Summary */}
-      <div className="posts-stats">
+      <div className="posts-management-stats">
         <div 
-          className={`stat-card ${statusFilter === 'all' ? 'active' : ''}`}
+          className={`posts-stat-card ${statusFilter === 'all' ? 'posts-stat-active' : ''}`}
           onClick={() => handleStatCardClick('all')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="post-stat-number">{posts.length}</span>
-          <span className="stat-label">Total Posts</span>
+          <span className="posts-stat-number">{posts.length}</span>
+          <span className="posts-stat-label">Total Posts</span>
         </div>
         <div 
-          className={`stat-card ${statusFilter === 'Active' ? 'active' : ''}`}
+          className={`posts-stat-card ${statusFilter === 'Active' ? 'posts-stat-active' : ''}`}
           onClick={() => handleStatCardClick('Active')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="post-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
-          <span className="stat-label">Active</span>
+          <span className="posts-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
+          <span className="posts-stat-label">Active</span>
         </div>
         <div 
-          className={`stat-card ${statusFilter === 'Resolved' ? 'active' : ''}`}
+          className={`posts-stat-card ${statusFilter === 'Resolved' ? 'posts-stat-active' : ''}`}
           onClick={() => handleStatCardClick('Resolved')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="post-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
-          <span className="stat-label">Resolved</span>
+          <span className="posts-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
+          <span className="posts-stat-label">Resolved</span>
         </div>
         <div 
-          className={`stat-card ${statusFilter === 'Removed' ? 'active' : ''}`}
+          className={`posts-stat-card ${statusFilter === 'Removed' ? 'posts-stat-active' : ''}`}
           onClick={() => handleStatCardClick('Removed')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="post-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
-          <span className="stat-label">Removed</span>
+          <span className="posts-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
+          <span className="posts-stat-label">Removed</span>
         </div>
       </div>
 
       {/* Posts Table */}
-      <div className='manage-posts-table-darkbrown'>
-        <div className='manage-posts-table-lightbrown'>
-          <div className='manage-posts-table-content'>
-            <div className='manage-posts-table-title'>
-              <h2>Posts Management</h2>
-              <span className="posts-count">
-                {filteredPosts.length} of {posts.length} posts
-                {statusFilter !== 'all' && ` (Filtered by: ${statusFilter})`}
-              </span>
-            </div>
+      <div className='posts-management-table-container'>
+        <div className='posts-management-table-content'>
+          <div className='posts-management-table-title'>
+            <h2>Posts Management</h2>
+            <span className="posts-management-count">
+              {filteredPosts.length} of {posts.length} posts
+              {statusFilter !== 'all' && ` (Filtered by: ${statusFilter})`}
+            </span>
+          </div>
 
-            {loading ? (
-              <div className="loading-state">
-                <div className="loading-spinner"></div>
-                <p>Loading posts...</p>
-              </div>
-            ) : filteredPosts.length === 0 ? (
-              <div className="empty-state">
-                <p>No posts found matching your criteria.</p>
-                {statusFilter !== 'all' && (
-                  <button 
-                    className="retry-btn" 
-                    onClick={() => setStatusFilter('all')}
-                  >
-                    Clear Filter
-                  </button>
-                )}
-              </div>
-            ) : (
-              <>
-                {/* Desktop Table View */}
-                <div className="table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
-                  <table className='posts-table'>
-                    <thead>
-                      <tr>
-                        <th>
+          {loading ? (
+            <div className="posts-loading-state">
+              <div className="posts-loading-spinner"></div>
+              <p>Loading posts...</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="posts-empty-state">
+              <p>No posts found matching your criteria.</p>
+              {statusFilter !== 'all' && (
+                <button 
+                  className="posts-retry-btn" 
+                  onClick={() => setStatusFilter('all')}
+                >
+                  Clear Filter
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Desktop Table View */}
+              <div className="posts-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
+                <table className='posts-management-table'>
+                  <thead>
+                    <tr>
+                      <th>
+                        <input
+                          type="checkbox"
+                          checked={selectedPosts.size === filteredPosts.length && filteredPosts.length > 0}
+                          onChange={toggleSelectAll}
+                        />
+                      </th>
+                      <th>ID</th>
+                      <th>Title & Author</th>
+                      <th>Category</th>
+                      <th>Location</th>
+                      <th>Date Posted</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPosts.map(post => (
+                      <tr key={post.id} className={selectedPosts.has(post.id) ? 'posts-row-selected' : ''}>
+                        <td>
                           <input
                             type="checkbox"
-                            checked={selectedPosts.size === filteredPosts.length && filteredPosts.length > 0}
-                            onChange={toggleSelectAll}
+                            checked={selectedPosts.has(post.id)}
+                            onChange={() => togglePostSelection(post.id)}
                           />
-                        </th>
-                        <th>ID</th>
-                        <th>Title & Author</th>
-                        <th>Category</th>
-                        <th>Location</th>
-                        <th>Date Posted</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredPosts.map(post => (
-                        <tr key={post.id} className={selectedPosts.has(post.id) ? 'selected' : ''}>
-                          <td>
-                            <input
-                              type="checkbox"
-                              checked={selectedPosts.has(post.id)}
-                              onChange={() => togglePostSelection(post.id)}
-                            />
-                          </td>
-                          <td className="post-id">#{post.id}</td>
-                          <td>
-                            <div className="post-title-author">
-                              <strong className="post-title">{post.title}</strong>
-                              <span className="post-author">
-                                by {post.first_name} {post.last_name}
-                              </span>
-                            </div>
-                          </td>
-                          <td>{post.category_name}</td>
-                          <td>
-                            <div className="location-info">
-                              <FontAwesomeIcon icon={faMapMarkerAlt} className="location-icon" />
-                              <span>{renderLocationInfo(post)}</span>
-                            </div>
-                          </td>
-                          <td>{formatDate(post.created_at)}</td>
-                          <td>
-                            <span className={`status-badge ${getStatusClass(post.status)}`}>
-                              {post.status}
+                        </td>
+                        <td className="posts-id">#{post.id}</td>
+                        <td>
+                          <div className="posts-title-author">
+                            <strong className="posts-title">{post.title}</strong>
+                            <span className="posts-author">
+                              by {post.first_name} {post.last_name}
                             </span>
-                          </td>
-                          <td>
-                            <div className='posts-table-actions'>
-                              <button
-                                className="action-btn view"
-                                onClick={() => openViewModal(post)}
-                                title="View Post"
-                              >
-                                <FontAwesomeIcon icon={faEye} />
-                              </button>
-                              {getActionButtons(post)}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                          </div>
+                        </td>
+                        <td>{post.category_name}</td>
+                        <td>
+                          <div className="posts-location-info">
+                            <FontAwesomeIcon icon={faMapMarkerAlt} className="posts-location-icon" />
+                            <span>{renderLocationInfo(post)}</span>
+                          </div>
+                        </td>
+                        <td>{formatDate(post.created_at)}</td>
+                        <td>
+                          <span className={`posts-status-badge ${getStatusClass(post.status)}`}>
+                            {post.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div className='posts-management-actions'>
+                            <button
+                              className="posts-action-btn posts-action-view"
+                              onClick={() => openViewModal(post)}
+                              title="View Post"
+                            >
+                              <FontAwesomeIcon icon={faEye} />
+                            </button>
+                            {getActionButtons(post)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-                {/* Mobile Card View */}
-                <div className="mobile-posts-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
-                  {filteredPosts.map(post => (
-                    <MobilePostCard key={post.id} post={post} />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+              {/* Mobile Card View */}
+              <div className="posts-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
+                {filteredPosts.map(post => (
+                  <MobilePostCard key={post.id} post={post} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* View Post Modal */}
       {viewModal.isOpen && viewModal.post && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="posts-modal-overlay" onClick={closeModal}>
+          <div className="posts-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="posts-modal-header">
               <h2>View Post</h2>
-              <button className="modal-close" onClick={closeModal}>
+              <button className="posts-modal-close" onClick={closeModal}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="modal-body">
+            <div className="posts-modal-body">
               {/* Photo Display */}
               {getPhotoUrl(viewModal.post) && (
-                <div className="post-photo-container">
+                <div className="posts-photo-container">
                   <label>Post Photo:</label>
-                  <div className="post-photo">
+                  <div className="posts-photo">
                     <img
                       src={getPhotoUrl(viewModal.post)}
                       alt={viewModal.post.title}
-                      className="photo-display"
+                      className="posts-photo-display"
                       onError={(e) => {
                         e.target.style.display = 'none';
                         e.target.nextSibling.style.display = 'flex';
                       }}
                     />
-                    <div className="photo-fallback" style={{ display: 'none' }}>
+                    <div className="posts-photo-fallback" style={{ display: 'none' }}>
                       <FontAwesomeIcon icon={faImage} />
                       <span>Photo not available</span>
                     </div>
@@ -765,57 +771,128 @@ export default function ManagePosts() {
                 </div>
               )}
               
-              <div className="post-details">
-                <div className="detail-row">
+              <div className="posts-details">
+                <div className="posts-detail-row">
                   <label>Title:</label>
                   <span>{viewModal.post.title}</span>
                 </div>
-                <div className="detail-row">
+                <div className="posts-detail-row">
                   <label>Author:</label>
                   <span>{viewModal.post.first_name} {viewModal.post.last_name}</span>
                 </div>
-                <div className="detail-row">
+                <div className="posts-detail-row">
                   <label>Category:</label>
                   <span>{viewModal.post.category_name}</span>
                 </div>
-                <div className="detail-row">
+                <div className="posts-detail-row">
                   <label>Location:</label>
                   <span>{renderLocationInfo(viewModal.post)}</span>
                 </div>
-                <div className="detail-row">
+                <div className="posts-detail-row">
                   <label>Status:</label>
-                  <span className={`status-badge ${getStatusClass(viewModal.post.status)}`}>
+                  <span className={`posts-status-badge ${getStatusClass(viewModal.post.status)}`}>
                     {viewModal.post.status}
                   </span>
                 </div>
-                <div className="detail-row">
+                <div className="posts-detail-row">
                   <label>Date Posted:</label>
                   <span>{formatDate(viewModal.post.created_at)}</span>
                 </div>
-                <div className="detail-row full-width">
+                <div className="posts-detail-row posts-full-width">
                   <label>Description:</label>
-                  <div className="post-description">
+                  <div className="posts-description">
                     {viewModal.post.description}
                   </div>
                 </div>
                 {viewModal.post.color && (
-                  <div className="detail-row">
+                  <div className="posts-detail-row">
                     <label>Color:</label>
                     <span>{viewModal.post.color}</span>
                   </div>
                 )}
-                <div className="detail-row full-width">
+                <div className="posts-detail-row posts-full-width">
                   <label>Contact Info:</label>
-                  <div className="contact-info">
+                  <div className="posts-contact-info">
                     {viewModal.post.contact_info}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={closeModal}>
-                Close
-              </button>
+            <div className="posts-modal-footer">
+              <div className="posts-modal-actions">
+                {/* Action buttons in modal */}
+                {viewModal.post.status === 'Removed' && (
+                  <>
+                    <button
+                      className="posts-modal-btn posts-modal-restore"
+                      onClick={() => handleModalAction('restore')}
+                    >
+                      <FontAwesomeIcon icon={faUndo} />
+                      Restore Post
+                    </button>
+                    <button
+                      className="posts-modal-btn posts-modal-delete"
+                      onClick={() => handleModalAction('delete')}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                      Delete Permanently
+                    </button>
+                  </>
+                )}
+                {viewModal.post.status === 'Resolved' && (
+                  <>
+                    <button
+                      className="posts-modal-btn posts-modal-remove"
+                      onClick={() => handleModalAction('remove')}
+                    >
+                      <FontAwesomeIcon icon={faBan} />
+                      Remove Post
+                    </button>
+                    <button
+                      className="posts-modal-btn posts-modal-restore"
+                      onClick={() => handleModalAction('restore')}
+                    >
+                      <FontAwesomeIcon icon={faUndo} />
+                      Restore to Active
+                    </button>
+                    <button
+                      className="posts-modal-btn posts-modal-delete"
+                      onClick={() => handleModalAction('delete')}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                      Delete Permanently
+                    </button>
+                  </>
+                )}
+                {viewModal.post.status === 'Active' && (
+                  <>
+                    <button
+                      className="posts-modal-btn posts-modal-resolve"
+                      onClick={() => handleModalAction('resolve')}
+                    >
+                      <FontAwesomeIcon icon={faCheckCircle} />
+                      Mark as Resolved
+                    </button>
+                    <button
+                      className="posts-modal-btn posts-modal-remove"
+                      onClick={() => handleModalAction('remove')}
+                    >
+                      <FontAwesomeIcon icon={faBan} />
+                      Remove Post
+                    </button>
+                    <button
+                      className="posts-modal-btn posts-modal-delete"
+                      onClick={() => handleModalAction('delete')}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                      Delete Permanently
+                    </button>
+                  </>
+                )}
+                <button className="posts-modal-btn posts-modal-close-btn" onClick={closeModal}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -823,51 +900,51 @@ export default function ManagePosts() {
 
       {/* Report Validation Modal */}
       {actionModal.isOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content report-validation-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header warning">
+        <div className="posts-modal-overlay" onClick={closeModal}>
+          <div className="posts-modal-content posts-report-validation-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="posts-modal-header posts-warning-header">
               <h2>
-                <FontAwesomeIcon icon={faExclamationTriangle} className="warning-icon" />
+                <FontAwesomeIcon icon={faExclamationTriangle} className="posts-warning-icon" />
                 Action Requires Review
               </h2>
-              <button className="modal-close" onClick={closeModal}>
+              <button className="posts-modal-close" onClick={closeModal}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             
-            <div className="modal-body">
-              <div className="report-validation-content">
-                <div className="warning-message">
+            <div className="posts-modal-body">
+              <div className="posts-report-validation-content">
+                <div className="posts-warning-message">
                   <p>{actionModal.message}</p>
                 </div>
                 
-                <div className="report-stats">
-                  <div className="stat-item">
-                    <FontAwesomeIcon icon={faFlag} className="stat-icon" />
-                    <span className="stat-label">Current Reports:</span>
-                    <span className="stat-value">{actionModal.reportCount}</span>
+                <div className="posts-report-stats">
+                  <div className="posts-stat-item">
+                    <FontAwesomeIcon icon={faFlag} className="posts-stat-icon" />
+                    <span className="posts-stat-label">Current Reports:</span>
+                    <span className="posts-stat-value">{actionModal.reportCount}</span>
                   </div>
-                  <div className="stat-item">
-                    <FontAwesomeIcon icon={faCheckCircle} className="stat-icon required" />
-                    <span className="stat-label">Required Reports:</span>
-                    <span className="stat-value">{actionModal.requiredCount}</span>
+                  <div className="posts-stat-item">
+                    <FontAwesomeIcon icon={faCheckCircle} className="posts-stat-icon posts-required" />
+                    <span className="posts-stat-label">Required Reports:</span>
+                    <span className="posts-stat-value">{actionModal.requiredCount}</span>
                   </div>
                 </div>
 
-                <div className="post-preview">
+                <div className="posts-preview">
                   <h4>Post Details:</h4>
-                  <div className="preview-content">
+                  <div className="posts-preview-content">
                     <p><strong>Title:</strong> {actionModal.post?.title}</p>
                     <p><strong>Author:</strong> {actionModal.post?.first_name} {actionModal.post?.last_name}</p>
                     <p><strong>Status:</strong> 
-                      <span className={`status-badge ${getStatusClass(actionModal.post?.status)}`}>
+                      <span className={`posts-status-badge ${getStatusClass(actionModal.post?.status)}`}>
                         {actionModal.post?.status}
                       </span>
                     </p>
                   </div>
                 </div>
 
-                <div className="action-warning">
+                <div className="posts-action-warning">
                   <FontAwesomeIcon icon={faExclamationTriangle} />
                   <p>
                     <strong>Warning:</strong> Proceeding with this action will override the community reporting system. 
@@ -877,15 +954,15 @@ export default function ManagePosts() {
               </div>
             </div>
             
-            <div className="modal-footer">
+            <div className="posts-modal-footer">
               <button 
-                className="btn btn-secondary" 
+                className="posts-modal-btn posts-modal-cancel" 
                 onClick={handleCancelAction}
               >
                 Cancel Action
               </button>
               <button 
-                className="btn btn-warning" 
+                className="posts-modal-btn posts-modal-force" 
                 onClick={handleForceAction}
               >
                 <FontAwesomeIcon icon={faExclamationTriangle} />
