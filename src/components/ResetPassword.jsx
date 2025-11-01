@@ -11,7 +11,12 @@ const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
 
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
   const [formData, setFormData] = useState({
     password: '',
     password_confirmation: ''
@@ -32,7 +37,7 @@ const ResetPassword = () => {
       }
 
       try {
-        const response = await fetch('http://localhost:8000/auth/verify-reset-token', {
+        const response = await fetch(`${wifi}/auth/verify-reset-token`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -89,7 +94,7 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/auth/reset-password', {
+      const response = await fetch(`${wifi}/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

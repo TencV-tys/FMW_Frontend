@@ -9,7 +9,12 @@ export default function LogoutButton({ className = "", isDropdown = false, isOpe
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
 
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
   const handleLogout = async () => {
     if (isLoggingOut) return; // Prevent multiple clicks
     
@@ -30,7 +35,7 @@ export default function LogoutButton({ className = "", isDropdown = false, isOpe
       localStorage.removeItem("user");
 
       // Call logout API
-      const res = await fetch("http://localhost:8000/auth/logout", {
+      const res = await fetch(`${wifi}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });

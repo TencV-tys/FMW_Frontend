@@ -7,7 +7,7 @@ import {
   faSearch, 
   faCheckCircle,
   faTimesCircle,
-  faEye
+
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/MyReports.css';

@@ -14,7 +14,6 @@ import {
   faTrashAlt,
   faComments,
   faSyncAlt,
-  faUserLock,
   faUndo,
   faPlusCircle
 } from '@fortawesome/free-solid-svg-icons';

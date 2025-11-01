@@ -27,7 +27,13 @@ export default function UserDashboardNav() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
 
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
+  
   // 🎯 Check if mobile view
   useEffect(() => {
     const checkMobile = () => {
@@ -43,7 +49,7 @@ export default function UserDashboardNav() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/auth/me', {
+        const response = await fetch(`${wifi}/auth/me`, {
           credentials: 'include'
         });
         
@@ -63,7 +69,7 @@ export default function UserDashboardNav() {
   useEffect(() => {
     const fetchNotificationCount = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/notifications/unread-count', {
+        const response = await fetch(`${wifi}/api/notifications/unread-count`, {
           credentials: 'include'
         });
         
@@ -117,7 +123,7 @@ export default function UserDashboardNav() {
   // 🎯 Get user profile image
   const getUserImage = () => {
     if (user?.profile_photo) {
-      return `http://localhost:8000/uploads/${user.profile_photo}`;
+      return `${wifi}/uploads/${user.profile_photo}`;
     }
     return Profile;
   };

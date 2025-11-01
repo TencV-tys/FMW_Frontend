@@ -216,7 +216,7 @@ export default function Registration() {
     setEmailVerificationStatus,
     setAgreedToTerms
   } = useRegistrationForm();
-
+ 
   const navigate = useNavigate();
 
   // Real-time email verification

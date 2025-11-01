@@ -8,8 +8,6 @@ import {
   faPaperPlane,
   faClock,
   faCheckCircle,
-  faExclamationTriangle,
-  faCircle,
   faEye,
   faBan,
   faSyncAlt,
@@ -58,7 +56,7 @@ export default function Feedback() {
       
       console.log(`Fetching user feedback from:, ${wifi}/api/feedback/my-feedback`);
       
-      const response = await fetch('http://localhost:8000/api/feedback/my-feedback', {
+      const response = await fetch(`${wifi}/api/feedback/my-feedback`, {
         credentials: 'include'
       });
 

@@ -10,6 +10,12 @@ export default function ReportModal({ isOpen, onClose, post }) {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [isOwnPost, setIsOwnPost] = useState(false);
+   const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+      const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
 
   const reportReasons = [
     'Inappropriate content',
@@ -24,7 +30,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/user', {
+        const response = await fetch(`${wifi}/api/user`, {
           credentials: 'include',
         });
         
@@ -73,7 +79,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/reports', {
+      const response = await fetch(`${wifi}/api/reports`, {
         method: 'POST',
         credentials: 'include',
         headers: {
