@@ -2,7 +2,7 @@
 .landing-page {
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding-top: 70px; /* Add padding to account for fixed header */
+  padding-top: 60px; /* Add padding to account for fixed header */
 }
 
 .container {

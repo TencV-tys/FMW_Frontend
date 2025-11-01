@@ -63,7 +63,7 @@ export default function UserAgreement() {
 
   return (
     <div className="user-agreement-page">
-      <div className="agreement-container">
+      <div className="agreement-container"> 
         {/* Header */}
         <header className="agreement-header">
           <button 
@@ -75,7 +75,7 @@ export default function UserAgreement() {
           </button>
           <div className="header-content">
             <FontAwesomeIcon icon={faFileContract} className="header-icon" />
-            <h1>Terms of Service & User Agreement</h1>
+            <h1 className='terms'>Terms of Service & User Agreement</h1>
             <p>Last Updated: {currentDate}</p>
           </div>
           <div className="header-actions">
