@@ -15,7 +15,9 @@ import {
   faVenusMars,
   faCalendar,
   faPauseCircle,
-  faClock
+  faClock,
+  faFlag,
+  faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
@@ -26,9 +28,15 @@ export default function ManageUsers() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
   const [viewMode, setViewMode] = useState('table');
+  
+  // Modal states
   const [showSuspendModal, setShowSuspendModal] = useState(false);
   const [showBanModal, setShowBanModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  
+  // Form states
   const [suspensionDuration, setSuspensionDuration] = useState('7');
   const [customDays, setCustomDays] = useState('');
   const [suspensionReason, setSuspensionReason] = useState('');
@@ -41,40 +49,36 @@ export default function ManageUsers() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:8000/api/users', {
+      const res = await fetch('http://localhost:8000/api/admin/users-with-reports', {
         credentials: 'include'
       });
       const data = await res.json();
       setUsers(data); 
     } catch (error) {
-      console.log(`Error fetching users: ${error.message}`);
+      console.log(`Error fetching users with reports: ${error.message}`);
+      // Fallback to basic user data
+      try {
+        const fallbackRes = await fetch('http://localhost:8000/api/users', {
+          credentials: 'include'
+        });
+        const fallbackData = await fallbackRes.json();
+        // Add default report stats for fallback
+        const usersWithDefaultStats = fallbackData.map(user => ({
+          ...user,
+          monthly_report_count: 0,
+          total_report_count: 0,
+          active_posts_with_reports: 0
+        }));
+        setUsers(usersWithDefaultStats);
+      } catch (fallbackError) {
+        console.log(`Fallback error: ${fallbackError.message}`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // 🎯 DELETE USER with confirmation
-  const handleDelete = async (id, userName) => {
-    if (!window.confirm(`Are you sure you want to permanently delete user "${userName}"? This action cannot be undone.`)) return;
-    
-    try {
-      const res = await fetch(`http://localhost:8000/api/users/${id}`, {
-        method: "DELETE",
-        credentials: 'include'
-      });
-      
-      if (res.ok) {
-        setUsers(users.filter((user) => user.id !== id));
-        alert('User deleted successfully!');
-      } else {
-        alert('Failed to delete user');
-      }
-    } catch (error) {
-      console.log(`Delete error: ${error.message}`);
-    }
-  };
-
-  // 🎯 OPEN SUSPEND MODAL
+  // 🎯 OPEN MODAL FUNCTIONS
   const openSuspendModal = (user) => {
     setSelectedUser(user);
     setSuspensionDuration('7');
@@ -83,11 +87,51 @@ export default function ManageUsers() {
     setShowSuspendModal(true);
   };
 
-  // 🎯 OPEN BAN MODAL
   const openBanModal = (user) => {
     setSelectedUser(user);
     setBanReason('');
     setShowBanModal(true);
+  };
+
+  const openDeleteModal = (user) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const openActivateModal = (user) => {
+    setSelectedUser(user);
+    setShowActivateModal(true);
+  };
+
+  // 🎯 CLOSE ALL MODALS
+  const closeAllModals = () => {
+    setShowSuspendModal(false);
+    setShowBanModal(false);
+    setShowDeleteModal(false);
+    setShowActivateModal(false);
+    setSelectedUser(null);
+  };
+
+  // 🎯 DELETE USER with modal confirmation
+  const handleDelete = async () => {
+    if (!selectedUser) return;
+    
+    try {
+      const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}`, {
+        method: "DELETE",
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        setUsers(users.filter((user) => user.id !== selectedUser.id));
+        alert('User deleted successfully!');
+        closeAllModals();
+      } else {
+        alert('Failed to delete user');
+      }
+    } catch (error) {
+      console.log(`Delete error: ${error.message}`);
+    }
   };
 
   // 🎯 SUSPEND USER with duration
@@ -134,8 +178,7 @@ export default function ManageUsers() {
           } : user
         ));
         alert(`User "${getUserName(selectedUser)}" suspended for ${result.data.duration} day(s)!`);
-        setShowSuspendModal(false);
-        setSelectedUser(null);
+        closeAllModals();
       } else {
         alert('Failed to suspend user');
       }
@@ -171,8 +214,7 @@ export default function ManageUsers() {
           user.id === selectedUser.id ? { ...user, status: 'banned' } : user
         ));
         alert(`User "${getUserName(selectedUser)}" banned successfully!`);
-        setShowBanModal(false);
-        setSelectedUser(null);
+        closeAllModals();
       } else {
         alert('Failed to ban user');
       }
@@ -181,12 +223,12 @@ export default function ManageUsers() {
     }
   };
 
-  // 🎯 ACTIVATE USER with confirmation
-  const handleActivate = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to activate user "${userName}"? They will be able to login again.`)) return;
+  // 🎯 ACTIVATE USER with modal confirmation
+  const handleActivate = async () => {
+    if (!selectedUser) return;
     
     try {
-      const res = await fetch(`http://localhost:8000/api/users/${userId}/status`, {
+      const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}/status`, {
         method: "PUT",
         credentials: 'include',
         headers: {
@@ -197,9 +239,10 @@ export default function ManageUsers() {
       
       if (res.ok) {
         setUsers(users.map(user => 
-          user.id === userId ? { ...user, status: 'active', suspended_until: null } : user
+          user.id === selectedUser.id ? { ...user, status: 'active', suspended_until: null } : user
         ));
-        alert(`User "${userName}" activated successfully!`);
+        alert(`User "${getUserName(selectedUser)}" activated successfully!`);
+        closeAllModals();
       } else {
         alert('Failed to activate user');
       }
@@ -320,19 +363,67 @@ export default function ManageUsers() {
           >
             <FontAwesomeIcon icon={faUserSlash} />
           </button>
+          <button
+            className="action-btn delete"
+            onClick={() => openDeleteModal(user)}
+            title="Delete User"
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
         </>
       );
     } else {
       return (
-        <button
-          className="action-btn activate"
-          onClick={() => handleActivate(user.id, getUserName(user))}
-          title="Activate User"
-        >
-          <FontAwesomeIcon icon={faCheckCircle} />
-        </button>
+        <>
+          <button
+            className="action-btn activate"
+            onClick={() => openActivateModal(user)}
+            title="Activate User"
+          >
+            <FontAwesomeIcon icon={faCheckCircle} />
+          </button>
+          <button
+            className="action-btn delete"
+            onClick={() => openDeleteModal(user)}
+            title="Delete User"
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
+        </>
       );
     }
+  };
+
+  // Report severity indicator
+  const getReportSeverity = (user) => {
+    const monthlyReports = user.monthly_report_count || 0;
+    const totalReports = user.total_report_count || 0;
+    
+    if (monthlyReports >= 5 || totalReports >= 15) return 'high';
+    if (monthlyReports >= 3 || totalReports >= 8) return 'medium';
+    if (monthlyReports >= 1 || totalReports >= 3) return 'low';
+    return 'none';
+  };
+
+  // Report severity badge
+  const ReportSeverityBadge = ({ user }) => {
+    const severity = getReportSeverity(user);
+    if (severity === 'none') return null;
+
+    const severityConfig = {
+      high: { class: 'report-high', text: 'High Risk', icon: faExclamationTriangle },
+      medium: { class: 'report-medium', text: 'Medium Risk', icon: faFlag },
+      low: { class: 'report-low', text: 'Low Risk', icon: faFlag }
+    };
+
+    const config = severityConfig[severity];
+
+    return (
+      <span className={`report-severity-badge ${config.class}`}>
+        <FontAwesomeIcon icon={config.icon} />
+        {config.text}
+      </span>
+    );
   };
 
   // Mobile User Card Component
@@ -372,6 +463,21 @@ export default function ManageUsers() {
             day: 'numeric'
           })}</span>
         </div>
+        
+        {/* Report Statistics */}
+        <div className="mobile-card-detail">
+          <FontAwesomeIcon icon={faFlag} />
+          <span>Monthly Reports: {user.monthly_report_count || 0}</span>
+        </div>
+        <div className="mobile-card-detail">
+          <FontAwesomeIcon icon={faFlag} />
+          <span>Total Reports: {user.total_report_count || 0}</span>
+        </div>
+        <div className="mobile-card-detail">
+          <FontAwesomeIcon icon={faExclamationTriangle} />
+          <span>Problem Posts: {user.active_posts_with_reports || 0}</span>
+        </div>
+
         {user.status === 'suspended' && user.suspended_until && (
           <div className="mobile-card-detail">
             <FontAwesomeIcon icon={faClock} />
@@ -379,17 +485,14 @@ export default function ManageUsers() {
           </div>
         )}
       </div>
+
+      {/* Report Severity Indicator */}
+      <div className="mobile-card-report-severity">
+        <ReportSeverityBadge user={user} />
+      </div>
       
       <div className="mobile-card-actions">
         {getActionButtons(user)}
-        <button
-          className="mobile-action-btn delete"
-          onClick={() => handleDelete(user.id, getUserName(user))}
-          title="Delete User"
-        >
-          <FontAwesomeIcon icon={faTrash} />
-          Delete
-        </button>
       </div>
     </div>
   );
@@ -565,6 +668,10 @@ export default function ManageUsers() {
                         <th>Gender</th>
                         <th>Role</th>
                         <th>Status</th>
+                        <th>Monthly Reports</th>
+                        <th>Total Reports</th>
+                        <th>Problem Posts</th>
+                        <th>Risk Level</th>
                         <th>Joined Date</th>
                         <th>Actions</th>
                       </tr>
@@ -593,6 +700,24 @@ export default function ManageUsers() {
                             </span>
                           </td>
                           <td>
+                            <span className="report-count">
+                              {user.monthly_report_count || 0}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="report-count">
+                              {user.total_report_count || 0}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="problem-posts">
+                              {user.active_posts_with_reports || 0}
+                            </span>
+                          </td>
+                          <td>
+                            <ReportSeverityBadge user={user} />
+                          </td>
+                          <td>
                             {new Date(user.created_at).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'short',
@@ -602,13 +727,6 @@ export default function ManageUsers() {
                           <td>
                             <div className='users-table-actions'>
                               {getActionButtons(user)}
-                              <button
-                                className="action-btn delete"
-                                onClick={() => handleDelete(user.id, getUserName(user))}
-                                title="Delete User"
-                              >
-                                <FontAwesomeIcon icon={faTrash} />
-                              </button>
                             </div>
                           </td>
                         </tr>
@@ -637,7 +755,7 @@ export default function ManageUsers() {
               <h3>Suspend User</h3>
               <button 
                 className="modal-close"
-                onClick={() => setShowSuspendModal(false)}
+                onClick={closeAllModals}
               >
                 ×
               </button>
@@ -645,6 +763,25 @@ export default function ManageUsers() {
             <div className="modal-body">
               <p>You are about to suspend <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
               
+              {/* Report Statistics in Modal */}
+              <div className="user-report-stats">
+                <h4>User Report Statistics:</h4>
+                <div className="report-stats-grid">
+                  <div className="report-stat">
+                    <span className="stat-label">Monthly Reports:</span>
+                    <span className="stat-value">{selectedUser.monthly_report_count || 0}</span>
+                  </div>
+                  <div className="report-stat">
+                    <span className="stat-label">Total Reports:</span>
+                    <span className="stat-value">{selectedUser.total_report_count || 0}</span>
+                  </div>
+                  <div className="report-stat">
+                    <span className="stat-label">Problem Posts:</span>
+                    <span className="stat-value">{selectedUser.active_posts_with_reports || 0}</span>
+                  </div>
+                </div>
+              </div>
+
               <div className="form-group">
                 <label htmlFor="suspensionReason">Reason for Suspension *</label>
                 <textarea
@@ -696,7 +833,7 @@ export default function ManageUsers() {
             <div className="modal-footer">
               <button 
                 className="btn-secondary"
-                onClick={() => setShowSuspendModal(false)}
+                onClick={closeAllModals}
               >
                 Cancel
               </button>
@@ -720,7 +857,7 @@ export default function ManageUsers() {
               <h3>Ban User</h3>
               <button 
                 className="modal-close"
-                onClick={() => setShowBanModal(false)}
+                onClick={closeAllModals}
               >
                 ×
               </button>
@@ -732,6 +869,25 @@ export default function ManageUsers() {
               </div>
               <p>You are about to <strong>permanently ban</strong> <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
               
+              {/* Report Statistics in Modal */}
+              <div className="user-report-stats">
+                <h4>User Report Statistics:</h4>
+                <div className="report-stats-grid">
+                  <div className="report-stat">
+                    <span className="stat-label">Monthly Reports:</span>
+                    <span className="stat-value">{selectedUser.monthly_report_count || 0}</span>
+                  </div>
+                  <div className="report-stat">
+                    <span className="stat-label">Total Reports:</span>
+                    <span className="stat-value">{selectedUser.total_report_count || 0}</span>
+                  </div>
+                  <div className="report-stat">
+                    <span className="stat-label">Problem Posts:</span>
+                    <span className="stat-value">{selectedUser.active_posts_with_reports || 0}</span>
+                  </div>
+                </div>
+              </div>
+
               <div className="ban-consequences">
                 <h4>Consequences of Banning:</h4>
                 <ul>
@@ -757,7 +913,7 @@ export default function ManageUsers() {
             <div className="modal-footer">
               <button 
                 className="btn-secondary"
-                onClick={() => setShowBanModal(false)}
+                onClick={closeAllModals}
               >
                 Cancel
               </button>
@@ -767,6 +923,126 @@ export default function ManageUsers() {
                 disabled={!banReason.trim()}
               >
                 Confirm Permanent Ban
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Modal */}
+      {showDeleteModal && selectedUser && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Delete User</h3>
+              <button 
+                className="modal-close"
+                onClick={closeAllModals}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="warning-banner">
+                <FontAwesomeIcon icon={faExclamationTriangle} />
+                <strong>Warning: This action cannot be undone!</strong>
+              </div>
+              <p>You are about to <strong>permanently delete</strong> user <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
+              
+              {/* Report Statistics in Modal */}
+              <div className="user-report-stats">
+                <h4>User Report Statistics:</h4>
+                <div className="report-stats-grid">
+                  <div className="report-stat">
+                    <span className="stat-label">Monthly Reports:</span>
+                    <span className="stat-value">{selectedUser.monthly_report_count || 0}</span>
+                  </div>
+                  <div className="report-stat">
+                    <span className="stat-label">Total Reports:</span>
+                    <span className="stat-value">{selectedUser.total_report_count || 0}</span>
+                  </div>
+                  <div className="report-stat">
+                    <span className="stat-label">Problem Posts:</span>
+                    <span className="stat-value">{selectedUser.active_posts_with_reports || 0}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="deletion-consequences">
+                <h4>Consequences of Deletion:</h4>
+                <ul>
+                  <li>All user data will be permanently removed</li>
+                  <li>All their posts and content will be deleted</li>
+                  <li>This action cannot be undone</li>
+                  <li>User will receive notification about account deletion</li>
+                </ul>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn-secondary"
+                onClick={closeAllModals}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn-primary delete"
+                onClick={handleDelete}
+              >
+                Confirm Permanent Deletion
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Activate User Modal */}
+      {showActivateModal && selectedUser && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Activate User</h3>
+              <button 
+                className="modal-close"
+                onClick={closeAllModals}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="success-banner">
+                <FontAwesomeIcon icon={faCheckCircle} />
+                <strong>Activate User Account</strong>
+              </div>
+              <p>You are about to activate user <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
+              
+              <p>This will restore their access to the platform and allow them to login again.</p>
+
+              <div className="activation-details">
+                <h4>Current Status: <span className={`user-status-badge ${getStatusClass(selectedUser.status)}`}>
+                  {selectedUser.status}
+                </span></h4>
+                
+                {selectedUser.suspended_until && (
+                  <p><strong>Suspended until:</strong> {new Date(selectedUser.suspended_until).toLocaleDateString()}</p>
+                )}
+                {selectedUser.suspension_reason && (
+                  <p><strong>Previous reason:</strong> {selectedUser.suspension_reason}</p>
+                )}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn-secondary"
+                onClick={closeAllModals}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn-primary activate"
+                onClick={handleActivate}
+              >
+                Confirm Activation
               </button>
             </div>
           </div>

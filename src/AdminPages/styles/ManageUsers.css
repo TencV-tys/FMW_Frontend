@@ -14,9 +14,169 @@
 .manage-users-header-content p {
   color: #666;
   margin: 0;
+  font-size: 0.9rem; 
+}
+ /* Report Statistics Styles */
+.report-count, .problem-posts {
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-align: center;
+  display: inline-block;
+  min-width: 30px;
+}
+
+.report-count {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.problem-posts {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+/* Report Severity Badges */
+.report-severity-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.report-high {
+  background: #ffebee !important;
+  color: #d32f2f !important;
+  border: 1px solid #f5c6cb !important;
+}
+
+.report-medium {
+  background: #fff3e0 !important;
+  color: #f57c00 !important;
+  border: 1px solid #ffe0b2 !important;
+}
+
+.report-low {
+  background: #e8f5e8 !important;
+  color: #388e3c !important;
+  border: 1px solid #c8e6c9 !important;
+}
+
+/* User Report Stats in Modal */
+.user-report-stats {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #8B5A2B;
+}
+
+.user-report-stats h4 {
+  margin: 0 0 0.75rem 0;
+  color: #333;
   font-size: 0.9rem;
 }
 
+.report-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.report-stat {
+  text-align: center;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.report-stat .stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.report-stat .stat-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #8B5A2B;
+}
+
+/* Mobile Report Styles */
+.mobile-card-report-severity {
+  margin-bottom: 0.75rem;
+}
+
+.mobile-card-detail .report-count,
+.mobile-card-detail .problem-posts {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.4rem;
+}
+
+/* Modal Banner Styles */
+.success-banner {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.deletion-consequences {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.deletion-consequences h4 {
+  margin: 0 0 0.5rem 0;
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+.deletion-consequences ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #dc2626;
+}
+
+.deletion-consequences li {
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.activation-details {
+  background: #f0f9ff;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+.activation-details h4 {
+  margin: 0 0 0.5rem 0;
+  color: #0369a1;
+}
+
+.activation-details p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
 .refresh-btn {
   background: #8B5A2B;
   color: white;
