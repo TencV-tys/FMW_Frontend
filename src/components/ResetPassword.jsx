@@ -17,6 +17,7 @@ const ResetPassword = () => {
       const wifi = isLocalhost 
   ? 'http://localhost:8000' 
   : 'http://192.168.1.27:8000';
+
   const [formData, setFormData] = useState({
     password: '',
     password_confirmation: ''
