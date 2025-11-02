@@ -25,33 +25,64 @@ export default function ContactUs() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [error, setError] = useState('');
+   
+  const isLocalhost = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1';
+
+const wifi = isLocalhost 
+  ? 'http://localhost:8000' 
+  : 'http://192.168.1.27:8000';
+
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Clear errors when user starts typing
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
     
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitStatus('success');
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-        category: 'general'
+    try {
+      const response = await fetch(`${wifi}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
       });
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => setSubmitStatus(null), 5000);
-    }, 2000);
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: '',
+          category: 'general'
+        });
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => setSubmitStatus(null), 5000);
+      } else {
+        setSubmitStatus('error');
+        setError(result.message || 'Failed to send message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitStatus('error');
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -103,7 +134,7 @@ export default function ContactUs() {
                   <div className="method-info">
                     <h4>Visit Us</h4>
                     <p>San Antonio Poruk 1</p>
-                    <span>Trinidad, Panab-an </span>
+                    <span>Trinidad, Panab-an</span>
                   </div>
                 </div>
                 
@@ -134,6 +165,16 @@ export default function ContactUs() {
                 </div>
               )}
 
+              {submitStatus === 'error' && (
+                <div className="error-message">
+                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                  <div>
+                    <h4>Failed to Send Message</h4>
+                    <p>{error}</p>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="contact-form">
                 <div className="form-row">
                   <div className="form-group">
@@ -149,6 +190,7 @@ export default function ContactUs() {
                       onChange={handleChange}
                       required
                       placeholder="Enter your full name"
+                      disabled={isSubmitting}
                     />
                   </div>
                   
@@ -165,6 +207,7 @@ export default function ContactUs() {
                       onChange={handleChange}
                       required
                       placeholder="Enter your email address"
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
@@ -177,6 +220,7 @@ export default function ContactUs() {
                     value={formData.category}
                     onChange={handleChange}
                     required
+                    disabled={isSubmitting}
                   >
                     <option value="general">General Inquiry</option>
                     <option value="technical">Technical Support</option>
@@ -197,6 +241,7 @@ export default function ContactUs() {
                     onChange={handleChange}
                     required
                     placeholder="Brief description of your inquiry"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -210,6 +255,7 @@ export default function ContactUs() {
                     required
                     rows="6"
                     placeholder="Please provide detailed information about your inquiry..."
+                    disabled={isSubmitting}
                   ></textarea>
                 </div>
 
@@ -272,9 +318,9 @@ export default function ContactUs() {
               <Link to="/privacy-policy">Privacy Policy</Link>
               <Link to="/">Back to Home</Link>
             </div>
-          </div>
+          </div> 
         </footer>
       </div>
     </div>
   );
-}
+} 

@@ -16,7 +16,7 @@ import {
   faSyncAlt,
   faUndo,
   faPlusCircle,
-  faCalendarAlt, // CHANGED FROM faCalendarExclamation
+  faCalendarAlt, 
   faUserShield,
   faWarning,
   faTimes
@@ -375,12 +375,12 @@ export default function UserNotifications() {
               <option value="user_suspended">Account Status</option>
               <option value="feedback_submitted">Feedback Submitted</option>
               <option value="feedback_updated">Feedback Updates</option>
-              {/* 🆕 DELETION REQUEST FILTERS */}
+              {/* DELETION REQUEST FILTERS */}
               <option value="deletion_request_approved">Approved Deletions</option>
               <option value="deletion_request_rejected">Rejected Deletions</option>
               <option value="deletion_limit_reset">Deletion Limit Reset</option>
               <option value="additional_deletions_granted">Additional Deletions</option>
-              {/* 🆕 NEW: MONTHLY REPORTING FILTERS */}
+              {/*  MONTHLY REPORTING FILTERS */}
               <option value="post_removed_warning">Post Removal Warnings</option>
               <option value="post_deleted_warning">Post Deletion Warnings</option>
               <option value="user_report_warning">Report Warnings</option>
