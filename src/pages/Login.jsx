@@ -13,14 +13,14 @@ const useLoginForm = () => {
     password: '',
     isLoading: false,
     errors: {},
-    showPassword: false // Add password visibility state
+    showPassword: false
   });
 
   const updateField = (field, value) => {
     setState(prev => ({
       ...prev,
       [field]: value,
-      errors: { ...prev.errors, [field]: '' } // Clear error when typing
+      errors: { ...prev.errors, [field]: '' }
     }));
   };
 
@@ -48,13 +48,12 @@ const useLoginForm = () => {
 // API service abstraction
 const authService = {
   login: async (credentials) => {
-     // ✅ Simple detection based on current URL
-const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+    const isLocalhost = window.location.hostname === 'localhost' || 
+                        window.location.hostname === '127.0.0.1';
+    const wifi = isLocalhost 
+      ? 'http://localhost:8000' 
+      : 'http://192.168.1.27:8000';
+    
     const response = await fetch(`${wifi}/auth/login`, {
       method: "POST",
       credentials: 'include',
@@ -103,7 +102,6 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Handle redirects from registration or other pages
   useEffect(() => {
     const registered = searchParams.get('registered');
     const reset = searchParams.get('reset');
@@ -154,7 +152,6 @@ export default function Login() {
           autoClose: 1000
         });
 
-        // Role-based navigation with proper cleanup
         const redirectPath = user.role === 'admin' ? '/admin' : '/user';
         setTimeout(() => navigate(redirectPath, { replace: true }), 1000);
 
@@ -204,22 +201,22 @@ export default function Login() {
   };
 
   return (
-    <div className='login-page'>
+    <div className='login-auth-page'>
       <NavAuth disabled="Hide" />
       
-      <div className='login-form-container'>
+      <div className='login-auth-container'>
         <form 
-          className='login-container' 
+          className='login-auth-form' 
           onSubmit={handleSubmit}
           noValidate
         >
-          <div className='login-header'>
-            <h2 className='login-form-title'>Welcome Back</h2>
-            <p className='login-subtitle'>Sign in to your account</p>
+          <div className='login-auth-header'>
+            <h2 className='login-auth-title'>Welcome Back</h2>
+            <p className='login-auth-subtitle'>Sign in to your account</p>
           </div>
 
-          <div className='form-group'>
-            <div className={`input-group ${errors.email ? 'has-error' : ''}`}>
+          <div className='login-auth-form-group'>
+            <div className={`login-auth-input-group ${errors.email ? 'login-auth-has-error' : ''}`}>
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -231,14 +228,14 @@ export default function Login() {
                 aria-describedby={errors.email ? "email-error" : undefined}
               />
               {errors.email && (
-                <span id="email-error" className="error-text" role="alert">
+                <span id="email-error" className="login-auth-error-text" role="alert">
                   {errors.email}
                 </span>
               )}
             </div>
 
-            <div className={`input-group password-input-group ${errors.password ? 'has-error' : ''}`}>
-              <div className="password-input-wrapper">
+            <div className={`login-auth-input-group login-auth-password-group ${errors.password ? 'login-auth-has-error' : ''}`}>
+              <div className="login-auth-password-wrapper">
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
@@ -251,39 +248,39 @@ export default function Login() {
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="login-auth-password-toggle"
                   onClick={togglePasswordVisibility}
                   disabled={isLoading}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   <FontAwesomeIcon 
                     icon={showPassword ? faEyeSlash : faEye} 
-                    className="password-toggle-icon"
+                    className="login-auth-password-icon"
                   />
                 </button>
               </div>
               {errors.password && (
-                <span id="password-error" className="error-text" role="alert">
+                <span id="password-error" className="login-auth-error-text" role="alert">
                   {errors.password}
                 </span>
               )}
             </div>
           </div>
 
-          <div className='form-options'>
-            <Link to="/forgot-password" className='forgot-password-link'>
+          <div className='login-auth-options'>
+            <Link to="/forgot-password" className='login-auth-forgot-link'>
               Forgot your password?
             </Link>
           </div>
 
           <button
             type="submit"
-            className={`login-button ${isLoading ? 'loading' : ''}`}
+            className={`login-auth-submit-btn ${isLoading ? 'login-auth-loading' : ''}`}
             disabled={isLoading}
           >
             {isLoading ? (
               <>
-                <FontAwesomeIcon icon={faSpinner} className="spinner" />
+                <FontAwesomeIcon icon={faSpinner} className="login-auth-spinner" />
                 Signing in...
               </>
             ) : (
@@ -294,11 +291,11 @@ export default function Login() {
             )}
           </button>
 
-          <div className='auth-redirect'>
+          <div className='login-auth-redirect'>
             <p>Don't have an account?</p>
             <Link 
               to="/registration" 
-              className='redirect-link'
+              className='login-auth-redirect-link'
               aria-disabled={isLoading}
             >
               Create an account

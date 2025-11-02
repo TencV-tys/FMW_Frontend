@@ -34,7 +34,6 @@ const useRegistrationForm = () => {
     emailVerified: false,
     checkingEmail: false
   });
- 
 
   const updateField = (field, value) => {
     setState(prev => ({
@@ -131,12 +130,12 @@ const validationService = {
 const emailVerificationService = {
   checkEmailAvailability: async (email) => {
     try {
- const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
+      const isLocalhost = window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1';
       const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+        ? 'http://localhost:8000' 
+        : 'http://192.168.1.27:8000';
+      
       const response = await fetch(`${wifi}/auth/check-email?email=${encodeURIComponent(email)}`, {
         method: 'GET',
         credentials: 'include'
@@ -169,11 +168,10 @@ const emailVerificationService = {
 const registrationService = {
   register: async (userData) => {
     const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+                        window.location.hostname === '127.0.0.1';
+    const wifi = isLocalhost 
+      ? 'http://localhost:8000' 
+      : 'http://192.168.1.27:8000';
 
     const response = await fetch(`${wifi}/auth/register`, {
       method: "POST",
@@ -365,18 +363,18 @@ export default function Registration() {
   };
 
   const getFieldClassName = (fieldName) => {
-    return `input-group ${errors[fieldName] ? 'has-error' : ''} ${touched[fieldName] && !errors[fieldName] ? 'has-success' : ''}`;
+    return `reg-auth-input-group ${errors[fieldName] ? 'reg-auth-has-error' : ''} ${touched[fieldName] && !errors[fieldName] ? 'reg-auth-has-success' : ''}`;
   };
 
   const getEmailStatusIcon = () => {
     if (!email) return null;
     
     if (checkingEmail) {
-      return <FontAwesomeIcon icon={faCircleNotch} className="email-status-icon checking" />;
+      return <FontAwesomeIcon icon={faCircleNotch} className="reg-auth-email-status checking" />;
     } else if (emailVerified) {
-      return <FontAwesomeIcon icon={faCheckCircle} className="email-status-icon verified" />;
+      return <FontAwesomeIcon icon={faCheckCircle} className="reg-auth-email-status verified" />;
     } else if (errors.email && touched.email) {
-      return <FontAwesomeIcon icon={faTimesCircle} className="email-status-icon not-verified" />;
+      return <FontAwesomeIcon icon={faTimesCircle} className="reg-auth-email-status not-verified" />;
     }
     return null;
   };
@@ -386,22 +384,22 @@ export default function Registration() {
     
     if (checkingEmail) {
       return (
-        <div className="email-verification-status checking">
-          <FontAwesomeIcon icon={faCircleNotch} className="verification-icon" spin />
+        <div className="reg-auth-email-verification checking">
+          <FontAwesomeIcon icon={faCircleNotch} className="reg-auth-verification-icon" spin />
           Checking email availability...
         </div>
       );
     } else if (emailVerified) {
       return (
-        <div className="email-verification-status verified">
-          <FontAwesomeIcon icon={faCheckCircle} className="verification-icon" />
+        <div className="reg-auth-email-verification verified">
+          <FontAwesomeIcon icon={faCheckCircle} className="reg-auth-verification-icon" />
           Email is available
         </div>
       );
     } else if (errors.email && touched.email) {
       return (
-        <div className="email-verification-status not-verified">
-          <FontAwesomeIcon icon={faTimesCircle} className="verification-icon" />
+        <div className="reg-auth-email-verification not-verified">
+          <FontAwesomeIcon icon={faTimesCircle} className="reg-auth-verification-icon" />
           {errors.email}
         </div>
       );
@@ -421,22 +419,22 @@ export default function Registration() {
   };
 
   return (
-    <div className="registration-page">
+    <div className="reg-auth-page">
       <NavAuth disabled="Hide" />
       
-      <div className="register-form-container">
-        <form className="register-container" onSubmit={handleSubmit} noValidate>
-          <div className="register-header">
-            <h2 className="register-title">Create Your Account</h2>
-            <p className="register-subtitle">Join our community today</p>
+      <div className="reg-auth-form-container">
+        <form className="reg-auth-form" onSubmit={handleSubmit} noValidate>
+          <div className="reg-auth-header">
+            <h2 className="reg-auth-title">Create Your Account</h2>
+            <p className="reg-auth-subtitle">Join our community today</p>
           </div>
 
           {/* Name Fields */}
-          <div className="name-fields">
+          <div className="reg-auth-name-fields">
             <div className={getFieldClassName('first_name')}>
               <input
                 type="text"
-                className="form-input"
+                className="reg-auth-form-input"
                 placeholder="First Name"
                 name="first_name"
                 value={first_name}
@@ -446,7 +444,7 @@ export default function Registration() {
                 aria-describedby={errors.first_name ? "first-name-error" : undefined}
               />
               {errors.first_name && (
-                <span id="first-name-error" className="error-text" role="alert">
+                <span id="first-name-error" className="reg-auth-error-text" role="alert">
                   {errors.first_name}
                 </span>
               )}
@@ -455,7 +453,7 @@ export default function Registration() {
             <div className={getFieldClassName('last_name')}>
               <input
                 type="text"
-                className="form-input"
+                className="reg-auth-form-input"
                 placeholder="Last Name"
                 name="last_name"
                 value={last_name}
@@ -465,7 +463,7 @@ export default function Registration() {
                 aria-describedby={errors.last_name ? "last-name-error" : undefined}
               />
               {errors.last_name && (
-                <span id="last-name-error" className="error-text" role="alert">
+                <span id="last-name-error" className="reg-auth-error-text" role="alert">
                   {errors.last_name}
                 </span>
               )}
@@ -474,9 +472,9 @@ export default function Registration() {
 
           {/* Email Field */}
           <div className={getFieldClassName('email')}>
-            <div className="email-input-wrapper">
+            <div className="reg-auth-email-wrapper">
               <input
-                className="form-input"
+                className="reg-auth-form-input"
                 type="email"
                 placeholder="Email Address"
                 name="email"
@@ -493,10 +491,10 @@ export default function Registration() {
           </div>
 
           {/* Gender Field */}
-          <div className="input-group">
+          <div className="reg-auth-input-group">
             <select
               name="gender"
-              className="form-select"
+              className="reg-auth-form-select"
               value={gender}
               onChange={(e) => updateField('gender', e.target.value)}
               disabled={isLoading}
@@ -510,9 +508,9 @@ export default function Registration() {
 
           {/* Password Field */}
           <div className={getFieldClassName('password')}>
-            <div className="password-input-wrapper">
+            <div className="reg-auth-password-wrapper">
               <input
-                className="form-input"
+                className="reg-auth-form-input"
                 type={showPassword ? "text" : "password"}
                 placeholder="Create Password"
                 name="password"
@@ -524,24 +522,24 @@ export default function Registration() {
               />
               <button
                 type="button"
-                className="password-toggle-btn"
+                className="reg-auth-password-toggle"
                 onClick={togglePasswordVisibility}
                 disabled={isLoading}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 <FontAwesomeIcon 
                   icon={showPassword ? faEyeSlash : faEye} 
-                  className="password-toggle-icon"
+                  className="reg-auth-password-icon"
                 />
               </button>
             </div>
             {errors.password && (
-              <span id="password-error" className="error-text" role="alert">
+              <span id="password-error" className="reg-auth-error-text" role="alert">
                 {errors.password}
               </span>
             )}
             {password && !errors.password && (
-              <div className="password-strength strong">
+              <div className="reg-auth-password-strength strong">
                 <FontAwesomeIcon icon={faCheckCircle} />
                 Password meets requirements
               </div>
@@ -550,9 +548,9 @@ export default function Registration() {
 
           {/* Confirm Password Field */}
           <div className={getFieldClassName('password_confirmation')}>
-            <div className="password-input-wrapper">
+            <div className="reg-auth-password-wrapper">
               <input
-                className="form-input"
+                className="reg-auth-form-input"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm Password"
                 name="password_confirmation"
@@ -564,24 +562,24 @@ export default function Registration() {
               />
               <button
                 type="button"
-                className="password-toggle-btn"
+                className="reg-auth-password-toggle"
                 onClick={toggleConfirmPasswordVisibility}
                 disabled={isLoading}
                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
                 <FontAwesomeIcon 
                   icon={showConfirmPassword ? faEyeSlash : faEye} 
-                  className="password-toggle-icon"
+                  className="reg-auth-password-icon"
                 />
               </button>
             </div>
             {errors.password_confirmation && (
-              <span id="password-confirm-error" className="error-text" role="alert">
+              <span id="password-confirm-error" className="reg-auth-error-text" role="alert">
                 {errors.password_confirmation}
               </span>
             )}
             {password_confirmation && !errors.password_confirmation && (
-              <div className="password-match success">
+              <div className="reg-auth-password-match success">
                 <FontAwesomeIcon icon={faCheckCircle} />
                 Passwords match
               </div>
@@ -589,48 +587,48 @@ export default function Registration() {
           </div>
 
           {/* Terms Agreement Section */}
-          <div className={`terms-agreement-section ${errors.agreedToTerms ? 'has-error' : ''} ${agreedToTerms ? 'accepted' : ''}`}>
-            <div className="terms-header">
-              <FontAwesomeIcon icon={faFileContract} className="terms-icon" />
+          <div className={`reg-auth-terms-section ${errors.agreedToTerms ? 'reg-auth-has-error' : ''} ${agreedToTerms ? 'reg-auth-accepted' : ''}`}>
+            <div className="reg-auth-terms-header">
+              <FontAwesomeIcon icon={faFileContract} className="reg-auth-terms-icon" />
               <h3>Terms & Conditions</h3>
             </div>
             
-            <div className="terms-content">
+            <div className="reg-auth-terms-content">
               <p>
                 By creating an account, you agree to our Terms of Service and Privacy Policy. 
                 Please read them carefully before proceeding.
               </p>
               
-              <div className="terms-highlights">
-                <div className="term-highlight">
+              <div className="reg-auth-terms-highlights">
+                <div className="reg-auth-term-highlight">
                   <FontAwesomeIcon icon={faShieldAlt} />
                   <span>Your data is protected and secure</span>
                 </div>
                
-                <div className="term-highlight">
+                <div className="reg-auth-term-highlight">
                   <FontAwesomeIcon icon={faCheckCircle} />
                   <span>You must follow community guidelines</span>
                 </div>
               </div>
             </div>
 
-            <div className="terms-agreement">
-              <label className="terms-checkbox-label">
+            <div className="reg-auth-terms-agreement">
+              <label className="reg-auth-terms-label">
                 <input
                   type="checkbox"
                   checked={agreedToTerms}
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
                   disabled={isLoading}
-                  className="terms-checkbox-input"
+                  className="reg-auth-terms-input"
                 />
-                <span className="custom-checkbox">
-                  {agreedToTerms && <FontAwesomeIcon icon={faCheckCircle} className="check-icon" />}
+                <span className="reg-auth-custom-checkbox">
+                  {agreedToTerms && <FontAwesomeIcon icon={faCheckCircle} className="reg-auth-check-icon" />}
                 </span>
-                <span className="terms-text">
+                <span className="reg-auth-terms-text">
                   I have read and agree to the{' '}
                   <button 
                     type="button" 
-                    className="terms-link-button"
+                    className="reg-auth-terms-link"
                     onClick={handleViewTerms}
                     disabled={isLoading}
                   >
@@ -639,7 +637,7 @@ export default function Registration() {
                   and{' '}
                   <button 
                     type="button" 
-                    className="terms-link-button"
+                    className="reg-auth-terms-link"
                     onClick={handleViewTerms}
                     disabled={isLoading}
                   >
@@ -649,7 +647,7 @@ export default function Registration() {
               </label>
               
               {errors.agreedToTerms && (
-                <div className="terms-error">
+                <div className="reg-auth-terms-error">
                   <FontAwesomeIcon icon={faTimesCircle} />
                   {errors.agreedToTerms}
                 </div>
@@ -660,12 +658,12 @@ export default function Registration() {
           {/* Submit Button */}
           <button
             type="submit"
-            className={`register-button ${isLoading ? 'loading' : ''} ${!isFormValid() ? 'disabled' : ''}`}
+            className={`reg-auth-submit-btn ${isLoading ? 'reg-auth-loading' : ''} ${!isFormValid() ? 'reg-auth-disabled' : ''}`}
             disabled={isLoading || !isFormValid()}
           >
             {isLoading ? (
               <>
-                <FontAwesomeIcon icon={faSpinner} className="spinner" />
+                <FontAwesomeIcon icon={faSpinner} className="reg-auth-spinner" />
                 Creating Account...
               </>
             ) : (
@@ -677,11 +675,11 @@ export default function Registration() {
           </button>
 
           {/* Login Redirect */}
-          <div className="auth-redirect">
+          <div className="reg-auth-redirect">
             <p>Already have an account?</p>
             <Link 
               to="/login" 
-              className="redirect-link"
+              className="reg-auth-redirect-link"
               aria-disabled={isLoading}
             >
               Sign in here

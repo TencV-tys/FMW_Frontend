@@ -1,14 +1,13 @@
-/* Registration.css - Orange & White Theme */
-.registration-page {
+/* Registration.css - Orange & White Theme with Unique Class Names */
+.reg-auth-page {
   min-height: 100dvh;
   background: #ffffff;
   display: flex;
   flex-direction: column;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  
 }
  
-.register-form-container {
+.reg-auth-form-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,48 +15,47 @@
   padding: 2rem 1rem;
 }
 
-.register-container {
+.reg-auth-form {
   background: #ffffff;
   padding: 2.5rem;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(255, 137, 4, 0.15);
-  border: 2px solid #FF8904;
+  border: 2px solid #FF8904; /* Removed box-shadow */
   width: 100%;
   max-width: 480px;
 }
 
-.register-header {
+.reg-auth-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.register-title {
+.reg-auth-title {
   color: #FF8904;
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
-.register-subtitle {
+.reg-auth-subtitle {
   color: #666;
   font-size: 0.9rem;
   margin-bottom: 0;
   font-weight: 400;
 }
 
-.name-fields {
+.reg-auth-name-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.input-group {
+.reg-auth-input-group {
   position: relative;
   margin-bottom: 0.5rem;
 }
 
-.form-input {
+.reg-auth-form-input {
   width: 100%;
   padding: 0.875rem 1rem;
   border: 2px solid #e2e8f0;
@@ -70,12 +68,12 @@
   font-weight: 400;
 }
 
-.form-input::placeholder {
+.reg-auth-form-input::placeholder {
   color: #a0aec0;
   font-weight: 400;
 }
 
-.form-select {
+.reg-auth-form-select {
   width: 100%;
   padding: 0.875rem 1rem;
   border: 2px solid #e2e8f0;
@@ -88,37 +86,34 @@
   font-weight: 400;
 }
 
-.form-input:focus,
-.form-select:focus {
+.reg-auth-form-input:focus,
+.reg-auth-form-select:focus {
   outline: none;
   border-color: #FF8904;
-  box-shadow: 0 0 0 3px rgba(255, 137, 4, 0.1);
 }
 
-.input-group.has-error .form-input,
-.input-group.has-error .form-select {
+.reg-auth-has-error .reg-auth-form-input,
+.reg-auth-has-error .reg-auth-form-select {
   border-color: #e53e3e;
-  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
 }
 
-.input-group.has-success .form-input {
+.reg-auth-has-success .reg-auth-form-input {
   border-color: #38a169;
-  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
 }
 
 /* Password Input Styles */
-.password-input-wrapper {
+.reg-auth-password-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.password-input-wrapper .form-input {
+.reg-auth-password-wrapper .reg-auth-form-input {
   width: 100%;
   padding-right: 3rem;
 }
 
-.password-toggle-btn {
+.reg-auth-password-toggle {
   position: absolute;
   right: 0.75rem;
   background: none;
@@ -135,28 +130,28 @@
   height: 32px;
 }
 
-.password-toggle-btn:hover:not(:disabled) {
+.reg-auth-password-toggle:hover:not(:disabled) {
   color: #FF8904;
   background: rgba(255, 137, 4, 0.1);
 }
 
-.password-toggle-btn:disabled {
+.reg-auth-password-toggle:disabled {
   color: #cbd5e0;
   cursor: not-allowed;
 }
 
-.password-toggle-icon {
+.reg-auth-password-icon {
   font-size: 1rem;
   width: 16px;
   height: 16px;
 }
 
 /* Email Verification Styles */
-.email-input-wrapper {
+.reg-auth-email-wrapper {
   position: relative;
 }
 
-.email-status-icon {
+.reg-auth-email-status {
   position: absolute;
   right: 0.75rem;
   top: 50%;
@@ -166,20 +161,20 @@
   height: 16px;
 }
 
-.email-status-icon.checking {
+.reg-auth-email-status.checking {
   color: #FF8904;
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: reg-auth-pulse 1.5s ease-in-out infinite;
 }
 
-.email-status-icon.verified {
+.reg-auth-email-status.verified {
   color: #38a169;
 }
 
-.email-status-icon.not-verified {
+.reg-auth-email-status.not-verified {
   color: #e53e3e;
 }
 
-.email-verification-status {
+.reg-auth-email-verification {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -189,25 +184,25 @@
   min-height: 1.25rem;
 }
 
-.email-verification-status.checking {
+.reg-auth-email-verification.checking {
   color: #FF8904;
 }
 
-.email-verification-status.verified {
+.reg-auth-email-verification.verified {
   color: #38a169;
 }
 
-.email-verification-status.not-verified {
+.reg-auth-email-verification.not-verified {
   color: #e53e3e;
 }
 
-.verification-icon {
+.reg-auth-verification-icon {
   font-size: 0.875rem;
   width: 14px;
   height: 14px;
 }
 
-@keyframes pulse {
+@keyframes reg-auth-pulse {
   0%, 100% { 
     opacity: 1; 
     transform: translateY(-50%) scale(1);
@@ -218,12 +213,12 @@
   }
 }
 
-@keyframes spin {
+@keyframes reg-auth-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-.error-text {
+.reg-auth-error-text {
   color: #e53e3e;
   font-size: 0.75rem;
   margin-top: 0.25rem;
@@ -233,8 +228,8 @@
 }
 
 /* Password Strength & Match */
-.password-strength,
-.password-match {
+.reg-auth-password-strength,
+.reg-auth-password-match {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -244,13 +239,13 @@
   min-height: 1.25rem;
 }
 
-.password-strength.strong,
-.password-match.success {
+.reg-auth-password-strength.strong,
+.reg-auth-password-match.success {
   color: #38a169;
 }
 
 /* Terms Agreement Section */
-.terms-agreement-section {
+.reg-auth-terms-section {
   margin: 2rem 0;
   padding: 1.5rem;
   background: #f8f9fa;
@@ -259,56 +254,55 @@
   transition: all 0.3s ease;
 }
 
-.terms-agreement-section:focus-within {
+.reg-auth-terms-section:focus-within {
   border-color: #FF8904;
-  box-shadow: 0 0 0 3px rgba(255, 137, 4, 0.1);
 }
 
-.terms-agreement-section.has-error {
+.reg-auth-terms-section.reg-auth-has-error {
   border-color: #e53e3e;
   background: #fef5f5;
 }
 
-.terms-agreement-section.accepted {
+.reg-auth-terms-section.reg-auth-accepted {
   border-color: #38a169;
   background: #f0fff4;
 }
 
-.terms-header {
+.reg-auth-terms-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-.terms-icon {
+.reg-auth-terms-icon {
   font-size: 1.5rem;
   color: #FF8904;
 }
 
-.terms-header h3 {
+.reg-auth-terms-header h3 {
   color: #2d3748;
   margin: 0;
   font-size: 1.1rem;
 }
 
-.terms-content {
+.reg-auth-terms-content {
   margin-bottom: 1.5rem;
 }
 
-.terms-content p {
+.reg-auth-terms-content p {
   color: #4a5568;
   line-height: 1.5;
   margin-bottom: 1rem;
 }
 
-.terms-highlights {
+.reg-auth-terms-highlights {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.term-highlight {
+.reg-auth-term-highlight {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -318,22 +312,22 @@
   border-left: 3px solid #FF8904;
 }
 
-.term-highlight svg {
+.reg-auth-term-highlight svg {
   color: #FF8904;
   width: 16px;
 }
 
-.term-highlight span {
+.reg-auth-term-highlight span {
   color: #4a5568;
   font-size: 0.85rem;
   font-weight: 500;
 }
 
-.terms-agreement {
+.reg-auth-terms-agreement {
   margin-top: 1rem;
 }
 
-.terms-checkbox-label {
+.reg-auth-terms-label {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
@@ -343,11 +337,11 @@
   line-height: 1.4;
 }
 
-.terms-checkbox-input {
+.reg-auth-terms-input {
   display: none;
 }
 
-.custom-checkbox {
+.reg-auth-custom-checkbox {
   width: 20px;
   height: 20px;
   border: 2px solid #cbd5e0;
@@ -361,23 +355,23 @@
   justify-content: center;
 }
 
-.terms-checkbox-input:checked + .custom-checkbox {
+.reg-auth-terms-input:checked + .reg-auth-custom-checkbox {
   background: #FF8904;
   border-color: #FF8904;
 }
 
-.check-icon {
+.reg-auth-check-icon {
   color: white;
   font-size: 12px;
   width: 12px;
   height: 12px;
 }
 
-.terms-text {
+.reg-auth-terms-text {
   flex: 1;
 }
 
-.terms-link-button {
+.reg-auth-terms-link {
   background: none;
   border: none;
   color: #FF8904;
@@ -388,16 +382,16 @@
   font-weight: 600;
 }
 
-.terms-link-button:hover:not(:disabled) {
+.reg-auth-terms-link:hover:not(:disabled) {
   color: #e67a00;
 }
 
-.terms-link-button:disabled {
+.reg-auth-terms-link:disabled {
   color: #a0aec0;
   cursor: not-allowed;
 }
 
-.terms-error {
+.reg-auth-terms-error {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -408,7 +402,7 @@
 }
 
 /* Submit Button */
-.register-button {
+.reg-auth-submit-btn {
   width: 100%;
   padding: 1rem 1.5rem;
   background: #FF8904;
@@ -426,115 +420,106 @@
   margin: 1.5rem 0;
 }
 
-.register-button:hover:not(:disabled):not(.disabled) {
+.reg-auth-submit-btn:hover:not(:disabled):not(.reg-auth-disabled) {
   background: #e67a00;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
 }
 
-.register-button:disabled,
-.register-button.disabled {
+.reg-auth-submit-btn:disabled,
+.reg-auth-submit-btn.reg-auth-disabled {
   background: #cbd5e0;
   cursor: not-allowed;
   transform: none !important;
 }
 
-.register-button.loading {
+.reg-auth-submit-btn.reg-auth-loading {
   background: #cbd5e0;
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
+.reg-auth-spinner {
+  animation: reg-auth-spin 1s linear infinite;
 }
 
 /* Login Redirect */
-.auth-redirect {
+.reg-auth-redirect {
   text-align: center;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid #e2e8f0;
 }
 
-.auth-redirect p {
+.reg-auth-redirect p {
   color: #718096;
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
   font-weight: 400;
 }
 
-.redirect-link {
+.reg-auth-redirect-link {
   color: #FF8904;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
-.redirect-link:hover {
+.reg-auth-redirect-link:hover {
   color: #e67a00;
   text-decoration: underline;
 }
 
 /* Responsive Design */
 @media (max-width: 480px) {
-  .register-container {
+  .reg-auth-form {
     padding: 2rem 1.5rem;
     margin: 0.5rem;
   }
-  .registration-page{
-   padding-top: 60px;
-}
-  .name-fields {
+  
+  .reg-auth-page {
+    padding-top: 60px;
+  }
+
+  .reg-auth-name-fields {
     grid-template-columns: 1fr;
   }
 
-  .register-title {
+  .reg-auth-title {
     font-size: 1.5rem;
   }
 
-  .password-toggle-btn {
+  .reg-auth-password-toggle {
     right: 0.5rem;
   }
 
-  .email-status-icon {
+  .reg-auth-email-status {
     right: 0.5rem;
   }
 
-  .terms-agreement-section {
+  .reg-auth-terms-section {
     padding: 1rem;
   }
 
-  .term-highlight {
+  .reg-auth-term-highlight {
     padding: 0.5rem;
   }
 }
 
-/* Keep existing specific styles */
-.Hide {
-  display: none;
-}
-
-.register-form-title .create {
-  text-align: center;
-  padding-bottom: 15px;
-}
-
 /* Focus states for accessibility */
-.password-toggle-btn:focus-visible,
-.form-input:focus-visible,
-.form-select:focus-visible,
-.terms-link-button:focus-visible {
+.reg-auth-password-toggle:focus-visible,
+.reg-auth-form-input:focus-visible,
+.reg-auth-form-select:focus-visible,
+.reg-auth-terms-link:focus-visible {
   outline: 2px solid #FF8904;
   outline-offset: 2px;
 }
 
 /* Loading state for form */
-.register-container:has(.register-button.loading) {
+.reg-auth-form:has(.reg-auth-submit-btn.reg-auth-loading) {
   pointer-events: none;
 }
 
-.register-container:has(.register-button.loading) .form-input,
-.register-container:has(.register-button.loading) .form-select,
-.register-container:has(.register-button.loading) .password-toggle-btn,
-.register-container:has(.register-button.loading) .terms-link-button {
+.reg-auth-form:has(.reg-auth-submit-btn.reg-auth-loading) .reg-auth-form-input,
+.reg-auth-form:has(.reg-auth-submit-btn.reg-auth-loading) .reg-auth-form-select,
+.reg-auth-form:has(.reg-auth-submit-btn.reg-auth-loading) .reg-auth-password-toggle,
+.reg-auth-form:has(.reg-auth-submit-btn.reg-auth-loading) .reg-auth-terms-link {
   opacity: 0.7;
 }
