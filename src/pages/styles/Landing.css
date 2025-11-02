@@ -13,8 +13,8 @@
 /* Hero Section */
 .hero-section-fmw {
   background: linear-gradient(135deg, #FF8904 0%, #e67a00 100%);
-  color: white;
-  padding: 6rem 1rem 4rem;
+  color: white; 
+  padding: 4rem 1rem 4rem;
   min-height: 80vh;
   display: flex;
   align-items: center;
@@ -39,7 +39,7 @@
 .hero-subtitle-fmw {
   font-size: 1.1rem;
   margin-bottom: 2rem;
-  opacity: 0.9;
+  opacity: 0.9; 
   line-height: 1.6;
   max-width: 600px;
 }
@@ -341,11 +341,16 @@
   text-align: center;
   width: 100%;
 }
-
+ 
+@media (max-width: 768px) {
+  .hero-section-fmw {
+    padding-top: 80px; /* Account for fixed nav on mobile */
+  }
+}
 /* 🎯 DESKTOP STYLES */
 @media (min-width: 769px) {
   .hero-section-fmw {
-    padding: 8rem 2rem 6rem;
+    padding: 3rem 2rem 6rem;
     text-align: left;
   }
 
