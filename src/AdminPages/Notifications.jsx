@@ -69,7 +69,7 @@ export default function Notifications() {
       const response = await fetch('http://localhost:8000/api/admin/notifications/stats', {
         credentials: 'include'
       });
-
+ 
       if (response.ok) {
         const data = await response.json();
         setStats({
@@ -465,7 +465,7 @@ export default function Notifications() {
         {/* Clear Filters Button */}
         {isFilterActive() && (
           <button 
-            className="clear-filters-btn"
+            className="admin-notification-clear-filters-btn"
             onClick={clearAllFilters}
             title="Clear all filters"
           >

@@ -146,7 +146,7 @@
 }
 
 /* Clear Filters Button */
-.clear-filters-btn {
+.admin-notification-clear-filters-btn {
   padding: 0.75rem 1rem;
   background: #e74c3c;
   color: white;
@@ -158,7 +158,7 @@
   white-space: nowrap;
 }
 
-.clear-filters-btn:hover {
+.admin-notification-clear-filters-btn:hover {
   background: #c0392b;
   transform: translateY(-1px);
 }

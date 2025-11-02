@@ -177,8 +177,8 @@
   font-size: 0.9rem;
 }
 
-.refresh-btn {
-  background: #8B5A2B;
+.manage-users-refresh-btn {
+  background: #FF8904;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -192,12 +192,12 @@
   white-space: nowrap;
 }
 
-.refresh-btn:hover:not(:disabled) {
-  background: #6d451f;
+.manage-users-refresh-btn:hover:not(:disabled) {
+ 
   transform: translateY(-1px);
 }
 
-.refresh-btn:disabled {
+.manage-users-refresh-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -300,7 +300,7 @@
 }
 
 /* Clear filters button */
-.clear-filters-btn {
+.manage-users-clear-filters-btn {
   padding: 0.75rem 1rem;
   background: #e74c3c;
   color: white;
@@ -312,7 +312,7 @@
   white-space: nowrap;
 }
 
-.clear-filters-btn:hover {
+.manage-users-clear-filters-btn:hover {
   background: #c0392b;
   transform: translateY(-1px);
 }

@@ -107,7 +107,7 @@ export default function AdminDeletionRequests() {
           )
         );
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json(); 
         alert(errorData.error || 'Failed to reset deletion count');
       }
     } catch (error) {
@@ -322,7 +322,7 @@ export default function AdminDeletionRequests() {
           )}
         </div>
         <button 
-          className="refresh-btn"
+          className="admin-deletion-refresh-btn"
           onClick={() => {
             fetchUsersDeletionStats();
             fetchDeletionRequests();
@@ -521,7 +521,7 @@ export default function AdminDeletionRequests() {
             </div>
 
             {(searchTerm || filterLimit !== 'all' || recentlyApprovedUser) && (
-              <button className="clear-filters-btn" onClick={clearFilters}>
+              <button className="deletion-clear-filters-btn" onClick={clearFilters}>
                 Clear Filters
               </button>
             )}

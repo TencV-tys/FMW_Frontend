@@ -505,7 +505,7 @@ export default function ManageUsers() {
           <p>Admin panel for user management and moderation</p>
         </div>
         <button 
-          className="refresh-btn"
+          className="manage-users-refresh-btn"
           onClick={fetchUsers}
           disabled={loading}
         >
@@ -565,8 +565,8 @@ export default function ManageUsers() {
 
         {/* Clear Filters Button */}
         {isFilterActive() && (
-          <button 
-            className="clear-filters-btn"
+          <button  
+            className="manage-users-clear-filters-btn"
             onClick={clearAllFilters}
             title="Clear all filters"
           >
