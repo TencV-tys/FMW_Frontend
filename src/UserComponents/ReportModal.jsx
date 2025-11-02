@@ -32,7 +32,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const response = await fetch(`${wifi}/api/user`, {
+        const response = await fetch(`${wifi}/api/users/profile`, {
           credentials: 'include',
         });
         
@@ -47,9 +47,37 @@ export default function ReportModal({ isOpen, onClose, post }) {
               setIsOwnPost(false);
             }
           }
+        } else {
+          console.warn('Failed to fetch user profile, using fallback method');
+          // Fallback: try to get user ID from localStorage or session
+          try {
+            const userFromStorage = localStorage.getItem('currentUser');
+            if (userFromStorage) {
+              const user = JSON.parse(userFromStorage);
+              setCurrentUser(user);
+              if (post && user.id === post.user_id) {
+                setIsOwnPost(true);
+              }
+            }
+          } catch (storageError) {
+            console.error('Error getting user from storage:', storageError);
+          }
         }
       } catch (error) {
         console.error('Error fetching current user:', error);
+        // Fallback method if API fails
+        try {
+          const userFromStorage = localStorage.getItem('currentUser');
+          if (userFromStorage) {
+            const user = JSON.parse(userFromStorage);
+            setCurrentUser(user);
+            if (post && user.id === post.user_id) {
+              setIsOwnPost(true);
+            }
+          }
+        } catch (storageError) {
+          console.error('Error getting user from storage:', storageError);
+        }
       }
     };
 
@@ -108,7 +136,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
         setAdditionalInfo('');
         setAlreadyReportedThisMonth(false);
       } else {
-        // 🆕 CHECK IF ERROR IS ABOUT MONTHLY REPORTING LIMIT
+        // CHECK IF ERROR IS ABOUT MONTHLY REPORTING LIMIT
         if (result.error && result.error.includes('this month')) {
           setAlreadyReportedThisMonth(true);
           toast.error(result.error, {
@@ -136,14 +164,14 @@ export default function ReportModal({ isOpen, onClose, post }) {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="report-modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="report-modal-overlay" onClick={onClose}>
+      <div className="report-modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="report-modal-header">
           <div className="report-modal-title">
-            <FontAwesomeIcon icon={faFlag} className="report-icon" />
+            <FontAwesomeIcon icon={faFlag} className="report-modal-icon" />
             <h2>Report Post</h2>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button className="report-modal-close-btn" onClick={onClose}>
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
@@ -151,115 +179,127 @@ export default function ReportModal({ isOpen, onClose, post }) {
         <div className="report-modal-body">
           {/* Self-reporting warning */}
           {isOwnPost && (
-            <div className="self-report-warning">
-              <FontAwesomeIcon icon={faUserSlash} />
-              <div>
-                <strong>Cannot Report Your Own Post</strong>
+            <div className="report-warning-message report-own-post-warning">
+              <div className="report-warning-icon">
+                <FontAwesomeIcon icon={faUserSlash} />
+              </div>
+              <div className="report-warning-content">
+                <h3>Cannot Report Your Own Post</h3>
                 <p>You are the owner of this post. You cannot report your own content.</p>
               </div>
             </div>
           )}
 
-          {/* 🆕 Monthly reporting limit warning */}
+          {/* Monthly reporting limit warning */}
           {alreadyReportedThisMonth && (
-            <div className="monthly-limit-warning">
-              <FontAwesomeIcon icon={faCalendarAlt} />
-              <div>
-                <strong>Already Reported This Month</strong>
+            <div className="report-warning-message report-monthly-limit-warning">
+              <div className="report-warning-icon">
+                <FontAwesomeIcon icon={faCalendarAlt} />
+              </div>
+              <div className="report-warning-content">
+                <h3>Already Reported This Month</h3>
                 <p>You have already reported this post this month. You can report it again next month if the issue persists.</p>
               </div>
             </div>
           )}
 
-          {/* Post Preview */}
-          <div className="post-preview">
-            <h4>Post you're reporting:</h4>
-            <div className="preview-content">
-              <strong>{post.title}</strong>
-              <p className="preview-description">
-                {post.description.length > 100 
-                  ? `${post.description.substring(0, 100)}...` 
-                  : post.description
-                }
-              </p>
-              <div className="preview-meta">
-                <span>By: {post.first_name} {post.last_name}</span>
-                <span>Type: {post.type}</span>
+          {/* Only show post preview and form if not self-reporting and not already reported */}
+          {!isOwnPost && !alreadyReportedThisMonth && (
+            <>
+              {/* Post Preview */}
+              <div className="report-post-preview">
+                <h4>Post you're reporting:</h4>
+                <div className="report-preview-content">
+                  <strong>{post.title}</strong>
+                  <p className="report-preview-description">
+                    {post.description.length > 100 
+                      ? `${post.description.substring(0, 100)}...` 
+                      : post.description
+                    }
+                  </p>
+                  <div className="report-preview-meta">
+                    <span>By: {post.first_name} {post.last_name}</span>
+                    <span>Type: {post.type}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <form onSubmit={handleSubmit} className="report-form">
-            <div className="form-group">
-              <label htmlFor="reason" className="required">
-                <FontAwesomeIcon icon={faExclamationTriangle} />
-                Why are you reporting this post?
-              </label>
-              <select
-                id="reason"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                required
-                disabled={isOwnPost || loading || alreadyReportedThisMonth}
-              >
-                <option value="">Select a reason</option>
-                {reportReasons.map((reasonOption, index) => (
-                  <option key={index} value={reasonOption}>
-                    {reasonOption}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <form onSubmit={handleSubmit} className="report-form">
+                <div className="report-form-group">
+                  <label htmlFor="reason" className="report-required">
+                    <FontAwesomeIcon icon={faExclamationTriangle} />
+                    Why are you reporting this post?
+                  </label>
+                  <select
+                    id="reason"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    required
+                    disabled={loading}
+                  >
+                    <option value="">Select a reason</option>
+                    {reportReasons.map((reasonOption, index) => (
+                      <option key={index} value={reasonOption}>
+                        {reasonOption}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="form-group">
-              <label htmlFor="additionalInfo">
-                Additional information (optional)
-              </label>
-              <textarea
-                id="additionalInfo"
-                value={additionalInfo}
-                onChange={(e) => setAdditionalInfo(e.target.value)}
-                placeholder="Please provide any additional details that might help us review this post..."
-                rows="4"
-                disabled={isOwnPost || loading || alreadyReportedThisMonth}
-              />
-            </div>
+                <div className="report-form-group">
+                  <label htmlFor="additionalInfo">
+                    Additional information (optional)
+                  </label>
+                  <textarea
+                    id="additionalInfo"
+                    value={additionalInfo}
+                    onChange={(e) => setAdditionalInfo(e.target.value)}
+                    placeholder="Please provide any additional details that might help us review this post..."
+                    rows="4"
+                    disabled={loading}
+                  />
+                </div>
 
-            <div className="report-note">
-              <FontAwesomeIcon icon={faExclamationTriangle} />
-              <p>
-                {alreadyReportedThisMonth 
-                  ? "You can report this post again next month if the issue persists."
-                  : "Your report will be reviewed by our admin team. We'll notify you of any updates."
-                }
-              </p>
-            </div>
+                <div className="report-note">
+                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                  <p>
+                    Your report will be reviewed by our admin team. We'll notify you of any updates.
+                  </p>
+                </div>
 
-            <div className="modal-actions">
+                <div className="report-modal-actions">
+                  <button 
+                    type="button" 
+                    className="report-btn-cancel" 
+                    onClick={onClose}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="report-btn-submit"
+                    disabled={loading || !reason}
+                  >
+                    {loading ? 'Submitting...' : 'Submit Report'}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
+
+          {/* Show close button only when there are warnings */}
+          {(isOwnPost || alreadyReportedThisMonth) && (
+            <div className="report-modal-actions">
               <button 
                 type="button" 
-                className="btn-cancel" 
+                className="report-btn-close-warning" 
                 onClick={onClose}
-                disabled={loading}
               >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="btn-submit"
-                disabled={isOwnPost || loading || !reason || alreadyReportedThisMonth}
-              >
-                {loading 
-                  ? 'Submitting...' 
-                  : isOwnPost 
-                    ? 'Cannot Report Own Post' 
-                    : alreadyReportedThisMonth
-                      ? 'Already Reported This Month'
-                      : 'Submit Report'
-                }
+                Close
               </button>
             </div>
-          </form>
+          )}
         </div>
       </div>
     </div>
