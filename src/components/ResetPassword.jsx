@@ -28,44 +28,48 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  useEffect(() => {
-    const verifyToken = async () => {
-      if (!token) {
+ useEffect(() => {
+  const verifyToken = async () => {
+    if (!token) {
+      setTokenValid(false);
+      setIsVerifying(false);
+      toast.error('Invalid reset link');
+      return;
+    }
+
+    try {
+   
+      
+      const response = await fetch(`${wifi}/auth/verify-reset-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await response.json();
+      
+      
+      if (data.success) {
+       
+        setTokenValid(true);
+      } else {
+       
         setTokenValid(false);
-        setIsVerifying(false);
-        toast.error('Invalid reset link');
-        return;
+        toast.error(data.error || 'Invalid or expired reset link');
       }
+    } catch (error) {
+      console.error('🔐 Frontend: Token verification error:', error);
+      setTokenValid(false);
+      toast.error('Network error verifying reset link');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
-      try {
-        const response = await fetch(`${wifi}/auth/verify-reset-token`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ token }),
-        });
-
-        const data = await response.json();
-        
-        if (data.success) {
-          setTokenValid(true);
-        } else {
-          setTokenValid(false);
-          toast.error(data.error || 'Invalid or expired reset link');
-        }
-      } catch (error) {
-        console.error('Token verification error:', error);
-        setTokenValid(false);
-        toast.error('Network error verifying reset link');
-      } finally {
-        setIsVerifying(false);
-      }
-    };
-
-    verifyToken();
-  }, [token]);
+  verifyToken();
+}, [token, wifi]);
 
   const handleChange = (e) => {
     setFormData({
