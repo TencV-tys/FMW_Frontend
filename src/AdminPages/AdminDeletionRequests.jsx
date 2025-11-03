@@ -6,7 +6,6 @@ import {
   faRefresh,
   faExclamationTriangle,
   faCheckCircle,
-  faUndo,
   faClock,
   faCheck,
   faTimes,
@@ -22,12 +21,6 @@ export default function AdminDeletionRequests() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLimit, setFilterLimit] = useState('all');
   const [activeTab, setActiveTab] = useState('requests');
-  const [actionModal, setActionModal] = useState({ 
-    isOpen: false, 
-    user: null, 
-    action: '', 
-    additionalCount: 1 
-  });
   const [requestModal, setRequestModal] = useState({
     isOpen: false,
     request: null,
@@ -81,79 +74,6 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  const handleResetDeletionCount = async (userId, userName) => {
-    if (!window.confirm(`Reset deletion count for ${userName}? This will allow them to delete posts again this month.`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:8000/api/admin/users/${userId}/reset-deletions`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(data.message || 'Deletion count reset successfully');
-        
-        setUsers(prevUsers => 
-          prevUsers.map(user => 
-            user.id === userId 
-              ? { ...user, deletion_count: 0, limit_reached: false, remaining_deletions: 3 }
-              : user
-          )
-        );
-      } else {
-        const errorData = await response.json(); 
-        alert(errorData.error || 'Failed to reset deletion count');
-      }
-    } catch (error) {
-      console.error('Error resetting deletion count:', error);
-      alert('Error resetting deletion count');
-    }
-  };
-
-  const handleGrantAdditionalDeletions = async (userId, additionalCount = 1) => {
-  try {
-    const response = await fetch(`http://localhost:8000/api/admin/users/${userId}/grant-deletions`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ additional_count: additionalCount })
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      alert(data.message || 'Additional deletions granted successfully');
-      
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId 
-            ? { 
-                ...user, 
-                deletion_count: data.user.deletion_count,
-                limit_reached: data.user.limit_reached,
-                remaining_deletions: data.user.remaining_deletions
-              }
-            : user
-        )
-      );
-      setActionModal({ isOpen: false, user: null, action: '', additionalCount: 1 });
-    } else {
-      const errorData = await response.json();
-      alert(errorData.error || 'Failed to grant additional deletions');
-    }
-  } catch (error) {
-    console.error('Error granting additional deletions:', error);
-    alert('Error granting additional deletions');
-  }
-};
-
   const handleProcessDeletionRequest = async (requestId, action, adminNotes = '') => {
     try {
       const response = await fetch(`http://localhost:8000/api/admin/deletion-requests/${requestId}/process`, {
@@ -203,15 +123,6 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  const openGrantModal = (user, additionalCount = 1) => {
-    setActionModal({
-      isOpen: true,
-      user,
-      action: 'grant',
-      additionalCount
-    });
-  };
-
   const openRequestModal = (request, action) => {
     setRequestModal({
       isOpen: true,
@@ -222,7 +133,6 @@ export default function AdminDeletionRequests() {
   };
 
   const closeModal = () => {
-    setActionModal({ isOpen: false, user: null, action: '', additionalCount: 1 });
     setRequestModal({ isOpen: false, request: null, action: '', adminNotes: '' });
   };
 
@@ -235,7 +145,7 @@ export default function AdminDeletionRequests() {
     setActiveTab('users');
     setSearchTerm('');
     setFilterLimit('all');
-    // Scroll to the specific user (this will be handled by the filtered list)
+    // Scroll to the specific user
     setTimeout(() => {
       const userElement = document.getElementById(`user-${userId}`);
       if (userElement) {
@@ -278,9 +188,9 @@ export default function AdminDeletionRequests() {
   };
 
   const getStatusClass = (user) => {
-    if (user.limit_reached) return 'deletion-status-banned';
-    if (user.deletion_count >= 2) return 'deletion-status-suspended';
-    return 'deletion-status-active';
+    if (user.limit_reached) return 'adr-status-banned';
+    if (user.deletion_count >= 2) return 'adr-status-suspended';
+    return 'adr-status-active';
   };
 
   const getStatusText = (user) => {
@@ -301,18 +211,18 @@ export default function AdminDeletionRequests() {
 
   return (
     <>
-      {/* Header Section - With content like ManageUsers */}
-      <div className="manage-users-header">
-        <div className="manage-users-header-content">
+      {/* Header Section */}
+      <div className="adr-header">
+        <div className="adr-header-content">
           <p>Manage user post deletion limits and approve additional deletions</p>
           
           {/* Recently Approved User Notification */}
           {recentlyApprovedUser && (
-            <div className="deletion-recently-approved-banner">
+            <div className="adr-recently-approved-banner">
               <FontAwesomeIcon icon={faCheckCircle} />
               Successfully approved request for {recentlyApprovedUser.name}
               <button 
-                className="deletion-navigate-user-btn"
+                className="adr-navigate-user-btn"
                 onClick={() => handleNavigateToUser(recentlyApprovedUser.id)}
               >
                 <FontAwesomeIcon icon={faUser} />
@@ -322,7 +232,7 @@ export default function AdminDeletionRequests() {
           )}
         </div>
         <button 
-          className="admin-deletion-refresh-btn"
+          className="adr-refresh-btn"
           onClick={() => {
             fetchUsersDeletionStats();
             fetchDeletionRequests();
@@ -336,16 +246,16 @@ export default function AdminDeletionRequests() {
       </div>
 
       {/* Tabs */}
-      <div className="deletion-requests-tabs">
+      <div className="adr-tabs">
         <button 
-          className={`deletion-tab-button ${activeTab === 'requests' ? 'active' : ''}`}
+          className={`adr-tab-button ${activeTab === 'requests' ? 'active' : ''}`}
           onClick={() => setActiveTab('requests')}
         >
           <FontAwesomeIcon icon={faClock} />
           Pending Requests ({stats.pendingRequests})
         </button>
         <button 
-          className={`deletion-tab-button ${activeTab === 'users' ? 'active' : ''}`}
+          className={`adr-tab-button ${activeTab === 'users' ? 'active' : ''}`}
           onClick={() => {
             setActiveTab('users');
             setRecentlyApprovedUser(null);
@@ -354,72 +264,72 @@ export default function AdminDeletionRequests() {
           <FontAwesomeIcon icon={faExclamationTriangle} />
           User Statistics ({stats.totalUsers})
           {recentlyApprovedUser && (
-            <span className="deletion-tab-notification-dot"></span>
+            <span className="adr-tab-notification-dot"></span>
           )}
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="users-stats">
+      <div className="adr-stats">
         <div 
-          className={`stat-card ${filterLimit === 'all' && activeTab === 'users' ? 'active' : ''}`}
+          className={`adr-stat-card ${filterLimit === 'all' && activeTab === 'users' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('all')}
         >
-          <span className="user-stat-number">{stats.totalUsers}</span>
-          <span className="stat-label">Total Users</span>
+          <span className="adr-stat-number">{stats.totalUsers}</span>
+          <span className="adr-stat-label">Total Users</span>
         </div>
         
         <div 
-          className={`stat-card ${filterLimit === 'limit_reached' && activeTab === 'users' ? 'active' : ''}`}
+          className={`adr-stat-card ${filterLimit === 'limit_reached' && activeTab === 'users' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('limit_reached')}
         >
-          <span className="user-stat-number">{stats.limitReached}</span>
-          <span className="stat-label">Limit Reached</span>
+          <span className="adr-stat-number">{stats.limitReached}</span>
+          <span className="adr-stat-label">Limit Reached</span>
         </div>
         
         <div 
-          className={`stat-card ${filterLimit === 'approaching' && activeTab === 'users' ? 'active' : ''}`}
+          className={`adr-stat-card ${filterLimit === 'approaching' && activeTab === 'users' ? 'active' : ''}`}
           onClick={() => handleStatCardClick('approaching')}
         >
-          <span className="user-stat-number">{stats.approachingLimit}</span>
-          <span className="stat-label">Approaching Limit</span>
+          <span className="adr-stat-number">{stats.approachingLimit}</span>
+          <span className="adr-stat-label">Approaching Limit</span>
         </div>
         
         <div 
-          className="stat-card"
+          className="adr-stat-card"
           onClick={() => handleStatCardClick('all')}
         >
-          <span className="user-stat-number">{stats.totalDeletions}</span>
-          <span className="stat-label">Total Deletions</span>
+          <span className="adr-stat-number">{stats.totalDeletions}</span>
+          <span className="adr-stat-label">Total Deletions</span>
         </div>
       </div>
 
       {/* Pending Requests Tab */}
       {activeTab === 'requests' && (
-        <div className='manage-users-table-darkbrown'>
-          <div className='manage-users-table-lightbrown'>
-            <div className='manage-users-table-content'>
-              <div className='manage-users-table-title'>
+        <div className='adr-table-darkbrown'>
+          <div className='adr-table-lightbrown'>
+            <div className='adr-table-content'>
+              <div className='adr-table-title'>
                 <h2>Pending Deletion Requests</h2>
-                <div className="users-header-info">
-                  <span className="users-count">
+                <div className="adr-header-info">
+                  <span className="adr-users-count">
                     {pendingRequests.length} pending request{pendingRequests.length !== 1 ? 's' : ''}
                   </span>
                 </div>
               </div>
 
               {requestsLoading ? (
-                <div className="loading-state">
-                  <div className="loading-spinner"></div>
+                <div className="adr-loading-state">
+                  <div className="adr-loading-spinner"></div>
                   <p>Loading deletion requests...</p>
                 </div>
               ) : pendingRequests.length === 0 ? (
-                <div className="empty-state">
+                <div className="adr-empty-state">
                   <p>No pending deletion requests found.</p>
                 </div>
               ) : (
-                <div className="table-wrapper">
-                  <table className='users-table'>
+                <div className="adr-table-wrapper">
+                  <table className='adr-users-table'>
                     <thead>
                       <tr>
                         <th>User Information</th>
@@ -432,13 +342,13 @@ export default function AdminDeletionRequests() {
                       {pendingRequests.map(request => (
                         <tr key={request.id}>
                           <td>
-                            <div className="user-info">
+                            <div className="adr-user-info">
                               <strong>{request.first_name} {request.last_name}</strong>
                               <small>{request.email}</small>
-                              <div className="user-info">
+                              <div className="adr-user-info">
                                 Current Deletions: {request.current_deletions || 0}/3
                                 <button 
-                                  className="deletion-view-user-btn"
+                                  className="adr-view-user-btn"
                                   onClick={() => handleNavigateToUser(request.user_id)}
                                   title="View and manage this user's deletion limits"
                                 >
@@ -449,11 +359,11 @@ export default function AdminDeletionRequests() {
                             </div>
                           </td>
                           <td>
-                            <div className="deletion-request-details">
+                            <div className="adr-request-details">
                               <strong>Reason:</strong>
-                              <p className="deletion-request-reason">{request.reason}</p>
+                              <p className="adr-request-reason">{request.reason}</p>
                               {request.post_title && (
-                                <div className="deletion-post-info">
+                                <div className="adr-post-info">
                                   <strong>Related Post:</strong> {request.post_title}
                                 </div>
                               )}
@@ -463,9 +373,9 @@ export default function AdminDeletionRequests() {
                             {formatDate(request.created_at)}
                           </td>
                           <td>
-                            <div className="users-table-actions">
+                            <div className="adr-table-actions">
                               <button
-                                className="deletion-action-btn approve"
+                                className="adr-action-btn approve"
                                 onClick={() => openRequestModal(request, 'approve')}
                                 title="Approve this deletion request"
                               >
@@ -473,7 +383,7 @@ export default function AdminDeletionRequests() {
                                 Approve
                               </button>
                               <button
-                                className="deletion-action-btn reject"
+                                className="adr-action-btn reject"
                                 onClick={() => openRequestModal(request, 'reject')}
                                 title="Reject this deletion request"
                               >
@@ -497,8 +407,8 @@ export default function AdminDeletionRequests() {
       {activeTab === 'users' && (
         <>
           {/* Filters */}
-          <div className="users-filters">
-            <div className="search-box">
+          <div className="adr-filters">
+            <div className="adr-search-box">
               <FontAwesomeIcon icon={faSearch} />
               <input
                 type="text"
@@ -508,7 +418,7 @@ export default function AdminDeletionRequests() {
               />
             </div>
             
-            <div className="filter-group">
+            <div className="adr-filter-group">
               <FontAwesomeIcon icon={faFilter} />
               <select 
                 value={filterLimit}
@@ -521,44 +431,44 @@ export default function AdminDeletionRequests() {
             </div>
 
             {(searchTerm || filterLimit !== 'all' || recentlyApprovedUser) && (
-              <button className="deletion-clear-filters-btn" onClick={clearFilters}>
+              <button className="adr-clear-filters-btn" onClick={clearFilters}>
                 Clear Filters
-              </button>
+              </button> 
             )}
           </div>
 
-          {/* Users Table */}
-          <div className='manage-users-table-darkbrown'>
-            <div className='manage-users-table-lightbrown'>
-              <div className='manage-users-table-content'>
-                <div className='manage-users-table-title'>
+          {/* Users Table - REMOVED ACTIONS COLUMN */}
+          <div className='adr-table-darkbrown'>
+            <div className='adr-table-lightbrown'>
+              <div className='adr-table-content'>
+                <div className='adr-table-title'>
                   <h2>Users Deletion Status</h2>
-                  <div className="users-header-info">
-                    <span className="users-count">
+                  <div className="adr-header-info">
+                    <span className="adr-users-count">
                       {stats.filteredUsers} of {stats.totalUsers} users
                     </span>
                     {(searchTerm || filterLimit !== 'all' || recentlyApprovedUser) && (
-                      <div className="active-filters">
+                      <div className="adr-active-filters">
                         <span>Active filters:</span>
-                        {searchTerm && <span className="filter-tag">Search: "{searchTerm}"</span>}
-                        {filterLimit !== 'all' && <span className="filter-tag">{filterLimit === 'limit_reached' ? 'Limit Reached' : 'Approaching Limit'}</span>}
-                        {recentlyApprovedUser && <span className="filter-tag highlight">Recently Approved: {recentlyApprovedUser.name}</span>}
+                        {searchTerm && <span className="adr-filter-tag">Search: "{searchTerm}"</span>}
+                        {filterLimit !== 'all' && <span className="adr-filter-tag">{filterLimit === 'limit_reached' ? 'Limit Reached' : 'Approaching Limit'}</span>}
+                        {recentlyApprovedUser && <span className="adr-filter-tag highlight">Recently Approved: {recentlyApprovedUser.name}</span>}
                       </div>
                     )}
                   </div>
                 </div>
 
                 {loading ? (
-                  <div className="loading-state">
-                    <div className="loading-spinner"></div>
+                  <div className="adr-loading-state">
+                    <div className="adr-loading-spinner"></div>
                     <p>Loading users deletion data...</p>
                   </div>
                 ) : filteredUsers.length === 0 ? (
-                  <div className="empty-state">
+                  <div className="adr-empty-state">
                     <p>No users found matching your criteria.</p>
                     {(searchTerm || filterLimit !== 'all') && (
                       <button 
-                        className="retry-btn" 
+                        className="adr-retry-btn" 
                         onClick={clearFilters}
                       >
                         Clear Filters
@@ -566,14 +476,14 @@ export default function AdminDeletionRequests() {
                     )}
                   </div>
                 ) : (
-                  <div className="table-wrapper">
-                    <table className='users-table'>
+                  <div className="adr-table-wrapper">
+                    <table className='adr-users-table'>
                       <thead>
                         <tr>
                           <th>User Information</th>
                           <th>Deletion Status</th>
                           <th>Deletion Count</th>
-                          <th>Actions</th>
+                          {/* REMOVED ACTIONS COLUMN HEADER */}
                         </tr>
                       </thead>
                       <tbody>
@@ -581,32 +491,32 @@ export default function AdminDeletionRequests() {
                           <tr 
                             key={user.id} 
                             id={`user-${user.id}`}
-                            className={recentlyApprovedUser && recentlyApprovedUser.id === user.id ? 'deletion-recently-approved-user' : ''}
+                            className={recentlyApprovedUser && recentlyApprovedUser.id === user.id ? 'adr-recently-approved-user' : ''}
                           >
                             <td>
-                              <div className="user-info">
+                              <div className="adr-user-info">
                                 <strong>{user.first_name} {user.last_name}</strong>
                                 <small>{user.email}</small>
                                 <div>
-                                  Status: <span className={`user-status-badge user-status-${user.status}`}>
+                                  Status: <span className={`adr-user-status-badge adr-user-status-${user.status}`}>
                                     {user.status}
                                   </span>
                                 </div>
                               </div>
                             </td>
                             <td>
-                              <span className={`deletion-status-badge ${getStatusClass(user)}`}>
+                              <span className={`adr-status-badge ${getStatusClass(user)}`}>
                                 {getStatusText(user)}
                               </span>
                             </td>
                             <td>
-                              <div className="deletion-progress-container">
-                                <span className="deletion-progress-text">
+                              <div className="adr-progress-container">
+                                <span className="adr-progress-text">
                                   {user.deletion_count || 0} / 3
                                 </span>
-                                <div className="deletion-progress-bar">
+                                <div className="adr-progress-bar">
                                   <div 
-                                    className={`deletion-progress-fill ${
+                                    className={`adr-progress-fill ${
                                       user.limit_reached 
                                         ? 'limit-reached' 
                                         : user.deletion_count >= 2 
@@ -618,51 +528,7 @@ export default function AdminDeletionRequests() {
                                 </div>
                               </div>
                             </td>
-                            <td>
-                              <div className="users-table-actions">
-                                {user.limit_reached && (
-                                  <>
-                                    <button
-                                      className="action-btn activate"
-                                      onClick={() => handleResetDeletionCount(user.id, `${user.first_name} ${user.last_name}`)}
-                                      title="Reset deletion count to zero"
-                                    >
-                                      <FontAwesomeIcon icon={faUndo} />
-                                      Reset
-                                    </button>
-                                    <button
-                                      className="action-btn activate"
-                                      onClick={() => openGrantModal(user, 1)}
-                                      title="Grant 1 additional deletion"
-                                    >
-                                      <FontAwesomeIcon icon={faCheckCircle} />
-                                      +1
-                                    </button>
-                                    <button
-                                      className="action-btn activate"
-                                      onClick={() => openGrantModal(user, 3)}
-                                      title="Grant 3 additional deletions"
-                                    >
-                                      <FontAwesomeIcon icon={faCheckCircle} />
-                                      +3
-                                    </button>
-                                  </>
-                                )}
-                                {!user.limit_reached && (user.deletion_count || 0) > 0 && (
-                                  <button
-                                    className="action-btn activate"
-                                    onClick={() => handleResetDeletionCount(user.id, `${user.first_name} ${user.last_name}`)}
-                                    title="Reset deletion count"
-                                  >
-                                    <FontAwesomeIcon icon={faUndo} />
-                                    Reset
-                                  </button>
-                                )}
-                                {(user.deletion_count || 0) === 0 && (
-                                  <span className="deletion-no-actions">No actions needed</span>
-                                )}
-                              </div>
-                            </td>
+                            {/* REMOVED ACTIONS COLUMN TD */}
                           </tr>
                         ))}
                       </tbody>
@@ -675,86 +541,32 @@ export default function AdminDeletionRequests() {
         </>
       )}
 
-      {/* Grant Deletions Modal */}
-      {actionModal.isOpen && actionModal.user && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Grant Additional Deletions</h3>
-              <button 
-                className="modal-close"
-                onClick={closeModal}
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="deletion-info-banner">
-                <FontAwesomeIcon icon={faCheckCircle} />
-                Grant additional deletion capacity to user
-              </div>
-              
-              <div className="deletion-user-details">
-                <p><strong>User:</strong> {actionModal.user.first_name} {actionModal.user.last_name}</p>
-                <p><strong>Email:</strong> {actionModal.user.email}</p>
-                <p><strong>Current Deletions:</strong> {actionModal.user.deletion_count || 0}/3</p>
-                <p><strong>Additional Deletions:</strong> {actionModal.additionalCount}</p>
-                <p><strong>New Total:</strong> {Math.max(0, (actionModal.user.deletion_count || 0) - actionModal.additionalCount)}/3</p>
-              </div>
-
-              <div className="deletion-info-box">
-                <strong>Note:</strong>
-                <ul>
-                  <li>Granting additional deletions reduces their current count</li>
-                  <li>User will be notified about the granted deletions</li>
-                  <li>This action is logged for audit purposes</li>
-                </ul>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button 
-                className="btn-secondary"
-                onClick={closeModal}
-              >
-                Cancel
-              </button>
-              <button 
-                className="btn-primary"
-                onClick={() => handleGrantAdditionalDeletions(actionModal.user.id, actionModal.additionalCount)}
-              >
-                Grant {actionModal.additionalCount} Deletion{actionModal.additionalCount > 1 ? 's' : ''}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Request Processing Modal */}
       {requestModal.isOpen && requestModal.request && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="adr-modal-overlay" onClick={closeModal}>
+          <div className="adr-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="adr-modal-header">
               <h3>{requestModal.action === 'approve' ? 'Approve' : 'Reject'} Deletion Request</h3>
               <button 
-                className="modal-close"
+                className="adr-modal-close"
                 onClick={closeModal}
               >
                 ×
               </button>
             </div>
-            <div className="modal-body">
-              <div className={`deletion-info-banner ${requestModal.action === 'approve' ? 'approve' : 'reject'}`}>
+            <div className="adr-modal-body">
+              <div className={`adr-info-banner ${requestModal.action === 'approve' ? 'approve' : 'reject'}`}>
                 <FontAwesomeIcon icon={requestModal.action === 'approve' ? faCheck : faTimes} />
                 {requestModal.action === 'approve' ? 'Approve' : 'Reject'} deletion request from {requestModal.request.first_name} {requestModal.request.last_name}
               </div>
               
-              <div className="deletion-request-details-modal">
+              <div className="adr-request-details-modal">
                 <p><strong>User:</strong> {requestModal.request.first_name} {requestModal.request.last_name} ({requestModal.request.email})</p>
                 <p><strong>Request Date:</strong> {formatDate(requestModal.request.created_at)}</p>
                 <p><strong>Current Deletions:</strong> {requestModal.request.current_deletions || 0}/3</p>
-                <div className="deletion-reason-section">
+                <div className="adr-reason-section">
                   <strong>Reason:</strong>
-                  <div className="deletion-reason-text">{requestModal.request.reason}</div>
+                  <div className="adr-reason-text">{requestModal.request.reason}</div>
                 </div>
                 {requestModal.request.post_title && (
                   <p><strong>Related Post:</strong> {requestModal.request.post_title}</p>
@@ -762,7 +574,7 @@ export default function AdminDeletionRequests() {
               </div>
 
               {requestModal.action === 'reject' && (
-                <div className="form-group">
+                <div className="adr-form-group">
                   <label>Reason for rejection (optional):</label>
                   <textarea
                     placeholder="Explain why this request is being rejected..."
@@ -773,42 +585,43 @@ export default function AdminDeletionRequests() {
                 </div>
               )}
 
-              <div className="deletion-info-box">
+              <div className="adr-info-box">
                 <strong>What happens when {requestModal.action === 'approve' ? 'approved' : 'rejected'}:</strong>
                 <ul>
                   {requestModal.action === 'approve' ? (
                     <>
-                      <li>This specific post deletion will be processed</li>
-                      <li>User's deletion count remains the same</li>
-                      <li>You can grant additional deletions to this user in the User Statistics tab</li>
-                      <li>User will receive a notification</li>
+                      <li>This specific post deletion will be processed immediately</li>
+                      <li>User's deletion count will be incremented by 1</li>
+                      <li>User will receive email notification about the approval</li>
+                      <li>If user reaches limit, they can request additional deletions</li>
                     </>
                   ) : (
                     <>
                       <li>Request will be marked as rejected</li>
                       <li>User's deletion limit remains unchanged</li>
                       <li>User will receive a notification with your feedback</li>
+                      <li>The post will not be deleted</li>
                     </>
                   )}
                 </ul>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="adr-modal-footer">
               <button 
-                className="btn-secondary"
+                className="adr-btn-secondary"
                 onClick={closeModal}
               >
                 Cancel
               </button>
               <button 
-                className={requestModal.action === 'approve' ? 'btn-primary' : 'btn-warning'}
+                className={requestModal.action === 'approve' ? 'adr-btn-primary' : 'adr-btn-warning'}
                 onClick={() => handleProcessDeletionRequest(
                   requestModal.request.id, 
                   requestModal.action, 
                   requestModal.adminNotes
                 )}
               >
-                {requestModal.action === 'approve' ? 'Approve' : 'Reject'} Request
+                {requestModal.action === 'approve' ? 'Approve Request' : 'Reject Request'}
               </button>
             </div>
           </div>

@@ -19,9 +19,9 @@ import {
   faPlusCircle,
   faTimes
 } from '@fortawesome/free-solid-svg-icons';
-import './styles/Notifications.css';
+import './styles/Notifications.css'; 
 
-export default function Notifications() {
+export default function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -33,6 +33,12 @@ export default function Notifications() {
     user_banned: 0,
     feedback_submitted: 0,
     deletion_request: 0
+  });
+  const [confirmationModal, setConfirmationModal] = useState({
+    isOpen: false,
+    type: '', // 'markAllRead' or 'clearAll'
+    title: '',
+    message: ''
   });
 
   useEffect(() => {
@@ -128,6 +134,7 @@ export default function Notifications() {
       if (response.ok) {
         setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true })));
         fetchNotificationStats();
+        closeConfirmationModal();
       }
     } catch (error) {
       console.error('Error marking all as read:', error);
@@ -151,20 +158,55 @@ export default function Notifications() {
   };
 
   const clearAllNotifications = async () => {
-    if (window.confirm('Are you sure you want to clear all notifications?')) {
-      try {
-        const response = await fetch('http://localhost:8000/api/admin/notifications', {
-          method: 'DELETE',
-          credentials: 'include'
-        });
+    try {
+      const response = await fetch('http://localhost:8000/api/admin/notifications', {
+        method: 'DELETE',
+        credentials: 'include'
+      });
 
-        if (response.ok) {
-          setNotifications([]);
-          fetchNotificationStats();
-        }
-      } catch (error) {
-        console.error('Error clearing notifications:', error);
+      if (response.ok) {
+        setNotifications([]);
+        fetchNotificationStats();
+        closeConfirmationModal();
       }
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
+  };
+
+  // Confirmation Modal Functions
+  const openMarkAllReadConfirmation = () => {
+    setConfirmationModal({
+      isOpen: true,
+      type: 'markAllRead',
+      title: 'Mark All as Read',
+      message: `Are you sure you want to mark all ${stats.unread} unread notifications as read? This action cannot be undone.`
+    });
+  };
+
+  const openClearAllConfirmation = () => {
+    setConfirmationModal({
+      isOpen: true,
+      type: 'clearAll',
+      title: 'Clear All Notifications',
+      message: `Are you sure you want to clear all ${notifications.length} notifications? This action cannot be undone and all notifications will be permanently deleted.`
+    });
+  };
+
+  const closeConfirmationModal = () => {
+    setConfirmationModal({
+      isOpen: false,
+      type: '',
+      title: '',
+      message: ''
+    });
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmationModal.type === 'markAllRead') {
+      markAllAsRead();
+    } else if (confirmationModal.type === 'clearAll') {
+      clearAllNotifications();
     }
   };
 
@@ -193,12 +235,9 @@ export default function Notifications() {
       case 'feedback_deleted':
         return faCommentDots;
       case 'deletion_request':
-      case 'deletion_request_submitted':
-        return faUserLock;
       case 'deletion_request_approved':
-        return faCheckCircle;
       case 'deletion_request_rejected':
-        return faTimes;
+        return faUserLock;
       case 'deletion_reset':
         return faUndo;
       case 'additional_deletions_granted':
@@ -237,12 +276,9 @@ export default function Notifications() {
       case 'feedback_deleted':
         return '#ef4444';
       case 'deletion_request':
-      case 'deletion_request_submitted':
-        return '#FF8904';
       case 'deletion_request_approved':
-        return '#10b981';
       case 'deletion_request_rejected':
-        return '#ef4444';
+        return '#FF8904';
       case 'deletion_reset':
         return '#3b82f6';
       case 'additional_deletions_granted':
@@ -279,7 +315,6 @@ export default function Notifications() {
         return '/admin/feedback';
       
       case 'deletion_request':
-      case 'deletion_request_submitted':
       case 'deletion_request_approved':
       case 'deletion_request_rejected':
       case 'deletion_reset':
@@ -318,22 +353,22 @@ export default function Notifications() {
   return (
     <>
       {/* Header */}
-      <header className="notifications-header">
-        <div className="notifications-header-content">
+      <header className="admin-notif-header">
+        <div className="admin-notif-header-content">
           <p>Manage and view system notifications</p>
         </div>
-        <div className="header-actions">
+        <div className="admin-notif-header-actions">
           <button 
-            className="btn-mark-all-read"
-            onClick={markAllAsRead}
+            className="admin-notif-btn-mark-all-read"
+            onClick={openMarkAllReadConfirmation}
             disabled={stats.unread === 0}
           >
             <FontAwesomeIcon icon={faCheckDouble} />
             Mark All as Read
           </button>
           <button 
-            className="btn-clear-all"
-            onClick={clearAllNotifications}
+            className="admin-notif-btn-clear-all"
+            onClick={openClearAllConfirmation}
             disabled={notifications.length === 0}
           >
             <FontAwesomeIcon icon={faTrash} />
@@ -342,37 +377,37 @@ export default function Notifications() {
         </div>
       </header>
 
-      {/* Stats Cards - Only Important Ones */}
-      <section className="notification-stats">
+      {/* Stats Cards */}
+      <section className="admin-notif-stats">
         <div 
-          className={`stat-card ${filter === 'all' ? 'active' : ''}`}
+          className={`admin-notif-stat-card ${filter === 'all' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('all')}
           style={{ cursor: 'pointer' }}
           title="Show all notifications"
         >
-          <div className="stat-info">
+          <div className="admin-notif-stat-info">
             <h3>{stats.total}</h3>
             <p>Total</p>
           </div>
         </div>
         <div 
-          className={`stat-card ${filter === 'unread' ? 'active' : ''}`}
+          className={`admin-notif-stat-card ${filter === 'unread' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('unread')}
           style={{ cursor: 'pointer' }}
           title="Show unread notifications"
         >
-          <div className="stat-info">
+          <div className="admin-notif-stat-info">
             <h3>{stats.unread}</h3>
             <p>Unread</p>
           </div>
         </div>
         <div 
-          className={`stat-card ${filter === 'report_submitted' ? 'active' : ''}`}
+          className={`admin-notif-stat-card ${filter === 'report_submitted' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('report_submitted')}
           style={{ cursor: 'pointer' }}
           title="Show report notifications"
         >
-          <div className="stat-info">
+          <div className="admin-notif-stat-info">
             <h3>{stats.reports}</h3>
             <p>Reports</p>
           </div>
@@ -380,12 +415,12 @@ export default function Notifications() {
         
         {/* Deletion Request Stats */}
         <div 
-          className={`stat-card ${filter === 'deletion_request' ? 'active' : ''}`}
+          className={`admin-notif-stat-card ${filter === 'deletion_request' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('deletion_request')}
           style={{ cursor: 'pointer' }}
           title="Show deletion request notifications"
         >
-          <div className="stat-info">
+          <div className="admin-notif-stat-info">
             <h3>{stats.deletion_request}</h3>
             <p>Deletion Requests</p>
           </div>
@@ -393,23 +428,23 @@ export default function Notifications() {
         
         {/* User Action Stats */}
         <div 
-          className={`stat-card ${filter === 'user_suspended' ? 'active' : ''}`}
+          className={`admin-notif-stat-card ${filter === 'user_suspended' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('user_suspended')}
           style={{ cursor: 'pointer' }}
           title="Show user suspension notifications"
         >
-          <div className="stat-info">
+          <div className="admin-notif-stat-info">
             <h3>{stats.user_suspended}</h3>
             <p>User Suspensions</p>
           </div>
         </div>
         <div 
-          className={`stat-card ${filter === 'user_banned' ? 'active' : ''}`}
+          className={`admin-notif-stat-card ${filter === 'user_banned' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('user_banned')}
           style={{ cursor: 'pointer' }}
           title="Show user ban notifications"
         >
-          <div className="stat-info">
+          <div className="admin-notif-stat-info">
             <h3>{stats.user_banned}</h3>
             <p>User Bans</p>
           </div>
@@ -417,12 +452,12 @@ export default function Notifications() {
         
         {/* Feedback Stats */}
         <div 
-          className={`stat-card ${filter === 'feedback_submitted' ? 'active' : ''}`}
+          className={`admin-notif-stat-card ${filter === 'feedback_submitted' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('feedback_submitted')}
           style={{ cursor: 'pointer' }}
           title="Show feedback submitted notifications"
         >
-          <div className="stat-info">
+          <div className="admin-notif-stat-info">
             <h3>{stats.feedback_submitted}</h3>
             <p>Feedback</p>
           </div>
@@ -430,13 +465,13 @@ export default function Notifications() {
       </section>
 
       {/* Filters */}
-      <section className="notification-filters">
-        <div className="filter-group">
+      <section className="admin-notif-filters">
+        <div className="admin-notif-filter-group">
           <FontAwesomeIcon icon={faFilter} />
           <select 
             value={filter} 
             onChange={(e) => setFilter(e.target.value)}
-            className="filter-select"
+            className="admin-notif-filter-select"
           >
             <option value="all">All Notifications</option>
             <option value="unread">Unread Only</option>
@@ -450,7 +485,6 @@ export default function Notifications() {
             <option value="user_activated">User Activations</option>
             <option value="user_deleted">User Deletions</option>
             <option value="deletion_request">Deletion Requests</option>
-            <option value="deletion_request_submitted">Request Submitted</option>
             <option value="deletion_request_approved">Request Approved</option>
             <option value="deletion_request_rejected">Request Rejected</option>
             <option value="deletion_reset">Deletion Reset</option>
@@ -465,7 +499,7 @@ export default function Notifications() {
         {/* Clear Filters Button */}
         {isFilterActive() && (
           <button 
-            className="admin-notification-clear-filters-btn"
+            className="admin-notif-clear-filters-btn"
             onClick={clearAllFilters}
             title="Clear all filters"
           >
@@ -476,10 +510,10 @@ export default function Notifications() {
 
       {/* Active Filters Display */}
       {isFilterActive() && (
-        <div className="active-filters-section">
-          <span className="active-filters-label">Active filter:</span>
-          <div className="filter-tags">
-            <span className="filter-tag">
+        <div className="admin-notif-active-filters-section">
+          <span className="admin-notif-active-filters-label">Active filter:</span>
+          <div className="admin-notif-filter-tags">
+            <span className="admin-notif-filter-tag">
               {filter === 'unread' && 'Unread Only'}
               {filter === 'report_submitted' && 'Reports'}
               {filter === 'post_resolved' && 'Resolved Posts'}
@@ -491,7 +525,6 @@ export default function Notifications() {
               {filter === 'user_activated' && 'User Activations'}
               {filter === 'user_deleted' && 'User Deletions'}
               {filter === 'deletion_request' && 'Deletion Requests'}
-              {filter === 'deletion_request_submitted' && 'Request Submitted'}
               {filter === 'deletion_request_approved' && 'Request Approved'}
               {filter === 'deletion_request_rejected' && 'Request Rejected'}
               {filter === 'deletion_reset' && 'Deletion Reset'}
@@ -506,15 +539,15 @@ export default function Notifications() {
       )}
 
       {/* Notifications List */}
-      <section className="notifications-list">
+      <section className="admin-notif-list">
         {loading ? (
-          <div className="loading-state">
+          <div className="admin-notif-loading-state">
             <p>Loading notifications...</p>
           </div>
         ) : notifications.length > 0 ? (
-          <div className="notifications-container">
-            <div className="notifications-header-info">
-              <span className="notifications-count">
+          <div className="admin-notif-container">
+            <div className="admin-notif-header-info">
+              <span className="admin-notif-count">
                 Showing {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
                 {isFilterActive() && ` (Filtered)`}
               </span>
@@ -526,28 +559,28 @@ export default function Notifications() {
               return (
                 <div 
                   key={notification.id} 
-                  className={`notification-item ${notification.is_read ? 'read' : 'unread'} ${
-                    isClickable ? 'clickable' : ''
+                  className={`admin-notif-item ${notification.is_read ? 'admin-notif-read' : 'admin-notif-unread'} ${
+                    isClickable ? 'admin-notif-clickable' : ''
                   }`}
                 >
-                  <div className="notification-icon">
+                  <div className="admin-notif-icon">
                     <FontAwesomeIcon 
                       icon={getNotificationIcon(notification.type)} 
                       style={{ color: getNotificationColor(notification.type) }}
                     />
                   </div>
-                  <div className="notification-content">
+                  <div className="admin-notif-content">
                     <h4>
                       {isClickable ? (
                         <Link 
                           to={notificationLink} 
-                          className="notification-link"
+                          className="admin-notif-link"
                           onClick={() => handleNotificationClick(notification)}
                         >
                           {notification.title}
                           <FontAwesomeIcon 
                             icon={faExternalLinkAlt} 
-                            className="external-link-icon"
+                            className="admin-notif-external-link-icon"
                             title="Click to view related content"
                           />
                         </Link>
@@ -558,19 +591,19 @@ export default function Notifications() {
                       )}
                     </h4>
                     <p>{notification.message}</p>
-                    <div className="notification-meta">
-                      <span className="user">
+                    <div className="admin-notif-meta">
+                      <span className="admin-notif-user">
                         {notification.first_name} {notification.last_name}
                         {notification.role === 'admin' && ' (Admin)'}
                       </span>
-                      <span className="time">{formatTime(notification.created_at)}</span>
-                      <span className="type">{notification.type.replace(/_/g, ' ')}</span>
+                      <span className="admin-notif-time">{formatTime(notification.created_at)}</span>
+                      <span className="admin-notif-type">{notification.type.replace(/_/g, ' ')}</span>
                     </div>
                   </div>
-                  <div className="notification-actions">
+                  <div className="admin-notif-actions">
                     {!notification.is_read && (
                       <button 
-                        className="btn-mark-read"
+                        className="admin-notif-btn-mark-read"
                         onClick={(e) => {
                           e.stopPropagation();
                           markAsRead(notification.id);
@@ -581,7 +614,7 @@ export default function Notifications() {
                       </button>
                     )}
                     <button 
-                      className="btn-delete"
+                      className="admin-notif-btn-delete"
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteNotification(notification.id);
@@ -596,7 +629,7 @@ export default function Notifications() {
             })}
           </div>
         ) : (
-          <div className="empty-state">
+          <div className="admin-notif-empty-state">
             <FontAwesomeIcon icon={faBell} size="3x" />
             <h3>No notifications</h3>
             <p>
@@ -607,7 +640,7 @@ export default function Notifications() {
             </p>
             {isFilterActive() && (
               <button 
-                className="retry-btn" 
+                className="admin-notif-retry-btn" 
                 onClick={clearAllFilters}
               >
                 Clear Filter
@@ -616,6 +649,48 @@ export default function Notifications() {
           </div>
         )}
       </section>
+
+      {/* Confirmation Modal */}
+      {confirmationModal.isOpen && (
+        <div className="admin-notif-modal-overlay" onClick={closeConfirmationModal}>
+          <div className="admin-notif-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-notif-modal-header">
+              <h3>{confirmationModal.title}</h3>
+              <button 
+                className="admin-notif-modal-close"
+                onClick={closeConfirmationModal}
+              >
+                ×
+              </button>
+            </div>
+            <div className="admin-notif-modal-body">
+              <div className="admin-notif-confirm-icon">
+                <FontAwesomeIcon 
+                  icon={confirmationModal.type === 'markAllRead' ? faCheckDouble : faTrash} 
+                  size="3x"
+                />
+              </div>
+              <p>{confirmationModal.message}</p>
+            </div>
+            <div className="admin-notif-modal-footer">
+              <button 
+                className="admin-notif-btn-secondary"
+                onClick={closeConfirmationModal}
+              >
+                Cancel
+              </button>
+              <button 
+                className={`admin-notif-btn-primary ${
+                  confirmationModal.type === 'clearAll' ? 'admin-notif-warning' : ''
+                }`}
+                onClick={handleConfirmAction}
+              >
+                {confirmationModal.type === 'markAllRead' ? 'Mark All as Read' : 'Clear All'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

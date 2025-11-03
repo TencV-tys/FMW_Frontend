@@ -1,35 +1,483 @@
-/* AdminDeletionRequests.css - UNIQUE CLASS NAMES FOR DELETION REQUESTS PAGE */
+/* AdminDeletionRequests.css - ORANGE HEADER/STATS, BROWN EVERYTHING ELSE */
 
-.admin-deletion-requests-content {
-  flex: 1;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 100dvh;
-}
-
-/* Header */
-.admin-deletion-requests-header {
+/* Header - ORANGE */
+.adr-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
 }
-.admin-deletion-refresh-btn{
-  background-color: #FF8904;
+
+.adr-header-content h1 {
+  color: #FF8904; /* ORANGE */
+  margin: 0 0 0.25rem 0;
+  font-size: clamp(1.5rem, 4vw, 2rem);
 }
-.admin-deletion-requests-header-content h1 {
-  color: #FF8904;
-  margin: 0 0 0.5rem 0;
-  font-size: 1.75rem;
+
+.adr-header-content p {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.adr-refresh-btn {
+  background: #FF8904; /* ORANGE */
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.adr-refresh-btn:hover:not(:disabled) {
+  background: #e67a00; /* DARKER ORANGE */
+  transform: translateY(-1px);
+}
+
+.adr-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tabs */
+.adr-tabs {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.adr-tab-button {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.adr-tab-button.active {
+  color: #8B5A2B; /* BROWN */
+  border-bottom-color: #8B5A2B; /* BROWN */
+  background: #f9f5f0; /* Light brown background */
+}
+
+.adr-tab-button:hover:not(.active) {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.adr-tab-notification-dot {
+  width: 8px;
+  height: 8px;
+  background: #8B5A2B; /* BROWN */
+  border-radius: 50%;
+  margin-left: 0.5rem;
+  animation: adr-pulse 2s infinite;
+}
+
+@keyframes adr-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Stats Cards - ORANGE */
+.adr-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.adr-stat-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-left: 4px solid #FF8904; /* ORANGE LEFT BORDER */
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.adr-stat-card:hover:not(.active) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.adr-stat-card.active {
+  border-left: 4px solid #FF6B00; /* DARKER ORANGE */
+  background: #fff9e6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.adr-stat-number {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #FF8904; /* ORANGE NUMBER */
+  line-height: 1.2;
+}
+
+.adr-stat-label {
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* EVERYTHING ELSE STAYS BROWN */
+
+/* Filters */
+.adr-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.adr-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.adr-search-box svg {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  z-index: 1;
+}
+
+.adr-search-box input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.adr-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.adr-filter-group select {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  min-width: 140px;
+  font-size: 0.9rem;
+}
+
+.adr-clear-filters-btn {
+  padding: 0.75rem 1rem;
+  background: #8B5A2B; /* BROWN */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.adr-clear-filters-btn:hover {
+  background: #6d451f; /* DARK BROWN */
+  transform: translateY(-1px);
+}
+
+/* Table Container - BROWN */
+.adr-table-darkbrown {
+  background-color: #8B5A2B; /* BROWN */
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0;
+  flex: 1;
+  min-height: 60dvh;
+}
+
+.adr-table-lightbrown {
+  background-color: #D6A96D; /* LIGHT BROWN */
+  border-radius: 6px;
+  box-shadow: inset 0px 0px 10px 2px rgba(139, 90, 43, 0.3); /* BROWN */
+  height: 100%;
+  min-height: 60dvh;
+}
+
+.adr-table-content {
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 60dvh;
+}
+
+.adr-table-title {
+  background-color: #FBFCF8;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.adr-table-title h2 {
+  margin: 0;
+  color: #8B5A2B; /* BROWN */
+  font-size: 1.25rem;
   font-weight: 700;
 }
-/* AdminDeletionRequests.css - UPDATED BUTTON STYLES */
 
-/* Action buttons for deletion requests */
-.deletion-action-btn {
+.adr-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.adr-users-count {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.adr-active-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #666;
+  flex-wrap: wrap;
+}
+
+.adr-filter-tag {
+  background: rgba(139, 90, 43, 0.1); /* BROWN */
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #8B5A2B; /* BROWN */
+  border: 1px solid rgba(139, 90, 43, 0.2);
+}
+
+.adr-filter-tag.highlight {
+  background: rgba(139, 90, 43, 0.2);
+  color: #8B5A2B;
+  border: 1px solid #8B5A2B;
+}
+
+/* Table - BROWN */
+.adr-table-wrapper {
+  background: #FBFCF8;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow-x: auto;
+  flex: 1;
+  min-height: 40dvh;
+}
+
+.adr-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #FBFCF8;
+  min-width: 800px;
+}
+
+.adr-users-table th {
+  background: #8B5A2B; /* BROWN */
+  color: white;
+  padding: 1rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.adr-users-table td {
+  padding: 1rem 0.75rem;
+  border-bottom: 1px solid #e0e0e0;
+  color: #333;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.adr-users-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.adr-users-table tbody tr:hover {
+  background-color: #f8f8f8;
+}
+
+.adr-users-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* User Info */
+.adr-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.adr-user-info strong {
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.adr-user-info small {
+  color: #666;
+  font-size: 0.8rem;
+  background: #f8f9fa;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+  font-family: monospace;
+}
+
+.adr-user-info div {
+  font-size: 0.8rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.adr-user-status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.adr-user-status-active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.adr-user-status-suspended {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.adr-user-status-banned {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Status Badges - BROWN */
+.adr-status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 100px;
+  justify-content: center;
+}
+
+.adr-status-active {
+  background: #f0e6d2 !important;
+  color: #8B5A2B !important;
+  border: 1px solid #d6a96d !important;
+}
+
+.adr-status-suspended {
+  background: #fff3cd !important;
+  color: #856404 !important;
+  border: 1px solid #ffeaa7 !important;
+}
+
+.adr-status-banned {
+  background: #f8d7da !important;
+  color: #721c24 !important;
+  border: 1px solid #f1b0b7 !important;
+}
+
+/* Progress Bar - BROWN */
+.adr-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 120px;
+}
+
+.adr-progress-text {
+  font-size: 1rem;
+  color: #8B5A2B; /* BROWN */
+  font-weight: 600;
+  text-align: center;
+}
+
+.adr-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.adr-progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.adr-progress-fill.normal { 
+  background: #8B5A2B; /* Brown for normal */
+}
+
+.adr-progress-fill.approaching { 
+  background: #D6A96D; /* Light brown for approaching */
+}
+
+.adr-progress-fill.limit-reached { 
+  background: #654321; /* Dark brown for limit reached */
+}
+
+/* Actions - ONLY FOR REQUESTS TAB */
+.adr-table-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.adr-action-btn {
   padding: 0.5rem 0.75rem;
   border: none;
   border-radius: 4px;
@@ -45,52 +493,49 @@
   min-width: 70px;
 }
 
-.deletion-action-btn.approve {
+.adr-action-btn.approve {
   background: #d4edda;
   color: #155724;
   border: 1px solid #c3e6cb;
 }
 
-.deletion-action-btn.reject {
+.adr-action-btn.reject {
   background: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
 }
 
-.deletion-action-btn:hover {
+.adr-action-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* Reset and Grant buttons in user statistics */
-.users-table-actions .action-btn.activate {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  padding: 0.5rem 0.75rem;
+/* Request Details - BROWN */
+.adr-request-details {
+  max-width: 300px;
+}
+
+.adr-request-reason {
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  background: #f8f9fa;
   border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  border-left: 3px solid #8B5A2B; /* BROWN */
+  font-size: 0.9rem;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.adr-post-info {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #e3f2fd;
+  border-radius: 4px;
   font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
-  min-width: 60px;
-  margin: 0.1rem;
 }
 
-.users-table-actions .action-btn.activate:hover {
-  background: #c3e6cb;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-/* View User Button */
-.deletion-view-user-btn {
-  background: #8B5A2B;
+.adr-view-user-btn {
+  background: #8B5A2B; /* BROWN */
   color: white;
   border: none;
   padding: 0.25rem 0.5rem;
@@ -104,14 +549,27 @@
   transition: all 0.2s ease;
 }
 
-.deletion-view-user-btn:hover {
-  background: #6d451f;
+.adr-view-user-btn:hover {
+  background: #6d451f; /* DARK BROWN */
   transform: translateY(-1px);
 }
 
-/* Navigate User Button */
-.deletion-navigate-user-btn {
-  background: #8B5A2B;
+/* Recently Approved Banner */
+.adr-recently-approved-banner {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.adr-navigate-user-btn {
+  background: #8B5A2B; /* BROWN */
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -125,877 +583,25 @@
   transition: all 0.2s ease;
 }
 
-.deletion-navigate-user-btn:hover {
-  background: #6d451f;
+.adr-navigate-user-btn:hover {
+  background: #6d451f; /* DARK BROWN */
   transform: translateY(-1px);
 }
 
-/* No Actions Text */
-.deletion-no-actions {
-  color: #666;
-  font-size: 0.8rem;
-  font-style: italic;
-  padding: 0.5rem;
-}
-
-/* Progress Bar Styles */
-.deletion-progress-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 120px;
-}
-
-.deletion-progress-text {
-  font-size: 1rem;
-  color: #8B5A2B;
-  font-weight: 600;
-  text-align: center;
-}
-
-.deletion-progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e9ecef;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.deletion-progress-fill {
-  height: 100%;
-  transition: width 0.3s ease;
-}
-
-.deletion-progress-fill.normal { 
-  background: #28a745; 
-}
-
-.deletion-progress-fill.approaching { 
-  background: #ffc107; 
-}
-
-.deletion-progress-fill.limit-reached { 
-  background: #dc3545; 
-}
-
-/* Status Badges */
-.deletion-status-badge {
-  padding: 0.35rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 100px;
-  justify-content: center;
-  opacity: 1 !important;
-  filter: none !important;
-  backdrop-filter: none !important;
-}
-
-.deletion-status-active {
-  background: #d4edda !important;
-  color: #155724 !important;
-  border: 1px solid #c3e6cb !important;
-}
-
-.deletion-status-suspended {
-  background: #fff3cd !important;
-  color: #856404 !important;
-  border: 1px solid #ffeaa7 !important;
-}
-
-.deletion-status-banned {
-  background: #f8d7da !important;
-  color: #721c24 !important;
-  border: 1px solid #f1b0b7 !important;
-}
-
-/* Recently Approved Banner */
-.deletion-recently-approved-banner {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-}
-
-/* Tab Notification Dot */
-.deletion-tab-notification-dot {
-  width: 8px;
-  height: 8px;
-  background: #8B5A2B;
-  border-radius: 50%;
-  margin-left: 0.5rem;
-  animation: deletion-pulse 2s infinite;
-}
-
-@keyframes deletion-pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-/* Recently Approved User Highlight */
-.deletion-recently-approved-user {
+.adr-recently-approved-user {
   background: #fff5e6 !important;
-  border-left: 4px solid #8B5A2B;
-  animation: deletion-highlightFade 3s ease-in-out;
+  border-left: 4px solid #8B5A2B; /* BROWN */
+  animation: adr-highlightFade 3s ease-in-out;
 }
 
-@keyframes deletion-highlightFade {
+@keyframes adr-highlightFade {
   0% { background: #fff5e6; }
   50% { background: #fff5e6; }
   100% { background: transparent; }
 }
 
-/* Request Details */
-.deletion-request-details {
-  max-width: 300px;
-}
-
-.deletion-request-reason {
-  margin: 0.5rem 0;
-  padding: 0.75rem;
-  background: #f8f9fa;
-  border-radius: 4px;
-  border-left: 3px solid #8B5A2B;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  word-wrap: break-word;
-}
-
-.deletion-post-info {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: #e3f2fd;
-  border-radius: 4px;
-  font-size: 0.8rem;
-}
-
-/* Request Modal Styles */
-.deletion-request-details-modal {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-  border-left: 4px solid #8B5A2B;
-}
-
-.deletion-reason-section {
-  margin: 1rem 0;
-}
-
-.deletion-reason-text {
-  background: white;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-top: 0.5rem;
-  border: 1px solid #e9ecef;
-  line-height: 1.5;
-}
-
-.deletion-info-banner {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-}
-
-.deletion-info-banner.approve {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-}
-
-.deletion-info-banner.reject {
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-}
-
-.deletion-user-details {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-  border-left: 4px solid #8B5A2B;
-}
-
-.deletion-info-box {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-top: 1rem;
-  border-left: 4px solid #8B5A2B;
-}
-
-/* Tabs */
-.deletion-requests-tabs {
-  display: flex;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #ddd;
-}
-
-.deletion-tab-button {
-  background: none;
-  border: none;
-  padding: 1rem 1.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  color: #666;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
-}
-
-.deletion-tab-button.active {
-  color: #8B5A2B;
-  border-bottom-color: #8B5A2B;
-  background: #fff9e6;
-}
-
-.deletion-tab-button:hover:not(.active) {
-  background: #f8f9fa;
-  color: #333;
-}
-
-/* Ensure the buttons in user statistics have proper spacing */
-.users-table-actions {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-/* Make sure the action buttons are properly sized */
-.users-table-actions .action-btn {
-  padding: 0.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* Responsive adjustments for buttons */
-@media (max-width: 768px) {
-  .users-table-actions {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .users-table-actions .action-btn.activate {
-    min-width: 100%;
-    justify-content: center;
-  }
-  
-  .deletion-action-btn {
-    min-width: 100%;
-    justify-content: center;
-  }
-}
-.admin-deletion-requests-header-content p {
-  color: #666;
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-/* ORANGE Refresh Button */
-.admin-deletion-refresh-btn {
-  background: #FF8904;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-
-.admin-deletion-refresh-btn:hover:not(:disabled) {
-  background: #e67a00;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(255, 137, 4, 0.3);
-}
-
-.admin-deletion-refresh-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Tabs - ALL ORANGE */
-.deletion-requests-tabs {
-  display: flex;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #ddd;
-}
-
-.deletion-tab-button {
-  background: none;
-  border: none;
-  padding: 1rem 1.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  color: #666;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
-}
-
-.deletion-tab-button.active {
-  color: #FF8904;
-  border-bottom-color: #FF8904;
-  background: #fff5e6;
-}
-
-.deletion-tab-button:hover:not(.active) {
-  background: #f8f9fa;
-  color: #333;
-}
-
-/* Request Details */
-.deletion-request-details {
-  max-width: 300px;
-}
-
-.deletion-request-reason {
-  margin: 0.5rem 0;
-  padding: 0.75rem;
-  background: #f8f9fa;
-  border-radius: 4px;
-  border-left: 3px solid #FF8904;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  word-wrap: break-word;
-}
-
-.deletion-post-info {
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: #e3f2fd;
-  border-radius: 4px;
-  font-size: 0.8rem;
-}
-
-.deletion-user-info {
-  font-size: 0.8rem;
-  color: #666;
-  background: #f8f9fa;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
-  margin-top: 0.25rem;
-}
-
-/* Request Modal Styles */
-.deletion-request-details-modal {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-  border-left: 4px solid #FF8904;
-}
-
-.deletion-reason-section {
-  margin: 1rem 0;
-}
-
-.deletion-reason-text {
-  background: white;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-top: 0.5rem;
-  border: 1px solid #e9ecef;
-  line-height: 1.5;
-}
-
-.deletion-info-banner.approve {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-}
-
-.deletion-info-banner.reject {
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-}
-
-/* ORANGE Primary Button */
-.deletion-btn-primary {
-  background: #FF8904;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.deletion-btn-primary:hover:not(:disabled) {
-  background: #e67a00;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(255, 137, 4, 0.3);
-}
-
-.deletion-btn-warning {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.deletion-btn-warning:hover {
-  background: #c82333;
-  transform: translateY(-1px);
-}
-
-/* Action buttons for requests */
-.deletion-action-btn.approve {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.deletion-action-btn.reject {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-/* Stats Cards */
-.deletion-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.deletion-stat-card {
-  background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  border-left: 4px solid #FF8904;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.deletion-stat-card:hover:not(.active) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-/* Active stat card */
-.deletion-stat-card.active {
-  border-left: 4px solid #FF8904;
-  background: #fff5e6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 137, 4, 0.15);
-}
-
-.deletion-stat-number {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #FF8904;
-  line-height: 1.2;
-}
-
-.deletion-stat-label {
-  font-size: 0.8rem;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-/* Filters */
-.deletion-filters {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.deletion-search-box {
-  position: relative;
-  flex: 1;
-  min-width: 250px;
-}
-
-.deletion-search-box svg {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #666;
-  z-index: 1;
-}
-
-.deletion-search-box input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  background: white;
-}
-
-.deletion-filter-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-}
-
-.deletion-filter-group select {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: white;
-  min-width: 140px;
-  font-size: 0.9rem;
-}
-
-/* Clear filters button */
-.deletion-clear-filters-btn {
-  padding: 0.75rem 1rem;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer; 
-  font-weight: 600;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.deletion-clear-filters-btn:hover {
-  background: #c0392b;
-  transform: translateY(-1px);
-}
-
-/* Users header info */
-.deletion-header-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.5rem;
-}
-
-.deletion-active-filters {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: #666;
-  flex-wrap: wrap;
-}
-
-.deletion-filter-tag {
-  background: rgba(255, 137, 4, 0.1);
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  color: #FF8904;
-  border: 1px solid rgba(255, 137, 4, 0.2);
-}
-
-/* ORANGE Retry button for empty state */
-.deletion-retry-btn {
-  background: #FF8904;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 1rem;
-  transition: all 0.2s ease;
-}
-
-.deletion-retry-btn:hover {
-  background: #e67a00;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(255, 137, 4, 0.3);
-}
-
-/* Table Container */
-.deletion-table-darkbrown {
-  background-color: #8B5A2B;
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 0;
-  flex: 1;
-  min-height: 60dvh;
-}
-
-.deletion-table-lightbrown {
-  background-color: #D6A96D;
-  border-radius: 6px;
-  box-shadow: inset 0px 0px 10px 2px rgba(139, 90, 43, 0.3);
-  height: 100%;
-  min-height: 60dvh;
-}
-
-.deletion-table-content {
-  padding: 1rem;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 60dvh;
-}
-
-.deletion-table-title {
-  background-color: #FBFCF8;
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.deletion-table-title h2 {
-  margin: 0;
-  color: #FF8904;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.deletion-users-count {
-  color: #666;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-/* Table */
-.deletion-table-wrapper {
-  background: #FBFCF8;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  overflow-x: auto;
-  flex: 1;
-  min-height: 40dvh;
-}
-
-.deletion-users-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #FBFCF8;
-  min-width: 800px;
-}
-
-.deletion-users-table th {
-  background: #8B5A2B;
-  color: white;
-  padding: 1rem 0.75rem;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.deletion-users-table td {
-  padding: 1rem 0.75rem;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
-  font-size: 0.9rem;
-  vertical-align: middle;
-}
-
-.deletion-users-table tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-.deletion-users-table tbody tr:hover {
-  background-color: #f8f8f8;
-}
-
-.deletion-users-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* User Info */
-.deletion-user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.deletion-user-info strong {
-  color: #2c3e50;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.deletion-user-info small {
-  color: #666;
-  font-size: 0.8rem;
-  background: #f8f9fa;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
-  width: fit-content;
-  font-family: monospace;
-}
-
-.deletion-user-info div {
-  font-size: 0.8rem;
-  color: #666;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Status Badges */
-.deletion-status-badge {
-  padding: 0.35rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 100px;
-  justify-content: center;
-}
-
-.deletion-status-active {
-  background: #d4edda !important;
-  color: #155724 !important;
-  border: 1px solid #c3e6cb !important;
-}
-
-.deletion-status-suspended {
-  background: #fff3cd !important;
-  color: #856404 !important;
-  border: 1px solid #ffeaa7 !important;
-}
-
-.deletion-status-banned {
-  background: #f8d7da !important;
-  color: #721c24 !important;
-  border: 1px solid #f1b0b7 !important;
-}
-
-.deletion-status-inactive {
-  background: #e9ecef !important;
-  color: #495057 !important;
-  border: 1px solid #dee2e6 !important;
-}
-
-/* Actions */
-.deletion-table-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.deletion-action-btn {
-  padding: 0.5rem 0.75rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
-  min-width: 70px;
-}
-
-.deletion-action-btn.activate {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.deletion-action-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-/* Progress Bar Styles */
-.deletion-progress-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 120px;
-}
-
-.deletion-progress-text {
-  font-size: 1rem;
-  color: #FF8904;
-  font-weight: 600;
-  text-align: center;
-}
-
-.deletion-progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e9ecef;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.deletion-progress-fill {
-  height: 100%;
-  transition: width 0.3s ease;
-}
-
-.deletion-progress-fill.normal { background: #28a745; }
-.deletion-progress-fill.approaching { background: #ffc107; }
-.deletion-progress-fill.limit-reached { background: #dc3545; }
-
 /* Loading and Empty States */
-.deletion-loading-state, .deletion-empty-state {
+.adr-loading-state, .adr-empty-state {
   text-align: center;
   padding: 3rem 1rem;
   color: #666;
@@ -1009,36 +615,45 @@
   min-height: 40dvh;
 }
 
-.deletion-loading-spinner {
+.adr-loading-spinner {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #FF8904;
+  border-top: 4px solid #8B5A2B; /* BROWN */
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: adr-spin 1s linear infinite;
   margin: 0 auto 1rem;
 }
 
-@keyframes deletion-spin {
+@keyframes adr-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-.deletion-empty-state p {
+.adr-empty-state p {
   margin: 0;
   font-size: 1rem;
 }
 
-/* No Actions Needed Text */
-.deletion-no-actions {
-  color: #666;
-  font-size: 0.8rem;
-  font-style: italic;
-  padding: 0.5rem;
+.adr-retry-btn {
+  background: #8B5A2B; /* BROWN */
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
 }
 
-/* Modal Styles */
-.deletion-modal-overlay {
+.adr-retry-btn:hover {
+  background: #6d451f; /* DARK BROWN */
+  transform: translateY(-1px);
+}
+
+/* Modal Styles - BROWN (like Reports page) */
+.adr-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -1046,66 +661,82 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
   padding: 1rem;
 }
 
-.deletion-modal-content {
+.adr-modal-content {
   background: white;
   border-radius: 8px;
-  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   max-width: 500px;
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: adr-modalSlideIn 0.3s ease;
 }
 
-.deletion-modal-header {
+@keyframes adr-modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.adr-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e5e5;
-  background: #FF8904;
-  color: white;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa; /* LIGHT GRAY */
   border-radius: 8px 8px 0 0;
 }
 
-.deletion-modal-header h3 {
+.adr-modal-header h3 {
   margin: 0;
-  color: white;
+  color: #8B5A2B; /* BROWN */
   font-size: 1.2rem;
 }
 
-.deletion-modal-close {
+.adr-modal-close {
   background: none;
   border: none;
-  font-size: 1.5rem;
-  color: white;
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #666;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
-.deletion-modal-body {
+.adr-modal-close:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.adr-modal-body {
   padding: 1.5rem;
 }
 
-.deletion-modal-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #e5e5e5;
+.adr-modal-footer {
   display: flex;
-  gap: 1rem;
   justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa; /* LIGHT GRAY */
+  border-radius: 0 0 8px 8px;
 }
 
-.deletion-info-banner {
+/* Modal Content Styles - BROWN */
+.adr-info-banner {
   background: #d4edda;
   border: 1px solid #c3e6cb;
   color: #155724;
@@ -1118,44 +749,105 @@
   font-weight: 600;
 }
 
-.deletion-user-details {
+.adr-info-banner.approve {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.adr-info-banner.reject {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.adr-user-details {
   background: #f8f9fa;
   padding: 1rem;
   border-radius: 6px;
   margin-bottom: 1rem;
-  border-left: 4px solid #FF8904;
+  border-left: 4px solid #8B5A2B; /* BROWN */
 }
 
-.deletion-user-details p {
-  margin: 0.5rem 0;
-  display: flex;
-  gap: 0.5rem;
+.adr-request-details-modal {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #8B5A2B; /* BROWN */
 }
 
-.deletion-user-details strong {
-  min-width: 120px;
+.adr-reason-section {
+  margin: 1rem 0;
 }
 
-.deletion-info-box {
+.adr-reason-text {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  border: 1px solid #e9ecef;
+  line-height: 1.5;
+}
+
+.adr-info-box {
   background: #f8f9fa;
   padding: 1rem;
   border-radius: 6px;
   margin-top: 1rem;
-  border-left: 4px solid #FF8904;
+  border-left: 4px solid #8B5A2B; /* BROWN */
 }
 
-.deletion-info-box ul {
+.adr-info-box ul {
   margin: 0.5rem 0 0 1rem;
   padding: 0;
 }
 
-.deletion-info-box li {
+.adr-info-box li {
   margin-bottom: 0.25rem;
   font-size: 0.9rem;
   color: #666;
 }
 
-.deletion-btn-secondary {
+.adr-form-group {
+  margin-bottom: 1rem;
+}
+
+.adr-form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.adr-form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Modal Buttons - BROWN */
+.adr-btn-primary {
+  background: #8B5A2B; /* BROWN */
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.adr-btn-primary:hover:not(:disabled) {
+  background: #6d451f; /* DARK BROWN */
+  transform: translateY(-1px);
+}
+
+.adr-btn-secondary {
   background: #6c757d;
   color: white;
   border: none;
@@ -1166,212 +858,126 @@
   transition: all 0.2s ease;
 }
 
-.deletion-btn-secondary:hover {
+.adr-btn-secondary:hover {
   background: #545b62;
   transform: translateY(-1px);
 }
 
-/* Recently Approved Banner */
-.deletion-recently-approved-banner {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-}
-
-.deletion-navigate-user-btn {
-  background: #FF8904;
+.adr-btn-warning {
+  background: #dc3545;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   transition: all 0.2s ease;
 }
 
-.deletion-navigate-user-btn:hover {
-  background: #e67a00;
+.adr-btn-warning:hover {
+  background: #c82333;
   transform: translateY(-1px);
-}
-
-/* Tab Notification Dot */
-.deletion-tab-notification-dot {
-  width: 8px;
-  height: 8px;
-  background: #FF8904;
-  border-radius: 50%;
-  margin-left: 0.5rem;
-  animation: deletion-pulse 2s infinite;
-}
-
-@keyframes deletion-pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-/* View User Button */
-.deletion-view-user-btn {
-  background: #FF8904;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.7rem;
-  margin-left: 0.5rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: all 0.2s ease;
-}
-
-.deletion-view-user-btn:hover {
-  background: #e67a00;
-  transform: translateY(-1px);
-}
-
-/* Recently Approved User Highlight */
-.deletion-recently-approved-user {
-  background: #fff5e6 !important;
-  border-left: 4px solid #FF8904;
-  animation: deletion-highlightFade 3s ease-in-out;
-}
-
-@keyframes deletion-highlightFade {
-  0% { background: #fff5e6; }
-  50% { background: #fff5e6; }
-  100% { background: transparent; }
-}
-
-/* Highlighted Filter Tag */
-.deletion-filter-tag.highlight {
-  background: rgba(255, 137, 4, 0.2);
-  color: #FF8904;
-  border: 1px solid #FF8904;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .admin-deletion-requests-content {
-    padding: 1rem;
-  }
-  
-  .admin-deletion-requests-header {
+  .adr-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
   
-  .deletion-filters {
+  .adr-filters {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
   }
   
-  .deletion-search-box,
-  .deletion-filter-group {
+  .adr-search-box,
+  .adr-filter-group {
     width: 100%;
   }
   
-  .deletion-filter-group select {
+  .adr-filter-group select {
     width: 100%;
   }
   
-  .deletion-stats {
+  .adr-stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
   }
   
-  .deletion-table-darkbrown {
+  .adr-table-darkbrown {
     padding: 0.75rem;
   }
   
-  .deletion-table-content {
+  .adr-table-content {
     padding: 0.75rem;
   }
   
-  .deletion-table-title {
+  .adr-table-title {
     padding: 1rem;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
   
-  .deletion-header-info {
+  .adr-header-info {
     align-items: flex-start;
     width: 100%;
   }
   
-  .deletion-active-filters {
+  .adr-active-filters {
     flex-wrap: wrap;
   }
   
-  .deletion-clear-filters-btn {
+  .adr-clear-filters-btn {
     width: 100%;
     justify-content: center;
   }
   
-  .deletion-table-actions {
+  .adr-table-actions {
     flex-direction: column;
   }
   
-  .deletion-action-btn {
+  .adr-action-btn {
     justify-content: center;
   }
 
-  .deletion-modal-content {
+  .adr-modal-content {
     margin: 1rem;
     width: calc(100% - 2rem);
   }
   
-  .deletion-modal-footer {
+  .adr-modal-footer {
     flex-direction: column;
   }
   
-  .deletion-modal-footer button {
+  .adr-modal-footer button {
     width: 100%;
   }
 }
 
 @media (max-width: 480px) {
-  .deletion-stats {
+  .adr-stats {
     grid-template-columns: 1fr;
   }
   
-  .admin-deletion-requests-header-content h1 {
+  .adr-header-content h1 {
     font-size: 1.5rem;
   }
 
-  .deletion-user-info small {
+  .adr-user-info small {
     font-size: 0.7rem;
   }
 
-  .deletion-action-btn {
+  .adr-action-btn {
     min-width: 60px;
     padding: 0.4rem 0.6rem;
     font-size: 0.7rem;
   }
 
-  .deletion-progress-text {
+  .adr-progress-text {
     font-size: 0.9rem;
   }
-}
-
-/* Force clear status badges */
-[class*="deletion-status-"] {
-  opacity: 1 !important;
-  filter: none !important;
-  backdrop-filter: none !important;
 }
