@@ -212,10 +212,11 @@ export default function ManagePosts() {
     }
   };
 
-  // Handle confirmed action from confirmation modal
-  const handleConfirmedAction = () => {
+  // Handle confirmed action from confirmation modal - FIXED THIS FUNCTION
+  const handleConfirmedAction = async () => {
     if (confirmationModal.post && confirmationModal.action) {
-      executePostAction(confirmationModal.post.id, confirmationModal.action, false);
+      await executePostAction(confirmationModal.post.id, confirmationModal.action, false);
+      setConfirmationModal({ isOpen: false, post: null, action: '', title: '', message: '' });
     }
   };
 
@@ -251,9 +252,10 @@ export default function ManagePosts() {
   };
 
   // Handle force action from modal
-  const handleForceAction = () => {
+  const handleForceAction = async () => {
     if (actionModal.post && actionModal.action) {
-      executePostAction(actionModal.post.id, actionModal.action, true);
+      await executePostAction(actionModal.post.id, actionModal.action, true);
+      setActionModal({ isOpen: false, post: null, action: '', message: '', monthlyReportCount: 0, totalReportCount: 0, requiredCount: 0, requiresForce: false });
     }
   };
 
@@ -449,11 +451,10 @@ export default function ManagePosts() {
     }
   };
 
-  // Handle action from view modal
+  // Handle action from view modal - FIXED THIS FUNCTION
   const handleModalAction = (action) => {
     if (viewModal.post) {
       handlePostAction(viewModal.post.id, action);
-      closeModal();
     }
   };
 
@@ -509,7 +510,7 @@ export default function ManagePosts() {
       {/* Header Section */}
       <div className="posts-management-header">
         <div className="posts-header-content">
-          
+          <h1>Manage Posts</h1>
           <p>Review and moderate community posts</p>
         </div>
         <button 
@@ -818,7 +819,7 @@ export default function ManagePosts() {
             </div>
             <div className="posts-modal-footer">
               <div className="posts-modal-actions">
-                {/* Action buttons in modal */}
+                {/* Action buttons in modal - NOW FUNCTIONAL */}
                 {viewModal.post.status === 'Removed' && (
                   <>
                     <button
@@ -896,7 +897,7 @@ export default function ManagePosts() {
         </div>
       )}
 
-      {/* Confirmation Modal for ALL Actions */}
+      {/* Confirmation Modal for ALL Actions - NOW FUNCTIONAL */}
       {confirmationModal.isOpen && (
         <div className="posts-modal-overlay" onClick={closeModal}>
           <div className="posts-modal-content" onClick={(e) => e.stopPropagation()}>
