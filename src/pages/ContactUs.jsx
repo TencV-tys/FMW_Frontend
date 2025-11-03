@@ -301,10 +301,7 @@ const wifi = isLocalhost
                 <p>Posts remain active for 30 days. You can renew them if the item hasn't been found yet.</p>
               </div>
               
-              <div className="faq-item">
-                <h4>Can I delete my account?</h4>
-                <p>Yes, you can delete your account anytime from your profile settings. All your data will be removed.</p>
-              </div>
+             
             </div>
           </div>
         </section>
