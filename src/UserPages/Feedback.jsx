@@ -12,7 +12,9 @@ import {
   faBan,
   faSyncAlt,
   faTrash,
-  faWarning
+  faWarning,
+  faFilter,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/Feedback.css';
@@ -26,16 +28,18 @@ export default function Feedback() {
     priority: 'medium'
   });
   const [myFeedback, setMyFeedback] = useState([]);
+  const [filteredFeedback, setFilteredFeedback] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-   const isLocalhost = window.location.hostname === 'localhost' || 
+  const isLocalhost = window.location.hostname === 'localhost' || 
                     window.location.hostname === '127.0.0.1';
 
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+  const wifi = isLocalhost 
+    ? 'http://localhost:8000' 
+    : 'http://192.168.1.27:8000';
 
   // Fetch feedback on component mount and when activeTab changes
   useEffect(() => {
@@ -43,6 +47,15 @@ export default function Feedback() {
       fetchMyFeedback();
     }
   }, [activeTab]);
+
+  // Filter feedback when status filter or myFeedback changes
+  useEffect(() => {
+    if (statusFilter === 'all') {
+      setFilteredFeedback(myFeedback);
+    } else {
+      setFilteredFeedback(myFeedback.filter(feedback => feedback.status === statusFilter));
+    }
+  }, [statusFilter, myFeedback]);
 
   // Fetch initial feedback count
   useEffect(() => {
@@ -68,6 +81,7 @@ export default function Feedback() {
         
         if (data.success) {
           setMyFeedback(data.feedback || []);
+          setFilteredFeedback(data.feedback || []);
           setDebugInfo(`Found ${data.feedback?.length || 0} feedback items`);
           console.log('✅ Feedback loaded:', data.feedback);
         } else {
@@ -254,6 +268,24 @@ export default function Feedback() {
     });
   };
 
+  const clearFilter = () => {
+    setStatusFilter('all');
+  };
+
+  const getStatusCounts = () => {
+    const counts = {
+      all: myFeedback.length,
+      pending: myFeedback.filter(f => f.status === 'pending').length,
+      reviewed: myFeedback.filter(f => f.status === 'reviewed').length,
+      in_progress: myFeedback.filter(f => f.status === 'in_progress').length,
+      completed: myFeedback.filter(f => f.status === 'completed').length,
+      rejected: myFeedback.filter(f => f.status === 'rejected').length
+    };
+    return counts;
+  };
+
+  const statusCounts = getStatusCounts();
+
   return (
     <div className="feedback-page-fmw">
       <UserNav />
@@ -328,7 +360,7 @@ export default function Feedback() {
                               <span>{type.description}</span>
                             </div>
                           </div>
-                        ))}
+                        ))} 
                       </div>
                     </div>
 
@@ -400,20 +432,77 @@ export default function Feedback() {
               {/* My Feedback List */}
               {activeTab === 'my-feedback' && (
                 <div className="my-feedback-container-fmw">
+                  {/* Status Filter */}
+                  <div className="feedback-filter-section-fmw">
+                    <div className="filter-header-fmw">
+                      <FontAwesomeIcon icon={faFilter} />
+                      <span>Filter by Status</span>
+                    </div>
+                    <div className="filter-options-fmw">
+                      {[
+                        { value: 'all', label: 'All', count: statusCounts.all },
+                        { value: 'pending', label: 'Pending', count: statusCounts.pending },
+                        { value: 'reviewed', label: 'Reviewed', count: statusCounts.reviewed },
+                        { value: 'in_progress', label: 'In Progress', count: statusCounts.in_progress },
+                        { value: 'completed', label: 'Completed', count: statusCounts.completed },
+                        { value: 'rejected', label: 'Rejected', count: statusCounts.rejected }
+                      ].map(option => (
+                        <button
+                          key={option.value}
+                          className={`filter-option-fmw ${statusFilter === option.value ? 'active-fmw' : ''}`}
+                          onClick={() => setStatusFilter(option.value)}
+                        >
+                          <span className="filter-label-fmw">{option.label}</span>
+                          <span className="filter-count-fmw">({option.count})</span>
+                        </button>
+                      ))}
+                    </div>
+                    {statusFilter !== 'all' && (
+                      <button className="clear-filter-btn-fmw" onClick={clearFilter}>
+                        <FontAwesomeIcon icon={faTimes} />
+                        Clear Filter
+                      </button>
+                    )}
+                  </div>
+
                   {loading ? (
                     <div className="loading-container-fmw">
                       <div className="loading-spinner-fmw"></div>
                       <p>Loading your feedback...</p>
                     </div>
-                  ) : myFeedback.length === 0 ? (
+                  ) : filteredFeedback.length === 0 ? (
                     <div className="empty-state-fmw">
                       <FontAwesomeIcon icon={faCommentDots} className="empty-icon-fmw" />
-                      <h3>No feedback submitted yet</h3>
-                      <p>Your submitted feedback will appear here once you submit some.</p>
+                      <h3>
+                        {statusFilter === 'all' 
+                          ? 'No feedback submitted yet' 
+                          : `No ${statusFilter} feedback found`
+                        }
+                      </h3>
+                      <p>
+                        {statusFilter === 'all' 
+                          ? 'Your submitted feedback will appear here once you submit some.'
+                          : `You don't have any ${statusFilter} feedback items.`
+                        }
+                      </p>
+                      {statusFilter !== 'all' && (
+                        <button 
+                          className="clear-filter-btn-fmw empty-state-btn-fmw"
+                          onClick={clearFilter}
+                        >
+                          Show All Feedback
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="feedback-list-fmw">
-                      {myFeedback.map((feedback) => (
+                      <div className="feedback-list-header-fmw">
+                        <span className="showing-text-fmw">
+                          Showing {filteredFeedback.length} of {myFeedback.length} feedback items
+                          {statusFilter !== 'all' && ` (filtered by: ${statusFilter})`}
+                        </span>
+                      </div>
+                      {filteredFeedback.map((feedback) => (
                         <div key={feedback.id} className="feedback-card-fmw">
                           <div className="feedback-card-header-fmw">
                             <div className="feedback-type-fmw">

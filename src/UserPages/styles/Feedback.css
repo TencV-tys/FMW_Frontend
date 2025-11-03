@@ -90,6 +90,85 @@
   color: white;
 }
 
+/* Filter Section */
+.feedback-filter-section-fmw {
+  background: #FBFCF8;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  border: 1px solid #e9ecef;
+}
+
+.filter-header-fmw {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #8B5A2B;
+  font-size: 1rem;
+}
+
+.filter-options-fmw {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-option-fmw {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.filter-option-fmw:hover {
+  background: #e9ecef;
+  border-color: #8B5A2B;
+}
+
+.filter-option-fmw.active-fmw {
+  background: #8B5A2B;
+  color: white;
+  border-color: #8B5A2B;
+}
+
+.filter-label-fmw {
+  font-weight: 600;
+}
+
+.filter-count-fmw {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.clear-filter-btn-fmw {
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.clear-filter-btn-fmw:hover {
+  background: #5a6268;
+}
+
 /* Form Styles */
 .feedback-form-container-fmw {
   background: #FBFCF8;
@@ -246,6 +325,17 @@
   padding: 2rem;
   width: 90%;
   max-width: 1000px;
+}
+
+.feedback-list-header-fmw {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.showing-text-fmw {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .feedback-list-fmw {
@@ -542,6 +632,26 @@
   color: #7f8c8d;
   margin: 0;
   font-size: 1rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.empty-state-btn-fmw {
+  margin-top: 1.5rem !important;
+  background: #8B5A2B !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+  transition: background-color 0.3s ease !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+}
+
+.empty-state-btn-fmw:hover {
+  background: #7a4d26 !important;
 }
 
 @keyframes spin-fmw {
@@ -561,6 +671,16 @@
   
   .type-options-fmw {
     grid-template-columns: 1fr;
+  }
+  
+  .filter-options-fmw {
+    justify-content: center;
+  }
+  
+  .filter-option-fmw {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
   }
   
   /* Centered mobile card layout */
@@ -623,6 +743,19 @@
     width: 95%;
   }
   
+  .feedback-filter-section-fmw {
+    padding: 1rem;
+  }
+  
+  .filter-options-fmw {
+    gap: 0.25rem;
+  }
+  
+  .filter-option-fmw {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
   .feedback-type-fmw {
     padding: 10px;
   }
@@ -674,5 +807,238 @@
   
   .empty-state-fmw h3 {
     font-size: 1.3rem;
+  }
+  
+  .empty-state-fmw p {
+    font-size: 0.9rem;
+  }
+}
+/* styles/Feedback.css - Updated Empty State Styles */
+
+/* ... (keep all previous CSS code) ... */
+
+/* Loading and Empty States */
+.loading-container-fmw,
+.empty-state-fmw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  width: 100%;
+  min-height: 300px;
+  margin: 0 auto;
+}
+
+.loading-spinner-fmw {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #D6A96D;
+  border-top: 4px solid #8B5A2B;
+  border-radius: 50%;
+  animation: spin-fmw 1s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+.empty-icon-fmw {
+  font-size: 4rem;
+  color: #bdc3c7;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+.empty-state-fmw h3 {
+  color: #8B5A2B;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  text-align: center;
+  width: 100%;
+}
+
+.empty-state-fmw p {
+  color: #7f8c8d;
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+  max-width: 400px;
+  line-height: 1.5;
+  text-align: center;
+  width: 100%;
+}
+
+.empty-state-btn-fmw {
+  background: #8B5A2B !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-weight: 600 !important;
+  transition: background-color 0.3s ease !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+  margin-top: 1rem !important;
+}
+
+.empty-state-btn-fmw:hover {
+  background: #7a4d26 !important;
+  transform: translateY(-1px);
+}
+
+/* Ensure the my-feedback container centers its content */
+.my-feedback-container-fmw {
+  background: #FBFCF8;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Make sure the filter section is properly centered */
+.feedback-filter-section-fmw {
+  background: #FBFCF8;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.filter-header-fmw {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #8B5A2B;
+  font-size: 1rem;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+}
+
+.filter-options-fmw {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.clear-filter-btn-fmw {
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  justify-content: center;
+}
+
+.clear-filter-btn-fmw:hover {
+  background: #5a6268;
+}
+
+/* Feedback list header centering */
+.feedback-list-header-fmw {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  width: 100%;
+}
+
+.showing-text-fmw {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  display: block;
+  width: 100%;
+}
+
+/* Make sure the entire content area is centered */
+.feedback-content-fmw {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 20px;
+  width: 100%;
+}
+
+/* Responsive Design Updates */
+@media (max-width: 768px) {
+  .empty-state-fmw {
+    padding: 3rem 1rem;
+    min-height: 250px;
+  }
+  
+  .empty-icon-fmw {
+    font-size: 3rem;
+  }
+  
+  .empty-state-fmw h3 {
+    font-size: 1.3rem;
+  }
+  
+  .empty-state-fmw p {
+    font-size: 0.9rem;
+    max-width: 300px;
+  }
+  
+  .filter-header-fmw {
+    text-align: center;
+  }
+  
+  .filter-options-fmw {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .empty-state-fmw {
+    padding: 2rem 1rem;
+    min-height: 200px;
+  }
+  
+  .empty-icon-fmw {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-state-fmw h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .empty-state-fmw p {
+    font-size: 0.85rem;
+    max-width: 250px;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-state-btn-fmw {
+    padding: 0.6rem 1.2rem !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .my-feedback-container-fmw {
+    padding: 1rem;
+    width: 95%;
+  }
+  
+  .feedback-filter-section-fmw {
+    padding: 1rem;
   }
 }
