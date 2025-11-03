@@ -207,10 +207,6 @@ export default function UserNotifications() {
         return faCheckCircle;
       case 'deletion_request_rejected':
         return faTimesCircle;
-      case 'deletion_limit_reset':
-        return faUndo;
-      case 'additional_deletions_granted':
-        return faPlusCircle;
       // 🆕 NEW: MONTHLY REPORTING & WARNING ICONS
       case 'post_removed_warning':
         return faExclamationTriangle;
@@ -254,10 +250,6 @@ export default function UserNotifications() {
         return '#10b981';
       case 'deletion_request_rejected':
         return '#ef4444';
-      case 'deletion_limit_reset':
-        return '#3b82f6';
-      case 'additional_deletions_granted':
-        return '#10b981';
       // 🆕 NEW: MONTHLY REPORTING & WARNING COLORS
       case 'post_removed_warning':
         return '#f59e0b';
@@ -378,8 +370,7 @@ export default function UserNotifications() {
               {/* DELETION REQUEST FILTERS */}
               <option value="deletion_request_approved">Approved Deletions</option>
               <option value="deletion_request_rejected">Rejected Deletions</option>
-              <option value="deletion_limit_reset">Deletion Limit Reset</option>
-              <option value="additional_deletions_granted">Additional Deletions</option>
+          
               {/*  MONTHLY REPORTING FILTERS */}
               <option value="post_removed_warning">Post Removal Warnings</option>
               <option value="post_deleted_warning">Post Deletion Warnings</option>
@@ -409,9 +400,7 @@ export default function UserNotifications() {
             
                 {filter === 'deletion_request_approved' && 'Approved Deletions'}
                 {filter === 'deletion_request_rejected' && 'Rejected Deletions'}
-                {filter === 'deletion_limit_reset' && 'Deletion Limit Reset'}
-                {filter === 'additional_deletions_granted' && 'Additional Deletions'}
-            
+        
                 {filter === 'post_removed_warning' && 'Post Removal Warnings'}
                 {filter === 'post_deleted_warning' && 'Post Deletion Warnings'}
                 {filter === 'user_report_warning' && 'Report Warnings'}
@@ -465,7 +454,7 @@ export default function UserNotifications() {
                       </button>
                     )}
                     <button 
-                      className="btn-delete"
+                      className="user-notif-btn-delete"
                       onClick={() => setDeleteModal({ 
                         isOpen: true, 
                         notificationId: notification.id, 

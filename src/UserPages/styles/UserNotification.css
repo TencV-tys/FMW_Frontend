@@ -287,7 +287,19 @@
   display: flex;
   gap: 1rem;
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: #9ca3af; 
+}
+.user-notif-btn-delete{
+  color: #ef4444;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  padding: 0 8px;
+}
+
+.user-notif-btn-delete:hover {
+  background: #ef4444;
+  color: white;
 }
 
 .notification-actions {
