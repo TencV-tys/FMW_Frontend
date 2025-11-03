@@ -275,6 +275,17 @@ export default function ManagePosts() {
     return matchesSearch && matchesStatus;
   });
 
+  // Check if any filter is active
+  const isFilterActive = () => {
+    return statusFilter !== 'all' || searchTerm !== '';
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setStatusFilter('all');
+    setSearchTerm('');
+  };
+
   // Bulk actions with confirmation
   const handleBulkAction = async (action) => {
     if (selectedPosts.size === 0) return;
@@ -559,6 +570,17 @@ export default function ManagePosts() {
           </select>
         </div>
 
+        {/* Clear Filters Button */}
+        {isFilterActive() && (
+          <button  
+            className="posts-clear-filters-btn"
+            onClick={clearAllFilters}
+            title="Clear all filters"
+          >
+            Clear Filters
+          </button>
+        )}
+
         {/* Bulk Actions */}
         {selectedPosts.size > 0 && (
           <div className="posts-bulk-actions">
@@ -629,10 +651,22 @@ export default function ManagePosts() {
         <div className='posts-management-table-content'>
           <div className='posts-management-table-title'>
             <h2>Posts Management</h2>
-            <span className="posts-management-count">
-              {filteredPosts.length} of {posts.length} posts
-              {statusFilter !== 'all' && ` (Filtered by: ${statusFilter})`}
-            </span>
+            <div className="posts-header-info">
+              <span className="posts-management-count">
+                {filteredPosts.length} of {posts.length} posts
+              </span>
+              {isFilterActive() && (
+                <div className="posts-active-filters">
+                  <span>Active filters:</span>
+                  {statusFilter !== 'all' && (
+                    <span className="posts-filter-tag">Status: {statusFilter}</span>
+                  )}
+                  {searchTerm && (
+                    <span className="posts-filter-tag">Search: "{searchTerm}"</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -643,12 +677,12 @@ export default function ManagePosts() {
           ) : filteredPosts.length === 0 ? (
             <div className="posts-empty-state">
               <p>No posts found matching your criteria.</p>
-              {statusFilter !== 'all' && (
+              {isFilterActive() && (
                 <button 
                   className="posts-retry-btn" 
-                  onClick={() => setStatusFilter('all')}
+                  onClick={clearAllFilters}
                 >
-                  Clear Filter
+                  Clear Filters
                 </button>
               )}
             </div>
