@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx - FIXED ICON ERROR
+// UserPages/UserNotifications.jsx - REMOVED ACCOUNT STATUS FILTER
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -53,7 +53,7 @@ export default function UserNotifications() {
         const data = await response.json();
         let filteredNotifications = data.notifications || [];
         
-        // Apply filter - FIXED LOGIC
+        // Apply filter - SIMPLIFIED LOGIC
         if (filter !== 'all') {
           if (filter === 'unread') {
             // Filter by read status
@@ -61,7 +61,7 @@ export default function UserNotifications() {
               notification => !notification.is_read
             );
           } else {
-            // Filter by type
+            // Filter by specific type
             filteredNotifications = filteredNotifications.filter(
               notification => notification.type === filter
             );
@@ -196,8 +196,6 @@ export default function UserNotifications() {
         return faExclamationTriangle;
       case 'report_status_update':
         return faCheckCircle;
-      case 'user_suspended':
-        return faTimesCircle;
       case 'feedback_submitted':
         return faComments;
       case 'feedback_updated':
@@ -215,7 +213,7 @@ export default function UserNotifications() {
       case 'user_report_warning':
         return faUserShield;
       case 'report_threshold_reached':
-        return faCalendarAlt; // CHANGED TO faCalendarAlt
+        return faCalendarAlt;
       case 'deletion_limit_reached':
         return faExclamationTriangle;
       case 'deletion_warning':
@@ -239,8 +237,6 @@ export default function UserNotifications() {
         return '#8b5cf6';
       case 'report_status_update':
         return '#06b6d4';
-      case 'user_suspended':
-        return '#ef4444';
       case 'feedback_submitted':
         return '#10b981';
       case 'feedback_updated':
@@ -364,14 +360,13 @@ export default function UserNotifications() {
               <option value="post_restored">Restored Posts</option>
               <option value="report_submitted">Reports</option>
               <option value="report_status_update">Report Updates</option>
-              <option value="user_suspended">Account Status</option>
+              {/* REMOVED ACCOUNT STATUS FILTERS - USERS CAN'T ACCESS IF SUSPENDED/BANNED */}
               <option value="feedback_submitted">Feedback Submitted</option>
               <option value="feedback_updated">Feedback Updates</option>
               {/* DELETION REQUEST FILTERS */}
               <option value="deletion_request_approved">Approved Deletions</option>
               <option value="deletion_request_rejected">Rejected Deletions</option>
-          
-              {/*  MONTHLY REPORTING FILTERS */}
+              {/* MONTHLY REPORTING FILTERS */}
               <option value="post_removed_warning">Post Removal Warnings</option>
               <option value="post_deleted_warning">Post Deletion Warnings</option>
               <option value="user_report_warning">Report Warnings</option>
@@ -394,13 +389,11 @@ export default function UserNotifications() {
                 {filter === 'post_restored' && 'Restored Posts'}
                 {filter === 'report_submitted' && 'Reports'}
                 {filter === 'report_status_update' && 'Report Updates'}
-                {filter === 'user_suspended' && 'Account Status'}
+                {/* REMOVED ACCOUNT STATUS DISPLAYS */}
                 {filter === 'feedback_submitted' && 'Feedback Submitted'}
                 {filter === 'feedback_updated' && 'Feedback Updates'}
-            
                 {filter === 'deletion_request_approved' && 'Approved Deletions'}
                 {filter === 'deletion_request_rejected' && 'Rejected Deletions'}
-        
                 {filter === 'post_removed_warning' && 'Post Removal Warnings'}
                 {filter === 'post_deleted_warning' && 'Post Deletion Warnings'}
                 {filter === 'user_report_warning' && 'Report Warnings'}
