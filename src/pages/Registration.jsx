@@ -235,7 +235,7 @@ export default function Registration() {
             }
           } catch (error) {
             console.error('Email verification failed:', error);
-            setEmailVerificationStatus(true, false);
+            setEmailVerificationStatus(false, false);
           }
         }, 800);
 
@@ -283,6 +283,7 @@ export default function Registration() {
 
     setErrors(formErrors);
 
+    // Check if email is already taken
     if (email && !emailVerified && !checkingEmail) {
       toast.error('This email is already registered. Please use a different email.', {
         position: 'bottom-center'
@@ -290,11 +291,24 @@ export default function Registration() {
       return;
     }
 
+    // Check for form validation errors
     if (Object.keys(formErrors).length > 0) {
-      toast.error('Please fix the form errors before submitting', {
-        position: 'bottom-center'
-      });
       return;
+    }
+
+    // Additional check for email verification status
+    if (email && !emailVerified) {
+      if (checkingEmail) {
+        toast.info('Please wait while we verify your email availability...', {
+          position: 'bottom-center'
+        });
+        return;
+      } else {
+        toast.error('This email is not available. Please use a different email address.', {
+          position: 'bottom-center'
+        });
+        return;
+      }
     }
 
     setLoading(true);
@@ -341,10 +355,13 @@ export default function Registration() {
       default: data.error || data.message || 'Registration failed'
     };
 
-    toast.error(errorMessages[status] || errorMessages.default, {
-      position: 'bottom-center',
-      autoClose: 4000
-    });
+    // Only show toast for non-email errors
+    if (status !== 409) {
+      toast.error(errorMessages[status] || errorMessages.default, {
+        position: 'bottom-center',
+        autoClose: 4000
+      });
+    }
 
     if (data.errors) {
       setErrors(data.errors);
