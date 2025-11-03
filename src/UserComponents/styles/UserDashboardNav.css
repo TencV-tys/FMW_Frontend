@@ -7,7 +7,7 @@
   right: 0;
   z-index: 1000;
   background-color: #FF8904;
-  box-shadow: 0px 1px 6px 3px rgb(141, 141, 141);
+  box-shadow: 0px 1px 6px 3px rgb(175, 173, 173);
   border-bottom: 1px solid #FF8904;
   height: 60px;
 }
@@ -26,6 +26,7 @@
   position: fixed;
   top: 0;
   animation: slideDown 0.3s ease;
+  
 }
 
 @keyframes slideDown {

@@ -873,7 +873,8 @@
   .myposts-content-fmw {
     padding: 10px;
   }
-  .btn-primary-fmw.delete-confirm-fmw{
+  .btn-primary-fmw.delete-confirm-fmw,
+  .btn-primary-fmw{
     display: flex;
     align-items: center;
     justify-content: center;

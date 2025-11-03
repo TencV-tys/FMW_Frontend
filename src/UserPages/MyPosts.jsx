@@ -376,8 +376,9 @@ const getStatusBadge = (status) => {
                   {posts.map((post) => {
                     const status = getStatusBadge(post.status);
                     const isLimitReached = deletionStats?.limitReached;
-                    const canDelete = post.status === 'Active' && !isLimitReached;
-                    const showRequestButton = post.status === 'Active' && isLimitReached;
+                   
+                       const canDelete = (post.status === 'Active' || post.status === 'Removed') && !isLimitReached;
+  const showRequestButton = (post.status === 'Active' || post.status === 'Removed') && isLimitReached;
 
                     return (
                       <div key={post.id} className='mypost-cards-fmw'>
@@ -540,7 +541,7 @@ const getStatusBadge = (status) => {
                   className="btn-secondary-fmw"
                   onClick={() => setDeleteConfirm(null)}
                 >
-                  Cancel
+                  Cancel 
                 </button>
                 <button 
                   className="btn-primary-fmw delete-confirm-fmw"

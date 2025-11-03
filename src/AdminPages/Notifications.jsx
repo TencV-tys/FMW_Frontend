@@ -238,10 +238,6 @@ export default function AdminNotifications() {
       case 'deletion_request_approved':
       case 'deletion_request_rejected':
         return faUserLock;
-      case 'deletion_reset':
-        return faUndo;
-      case 'additional_deletions_granted':
-        return faPlusCircle;
       case 'post_resolved_by_user':
         return faCheckCircle;
       default:
@@ -279,10 +275,6 @@ export default function AdminNotifications() {
       case 'deletion_request_approved':
       case 'deletion_request_rejected':
         return '#FF8904';
-      case 'deletion_reset':
-        return '#3b82f6';
-      case 'additional_deletions_granted':
-        return '#10b981';
       case 'post_resolved_by_user':
         return '#10b981';
       default:
@@ -317,8 +309,6 @@ export default function AdminNotifications() {
       case 'deletion_request':
       case 'deletion_request_approved':
       case 'deletion_request_rejected':
-      case 'deletion_reset':
-      case 'additional_deletions_granted':
         return '/admin/deletion-requests';
       
       default:
@@ -487,8 +477,6 @@ export default function AdminNotifications() {
             <option value="deletion_request">Deletion Requests</option>
             <option value="deletion_request_approved">Request Approved</option>
             <option value="deletion_request_rejected">Request Rejected</option>
-            <option value="deletion_reset">Deletion Reset</option>
-            <option value="additional_deletions_granted">Additional Deletions</option>
             <option value="post_resolved_by_user">User Resolved Posts</option>
             <option value="feedback_submitted">Feedback Submitted</option>
             <option value="feedback_updated">Feedback Updated</option>

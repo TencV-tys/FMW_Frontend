@@ -182,7 +182,7 @@ export default function UserDashboardNav() {
                 <FontAwesomeIcon icon={faFileAlt} />
                 <span>My Posts</span>
               </Link>
-            </div>
+            </div> 
             
             <div className='user-dashboard-link-container'>
               <Link 
