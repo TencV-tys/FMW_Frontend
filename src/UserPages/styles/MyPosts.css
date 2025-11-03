@@ -604,7 +604,7 @@
 /* Loading and Error States */
 .loading-container-fmw,
 .error-container-fmw,
-.empty-state-fmw {
+.empty-state-fmws {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -637,12 +637,12 @@
   margin-bottom: 1rem;
 }
 
-.empty-state-fmw h3 {
+.empty-state-fmws h3 {
   color: #8B5A2B;
   margin-bottom: 1rem;
 }
 
-.empty-state-fmw p {
+.empty-state-fmws p {
   color: #666;
   margin-bottom: 2rem;
   max-width: 400px;

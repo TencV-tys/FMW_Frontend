@@ -364,13 +364,13 @@ const getStatusBadge = (status) => {
               </div>
 
               {posts.length === 0 ? (
-                <div className="empty-state-fmw">
+                <div className="empty-state-fmws">
                   <h3>No posts yet</h3>
                   <p>You haven't created any posts. Start by creating your first lost or found item post!</p>
                   <Link to="/user/create" className="create-first-post-btn-fmw">
                     Create Your First Post
                   </Link>
-                </div>
+                </div> 
               ) : (
                 <div className='myposts-list-fmw'>
                   {posts.map((post) => {
