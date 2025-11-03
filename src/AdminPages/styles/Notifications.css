@@ -1,4 +1,4 @@
-/* styles/AdminNotifications.css - UNIQUE CLASS NAMES */
+/* styles/AdminNotifications.css - UPDATED STAT CARDS TO ORIGINAL DESIGN */
 .admin-notif-page {
   padding: 2rem;
   max-width: 1200px;
@@ -9,20 +9,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
 }
 
 .admin-notif-header-content h1 {
   color: #FF8904;
-  margin: 0 0 0.25rem 0;
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  font-weight: 700;
 }
 
 .admin-notif-header-content p {
   color: #666;
   margin: 0;
+  font-size: 0.9rem;
 }
 
 .admin-notif-header-actions {
@@ -37,19 +39,20 @@
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .admin-notif-btn-mark-all-read {
-  background: #3b82f6;
+  background: #FF8904;
   color: white;
 }
 
 .admin-notif-btn-mark-all-read:hover:not(:disabled) {
-  background: #2563eb;
+  background: #FF8904;
+  transform: translateY(-1px);
 }
 
 .admin-notif-btn-clear-all {
@@ -59,6 +62,7 @@
 
 .admin-notif-btn-clear-all:hover:not(:disabled) {
   background: #dc2626;
+  transform: translateY(-1px);
 }
 
 .admin-notif-btn-mark-all-read:disabled,
@@ -67,45 +71,43 @@
   cursor: not-allowed;
 }
 
-/* Stats Section */
+/* Stats Cards - ORIGINAL DESIGN WITH ORANGE */
 .admin-notif-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .admin-notif-stat-card {
   background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-left: 4px solid #FF8904;
   transition: all 0.3s ease;
   cursor: pointer;
-  text-align: center;
-  border-left: 4px solid #8B5A2B;
 }
 
 .admin-notif-stat-card:hover:not(.admin-notif-active) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .admin-notif-stat-card.admin-notif-active {
   border-left: 4px solid #FF8904;
-  background: #fff9e6;
+  background: #fff5e6;
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(255, 137, 4, 0.15);
 }
 
 .admin-notif-stat-info h3 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #8B5A2B;
+  color: #FF8904;
+  line-height: 1.2;
 }
 
 .admin-notif-stat-info p {
@@ -120,10 +122,10 @@
 /* Filters Section */
 .admin-notif-filters {
   display: flex;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
+  gap: 1rem;
   align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .admin-notif-filter-group {
@@ -132,7 +134,7 @@
   gap: 0.5rem;
   background: white;
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -603,7 +605,6 @@
 
   .admin-notif-stat-card {
     text-align: center;
-    flex-direction: column;
     padding: 1rem;
   }
 
