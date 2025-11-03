@@ -17,7 +17,8 @@ import {
   faRefresh,
   faUserShield,
   faTrash,
-  faBan
+  faBan,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/AdminFeedback.css';
 
@@ -30,6 +31,13 @@ export default function AdminFeedback() {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [selectedFeedback, setSelectedFeedback] = useState(null);
   const [viewModal, setViewModal] = useState({ isOpen: false, feedback: null });
+  const [confirmationModal, setConfirmationModal] = useState({
+    isOpen: false,
+    feedback: null,
+    action: '',
+    title: '',
+    message: ''
+  });
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -88,7 +96,52 @@ export default function AdminFeedback() {
     }
   };
 
-  const updateFeedbackStatus = async (feedbackId, newStatus, adminNotes = '') => {
+  // Show confirmation modal for actions
+  const showConfirmationModal = (feedbackItem, action) => {
+    let title = '';
+    let message = '';
+    
+    switch (action) {
+      case 'delete':
+        title = 'Delete Feedback';
+        message = `Are you sure you want to delete the feedback "${feedbackItem.title}"? This action cannot be undone.`;
+        break;
+      case 'reject':
+        title = 'Reject Feedback';
+        message = `Are you sure you want to reject the feedback "${feedbackItem.title}"?`;
+        break;
+      default:
+        title = 'Update Feedback Status';
+        message = `Are you sure you want to mark the feedback "${feedbackItem.title}" as ${action.replace('_', ' ')}?`;
+    }
+
+    setConfirmationModal({
+      isOpen: true,
+      feedback: feedbackItem,
+      action,
+      title,
+      message
+    });
+  };
+
+  // Handle confirmed action
+  const handleConfirmedAction = async () => {
+    if (confirmationModal.feedback && confirmationModal.action) {
+      if (confirmationModal.action === 'delete') {
+        await executeDeleteFeedback(confirmationModal.feedback.id);
+      } else {
+        let adminNotes = '';
+        if (confirmationModal.action === 'rejected') {
+          adminNotes = prompt('Please provide a reason for rejection:') || '';
+        }
+        await executeUpdateStatus(confirmationModal.feedback.id, confirmationModal.action, adminNotes);
+      }
+      setConfirmationModal({ isOpen: false, feedback: null, action: '', title: '', message: '' });
+    }
+  };
+
+  // Execute status update
+  const executeUpdateStatus = async (feedbackId, newStatus, adminNotes = '') => {
     try {
       const response = await fetch(`http://localhost:8000/api/feedback/${feedbackId}/status`, {
         method: 'PUT',
@@ -117,10 +170,8 @@ export default function AdminFeedback() {
     }
   };
 
-  // 🆕 DELETE FEEDBACK
-  const deleteFeedback = async (feedbackId) => {
-    if (!window.confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) return;
-    
+  // Execute feedback deletion
+  const executeDeleteFeedback = async (feedbackId) => {
     try {
       const response = await fetch(`http://localhost:8000/api/feedback/${feedbackId}`, {
         method: 'DELETE',
@@ -172,6 +223,7 @@ export default function AdminFeedback() {
   const closeModals = () => {
     setViewModal({ isOpen: false, feedback: null });
     setSelectedFeedback(null);
+    setConfirmationModal({ isOpen: false, feedback: null, action: '', title: '', message: '' });
   };
 
   const filteredFeedback = feedback.filter(item => {
@@ -250,7 +302,6 @@ export default function AdminFeedback() {
       {/* Header Section */}
       <div className="feedback-management-header">
         <div className="feedback-header-content">
-       
           <p>Review and manage user-submitted feedback and suggestions</p>
         </div>
         <button 
@@ -526,14 +577,14 @@ export default function AdminFeedback() {
                             <>
                               <button
                                 className="feedback-action-btn review"
-                                onClick={() => updateFeedbackStatus(item.id, 'reviewed')}
+                                onClick={() => showConfirmationModal(item, 'reviewed')}
                                 title="Mark as Reviewed"
                               >
                                 <FontAwesomeIcon icon={faEye} />
                               </button>
                               <button
                                 className="feedback-action-btn progress"
-                                onClick={() => updateFeedbackStatus(item.id, 'in_progress')}
+                                onClick={() => showConfirmationModal(item, 'in_progress')}
                                 title="Mark as In Progress"
                               >
                                 <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -545,14 +596,14 @@ export default function AdminFeedback() {
                             <>
                               <button
                                 className="feedback-action-btn progress"
-                                onClick={() => updateFeedbackStatus(item.id, 'in_progress')}
+                                onClick={() => showConfirmationModal(item, 'in_progress')}
                                 title="Mark as In Progress"
                               >
                                 <FontAwesomeIcon icon={faExclamationTriangle} />
                               </button>
                               <button
                                 className="feedback-action-btn complete"
-                                onClick={() => updateFeedbackStatus(item.id, 'completed')}
+                                onClick={() => showConfirmationModal(item, 'completed')}
                                 title="Mark as Completed"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
@@ -563,7 +614,7 @@ export default function AdminFeedback() {
                           {item.status === 'in_progress' && (
                             <button
                               className="feedback-action-btn complete"
-                              onClick={() => updateFeedbackStatus(item.id, 'completed')}
+                              onClick={() => showConfirmationModal(item, 'completed')}
                               title="Mark as Completed"
                             >
                               <FontAwesomeIcon icon={faCheckCircle} />
@@ -573,7 +624,7 @@ export default function AdminFeedback() {
                           {(item.status === 'completed' || item.status === 'rejected') && (
                             <button
                               className="feedback-action-btn pending"
-                              onClick={() => updateFeedbackStatus(item.id, 'pending')}
+                              onClick={() => showConfirmationModal(item, 'pending')}
                               title="Reopen Feedback"
                             >
                               <FontAwesomeIcon icon={faRefresh} />
@@ -583,22 +634,17 @@ export default function AdminFeedback() {
                           {item.status !== 'rejected' && (
                             <button
                               className="feedback-action-btn reject"
-                              onClick={() => {
-                                const adminNotes = prompt('Please provide a reason for rejection:');
-                                if (adminNotes !== null) {
-                                  updateFeedbackStatus(item.id, 'rejected', adminNotes);
-                                }
-                              }}
+                              onClick={() => showConfirmationModal(item, 'rejected')}
                               title="Reject Feedback"
                             >
                               <FontAwesomeIcon icon={faBan} />
                             </button>
                           )}
 
-                          {/* 🆕 DELETE BUTTON */}
+                          {/* DELETE BUTTON */}
                           <button
                             className="feedback-action-btn delete"
-                            onClick={() => deleteFeedback(item.id)}
+                            onClick={() => showConfirmationModal(item, 'delete')}
                             title="Delete Feedback"
                           >
                             <FontAwesomeIcon icon={faTrash} />
@@ -621,7 +667,7 @@ export default function AdminFeedback() {
             <div className="feedback-modal-header">
               <h2>Feedback Details</h2>
               <button className="feedback-modal-close" onClick={closeModals}>
-                <FontAwesomeIcon icon={faTimesCircle} />
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className="feedback-modal-body">
@@ -720,19 +766,13 @@ export default function AdminFeedback() {
                   <>
                     <button
                       className="feedback-btn feedback-btn-warning"
-                      onClick={() => {
-                        updateFeedbackStatus(viewModal.feedback.id, 'reviewed');
-                        closeModals();
-                      }}
+                      onClick={() => showConfirmationModal(viewModal.feedback, 'reviewed')}
                     >
                       Mark Reviewed
                     </button>
                     <button
                       className="feedback-btn feedback-btn-info"
-                      onClick={() => {
-                        updateFeedbackStatus(viewModal.feedback.id, 'in_progress');
-                        closeModals();
-                      }}
+                      onClick={() => showConfirmationModal(viewModal.feedback, 'in_progress')}
                     >
                       Mark In Progress
                     </button>
@@ -742,19 +782,13 @@ export default function AdminFeedback() {
                   <>
                     <button
                       className="feedback-btn feedback-btn-info"
-                      onClick={() => {
-                        updateFeedbackStatus(viewModal.feedback.id, 'in_progress');
-                        closeModals();
-                      }}
+                      onClick={() => showConfirmationModal(viewModal.feedback, 'in_progress')}
                     >
                       Mark In Progress
                     </button>
                     <button
                       className="feedback-btn feedback-btn-success"
-                      onClick={() => {
-                        updateFeedbackStatus(viewModal.feedback.id, 'completed');
-                        closeModals();
-                      }}
+                      onClick={() => showConfirmationModal(viewModal.feedback, 'completed')}
                     >
                       Mark Completed
                     </button>
@@ -763,10 +797,7 @@ export default function AdminFeedback() {
                 {viewModal.feedback.status === 'in_progress' && (
                   <button
                     className="feedback-btn feedback-btn-success"
-                    onClick={() => {
-                      updateFeedbackStatus(viewModal.feedback.id, 'completed');
-                      closeModals();
-                    }}
+                    onClick={() => showConfirmationModal(viewModal.feedback, 'completed')}
                   >
                     Mark Completed
                   </button>
@@ -774,10 +805,7 @@ export default function AdminFeedback() {
                 {(viewModal.feedback.status === 'completed' || viewModal.feedback.status === 'rejected') && (
                   <button
                     className="feedback-btn feedback-btn-secondary"
-                    onClick={() => {
-                      updateFeedbackStatus(viewModal.feedback.id, 'pending');
-                      closeModals();
-                    }}
+                    onClick={() => showConfirmationModal(viewModal.feedback, 'pending')}
                   >
                     Reopen Feedback
                   </button>
@@ -785,26 +813,15 @@ export default function AdminFeedback() {
                 {viewModal.feedback.status !== 'rejected' && (
                   <button
                     className="feedback-btn feedback-btn-danger"
-                    onClick={() => {
-                      const adminNotes = prompt('Please provide a reason for rejection:');
-                      if (adminNotes !== null) {
-                        updateFeedbackStatus(viewModal.feedback.id, 'rejected', adminNotes);
-                        closeModals();
-                      }
-                    }}
+                    onClick={() => showConfirmationModal(viewModal.feedback, 'rejected')}
                   >
                     Reject
                   </button>
                 )}
-                {/* 🆕 DELETE BUTTON IN MODAL */}
+                {/* DELETE BUTTON IN MODAL */}
                 <button
                   className="feedback-btn feedback-btn-danger"
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) {
-                      deleteFeedback(viewModal.feedback.id);
-                      closeModals();
-                    }
-                  }}
+                  onClick={() => showConfirmationModal(viewModal.feedback, 'delete')}
                 >
                   Delete
                 </button>
@@ -812,6 +829,71 @@ export default function AdminFeedback() {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmationModal.isOpen && (
+        <div className="feedback-modal-overlay" onClick={closeModals}>
+          <div className="feedback-modal-content feedback-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="feedback-modal-header">
+              <h2>{confirmationModal.title}</h2>
+              <button className="feedback-modal-close" onClick={closeModals}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="feedback-modal-body">
+              <div className="feedback-confirm-content">
+                <div className="feedback-confirm-icon">
+                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                </div>
+                <h3>Please Confirm</h3>
+                <p>{confirmationModal.message}</p>
+                
+                {confirmationModal.feedback && (
+                  <div className="feedback-confirm-details">
+                    <strong>Feedback Details:</strong>
+                    <span>Title: {confirmationModal.feedback.title}</span>
+                    <span>Type: {confirmationModal.feedback.type}</span>
+                    <span>Priority: {confirmationModal.feedback.priority}</span>
+                    <small>Submitted by: {confirmationModal.feedback.submitter_first_name} {confirmationModal.feedback.submitter_last_name}</small>
+                  </div>
+                )}
+
+                {confirmationModal.action === 'delete' && (
+                  <div className="feedback-deletion-warning">
+                    <FontAwesomeIcon icon={faExclamationTriangle} />
+                    <span>This action cannot be undone!</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="feedback-modal-footer">
+              <button 
+                className="feedback-btn feedback-btn-secondary" 
+                onClick={closeModals}
+              >
+                Cancel
+              </button>
+              <button 
+                className={`feedback-btn ${
+                  confirmationModal.action === 'delete' ? 'feedback-btn-danger' :
+                  confirmationModal.action === 'rejected' ? 'feedback-btn-danger' :
+                  confirmationModal.action === 'completed' ? 'feedback-btn-success' :
+                  confirmationModal.action === 'in_progress' ? 'feedback-btn-warning' :
+                  'feedback-btn-primary'
+                }`} 
+                onClick={handleConfirmedAction}
+              >
+                {confirmationModal.action === 'delete' && 'Delete Permanently'}
+                {confirmationModal.action === 'rejected' && 'Reject Feedback'}
+                {confirmationModal.action === 'completed' && 'Mark as Completed'}
+                {confirmationModal.action === 'in_progress' && 'Mark as In Progress'}
+                {confirmationModal.action === 'reviewed' && 'Mark as Reviewed'}
+                {confirmationModal.action === 'pending' && 'Reopen Feedback'}
+              </button>
             </div>
           </div>
         </div>

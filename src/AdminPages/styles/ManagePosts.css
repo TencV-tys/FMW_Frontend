@@ -10,11 +10,6 @@
   gap: 1rem;
 }
 
-.posts-header-content h1 {
-  color: #FF8904;
-  margin: 0 0 0.25rem 0;
-  font-size: clamp(1.5rem, 4vw, 2rem);
-}
 
 .posts-header-content p {
   color: #666;

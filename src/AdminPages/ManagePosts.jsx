@@ -510,7 +510,6 @@ export default function ManagePosts() {
       {/* Header Section */}
       <div className="posts-management-header">
         <div className="posts-header-content">
-          <h1>Manage Posts</h1>
           <p>Review and moderate community posts</p>
         </div>
         <button 
