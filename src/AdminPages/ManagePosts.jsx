@@ -15,7 +15,8 @@ import {
   faImage,
   faExclamationTriangle,
   faFlag,
-  faHistory
+  faHistory,
+  faTag
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManagePosts.css';
 
@@ -24,8 +25,10 @@ export default function ManagePosts() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [selectedPosts, setSelectedPosts] = useState(new Set());
   const [viewMode, setViewMode] = useState('table');
+  const [isForceProcessing, setIsForceProcessing] = useState(false);
   const [viewModal, setViewModal] = useState({ isOpen: false, post: null });
   const [actionModal, setActionModal] = useState({ 
     isOpen: false, 
@@ -42,13 +45,27 @@ export default function ManagePosts() {
     post: null,
     action: '',
     title: '',
-    message: ''
+    message: '',
+    isProcessing: false
+  });
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
   });
 
   // Fetch posts data
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  // Show toast notification
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   const fetchPosts = async () => {
     try {
@@ -62,9 +79,11 @@ export default function ManagePosts() {
         setPosts(data.posts || []);
       } else {
         console.error('Failed to fetch posts');
+        showToast('Failed to fetch posts', 'error');
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
+      showToast('Error fetching posts', 'error');
     } finally {
       setLoading(false);
     }
@@ -79,7 +98,7 @@ export default function ManagePosts() {
   const closeModal = () => {
     setViewModal({ isOpen: false, post: null });
     setActionModal({ isOpen: false, post: null, action: '', message: '', monthlyReportCount: 0, totalReportCount: 0, requiredCount: 0, requiresForce: false });
-    setConfirmationModal({ isOpen: false, post: null, action: '', title: '', message: '' });
+    setConfirmationModal({ isOpen: false, post: null, action: '', title: '', message: '', isProcessing: false });
   };
 
   // Show confirmation modal for ALL actions
@@ -113,7 +132,8 @@ export default function ManagePosts() {
       post,
       action,
       title,
-      message
+      message,
+      isProcessing: false
     });
   };
 
@@ -121,7 +141,52 @@ export default function ManagePosts() {
   const handlePostAction = async (postId, action, force = false) => {
     const post = posts.find(p => p.id === postId);
     
-    // Show confirmation modal first for ALL actions
+    // For remove and delete actions, we need to check report counts first
+    if ((action === 'remove' || action === 'delete') && !force) {
+      try {
+        // First, check if the action would require force
+        const checkUrl = action === 'remove' 
+          ? `http://localhost:8000/api/admin/posts/${postId}/remove`
+          : `http://localhost:8000/api/admin/posts/${postId}`;
+        
+        const checkMethod = action === 'remove' ? 'PUT' : 'DELETE';
+        
+        // Make a test request to see if force is needed
+        const testResponse = await fetch(checkUrl, {
+          method: checkMethod,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            reason: 'test', 
+            force: false 
+          }),
+          credentials: 'include'
+        });
+
+        const testData = await testResponse.json();
+
+        if (!testResponse.ok && testData.canForce) {
+          // Show the report validation modal if force is required
+          setActionModal({
+            isOpen: true,
+            post: post,
+            action: action,
+            message: testData.error,
+            monthlyReportCount: testData.monthlyReportCount,
+            totalReportCount: testData.totalReportCount,
+            requiredCount: testData.requiredCount,
+            requiresForce: true
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking post action:', error);
+        // If check fails, proceed with normal confirmation
+      }
+    }
+
+    // Show confirmation modal for ALL actions (or if no force needed)
     if (!force) {
       showConfirmationModal(post, action);
       return;
@@ -140,16 +205,23 @@ export default function ManagePosts() {
         case 'remove':
           url = `http://localhost:8000/api/admin/posts/${postId}/remove`;
           method = 'PUT';
-          body = { reason: 'Violation of community guidelines', force };
+          body = { 
+            reason: 'Violation of community guidelines', 
+            force: force
+          };
           break;
         case 'delete':
           url = `http://localhost:8000/api/admin/posts/${postId}`;
           method = 'DELETE';
-          body = { reason: 'Severe violation', force };
+          body = { 
+            reason: 'Severe violation', 
+            force: force
+          };
           break;
         case 'restore':
           url = `http://localhost:8000/api/admin/posts/${postId}/restore`;
           method = 'PUT';
+          body = {};
           break;
         case 'resolve':
           url = `http://localhost:8000/api/admin/posts/${postId}/resolve`;
@@ -188,7 +260,7 @@ export default function ManagePosts() {
             successMessage = 'Post marked as resolved!';
             break;
         }
-        alert(successMessage);
+        showToast(successMessage, 'success');
         closeModal();
       } else {
         if (data.canForce) {
@@ -203,20 +275,21 @@ export default function ManagePosts() {
             requiresForce: true
           });
         } else {
-          alert(data.error || 'Failed to perform action');
+          showToast(data.error || 'Failed to perform action', 'error');
         }
       }
     } catch (error) {
       console.error('Error performing action:', error);
-      alert('Error performing action');
+      showToast('Error performing action', 'error');
     }
   };
 
-  // Handle confirmed action from confirmation modal - FIXED THIS FUNCTION
+  // Handle confirmed action from confirmation modal
   const handleConfirmedAction = async () => {
-    if (confirmationModal.post && confirmationModal.action) {
+    if (confirmationModal.post && confirmationModal.action && !confirmationModal.isProcessing) {
+      setConfirmationModal(prev => ({ ...prev, isProcessing: true }));
       await executePostAction(confirmationModal.post.id, confirmationModal.action, false);
-      setConfirmationModal({ isOpen: false, post: null, action: '', title: '', message: '' });
+      setConfirmationModal({ isOpen: false, post: null, action: '', title: '', message: '', isProcessing: false });
     }
   };
 
@@ -253,37 +326,47 @@ export default function ManagePosts() {
 
   // Handle force action from modal
   const handleForceAction = async () => {
-    if (actionModal.post && actionModal.action) {
-      await executePostAction(actionModal.post.id, actionModal.action, true);
-      setActionModal({ isOpen: false, post: null, action: '', message: '', monthlyReportCount: 0, totalReportCount: 0, requiredCount: 0, requiresForce: false });
+    if (actionModal.post && actionModal.action && !isForceProcessing) {
+      setIsForceProcessing(true);
+      
+      try {
+        await executePostAction(actionModal.post.id, actionModal.action, true);
+      } finally {
+        setIsForceProcessing(false);
+        setActionModal({ isOpen: false, post: null, action: '', message: '', monthlyReportCount: 0, totalReportCount: 0, requiredCount: 0, requiresForce: false });
+      }
     }
   };
 
-  // Handle cancel from modal
-  const handleCancelAction = () => {
-    closeModal();
-  };
-
-  // Filter posts based on search and status
+  // Filter posts based on search, status, and type
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.barangay_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.purok_name?.toLowerCase().includes(searchTerm.toLowerCase());
+                         post.purok_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.type?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesType = typeFilter === 'all' || post.type === typeFilter;
+    return matchesSearch && matchesStatus && matchesType;
   });
 
   // Check if any filter is active
   const isFilterActive = () => {
-    return statusFilter !== 'all' || searchTerm !== '';
+    return statusFilter !== 'all' || typeFilter !== 'all' || searchTerm !== '';
   };
 
   // Clear all filters
   const clearAllFilters = () => {
     setStatusFilter('all');
+    setTypeFilter('all');
     setSearchTerm('');
+  };
+
+  // Get unique types for filter dropdown
+  const getUniqueTypes = () => {
+    const types = [...new Set(posts.map(post => post.type).filter(Boolean))];
+    return types.sort();
   };
 
   // Bulk actions with confirmation
@@ -318,10 +401,10 @@ export default function ManagePosts() {
       );
       await Promise.all(promises);
       setSelectedPosts(new Set());
-      alert(`${selectedPosts.size} post(s) ${actionText}d successfully!`);
+      showToast(`${selectedPosts.size} post(s) ${actionText} successfully!`, 'success');
     } catch (error) {
       console.error('Error performing bulk action:', error);
-      alert('Error performing bulk action');
+      showToast('Error performing bulk action', 'error');
     }
   };
 
@@ -338,7 +421,7 @@ export default function ManagePosts() {
 
   // Select all filtered posts
   const toggleSelectAll = () => {
-    if (selectedPosts.size === filteredPosts.length) {
+    if (selectedPosts.size === filteredPosts.length && filteredPosts.length > 0) {
       setSelectedPosts(new Set());
     } else {
       setSelectedPosts(new Set(filteredPosts.map(post => post.id)));
@@ -354,7 +437,7 @@ export default function ManagePosts() {
     });
   };
 
-  // Get status badge class - UNIQUE NAMES
+  // Get status badge class
   const getStatusClass = (status) => {
     const statusMap = {
       'Active': 'posts-status-active',
@@ -362,6 +445,19 @@ export default function ManagePosts() {
       'Resolved': 'posts-status-resolved'
     };
     return statusMap[status] || 'posts-status-active';
+  };
+
+  // Get type badge class
+  const getTypeClass = (type) => {
+    const typeMap = {
+      'found': 'posts-type-found',
+      'lost': 'posts-type-lost',
+      'for sale': 'posts-type-sale',
+      'looking to buy': 'posts-type-buy',
+      'service offered': 'posts-type-service',
+      'help wanted': 'posts-type-help'
+    };
+    return typeMap[type?.toLowerCase()] || 'posts-type-default';
   };
 
   // Render location information with purok
@@ -382,8 +478,15 @@ export default function ManagePosts() {
   };
 
   // Handle stat card click for filtering
-  const handleStatCardClick = (status) => {
-    setStatusFilter(status === 'all' ? 'all' : status);
+  const handleStatCardClick = (filterType, value) => {
+    if (filterType === 'status') {
+      setStatusFilter(statusFilter === value ? 'all' : value);
+    } else if (filterType === 'type') {
+      setTypeFilter(typeFilter === value ? 'all' : value);
+    } else if (filterType === 'all') {
+      setStatusFilter('all');
+      setTypeFilter('all');
+    }
   };
 
   // Get action buttons based on post status
@@ -462,14 +565,24 @@ export default function ManagePosts() {
     }
   };
 
-  // Handle action from view modal - FIXED THIS FUNCTION
+  // Handle action from view modal
   const handleModalAction = (action) => {
     if (viewModal.post) {
       handlePostAction(viewModal.post.id, action);
     }
   };
 
-  // Mobile card view
+  // Calculate type statistics
+  const typeStats = {
+    'Found': posts.filter(p => p.type?.toLowerCase() === 'found').length,
+    'Lost': posts.filter(p => p.type?.toLowerCase() === 'lost').length,
+    'For Sale': posts.filter(p => p.type?.toLowerCase() === 'for sale').length,
+    'Looking to Buy': posts.filter(p => p.type?.toLowerCase() === 'looking to buy').length,
+    'Service Offered': posts.filter(p => p.type?.toLowerCase() === 'service offered').length,
+    'Help Wanted': posts.filter(p => p.type?.toLowerCase() === 'help wanted').length
+  };
+
+  // Mobile card view with type
   const MobilePostCard = ({ post }) => (
     <div className="posts-mobile-card">
       <div className="posts-mobile-header">
@@ -479,9 +592,14 @@ export default function ManagePosts() {
             by {post.first_name} {post.last_name}
           </div>
         </div>
-        <span className={`posts-mobile-status ${getStatusClass(post.status)}`}>
-          {post.status}
-        </span>
+        <div className="posts-mobile-badges">
+          <span className={`posts-mobile-status ${getStatusClass(post.status)}`}>
+            {post.status}
+          </span>
+          <span className={`posts-mobile-type ${getTypeClass(post.type)}`}>
+            {post.type}
+          </span>
+        </div>
       </div>
       
       <div className="posts-mobile-details">
@@ -501,6 +619,10 @@ export default function ManagePosts() {
           <span className="posts-detail-label">Date</span>
           <span className="posts-detail-value">{formatDate(post.created_at)}</span>
         </div>
+        <div className="posts-mobile-detail">
+          <span className="posts-detail-label">Total Reports</span>
+          <span className="posts-detail-value">{post.total_report_count || 0}</span>
+        </div>
       </div>
       
       <div className="posts-mobile-actions">
@@ -518,6 +640,19 @@ export default function ManagePosts() {
 
   return (
     <>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`posts-toast posts-toast-${toast.type}`}>
+          <div className="posts-toast-content">
+            <FontAwesomeIcon 
+              icon={toast.type === 'success' ? faCheckCircle : faExclamationTriangle} 
+              className="posts-toast-icon" 
+            />
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="posts-management-header">
         <div className="posts-header-content">
@@ -539,7 +674,7 @@ export default function ManagePosts() {
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
-            placeholder="Search posts, authors, locations..."
+            placeholder="Search posts, authors, types, locations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -558,7 +693,19 @@ export default function ManagePosts() {
           </select>
         </div>
 
-        {/* View Toggle for Mobile */}
+        <div className="posts-filter-group">
+          <FontAwesomeIcon icon={faTag} />
+          <select 
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
+            <option value="all">All Types</option>
+            {getUniqueTypes().map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="posts-filter-group">
           <FontAwesomeIcon icon={faList} />
           <select 
@@ -570,7 +717,6 @@ export default function ManagePosts() {
           </select>
         </div>
 
-        {/* Clear Filters Button */}
         {isFilterActive() && (
           <button  
             className="posts-clear-filters-btn"
@@ -581,7 +727,6 @@ export default function ManagePosts() {
           </button>
         )}
 
-        {/* Bulk Actions */}
         {selectedPosts.size > 0 && (
           <div className="posts-bulk-actions">
             <span>{selectedPosts.size} selected</span>
@@ -613,8 +758,8 @@ export default function ManagePosts() {
       {/* Stats Summary */}
       <div className="posts-management-stats">
         <div 
-          className={`posts-stat-card ${statusFilter === 'all' ? 'posts-stat-active' : ''}`}
-          onClick={() => handleStatCardClick('all')}
+          className={`posts-stat-card ${statusFilter === 'all' && typeFilter === 'all' ? 'posts-stat-active' : ''}`}
+          onClick={() => handleStatCardClick('all', 'all')}
           style={{ cursor: 'pointer' }}
         >
           <span className="posts-stat-number">{posts.length}</span>
@@ -622,7 +767,7 @@ export default function ManagePosts() {
         </div>
         <div 
           className={`posts-stat-card ${statusFilter === 'Active' ? 'posts-stat-active' : ''}`}
-          onClick={() => handleStatCardClick('Active')}
+          onClick={() => handleStatCardClick('status', 'Active')}
           style={{ cursor: 'pointer' }}
         >
           <span className="posts-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
@@ -630,7 +775,7 @@ export default function ManagePosts() {
         </div>
         <div 
           className={`posts-stat-card ${statusFilter === 'Resolved' ? 'posts-stat-active' : ''}`}
-          onClick={() => handleStatCardClick('Resolved')}
+          onClick={() => handleStatCardClick('status', 'Resolved')}
           style={{ cursor: 'pointer' }}
         >
           <span className="posts-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
@@ -638,12 +783,26 @@ export default function ManagePosts() {
         </div>
         <div 
           className={`posts-stat-card ${statusFilter === 'Removed' ? 'posts-stat-active' : ''}`}
-          onClick={() => handleStatCardClick('Removed')}
+          onClick={() => handleStatCardClick('status', 'Removed')}
           style={{ cursor: 'pointer' }}
         >
           <span className="posts-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
           <span className="posts-stat-label">Removed</span>
         </div>
+        
+        {Object.entries(typeStats).map(([type, count]) => (
+          count > 0 && (
+            <div 
+              key={type}
+              className={`posts-stat-card posts-type-stat ${typeFilter === type ? 'posts-stat-active' : ''}`}
+              onClick={() => handleStatCardClick('type', type)}
+              style={{ cursor: 'pointer' }}
+            >
+              <span className="posts-stat-number">{count}</span>
+              <span className="posts-stat-label">{type}</span>
+            </div>
+          )
+        ))}
       </div>
 
       {/* Posts Table */}
@@ -660,6 +819,9 @@ export default function ManagePosts() {
                   <span>Active filters:</span>
                   {statusFilter !== 'all' && (
                     <span className="posts-filter-tag">Status: {statusFilter}</span>
+                  )}
+                  {typeFilter !== 'all' && (
+                    <span className="posts-filter-tag">Type: {typeFilter}</span>
                   )}
                   {searchTerm && (
                     <span className="posts-filter-tag">Search: "{searchTerm}"</span>
@@ -702,10 +864,12 @@ export default function ManagePosts() {
                       </th>
                       <th>ID</th>
                       <th>Title & Author</th>
+                      <th>Type</th>
                       <th>Category</th>
                       <th>Location</th>
                       <th>Date Posted</th>
                       <th>Status</th>
+                      <th>Total Reports</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -728,6 +892,11 @@ export default function ManagePosts() {
                             </span>
                           </div>
                         </td>
+                        <td>
+                          <span className={`posts-type-badge ${getTypeClass(post.type)}`}>
+                            {post.type}
+                          </span>
+                        </td>
                         <td>{post.category_name}</td>
                         <td>
                           <div className="posts-location-info">
@@ -739,6 +908,11 @@ export default function ManagePosts() {
                         <td>
                           <span className={`posts-status-badge ${getStatusClass(post.status)}`}>
                             {post.status}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="posts-report-count">
+                            {post.total_report_count || 0}
                           </span>
                         </td>
                         <td>
@@ -781,7 +955,6 @@ export default function ManagePosts() {
               </button>
             </div>
             <div className="posts-modal-body">
-              {/* Photo Display */}
               {getPhotoUrl(viewModal.post) && (
                 <div className="posts-photo-container">
                   <label>Post Photo:</label>
@@ -813,6 +986,12 @@ export default function ManagePosts() {
                   <span>{viewModal.post.first_name} {viewModal.post.last_name}</span>
                 </div>
                 <div className="posts-detail-row">
+                  <label>Type:</label>
+                  <span className={`posts-type-badge ${getTypeClass(viewModal.post.type)}`}>
+                    {viewModal.post.type}
+                  </span>
+                </div>
+                <div className="posts-detail-row">
                   <label>Category:</label>
                   <span>{viewModal.post.category_name}</span>
                 </div>
@@ -830,6 +1009,10 @@ export default function ManagePosts() {
                   <label>Date Posted:</label>
                   <span>{formatDate(viewModal.post.created_at)}</span>
                 </div>
+                <div className="posts-detail-row">
+                  <label>Total Reports:</label>
+                  <span>{viewModal.post.total_report_count || 0}</span>
+                </div>
                 <div className="posts-detail-row posts-full-width">
                   <label>Description:</label>
                   <div className="posts-description">
@@ -839,20 +1022,19 @@ export default function ManagePosts() {
                 {viewModal.post.color && (
                   <div className="posts-detail-row">
                     <label>Color:</label>
-                  <span>{viewModal.post.color}</span>
-                </div>
-              )}
-              <div className="posts-detail-row posts-full-width">
-                <label>Contact Info:</label>
-                <div className="posts-contact-info">
-                  {viewModal.post.contact_info}
+                    <span>{viewModal.post.color}</span>
+                  </div>
+                )}
+                <div className="posts-detail-row posts-full-width">
+                  <label>Contact Info:</label>
+                  <div className="posts-contact-info">
+                    {viewModal.post.contact_info}
+                  </div>
                 </div>
               </div>
             </div>
-            </div>
             <div className="posts-modal-footer">
               <div className="posts-modal-actions">
-                {/* Action buttons in modal - NOW FUNCTIONAL */}
                 {viewModal.post.status === 'Removed' && (
                   <>
                     <button
@@ -930,7 +1112,7 @@ export default function ManagePosts() {
         </div>
       )}
 
-      {/* Confirmation Modal for ALL Actions - NOW FUNCTIONAL */}
+      {/* Confirmation Modal for ALL Actions */}
       {confirmationModal.isOpen && (
         <div className="posts-modal-overlay" onClick={closeModal}>
           <div className="posts-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -958,6 +1140,7 @@ export default function ManagePosts() {
               <button 
                 className="posts-modal-btn posts-modal-cancel" 
                 onClick={closeModal}
+                disabled={confirmationModal.isProcessing}
               >
                 Cancel
               </button>
@@ -969,11 +1152,21 @@ export default function ManagePosts() {
                   'posts-modal-resolve'
                 }`} 
                 onClick={handleConfirmedAction}
+                disabled={confirmationModal.isProcessing}
               >
-                {confirmationModal.action === 'remove' && 'Remove Post'}
-                {confirmationModal.action === 'delete' && 'Delete Permanently'}
-                {confirmationModal.action === 'restore' && 'Restore Post'}
-                {confirmationModal.action === 'resolve' && 'Mark as Resolved'}
+                {confirmationModal.isProcessing ? (
+                  <>
+                    <FontAwesomeIcon icon={faRefresh} spin />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    {confirmationModal.action === 'remove' && 'Remove Post'}
+                    {confirmationModal.action === 'delete' && 'Delete Permanently'}
+                    {confirmationModal.action === 'restore' && 'Restore Post'}
+                    {confirmationModal.action === 'resolve' && 'Mark as Resolved'}
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -1023,6 +1216,11 @@ export default function ManagePosts() {
                   <div className="posts-preview-content">
                     <p><strong>Title:</strong> {actionModal.post?.title}</p>
                     <p><strong>Author:</strong> {actionModal.post?.first_name} {actionModal.post?.last_name}</p>
+                    <p><strong>Type:</strong> 
+                      <span className={`posts-type-badge ${getTypeClass(actionModal.post?.type)}`}>
+                        {actionModal.post?.type}
+                      </span>
+                    </p>
                     <p><strong>Status:</strong> 
                       <span className={`posts-status-badge ${getStatusClass(actionModal.post?.status)}`}>
                         {actionModal.post?.status}
@@ -1044,16 +1242,27 @@ export default function ManagePosts() {
             <div className="posts-modal-footer">
               <button 
                 className="posts-modal-btn posts-modal-cancel" 
-                onClick={handleCancelAction}
+                onClick={closeModal}
+                disabled={isForceProcessing}
               >
-                Cancel Action
+                Cancel
               </button>
               <button 
                 className="posts-modal-btn posts-modal-force" 
                 onClick={handleForceAction}
+                disabled={isForceProcessing}
               >
-                <FontAwesomeIcon icon={faExclamationTriangle} />
-                Force {actionModal.action === 'remove' ? 'Remove' : 'Delete'}
+                {isForceProcessing ? (
+                  <>
+                    <FontAwesomeIcon icon={faRefresh} spin />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faExclamationTriangle} />
+                    Force {actionModal.action === 'remove' ? 'Remove' : 'Delete'}
+                  </>
+                )}
               </button>
             </div>
           </div>
