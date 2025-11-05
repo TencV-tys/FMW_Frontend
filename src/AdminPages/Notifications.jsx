@@ -17,7 +17,8 @@ import {
   faUserLock,
   faUndo,
   faPlusCircle,
-  faTimes
+  faTimes,
+  faRefresh
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Notifications.css'; 
 
@@ -464,6 +465,7 @@ export default function AdminNotifications() {
       {/* Header */}
       <header className="admin-notif-header">
         <div className="admin-notif-header-content">
+        
           <p>Manage and view system notifications</p>
         </div>
         <div className="admin-notif-header-actions">
@@ -472,7 +474,7 @@ export default function AdminNotifications() {
             onClick={handleManualRefresh}
             disabled={loading}
           >
-            <FontAwesomeIcon icon={faCheckCircle} spin={loading} />
+            <FontAwesomeIcon icon={faRefresh} spin={loading} />
             Refresh
           </button>
           <button 
@@ -644,8 +646,6 @@ export default function AdminNotifications() {
               {filter === 'deletion_request' && 'Deletion Requests'}
               {filter === 'deletion_request_approved' && 'Request Approved'}
               {filter === 'deletion_request_rejected' && 'Request Rejected'}
-              {filter === 'deletion_reset' && 'Deletion Reset'}
-              {filter === 'additional_deletions_granted' && 'Additional Deletions'}
               {filter === 'post_resolved_by_user' && 'User Resolved Posts'}
               {filter === 'feedback_submitted' && 'Feedback Submitted'}
               {filter === 'feedback_updated' && 'Feedback Updated'}
@@ -818,4 +818,4 @@ export default function AdminNotifications() {
       )}
     </>
   );
-} 
+}

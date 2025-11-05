@@ -1065,7 +1065,7 @@ export default function ManagePosts() {
                       <th>Title & Author</th>
                       <th>Type</th>
                       <th>Category</th>
-                      <th>Location</th>
+                      <th>Location</th> 
                       <th>Date Posted</th>
                       <th>Status</th>
                       <th>Total Reports</th>

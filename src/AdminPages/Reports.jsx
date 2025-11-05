@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -54,6 +54,10 @@ export default function Reports() {
     delete: false
   });
 
+  // 🆕 ADDED: Smart polling refs
+  const pollingIntervalRef = useRef(null);
+  const isTabActiveRef = useRef(true);
+
   // Show toast notification
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -62,10 +66,59 @@ export default function Reports() {
     }, 3000);
   };
 
+  // 🆕 ADDED: Smart polling setup
   useEffect(() => {
+    // Initial fetch
     fetchReports();
     fetchReportStats();
+
+    // Set up auto-reload every 1 minute (60000ms)
+    const handleVisibilityChange = () => {
+      isTabActiveRef.current = !document.hidden;
+      if (isTabActiveRef.current) {
+        // Tab became active, fetch immediately
+        fetchReports();
+        fetchReportStats();
+        startPolling();
+      } else {
+        // Tab hidden, stop polling
+        stopPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    startPolling();
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [statusFilter]);
+
+  // 🆕 ADDED: Smart polling functions (60 seconds)
+  const startPolling = () => {
+    stopPolling(); // Clear any existing interval
+    pollingIntervalRef.current = setInterval(() => {
+      if (isTabActiveRef.current) {
+        fetchReports();
+        fetchReportStats();
+      }
+    }, 60000); // 60 seconds
+  };
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
+
+  // 🆕 ADDED: Manual refresh
+  const handleManualRefresh = async () => {
+    showToast('Refreshing reports...', 'success');
+    await fetchReports();
+    await fetchReportStats();
+  };
 
   const fetchReports = async () => {
     try {
@@ -75,7 +128,11 @@ export default function Reports() {
         : `http://localhost:8000/api/reports/status/${statusFilter}`;
       
       const response = await fetch(endpoint, {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (response.ok) {
@@ -94,7 +151,11 @@ export default function Reports() {
   const fetchReportStats = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/reports', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (response.ok) {
@@ -332,7 +393,7 @@ export default function Reports() {
         </div>
         <button 
           className="rm-refresh-btn"
-          onClick={fetchReports}
+          onClick={handleManualRefresh}
           disabled={loading}
         >
           <FontAwesomeIcon icon={faRefresh} spin={loading} />
