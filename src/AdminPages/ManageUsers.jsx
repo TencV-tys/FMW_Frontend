@@ -17,7 +17,8 @@ import {
   faPauseCircle,
   faClock,
   faFlag,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
@@ -41,10 +42,31 @@ export default function ManageUsers() {
   const [customDays, setCustomDays] = useState('');
   const [suspensionReason, setSuspensionReason] = useState('');
   const [banReason, setBanReason] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  // Report thresholds
+  const REPORT_THRESHOLDS = {
+    WARNING: 3,        // Send warning email at 3+ monthly reports
+    CAN_SUSPEND: 5,    // Allow suspension at 5+ monthly reports  
+    CAN_BAN: 8         // Allow banning at 8+ monthly reports
+  };
 
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Show toast notification
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   const fetchUsers = async () => {
     try {
@@ -54,6 +76,9 @@ export default function ManageUsers() {
       });
       const data = await res.json();
       setUsers(data); 
+      
+      // Check for users that need automatic warnings
+      checkForAutomaticWarnings(data);
     } catch (error) {
       console.log(`Error fetching users with reports: ${error.message}`);
       // Fallback to basic user data
@@ -62,7 +87,6 @@ export default function ManageUsers() {
           credentials: 'include'
         });
         const fallbackData = await fallbackRes.json();
-        // Add default report stats for fallback
         const usersWithDefaultStats = fallbackData.map(user => ({
           ...user,
           monthly_report_count: 0,
@@ -78,8 +102,59 @@ export default function ManageUsers() {
     }
   };
 
-  // 🎯 OPEN MODAL FUNCTIONS
+  // 🆕 AUTOMATIC WARNING CHECK
+  const checkForAutomaticWarnings = async (usersData) => {
+    try {
+      const usersNeedingWarning = usersData.filter(user => 
+        user.status === 'active' && 
+        user.monthly_report_count >= REPORT_THRESHOLDS.WARNING
+      );
+
+      for (const user of usersNeedingWarning) {
+        await sendAutomaticWarning(user);
+      }
+    } catch (error) {
+      console.error('Error checking automatic warnings:', error);
+    }
+  };
+
+  // 🆕 SEND AUTOMATIC WARNING EMAIL
+  const sendAutomaticWarning = async (user) => {
+    try {
+      const response = await fetch('http://localhost:8000/api/admin/send-user-warning', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: user.id,
+          monthlyReports: user.monthly_report_count,
+          totalReports: user.total_report_count
+        })
+      });
+
+      if (response.ok) {
+        console.log(`Warning sent to user: ${user.first_name} ${user.last_name}`);
+      }
+    } catch (error) {
+      console.error('Error sending automatic warning:', error);
+    }
+  };
+
+  // 🎯 OPEN MODAL FUNCTIONS WITH VALIDATION
   const openSuspendModal = (user) => {
+    // Check if user meets suspension conditions
+    if (user.role === 'admin') {
+      showToast('Cannot suspend admin users', 'error');
+      return;
+    }
+
+    if (user.monthly_report_count < REPORT_THRESHOLDS.CAN_SUSPEND) {
+      showToast(`User needs at least ${REPORT_THRESHOLDS.CAN_SUSPEND} monthly reports to suspend`, 'error');
+      return;
+    }
+
     setSelectedUser(user);
     setSuspensionDuration('7');
     setCustomDays('');
@@ -88,6 +163,17 @@ export default function ManageUsers() {
   };
 
   const openBanModal = (user) => {
+    // Check if user meets ban conditions
+    if (user.role === 'admin') {
+      showToast('Cannot ban admin users', 'error');
+      return;
+    }
+
+    if (user.monthly_report_count < REPORT_THRESHOLDS.CAN_BAN) {
+      showToast(`User needs at least ${REPORT_THRESHOLDS.CAN_BAN} monthly reports to ban`, 'error');
+      return;
+    }
+
     setSelectedUser(user);
     setBanReason('');
     setShowBanModal(true);
@@ -110,12 +196,14 @@ export default function ManageUsers() {
     setShowDeleteModal(false);
     setShowActivateModal(false);
     setSelectedUser(null);
+    setIsProcessing(false);
   };
 
-  // 🎯 DELETE USER with modal confirmation
+  // 🎯 DELETE USER
   const handleDelete = async () => {
     if (!selectedUser) return;
     
+    setIsProcessing(true);
     try {
       const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}`, {
         method: "DELETE",
@@ -124,30 +212,34 @@ export default function ManageUsers() {
       
       if (res.ok) {
         setUsers(users.filter((user) => user.id !== selectedUser.id));
-        alert('User deleted successfully!');
+        showToast('User deleted successfully!', 'success');
         closeAllModals();
       } else {
-        alert('Failed to delete user');
+        showToast('Failed to delete user', 'error');
       }
-    } catch (error) {
+    } catch (error) { 
       console.log(`Delete error: ${error.message}`);
+      showToast('Error deleting user', 'error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  // 🎯 SUSPEND USER with duration
+  // 🎯 SUSPEND USER
   const handleSuspend = async () => {
     if (!selectedUser) return;
     
     if (!suspensionReason.trim()) {
-      alert('Please provide a reason for suspension.');
+      showToast('Please provide a reason for suspension.', 'error');
       return;
     }
 
     if (suspensionDuration === 'custom' && (!customDays || customDays < 1)) {
-      alert('Please enter a valid number of days for custom suspension.');
+      showToast('Please enter a valid number of days for custom suspension.', 'error');
       return;
     }
 
+    setIsProcessing(true);
     try {
       const suspendData = {
         status: 'suspended',
@@ -177,25 +269,29 @@ export default function ManageUsers() {
             suspended_until: result.data.suspended_until
           } : user
         ));
-        alert(`User "${getUserName(selectedUser)}" suspended for ${result.data.duration} day(s)!`);
+        showToast(`User "${getUserName(selectedUser)}" suspended for ${result.data.duration} day(s)!`, 'success');
         closeAllModals();
       } else {
-        alert('Failed to suspend user');
+        showToast('Failed to suspend user', 'error');
       }
     } catch (error) {
       console.log(`Suspend error: ${error.message}`);
+      showToast('Error suspending user', 'error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  // 🎯 BAN USER with modal
+  // 🎯 BAN USER
   const handleBan = async () => {
     if (!selectedUser) return;
     
     if (!banReason.trim()) {
-      alert('Please provide a reason for banning.');
+      showToast('Please provide a reason for banning.', 'error');
       return;
     }
 
+    setIsProcessing(true);
     try {
       const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}/status`, {
         method: "PUT",
@@ -213,20 +309,24 @@ export default function ManageUsers() {
         setUsers(users.map(user => 
           user.id === selectedUser.id ? { ...user, status: 'banned' } : user
         ));
-        alert(`User "${getUserName(selectedUser)}" banned successfully!`);
+        showToast(`User "${getUserName(selectedUser)}" banned successfully!`, 'success');
         closeAllModals();
       } else {
-        alert('Failed to ban user');
+        showToast('Failed to ban user', 'error');
       }
     } catch (error) {
       console.log(`Ban error: ${error.message}`);
+      showToast('Error banning user', 'error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  // 🎯 ACTIVATE USER with modal confirmation
+  // 🎯 ACTIVATE USER
   const handleActivate = async () => {
     if (!selectedUser) return;
     
+    setIsProcessing(true);
     try {
       const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}/status`, {
         method: "PUT",
@@ -241,13 +341,16 @@ export default function ManageUsers() {
         setUsers(users.map(user => 
           user.id === selectedUser.id ? { ...user, status: 'active', suspended_until: null } : user
         ));
-        alert(`User "${getUserName(selectedUser)}" activated successfully!`);
+        showToast(`User "${getUserName(selectedUser)}" activated successfully!`, 'success');
         closeAllModals();
       } else {
-        alert('Failed to activate user');
+        showToast('Failed to activate user', 'error');
       }
     } catch (error) {
       console.log(`Activate error: ${error.message}`);
+      showToast('Error activating user', 'error');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -344,22 +447,38 @@ export default function ManageUsers() {
     setRoleFilter('all');
   };
 
-  // Get appropriate action buttons based on user status
+  // 🆕 CHECK IF USER CAN BE SUSPENDED
+  const canSuspendUser = (user) => {
+    return user.role !== 'admin' && 
+           user.status === 'active' && 
+           user.monthly_report_count >= REPORT_THRESHOLDS.CAN_SUSPEND;
+  };
+
+  // 🆕 CHECK IF USER CAN BE BANNED
+  const canBanUser = (user) => {
+    return user.role !== 'admin' && 
+           user.status === 'active' && 
+           user.monthly_report_count >= REPORT_THRESHOLDS.CAN_BAN;
+  };
+
+  // 🆕 GET ACTION BUTTONS WITH VALIDATION
   const getActionButtons = (user) => {
     if (user.status === 'active') {
       return (
         <>
           <button
-            className="action-btn suspend"
-            onClick={() => openSuspendModal(user)}
-            title="Suspend User"
+            className={`action-btn suspend ${!canSuspendUser(user) ? 'disabled' : ''}`}
+            onClick={() => canSuspendUser(user) && openSuspendModal(user)}
+            title={!canSuspendUser(user) ? `Need ${REPORT_THRESHOLDS.CAN_SUSPEND}+ monthly reports to suspend` : "Suspend User"}
+            disabled={!canSuspendUser(user)}
           >
             <FontAwesomeIcon icon={faPauseCircle} />
           </button>
           <button
-            className="action-btn ban"
-            onClick={() => openBanModal(user)}
-            title="Ban User"
+            className={`action-btn ban ${!canBanUser(user) ? 'disabled' : ''}`}
+            onClick={() => canBanUser(user) && openBanModal(user)}
+            title={!canBanUser(user) ? `Need ${REPORT_THRESHOLDS.CAN_BAN}+ monthly reports to ban` : "Ban User"}
+            disabled={!canBanUser(user)}
           >
             <FontAwesomeIcon icon={faUserSlash} />
           </button>
@@ -397,11 +516,10 @@ export default function ManageUsers() {
   // Report severity indicator
   const getReportSeverity = (user) => {
     const monthlyReports = user.monthly_report_count || 0;
-    const totalReports = user.total_report_count || 0;
     
-    if (monthlyReports >= 5 || totalReports >= 15) return 'high';
-    if (monthlyReports >= 3 || totalReports >= 8) return 'medium';
-    if (monthlyReports >= 1 || totalReports >= 3) return 'low';
+    if (monthlyReports >= REPORT_THRESHOLDS.CAN_BAN) return 'high';
+    if (monthlyReports >= REPORT_THRESHOLDS.CAN_SUSPEND) return 'medium';
+    if (monthlyReports >= REPORT_THRESHOLDS.WARNING) return 'low';
     return 'none';
   };
 
@@ -411,9 +529,21 @@ export default function ManageUsers() {
     if (severity === 'none') return null;
 
     const severityConfig = {
-      high: { class: 'report-high', text: 'High Risk', icon: faExclamationTriangle },
-      medium: { class: 'report-medium', text: 'Medium Risk', icon: faFlag },
-      low: { class: 'report-low', text: 'Low Risk', icon: faFlag }
+      high: { 
+        class: 'report-high', 
+        text: 'High Risk - Can Ban', 
+        icon: faExclamationTriangle 
+      },
+      medium: { 
+        class: 'report-medium', 
+        text: 'Medium Risk - Can Suspend', 
+        icon: faFlag 
+      },
+      low: { 
+        class: 'report-low', 
+        text: 'Low Risk - Warning Sent', 
+        icon: faFlag 
+      }
     };
 
     const config = severityConfig[severity];
@@ -499,9 +629,23 @@ export default function ManageUsers() {
 
   return (
     <>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`manage-users-toast manage-users-toast-${toast.type}`}>
+          <div className="manage-users-toast-content">
+            <FontAwesomeIcon 
+              icon={toast.type === 'success' ? faCheckCircle : faExclamationTriangle} 
+              className="manage-users-toast-icon" 
+            />
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="manage-users-header">
         <div className="manage-users-header-content">
+       
           <p>Admin panel for user management and moderation</p>
         </div>
         <button 
@@ -612,6 +756,31 @@ export default function ManageUsers() {
         >
           <span className="user-stat-number">{userStats.banned}</span>
           <span className="stat-label">Banned Users</span>
+        </div>
+      </div>
+
+      {/* Report Thresholds Info */}
+      <div className="thresholds-info">
+        <h3>Report Thresholds:</h3>
+        <div className="thresholds-grid">
+          <div className="threshold-item">
+            <span className="threshold-badge threshold-warning">⚠️</span>
+            <span className="threshold-text">
+              <strong>{REPORT_THRESHOLDS.WARNING}+ Monthly Reports:</strong> Automatic warning email sent
+            </span>
+          </div>
+          <div className="threshold-item">
+            <span className="threshold-badge threshold-suspend">⏸️</span>
+            <span className="threshold-text">
+              <strong>{REPORT_THRESHOLDS.CAN_SUSPEND}+ Monthly Reports:</strong> Can suspend user
+            </span>
+          </div>
+          <div className="threshold-item">
+            <span className="threshold-badge threshold-ban">🚫</span>
+            <span className="threshold-text">
+              <strong>{REPORT_THRESHOLDS.CAN_BAN}+ Monthly Reports:</strong> Can ban user
+            </span>
+          </div>
         </div>
       </div>
 
@@ -757,7 +926,7 @@ export default function ManageUsers() {
                 className="modal-close"
                 onClick={closeAllModals}
               >
-                ×
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className="modal-body">
@@ -834,15 +1003,16 @@ export default function ManageUsers() {
               <button 
                 className="btn-secondary"
                 onClick={closeAllModals}
+                disabled={isProcessing}
               >
                 Cancel
               </button>
               <button 
                 className="btn-primary suspend"
                 onClick={handleSuspend}
-                disabled={!suspensionReason.trim() || (suspensionDuration === 'custom' && !customDays)}
+                disabled={!suspensionReason.trim() || (suspensionDuration === 'custom' && !customDays) || isProcessing}
               >
-                Confirm Suspension
+                {isProcessing ? 'Processing...' : 'Confirm Suspension'}
               </button>
             </div>
           </div>
@@ -859,7 +1029,7 @@ export default function ManageUsers() {
                 className="modal-close"
                 onClick={closeAllModals}
               >
-                ×
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className="modal-body">
@@ -914,15 +1084,16 @@ export default function ManageUsers() {
               <button 
                 className="btn-secondary"
                 onClick={closeAllModals}
+                disabled={isProcessing}
               >
                 Cancel
               </button>
               <button 
                 className="btn-primary ban"
                 onClick={handleBan}
-                disabled={!banReason.trim()}
+                disabled={!banReason.trim() || isProcessing}
               >
-                Confirm Permanent Ban
+                {isProcessing ? 'Processing...' : 'Confirm Permanent Ban'}
               </button>
             </div>
           </div>
@@ -939,7 +1110,7 @@ export default function ManageUsers() {
                 className="modal-close"
                 onClick={closeAllModals}
               >
-                ×
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className="modal-body">
@@ -982,14 +1153,16 @@ export default function ManageUsers() {
               <button 
                 className="btn-secondary"
                 onClick={closeAllModals}
+                disabled={isProcessing}
               >
                 Cancel
               </button>
               <button 
                 className="btn-primary delete"
                 onClick={handleDelete}
+                disabled={isProcessing}
               >
-                Confirm Permanent Deletion
+                {isProcessing ? 'Processing...' : 'Confirm Permanent Deletion'}
               </button>
             </div>
           </div>
@@ -1006,7 +1179,7 @@ export default function ManageUsers() {
                 className="modal-close"
                 onClick={closeAllModals}
               >
-                ×
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className="modal-body">
@@ -1035,14 +1208,16 @@ export default function ManageUsers() {
               <button 
                 className="btn-secondary"
                 onClick={closeAllModals}
+                disabled={isProcessing}
               >
                 Cancel
               </button>
               <button 
                 className="btn-primary activate"
                 onClick={handleActivate}
+                disabled={isProcessing}
               >
-                Confirm Activation
+                {isProcessing ? 'Processing...' : 'Confirm Activation'}
               </button>
             </div>
           </div>
