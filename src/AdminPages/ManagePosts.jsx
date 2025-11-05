@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -43,10 +43,64 @@ export default function ManagePosts() {
     type: 'success'
   });
 
+  // 🎯 POST REPORT THRESHOLDS (Same pattern as ManageUsers)
+  const REPORT_THRESHOLDS = {
+    CAN_REMOVE: 3,    // Allow removal at 3+ reports
+    CAN_DELETE: 5     // Allow permanent deletion at 5+ reports
+  };
+
+  // 🆕 ADDED: Smart polling refs
+  const pollingIntervalRef = useRef(null);
+  const isTabActiveRef = useRef(true);
+
   // Fetch posts data
   useEffect(() => {
     fetchPosts();
+
+    // 🆕 ADDED: Smart polling setup
+    const handleVisibilityChange = () => {
+      isTabActiveRef.current = !document.hidden;
+      if (isTabActiveRef.current) {
+        // Tab became active, fetch immediately
+        fetchPosts();
+        startPolling();
+      } else {
+        // Tab hidden, stop polling
+        stopPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    startPolling();
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
+
+  // 🆕 ADDED: Smart polling functions (60 seconds)
+  const startPolling = () => {
+    stopPolling(); // Clear any existing interval
+    pollingIntervalRef.current = setInterval(() => {
+      if (isTabActiveRef.current) {
+        fetchPosts();
+      }
+    }, 60000); // 60 seconds
+  };
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
+
+  // 🆕 ADDED: Manual refresh
+  const handleManualRefresh = async () => {
+    showToast('Refreshing posts...', 'success');
+    await fetchPosts();
+  };
 
   // Show toast notification
   const showToast = (message, type = 'success') => {
@@ -60,7 +114,11 @@ export default function ManagePosts() {
     try {
       setLoading(true);
       const response = await fetch('http://localhost:8000/api/admin/posts', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       
       if (response.ok) {
@@ -125,23 +183,31 @@ export default function ManagePosts() {
     });
   };
 
-  // Handle post actions with report count validation
-  const handlePostAction = async (postId, action) => {
+  // 🎯 UPDATED: Check if post can be removed based on threshold
+  const canRemovePost = (post) => {
+    const reportCount = post.total_report_count || 0;
+    return reportCount >= REPORT_THRESHOLDS.CAN_REMOVE;
+  };
+
+  // 🎯 UPDATED: Check if post can be deleted based on threshold
+  const canDeletePost = (post) => {
+    const reportCount = post.total_report_count || 0;
+    return reportCount >= REPORT_THRESHOLDS.CAN_DELETE;
+  };
+
+  // 🎯 UPDATED: Handle post actions with threshold validation
+  const handlePostAction = (postId, action) => {
     const post = posts.find(p => p.id === postId);
     
-    // For remove and delete actions, check if conditions are met
-    if (action === 'remove' || action === 'delete') {
-      const reportCount = post.total_report_count || 0;
-      
-      if (action === 'remove' && reportCount < 3) {
-        showToast(`Post needs at least 3 reports to be removed (currently has ${reportCount})`, 'error');
-        return;
-      }
-      
-      if (action === 'delete' && reportCount < 5) {
-        showToast(`Post needs at least 5 reports to be permanently deleted (currently has ${reportCount})`, 'error');
-        return;
-      }
+    // Validate thresholds before showing confirmation
+    if (action === 'remove' && !canRemovePost(post)) {
+      showToast(`Post needs at least ${REPORT_THRESHOLDS.CAN_REMOVE} reports to be removed (currently has ${post.total_report_count || 0})`, 'error');
+      return;
+    }
+    
+    if (action === 'delete' && !canDeletePost(post)) {
+      showToast(`Post needs at least ${REPORT_THRESHOLDS.CAN_DELETE} reports to be permanently deleted (currently has ${post.total_report_count || 0})`, 'error');
+      return;
     }
 
     // Show confirmation modal for ALL actions
@@ -292,9 +358,28 @@ export default function ManagePosts() {
     return types.sort();
   };
 
-  // Bulk actions with confirmation
+  // 🎯 UPDATED: Bulk actions with threshold validation
   const handleBulkAction = async (action) => {
     if (selectedPosts.size === 0) return;
+
+    // Check thresholds for bulk actions
+    const selectedPostsData = posts.filter(post => selectedPosts.has(post.id));
+    
+    if (action === 'remove') {
+      const cannotRemove = selectedPostsData.filter(post => !canRemovePost(post));
+      if (cannotRemove.length > 0) {
+        showToast(`Some posts don't meet the ${REPORT_THRESHOLDS.CAN_REMOVE} report threshold for removal`, 'error');
+        return;
+      }
+    }
+    
+    if (action === 'delete') {
+      const cannotDelete = selectedPostsData.filter(post => !canDeletePost(post));
+      if (cannotDelete.length > 0) {
+        showToast(`Some posts don't meet the ${REPORT_THRESHOLDS.CAN_DELETE} report threshold for deletion`, 'error');
+        return;
+      }
+    }
 
     let confirmationMessage = '';
     let actionText = '';
@@ -425,12 +510,45 @@ export default function ManagePosts() {
     }
   };
 
-  // Get action buttons based on post status and report count
-  const getActionButtons = (post) => {
+  // 🎯 UPDATED: Get report severity for posts (same pattern as users)
+  const getReportSeverity = (post) => {
     const reportCount = post.total_report_count || 0;
-    const canRemove = reportCount >= 3;
-    const canDelete = reportCount >= 5;
+    
+    if (reportCount >= REPORT_THRESHOLDS.CAN_DELETE) return 'high';
+    if (reportCount >= REPORT_THRESHOLDS.CAN_REMOVE) return 'medium';
+    return 'none';
+  };
 
+  // 🎯 NEW: Report severity badge component (same pattern as users)
+  const ReportSeverityBadge = ({ post }) => {
+    const severity = getReportSeverity(post);
+    if (severity === 'none') return null;
+
+    const severityConfig = {
+      high: { 
+        class: 'report-high', 
+        text: 'High Risk - Can Delete', 
+        icon: faExclamationTriangle 
+      },
+      medium: { 
+        class: 'report-medium', 
+        text: 'Medium Risk - Can Remove', 
+        icon: faFlag 
+      }
+    };
+
+    const config = severityConfig[severity];
+
+    return (
+      <span className={`report-severity-badge ${config.class}`}>
+        <FontAwesomeIcon icon={config.icon} />
+        {config.text}
+      </span>
+    );
+  };
+
+  // 🎯 UPDATED: Get action buttons with threshold validation (same pattern as users)
+  const getActionButtons = (post) => {
     if (post.status === 'Removed') {
       return (
         <>
@@ -441,29 +559,31 @@ export default function ManagePosts() {
           >
             <FontAwesomeIcon icon={faUndo} />
           </button>
-          {canDelete && (
-            <button
-              className="pm-action-btn pm-action-delete"
-              onClick={() => handlePostAction(post.id, 'delete')}
-              title="Delete Permanently"
-            >
-              <FontAwesomeIcon icon={faTrash} />
-            </button>
-          )}
+          <button
+            className={`pm-action-btn pm-action-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            onClick={() => canDeletePost(post) && handlePostAction(post.id, 'delete')}
+            title={!canDeletePost(post) ? 
+              `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` 
+              : "Delete Permanently"}
+            disabled={!canDeletePost(post)}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
         </>
       );
     } else if (post.status === 'Resolved') {
       return (
         <>
-          {canRemove && (
-            <button
-              className="pm-action-btn pm-action-remove"
-              onClick={() => handlePostAction(post.id, 'remove')}
-              title="Remove Post"
-            >
-              <FontAwesomeIcon icon={faBan} />
-            </button>
-          )}
+          <button
+            className={`pm-action-btn pm-action-remove ${!canRemovePost(post) ? 'disabled' : ''}`}
+            onClick={() => canRemovePost(post) && handlePostAction(post.id, 'remove')}
+            title={!canRemovePost(post) ? 
+              `Need ${REPORT_THRESHOLDS.CAN_REMOVE}+ reports to remove` 
+              : "Remove Post"}
+            disabled={!canRemovePost(post)}
+          >
+            <FontAwesomeIcon icon={faBan} />
+          </button>
           <button
             className="pm-action-btn pm-action-restore"
             onClick={() => handlePostAction(post.id, 'restore')}
@@ -471,15 +591,16 @@ export default function ManagePosts() {
           >
             <FontAwesomeIcon icon={faUndo} />
           </button>
-          {canDelete && (
-            <button
-              className="pm-action-btn pm-action-delete"
-              onClick={() => handlePostAction(post.id, 'delete')}
-              title="Delete Permanently"
-            >
-              <FontAwesomeIcon icon={faTrash} />
-            </button>
-          )}
+          <button
+            className={`pm-action-btn pm-action-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            onClick={() => canDeletePost(post) && handlePostAction(post.id, 'delete')}
+            title={!canDeletePost(post) ? 
+              `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` 
+              : "Delete Permanently"}
+            disabled={!canDeletePost(post)}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
         </>
       );
     } else {
@@ -492,24 +613,26 @@ export default function ManagePosts() {
           >
             <FontAwesomeIcon icon={faCheckCircle} />
           </button>
-          {canRemove && (
-            <button
-              className="pm-action-btn pm-action-remove"
-              onClick={() => handlePostAction(post.id, 'remove')}
-              title="Remove Post"
-            >
-              <FontAwesomeIcon icon={faBan} />
-            </button>
-          )}
-          {canDelete && (
-            <button
-              className="pm-action-btn pm-action-delete"
-              onClick={() => handlePostAction(post.id, 'delete')}
-              title="Delete Permanently"
-            >
-              <FontAwesomeIcon icon={faTrash} />
-            </button>
-          )}
+          <button
+            className={`pm-action-btn pm-action-remove ${!canRemovePost(post) ? 'disabled' : ''}`}
+            onClick={() => canRemovePost(post) && handlePostAction(post.id, 'remove')}
+            title={!canRemovePost(post) ? 
+              `Need ${REPORT_THRESHOLDS.CAN_REMOVE}+ reports to remove` 
+              : "Remove Post"}
+            disabled={!canRemovePost(post)}
+          >
+            <FontAwesomeIcon icon={faBan} />
+          </button>
+          <button
+            className={`pm-action-btn pm-action-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            onClick={() => canDeletePost(post) && handlePostAction(post.id, 'delete')}
+            title={!canDeletePost(post) ? 
+              `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` 
+              : "Delete Permanently"}
+            disabled={!canDeletePost(post)}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
         </>
       );
     }
@@ -532,12 +655,8 @@ export default function ManagePosts() {
     'Help Wanted': posts.filter(p => p.type?.toLowerCase() === 'help wanted').length
   };
 
-  // Render modal actions based on post status and report count
+  // 🎯 UPDATED: Render modal actions with threshold validation
   const renderModalActions = (post) => {
-    const reportCount = post.total_report_count || 0;
-    const canRemove = reportCount >= 3;
-    const canDelete = reportCount >= 5;
-
     if (post.status === 'Removed') {
       return (
         <>
@@ -548,29 +667,29 @@ export default function ManagePosts() {
             <FontAwesomeIcon icon={faUndo} />
             Restore Post
           </button>
-          {canDelete && (
-            <button
-              className="pm-modal-btn pm-modal-delete"
-              onClick={() => handleModalAction('delete')}
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              Delete Permanently
-            </button>
-          )}
+          <button
+            className={`pm-modal-btn pm-modal-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            onClick={() => canDeletePost(post) && handleModalAction('delete')}
+            disabled={!canDeletePost(post)}
+            title={!canDeletePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` : ''}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            Delete Permanently
+          </button>
         </>
       );
     } else if (post.status === 'Resolved') {
       return (
         <>
-          {canRemove && (
-            <button
-              className="pm-modal-btn pm-modal-remove"
-              onClick={() => handleModalAction('remove')}
-            >
-              <FontAwesomeIcon icon={faBan} />
-              Remove Post
-            </button>
-          )}
+          <button
+            className={`pm-modal-btn pm-modal-remove ${!canRemovePost(post) ? 'disabled' : ''}`}
+            onClick={() => canRemovePost(post) && handleModalAction('remove')}
+            disabled={!canRemovePost(post)}
+            title={!canRemovePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_REMOVE}+ reports to remove` : ''}
+          >
+            <FontAwesomeIcon icon={faBan} />
+            Remove Post
+          </button>
           <button
             className="pm-modal-btn pm-modal-restore"
             onClick={() => handleModalAction('restore')}
@@ -578,15 +697,15 @@ export default function ManagePosts() {
             <FontAwesomeIcon icon={faUndo} />
             Restore to Active
           </button>
-          {canDelete && (
-            <button
-              className="pm-modal-btn pm-modal-delete"
-              onClick={() => handleModalAction('delete')}
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              Delete Permanently
-            </button>
-          )}
+          <button
+            className={`pm-modal-btn pm-modal-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            onClick={() => canDeletePost(post) && handleModalAction('delete')}
+            disabled={!canDeletePost(post)}
+            title={!canDeletePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` : ''}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            Delete Permanently
+          </button>
         </>
       );
     } else {
@@ -599,24 +718,24 @@ export default function ManagePosts() {
             <FontAwesomeIcon icon={faCheckCircle} />
             Mark as Resolved
           </button>
-          {canRemove && (
-            <button
-              className="pm-modal-btn pm-modal-remove"
-              onClick={() => handleModalAction('remove')}
-            >
-              <FontAwesomeIcon icon={faBan} />
-              Remove Post
-            </button>
-          )}
-          {canDelete && (
-            <button
-              className="pm-modal-btn pm-modal-delete"
-              onClick={() => handleModalAction('delete')}
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              Delete Permanently
-            </button>
-          )}
+          <button
+            className={`pm-modal-btn pm-modal-remove ${!canRemovePost(post) ? 'disabled' : ''}`}
+            onClick={() => canRemovePost(post) && handleModalAction('remove')}
+            disabled={!canRemovePost(post)}
+            title={!canRemovePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_REMOVE}+ reports to remove` : ''}
+          >
+            <FontAwesomeIcon icon={faBan} />
+            Remove Post
+          </button>
+          <button
+            className={`pm-modal-btn pm-modal-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            onClick={() => canDeletePost(post) && handleModalAction('delete')}
+            disabled={!canDeletePost(post)}
+            title={!canDeletePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` : ''}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+            Delete Permanently
+          </button>
         </>
       );
     }
@@ -664,6 +783,11 @@ export default function ManagePosts() {
           <span className="pm-detail-value">{post.total_report_count || 0}</span>
         </div>
       </div>
+
+      {/* 🎯 ADDED: Report severity badge for mobile */}
+      <div className="pm-mobile-report-severity">
+        <ReportSeverityBadge post={post} />
+      </div>
       
       <div className="pm-mobile-actions">
         <button 
@@ -700,12 +824,62 @@ export default function ManagePosts() {
         </div>
         <button 
           className="pm-refresh-btn"
-          onClick={fetchPosts}
+          onClick={handleManualRefresh}
           disabled={loading}
         >
           <FontAwesomeIcon icon={faRefresh} spin={loading} />
           Refresh
         </button>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="pm-stats">
+        <div 
+          className={`pm-stat-card ${statusFilter === 'all' && typeFilter === 'all' ? 'pm-stat-active' : ''}`}
+          onClick={() => handleStatCardClick('all', 'all')}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="pm-stat-number">{posts.length}</span>
+          <span className="pm-stat-label">Total Posts</span>
+        </div>
+        <div 
+          className={`pm-stat-card ${statusFilter === 'Active' ? 'pm-stat-active' : ''}`}
+          onClick={() => handleStatCardClick('status', 'Active')}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="pm-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
+          <span className="pm-stat-label">Active</span>
+        </div>
+        <div 
+          className={`pm-stat-card ${statusFilter === 'Resolved' ? 'pm-stat-active' : ''}`}
+          onClick={() => handleStatCardClick('status', 'Resolved')}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="pm-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
+          <span className="pm-stat-label">Resolved</span>
+        </div>
+        <div 
+          className={`pm-stat-card ${statusFilter === 'Removed' ? 'pm-stat-active' : ''}`}
+          onClick={() => handleStatCardClick('status', 'Removed')}
+          style={{ cursor: 'pointer' }}
+        >
+          <span className="pm-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
+          <span className="pm-stat-label">Removed</span>
+        </div>
+        
+        {Object.entries(typeStats).map(([type, count]) => (
+          count > 0 && (
+            <div 
+              key={type}
+              className={`pm-stat-card ${getStatCardClass(type)} ${typeFilter === type ? 'pm-stat-active' : ''}`}
+              onClick={() => handleStatCardClick('type', type)}
+              style={{ cursor: 'pointer' }}
+            >
+              <span className="pm-stat-number">{count}</span>
+              <span className="pm-stat-label">{type}</span>
+            </div>
+          )
+        ))}
       </div>
 
       {/* Filters and Search */}
@@ -795,55 +969,48 @@ export default function ManagePosts() {
         )}
       </div>
 
-      {/* Stats Summary */}
-      <div className="pm-stats">
-        <div 
-          className={`pm-stat-card ${statusFilter === 'all' && typeFilter === 'all' ? 'pm-stat-active' : ''}`}
-          onClick={() => handleStatCardClick('all', 'all')}
-          style={{ cursor: 'pointer' }}
-        >
-          <span className="pm-stat-number">{posts.length}</span>
-          <span className="pm-stat-label">Total Posts</span>
+      {/* 🎯 MOVED: Report Thresholds Info - NOW AFTER FILTERS (Same as ManageUsers) */}
+      <div className="thresholds-info">
+        <h3>Post Report Thresholds:</h3>
+        <div className="thresholds-grid">
+          <div className="threshold-item">
+            <span className="threshold-badge threshold-remove">⏸️</span>
+            <span className="threshold-text">
+              <strong>{REPORT_THRESHOLDS.CAN_REMOVE}+ Total Reports:</strong> Can remove post from public view
+            </span>
+          </div>
+          <div className="threshold-item">
+            <span className="threshold-badge threshold-delete">🚫</span>
+            <span className="threshold-text">
+              <strong>{REPORT_THRESHOLDS.CAN_DELETE}+ Total Reports:</strong> Can permanently delete post
+            </span>
+          </div>
         </div>
-        <div 
-          className={`pm-stat-card ${statusFilter === 'Active' ? 'pm-stat-active' : ''}`}
-          onClick={() => handleStatCardClick('status', 'Active')}
-          style={{ cursor: 'pointer' }}
-        >
-          <span className="pm-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
-          <span className="pm-stat-label">Active</span>
-        </div>
-        <div 
-          className={`pm-stat-card ${statusFilter === 'Resolved' ? 'pm-stat-active' : ''}`}
-          onClick={() => handleStatCardClick('status', 'Resolved')}
-          style={{ cursor: 'pointer' }}
-        >
-          <span className="pm-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
-          <span className="pm-stat-label">Resolved</span>
-        </div>
-        <div 
-          className={`pm-stat-card ${statusFilter === 'Removed' ? 'pm-stat-active' : ''}`}
-          onClick={() => handleStatCardClick('status', 'Removed')}
-          style={{ cursor: 'pointer' }}
-        >
-          <span className="pm-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
-          <span className="pm-stat-label">Removed</span>
-        </div>
-        
-        {Object.entries(typeStats).map(([type, count]) => (
-          count > 0 && (
-            <div 
-              key={type}
-              className={`pm-stat-card ${getStatCardClass(type)} ${typeFilter === type ? 'pm-stat-active' : ''}`}
-              onClick={() => handleStatCardClick('type', type)}
-              style={{ cursor: 'pointer' }}
-            >
-              <span className="pm-stat-number">{count}</span>
-              <span className="pm-stat-label">{type}</span>
-            </div>
-          )
-        ))}
       </div>
+
+      {/* 🆕 UPDATED: Active Filters Display (Same as AdminFeedback) */}
+      {isFilterActive() && (
+        <div className="pm-active-filters-section">
+          <span className="pm-active-filters-label">Active filter:</span>
+          <div className="pm-filter-tags">
+            {statusFilter !== 'all' && (
+              <span className="pm-filter-tag">
+                Status: {statusFilter}
+              </span>
+            )}
+            {typeFilter !== 'all' && (
+              <span className="pm-filter-tag">
+                Type: {typeFilter}
+              </span>
+            )}
+            {searchTerm && (
+              <span className="pm-filter-tag">
+                Search: "{searchTerm}"
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Posts Table */}
       <div className='pm-table-container'>
@@ -852,22 +1019,9 @@ export default function ManagePosts() {
             <h2>Posts Management</h2>
             <div className="pm-header-info">
               <span className="pm-count">
-                {filteredPosts.length} of {posts.length} posts
+                {filteredPosts.length} of {posts.length} post{filteredPosts.length !== 1 ? 's' : ''}
+                {isFilterActive() && ' (Filtered)'}
               </span>
-              {isFilterActive() && (
-                <div className="pm-active-filters">
-                  <span>Active filters:</span>
-                  {statusFilter !== 'all' && (
-                    <span className="pm-filter-tag">Status: {statusFilter}</span>
-                  )}
-                  {typeFilter !== 'all' && (
-                    <span className="pm-filter-tag">Type: {typeFilter}</span>
-                  )}
-                  {searchTerm && (
-                    <span className="pm-filter-tag">Search: "{searchTerm}"</span>
-                  )}
-                </div>
-              )}
             </div>
           </div>
 
@@ -878,7 +1032,12 @@ export default function ManagePosts() {
             </div>
           ) : filteredPosts.length === 0 ? (
             <div className="pm-empty-state">
-              <p>No posts found matching your criteria.</p>
+              <p>
+                {posts.length === 0 
+                  ? "No posts have been created yet." 
+                  : "No posts match your search criteria."
+                }
+              </p>
               {isFilterActive() && (
                 <button 
                   className="pm-retry-btn" 
@@ -910,6 +1069,7 @@ export default function ManagePosts() {
                       <th>Date Posted</th>
                       <th>Status</th>
                       <th>Total Reports</th>
+                      <th>Risk Level</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -956,6 +1116,9 @@ export default function ManagePosts() {
                           </span>
                         </td>
                         <td>
+                          <ReportSeverityBadge post={post} />
+                        </td>
+                        <td>
                           <div className='pm-actions'>
                             <button
                               className="pm-action-btn pm-action-view"
@@ -995,6 +1158,23 @@ export default function ManagePosts() {
               </button>
             </div>
             <div className="pm-modal-body">
+              {/* 🎯 ADDED: Report Statistics in Modal */}
+              <div className="pm-report-stats">
+                <h4>Post Report Statistics:</h4>
+                <div className="pm-report-stats-grid">
+                  <div className="pm-report-stat">
+                    <span className="pm-stat-label">Total Reports:</span>
+                    <span className="pm-stat-value">{viewModal.post.total_report_count || 0}</span>
+                  </div>
+                  <div className="pm-report-stat">
+                    <span className="pm-stat-label">Risk Level:</span>
+                    <span className="pm-stat-value">
+                      <ReportSeverityBadge post={viewModal.post} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               {getPhotoUrl(viewModal.post) && (
                 <div className="pm-photo-container">
                   <label>Post Photo:</label>
@@ -1049,10 +1229,6 @@ export default function ManagePosts() {
                   <label>Date Posted:</label>
                   <span>{formatDate(viewModal.post.created_at)}</span>
                 </div>
-                <div className="pm-detail-row">
-                  <label>Total Reports:</label>
-                  <span>{viewModal.post.total_report_count || 0}</span>
-                </div>
                 <div className="pm-detail-row pm-full-width">
                   <label>Description:</label>
                   <div className="pm-description">
@@ -1101,6 +1277,18 @@ export default function ManagePosts() {
                   <FontAwesomeIcon icon={faExclamationTriangle} />
                 </div>
                 <p>{confirmationModal.message}</p>
+                
+                {/* 🎯 ADDED: Report stats in confirmation modal */}
+                {confirmationModal.post && (
+                  <div className="pm-confirmation-stats">
+                    <p><strong>Current Reports:</strong> {confirmationModal.post.total_report_count || 0}</p>
+                    <p><strong>Required for this action:</strong> {
+                      confirmationModal.action === 'remove' ? REPORT_THRESHOLDS.CAN_REMOVE :
+                      confirmationModal.action === 'delete' ? REPORT_THRESHOLDS.CAN_DELETE : 0
+                    }+ reports</p>
+                  </div>
+                )}
+
                 {confirmationModal.action === 'delete' && (
                   <div className="pm-deletion-warning">
                     <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -1144,7 +1332,7 @@ export default function ManagePosts() {
             </div>
           </div>
         </div>
-      )}
+      )} 
     </>
   );
-} 
+}

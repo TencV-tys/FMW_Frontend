@@ -88,7 +88,7 @@ export default function AdminNotifications() {
         fetchNotifications();
         fetchNotificationStats();
       }
-    }, 60000); // 10 seconds
+    }, 60000); // 60 seconds
   };
 
   const stopPolling = () => {

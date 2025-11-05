@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faComments, 
@@ -60,6 +60,10 @@ export default function AdminFeedback() {
     type: 'success'
   });
 
+  // 🆕 ADDED: Smart polling refs
+  const pollingIntervalRef = useRef(null);
+  const isTabActiveRef = useRef(true);
+
   // Show toast notification
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -71,7 +75,54 @@ export default function AdminFeedback() {
   useEffect(() => {
     fetchFeedback();
     fetchFeedbackStats();
+
+    // 🆕 ADDED: Smart polling setup
+    const handleVisibilityChange = () => {
+      isTabActiveRef.current = !document.hidden;
+      if (isTabActiveRef.current) {
+        // Tab became active, fetch immediately
+        fetchFeedback();
+        fetchFeedbackStats();
+        startPolling();
+      } else {
+        // Tab hidden, stop polling
+        stopPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    startPolling();
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [statusFilter, typeFilter, priorityFilter]);
+
+  // 🆕 ADDED: Smart polling functions (60 seconds)
+  const startPolling = () => {
+    stopPolling(); // Clear any existing interval
+    pollingIntervalRef.current = setInterval(() => {
+      if (isTabActiveRef.current) {
+        fetchFeedback();
+        fetchFeedbackStats();
+      }
+    }, 60000); // 60 seconds
+  };
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
+
+  // 🆕 ADDED: Manual refresh
+  const handleManualRefresh = async () => {
+    showToast('Refreshing feedback...', 'success');
+    await fetchFeedback();
+    await fetchFeedbackStats();
+  };
 
   const fetchFeedback = async () => {
     try {
@@ -88,7 +139,11 @@ export default function AdminFeedback() {
       }
       
       const response = await fetch(url, {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (response.ok) {
@@ -106,15 +161,35 @@ export default function AdminFeedback() {
   const fetchFeedbackStats = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/feedback/stats', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (response.ok) {
         const data = await response.json();
-        setStats(data.stats);
+        setStats(data.stats || {
+          total: 0,
+          pending: 0,
+          reviewed: 0,
+          in_progress: 0,
+          completed: 0,
+          rejected: 0
+        });
       }
     } catch (error) {
       console.error('Error fetching feedback stats:', error);
+      // Set default stats on error
+      setStats({
+        total: 0,
+        pending: 0,
+        reviewed: 0,
+        in_progress: 0,
+        completed: 0,
+        rejected: 0
+      });
     }
   };
 
@@ -171,7 +246,7 @@ export default function AdminFeedback() {
         }
       }
     }
-  }; 
+  };
 
   // 🆕 UPDATED: Execute status update with toast
   const executeUpdateStatus = async (feedbackId, newStatus, adminNotes = '') => {
@@ -262,6 +337,44 @@ export default function AdminFeedback() {
   // 🆕 ADDED: Check if feedback can be deleted (only completed or rejected)
   const canDeleteFeedback = (feedback) => {
     return feedback.status === 'completed' || feedback.status === 'rejected';
+  };
+
+  // 🆕 ADDED: Status button logic - don't show completed if rejected, and vice versa
+  const getAvailableActions = (feedbackItem) => {
+    const actions = [];
+    
+    // Always show view button
+    actions.push('view');
+    
+    switch (feedbackItem.status) {
+      case 'pending':
+        actions.push('reviewed', 'in_progress');
+        break;
+      case 'reviewed':
+        actions.push('in_progress', 'completed');
+        break;
+      case 'in_progress':
+        actions.push('completed');
+        break;
+      case 'completed':
+        actions.push('pending'); // Only show reopen, NOT rejected
+        break;
+      case 'rejected':
+        actions.push('pending'); // Only show reopen, NOT completed
+        break;
+    }
+    
+    // Only show reject button if NOT completed or rejected
+    if (feedbackItem.status !== 'completed' && feedbackItem.status !== 'rejected') {
+      actions.push('rejected');
+    }
+    
+    // Only show delete button for completed or rejected
+    if (canDeleteFeedback(feedbackItem)) {
+      actions.push('delete');
+    }
+    
+    return actions;
   };
 
   const filteredFeedback = feedback.filter(item => {
@@ -357,7 +470,7 @@ export default function AdminFeedback() {
         </div>
         <button 
           className="feedback-refresh-btn"
-          onClick={fetchFeedback}
+          onClick={handleManualRefresh}
           disabled={loading}
         >
           <FontAwesomeIcon icon={faRefresh} spin={loading} />
@@ -488,8 +601,6 @@ export default function AdminFeedback() {
         )}
       </div>
 
-  
-
       {/* Feedback Table */}
       <div className='feedback-management-table-container'>
         <div className='feedback-management-table-content'>
@@ -541,69 +652,74 @@ export default function AdminFeedback() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredFeedback.map(item => (
-                    <tr key={item.id}>
-                      <td>
-                        <div className="feedback-management-details">
-                          <div className="feedback-title-type">
-                            <FontAwesomeIcon icon={getTypeIcon(item.type)} />
-                            <strong className="feedback-management-title">{item.title}</strong>
+                  {filteredFeedback.map(item => {
+                    const availableActions = getAvailableActions(item);
+                    
+                    return (
+                      <tr key={item.id}>
+                        <td>
+                          <div className="feedback-management-details">
+                            <div className="feedback-title-type">
+                              <FontAwesomeIcon icon={getTypeIcon(item.type)} />
+                              <strong className="feedback-management-title">{item.title}</strong>
+                            </div>
+                            <small className="feedback-management-description">
+                              {item.description.length > 100 
+                                ? `${item.description.substring(0, 100)}...` 
+                                : item.description
+                              }
+                            </small>
                           </div>
-                          <small className="feedback-management-description">
-                            {item.description.length > 100 
-                              ? `${item.description.substring(0, 100)}...` 
-                              : item.description
-                            }
-                          </small>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="feedback-user-info">
-                          <FontAwesomeIcon icon={faUser} />
-                          <span>
-                            {item.submitter_first_name && item.submitter_last_name 
-                              ? `${item.submitter_first_name} ${item.submitter_last_name}`
-                              : 'Anonymous User'
-                            }
+                        </td>
+                        <td>
+                          <div className="feedback-user-info">
+                            <FontAwesomeIcon icon={faUser} />
+                            <span>
+                              {item.submitter_first_name && item.submitter_last_name 
+                                ? `${item.submitter_first_name} ${item.submitter_last_name}`
+                                : 'Anonymous User'
+                              }
+                            </span>
+                          </div>
+                          {item.submitter_email && (
+                            <small className="feedback-user-email">{item.submitter_email}</small>
+                          )}
+                        </td>
+                        <td>
+                          <div className="feedback-type-priority">
+                            <span className={`feedback-type-badge feedback-type-${item.type}`}>
+                              {item.type}
+                            </span>
+                            <span className={`feedback-priority-badge ${getPriorityClass(item.priority)}`}>
+                              {item.priority}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="feedback-date-info">
+                            <span>{formatDate(item.created_at)}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`feedback-status-badge ${getStatusClass(item.status)}`}>
+                            <FontAwesomeIcon icon={getStatusIcon(item.status)} />
+                            {item.status.replace('_', ' ')}
                           </span>
-                        </div>
-                        {item.submitter_email && (
-                          <small className="feedback-user-email">{item.submitter_email}</small>
-                        )}
-                      </td>
-                      <td>
-                        <div className="feedback-type-priority">
-                          <span className={`feedback-type-badge feedback-type-${item.type}`}>
-                            {item.type}
-                          </span>
-                          <span className={`feedback-priority-badge ${getPriorityClass(item.priority)}`}>
-                            {item.priority}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="feedback-date-info">
-                          <span>{formatDate(item.created_at)}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`feedback-status-badge ${getStatusClass(item.status)}`}>
-                          <FontAwesomeIcon icon={getStatusIcon(item.status)} />
-                          {item.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td>
-                        <div className='feedback-management-actions'>
-                          <button
-                            className="feedback-action-btn view"
-                            onClick={() => openViewModal(item)}
-                            title="View Feedback Details"
-                          >
-                            <FontAwesomeIcon icon={faEye} />
-                          </button>
-                          
-                          {item.status === 'pending' && (
-                            <>
+                        </td>
+                        <td>
+                          <div className='feedback-management-actions'>
+                            {/* 🆕 UPDATED: Dynamic action buttons based on available actions */}
+                            {availableActions.includes('view') && (
+                              <button
+                                className="feedback-action-btn view"
+                                onClick={() => openViewModal(item)}
+                                title="View Feedback Details"
+                              >
+                                <FontAwesomeIcon icon={faEye} />
+                              </button>
+                            )}
+                            
+                            {availableActions.includes('reviewed') && (
                               <button
                                 className="feedback-action-btn review"
                                 onClick={() => showConfirmationModal(item, 'reviewed')}
@@ -611,6 +727,9 @@ export default function AdminFeedback() {
                               >
                                 <FontAwesomeIcon icon={faEye} />
                               </button>
+                            )}
+                            
+                            {availableActions.includes('in_progress') && (
                               <button
                                 className="feedback-action-btn progress"
                                 onClick={() => showConfirmationModal(item, 'in_progress')}
@@ -618,18 +737,9 @@ export default function AdminFeedback() {
                               >
                                 <FontAwesomeIcon icon={faExclamationTriangle} />
                               </button>
-                            </>
-                          )}
-                          
-                          {item.status === 'reviewed' && (
-                            <>
-                              <button
-                                className="feedback-action-btn progress"
-                                onClick={() => showConfirmationModal(item, 'in_progress')}
-                                title="Mark as In Progress"
-                              >
-                                <FontAwesomeIcon icon={faExclamationTriangle} />
-                              </button>
+                            )}
+                            
+                            {availableActions.includes('completed') && (
                               <button
                                 className="feedback-action-btn complete"
                                 onClick={() => showConfirmationModal(item, 'completed')}
@@ -637,53 +747,42 @@ export default function AdminFeedback() {
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
                               </button>
-                            </>
-                          )}
-                          
-                          {item.status === 'in_progress' && (
-                            <button
-                              className="feedback-action-btn complete"
-                              onClick={() => showConfirmationModal(item, 'completed')}
-                              title="Mark as Completed"
-                            >
-                              <FontAwesomeIcon icon={faCheckCircle} />
-                            </button>
-                          )}
-                          
-                          {(item.status === 'completed' || item.status === 'rejected') && (
-                            <button
-                              className="feedback-action-btn pending"
-                              onClick={() => showConfirmationModal(item, 'pending')}
-                              title="Reopen Feedback"
-                            >
-                              <FontAwesomeIcon icon={faRefresh} />
-                            </button>
-                          )}
-                          
-                          {item.status !== 'rejected' && (
-                            <button
-                              className="feedback-action-btn reject"
-                              onClick={() => showConfirmationModal(item, 'rejected')}
-                              title="Reject Feedback"
-                            >
-                              <FontAwesomeIcon icon={faBan} />
-                            </button>
-                          )}
+                            )}
+                            
+                            {availableActions.includes('pending') && (
+                              <button
+                                className="feedback-action-btn pending"
+                                onClick={() => showConfirmationModal(item, 'pending')}
+                                title="Reopen Feedback"
+                              >
+                                <FontAwesomeIcon icon={faRefresh} />
+                              </button>
+                            )}
+                            
+                            {availableActions.includes('rejected') && (
+                              <button
+                                className="feedback-action-btn reject"
+                                onClick={() => showConfirmationModal(item, 'rejected')}
+                                title="Reject Feedback"
+                              >
+                                <FontAwesomeIcon icon={faBan} />
+                              </button>
+                            )}
 
-                          {/* 🆕 UPDATED: DELETE BUTTON - Only show for completed or rejected feedback */}
-                          {canDeleteFeedback(item) && (
-                            <button
-                              className="feedback-action-btn delete"
-                              onClick={() => showConfirmationModal(item, 'delete')}
-                              title="Delete Feedback"
-                            >
-                              <FontAwesomeIcon icon={faTrash} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {availableActions.includes('delete') && (
+                              <button
+                                className="feedback-action-btn delete"
+                                onClick={() => showConfirmationModal(item, 'delete')}
+                                title="Delete Feedback"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -793,71 +892,32 @@ export default function AdminFeedback() {
             </div>
             <div className="feedback-modal-footer">
               <div className="feedback-modal-actions">
-                {viewModal.feedback.status === 'pending' && (
-                  <>
+                {/* 🆕 UPDATED: Modal actions use the same logic */}
+                {getAvailableActions(viewModal.feedback).map(action => {
+                  if (action === 'view') return null; // Skip view button in modal
+                  
+                  const buttonConfig = {
+                    reviewed: { className: 'feedback-btn feedback-btn-warning', text: 'Mark Reviewed' },
+                    in_progress: { className: 'feedback-btn feedback-btn-info', text: 'Mark In Progress' },
+                    completed: { className: 'feedback-btn feedback-btn-success', text: 'Mark Completed' },
+                    pending: { className: 'feedback-btn feedback-btn-secondary', text: 'Reopen Feedback' },
+                    rejected: { className: 'feedback-btn feedback-btn-danger', text: 'Reject' },
+                    delete: { className: 'feedback-btn feedback-btn-danger', text: 'Delete' }
+                  };
+                  
+                  const config = buttonConfig[action];
+                  if (!config) return null;
+                  
+                  return (
                     <button
-                      className="feedback-btn feedback-btn-warning"
-                      onClick={() => showConfirmationModal(viewModal.feedback, 'reviewed')}
+                      key={action}
+                      className={config.className}
+                      onClick={() => showConfirmationModal(viewModal.feedback, action)}
                     >
-                      Mark Reviewed
+                      {config.text}
                     </button>
-                    <button
-                      className="feedback-btn feedback-btn-info"
-                      onClick={() => showConfirmationModal(viewModal.feedback, 'in_progress')}
-                    >
-                      Mark In Progress
-                    </button>
-                  </>
-                )}
-                {viewModal.feedback.status === 'reviewed' && (
-                  <>
-                    <button
-                      className="feedback-btn feedback-btn-info"
-                      onClick={() => showConfirmationModal(viewModal.feedback, 'in_progress')}
-                    >
-                      Mark In Progress
-                    </button>
-                    <button
-                      className="feedback-btn feedback-btn-success"
-                      onClick={() => showConfirmationModal(viewModal.feedback, 'completed')}
-                    >
-                      Mark Completed
-                    </button>
-                  </>
-                )}
-                {viewModal.feedback.status === 'in_progress' && (
-                  <button
-                    className="feedback-btn feedback-btn-success"
-                    onClick={() => showConfirmationModal(viewModal.feedback, 'completed')}
-                  >
-                    Mark Completed
-                  </button>
-                )}
-                {(viewModal.feedback.status === 'completed' || viewModal.feedback.status === 'rejected') && (
-                  <button
-                    className="feedback-btn feedback-btn-secondary"
-                    onClick={() => showConfirmationModal(viewModal.feedback, 'pending')}
-                  >
-                    Reopen Feedback
-                  </button>
-                )}
-                {viewModal.feedback.status !== 'rejected' && (
-                  <button
-                    className="feedback-btn feedback-btn-danger"
-                    onClick={() => showConfirmationModal(viewModal.feedback, 'rejected')}
-                  >
-                    Reject
-                  </button>
-                )}
-                {/* 🆕 UPDATED: DELETE BUTTON IN MODAL - Only for completed or rejected */}
-                {canDeleteFeedback(viewModal.feedback) && (
-                  <button
-                    className="feedback-btn feedback-btn-danger"
-                    onClick={() => showConfirmationModal(viewModal.feedback, 'delete')}
-                  >
-                    Delete
-                  </button>
-                )}
+                  );
+                })}
                 <button className="feedback-btn feedback-btn-primary" onClick={closeModals}>
                   Close
                 </button>

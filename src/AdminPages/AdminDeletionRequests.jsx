@@ -8,8 +8,7 @@ import {
   faCheckCircle,
   faClock,
   faCheck,
-  faTimes,
-  faUser
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/AdminDeletionRequests.css';
 
@@ -27,7 +26,6 @@ export default function AdminDeletionRequests() {
     action: '',
     adminNotes: ''
   });
-  const [recentlyApprovedUser, setRecentlyApprovedUser] = useState(null);
 
   // 🆕 ADDED: Loading state for actions to prevent double clicks
   const [actionLoading, setActionLoading] = useState({
@@ -50,6 +48,11 @@ export default function AdminDeletionRequests() {
     setTimeout(() => {
       setToast({ show: false, message: '', type: 'success' });
     }, 3000);
+  };
+
+  // 🆕 ADDED: Check if any filter is active
+  const isFilterActive = () => {
+    return searchTerm !== '' || filterLimit !== 'all';
   };
 
   // 🆕 ADDED: Smart polling - auto reload every 1 minute
@@ -152,18 +155,6 @@ export default function AdminDeletionRequests() {
         const data = await response.json();
         showToast(data.message || `Request ${action}d successfully`, 'success');
         
-        // Store the approved user info for easy navigation
-        if (action === 'approve') {
-          const approvedRequest = deletionRequests.find(request => request.id === requestId);
-          if (approvedRequest) {
-            setRecentlyApprovedUser({
-              id: approvedRequest.user_id,
-              name: `${approvedRequest.first_name} ${approvedRequest.last_name}`,
-              email: approvedRequest.email
-            });
-          }
-        }
-        
         // Remove the processed request from the list
         setDeletionRequests(prevRequests => 
           prevRequests.filter(request => request.id !== requestId)
@@ -203,23 +194,6 @@ export default function AdminDeletionRequests() {
     setFilterLimit(filterType);
   };
 
-  const handleNavigateToUser = (userId) => {
-    setActiveTab('users');
-    setSearchTerm('');
-    setFilterLimit('all');
-    // Scroll to the specific user
-    setTimeout(() => {
-      const userElement = document.getElementById(`user-${userId}`);
-      if (userElement) {
-        userElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        userElement.style.backgroundColor = '#fff5e6';
-        setTimeout(() => {
-          userElement.style.backgroundColor = '';
-        }, 3000);
-      }
-    }, 100);
-  };
-
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -246,7 +220,6 @@ export default function AdminDeletionRequests() {
   const clearFilters = () => {
     setSearchTerm('');
     setFilterLimit('all');
-    setRecentlyApprovedUser(null);
   };
 
   const getStatusClass = (user) => {
@@ -290,28 +263,12 @@ export default function AdminDeletionRequests() {
       <div className="adr-header">
         <div className="adr-header-content">
           <p>Manage user post deletion limits and approve additional deletions</p>
-          
-          {/* Recently Approved User Notification */}
-          {recentlyApprovedUser && (
-            <div className="adr-recently-approved-banner">
-              <FontAwesomeIcon icon={faCheckCircle} />
-              Successfully approved request for {recentlyApprovedUser.name}
-              <button 
-                className="adr-navigate-user-btn"
-                onClick={() => handleNavigateToUser(recentlyApprovedUser.id)}
-              >
-                <FontAwesomeIcon icon={faUser} />
-                Manage {recentlyApprovedUser.name}'s Deletions
-              </button>
-            </div>
-          )}
         </div>
         <button 
           className="adr-refresh-btn"
           onClick={() => {
             fetchUsersDeletionStats();
             fetchDeletionRequests();
-            setRecentlyApprovedUser(null);
             showToast('Data refreshed successfully', 'success');
           }}
           disabled={loading || requestsLoading}
@@ -332,16 +289,10 @@ export default function AdminDeletionRequests() {
         </button>
         <button 
           className={`adr-tab-button ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveTab('users');
-            setRecentlyApprovedUser(null);
-          }}
+          onClick={() => setActiveTab('users')}
         >
           <FontAwesomeIcon icon={faExclamationTriangle} />
           User Statistics ({stats.totalUsers})
-          {recentlyApprovedUser && (
-            <span className="adr-tab-notification-dot"></span>
-          )}
         </button>
       </div>
 
@@ -421,16 +372,8 @@ export default function AdminDeletionRequests() {
                             <div className="adr-user-info">
                               <strong>{request.first_name} {request.last_name}</strong>
                               <small>{request.email}</small>
-                              <div className="adr-user-info">
+                              <div>
                                 Current Deletions: {request.current_deletions || 0}/3
-                                <button 
-                                  className="adr-view-user-btn"
-                                  onClick={() => handleNavigateToUser(request.user_id)}
-                                  title="View and manage this user's deletion limits"
-                                >
-                                  <FontAwesomeIcon icon={faUser} />
-                                  Manage User
-                                </button>
                               </div>
                             </div>
                           </td>
@@ -480,141 +423,131 @@ export default function AdminDeletionRequests() {
       )}
 
       {/* User Statistics Tab */}
-      {activeTab === 'users' && (
-        <>
-          {/* 🆕 UPDATED: Filters - ORANGE CLEAR FILTER BUTTON */}
-          <div className="adr-filters">
-            <div className="adr-search-box">
-              <FontAwesomeIcon icon={faSearch} />
-              <input
-                type="text"
-                placeholder="Search users by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            
-            <div className="adr-filter-group">
-              <FontAwesomeIcon icon={faFilter} />
-              <select 
-                value={filterLimit}
-                onChange={(e) => setFilterLimit(e.target.value)}
-              >
-                <option value="all">All Users</option>
-                <option value="limit_reached">Limit Reached</option>
-                <option value="approaching">Approaching Limit</option>
-              </select>
-            </div>
+     {/* User Statistics Tab */}
+{activeTab === 'users' && (
+  <>
+    {/* Filters */}
+    <div className="adr-filters">
+      <div className="adr-search-box">
+        <FontAwesomeIcon icon={faSearch} />
+        <input
+          type="text"
+          placeholder="Search users by name or email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      
+      <div className="adr-filter-group">
+        <FontAwesomeIcon icon={faFilter} />
+        <select 
+          value={filterLimit}
+          onChange={(e) => setFilterLimit(e.target.value)}
+        >
+          <option value="all">All Users</option>
+          <option value="limit_reached">Limit Reached</option>
+          <option value="approaching">Approaching Limit</option>
+        </select>
+      </div>
 
-            {(searchTerm || filterLimit !== 'all' || recentlyApprovedUser) && (
-              <button className="adr-clear-filters-btn" onClick={clearFilters}>
-                Clear Filters
-              </button> 
-            )}
-          </div>
-
-          {/* Users Table */}
-          <div className='adr-table-darkbrown'>
-            <div className='adr-table-lightbrown'>
-              <div className='adr-table-content'>
-                <div className='adr-table-title'>
-                  <h2>Users Deletion Status</h2>
-                  <div className="adr-header-info">
-                    <span className="adr-users-count">
-                      {stats.filteredUsers} of {stats.totalUsers} users
-                    </span>
-                    {(searchTerm || filterLimit !== 'all' || recentlyApprovedUser) && (
-                      <div className="adr-active-filters">
-                        <span>Active filters:</span>
-                        {searchTerm && <span className="adr-filter-tag">Search: "{searchTerm}"</span>}
-                        {filterLimit !== 'all' && <span className="adr-filter-tag">{filterLimit === 'limit_reached' ? 'Limit Reached' : 'Approaching Limit'}</span>}
-                        {recentlyApprovedUser && <span className="adr-filter-tag highlight">Recently Approved: {recentlyApprovedUser.name}</span>}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {loading ? (
-                  <div className="adr-loading-state">
-                    <div className="adr-loading-spinner"></div>
-                    <p>Loading users deletion data...</p>
-                  </div>
-                ) : filteredUsers.length === 0 ? (
-                  <div className="adr-empty-state">
-                    <p>No users found matching your criteria.</p>
-                    {(searchTerm || filterLimit !== 'all') && (
-                      <button 
-                        className="adr-retry-btn" 
-                        onClick={clearFilters}
-                      >
-                        Clear Filters
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="adr-table-wrapper">
-                    <table className='adr-users-table'>
-                      <thead>
-                        <tr>
-                          <th>User Information</th>
-                          <th>Deletion Status</th>
-                          <th>Deletion Count</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredUsers.map(user => (
-                          <tr 
-                            key={user.id} 
-                            id={`user-${user.id}`}
-                            className={recentlyApprovedUser && recentlyApprovedUser.id === user.id ? 'adr-recently-approved-user' : ''}
-                          >
-                            <td>
-                              <div className="adr-user-info">
-                                <strong>{user.first_name} {user.last_name}</strong>
-                                <small>{user.email}</small>
-                                <div>
-                                  Status: <span className={`adr-user-status-badge adr-user-status-${user.status}`}>
-                                    {user.status}
-                                  </span>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <span className={`adr-status-badge ${getStatusClass(user)}`}>
-                                {getStatusText(user)}
-                              </span>
-                            </td>
-                            <td>
-                              <div className="adr-progress-container">
-                                <span className="adr-progress-text">
-                                  {user.deletion_count || 0} / 3
-                                </span>
-                                <div className="adr-progress-bar">
-                                  <div 
-                                    className={`adr-progress-fill ${
-                                      user.limit_reached 
-                                        ? 'limit-reached' 
-                                        : user.deletion_count >= 2 
-                                        ? 'approaching' 
-                                        : 'normal'
-                                    }`}
-                                    style={{ width: `${Math.min(((user.deletion_count || 0) / 3) * 100, 100)}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
+      {isFilterActive() && (
+        <button className="adr-clear-filters-btn" onClick={clearFilters}>
+          Clear Filters
+        </button> 
       )}
+    </div>
 
+    {/* Users Table */}
+    <div className='adr-table-darkbrown'>
+      <div className='adr-table-lightbrown'>
+        <div className='adr-table-content'>
+          <div className='adr-table-title'>
+            <h2>Users Deletion Status</h2>
+            <div className="adr-header-info">
+              {/* 🆕 UPDATED: Same filtered count display as ManageUsers */}
+              <span className="adr-users-count">
+                {stats.filteredUsers} of {stats.totalUsers} user{stats.filteredUsers !== 1 ? 's' : ''}
+                {isFilterActive() && ' (Filtered)'}
+              </span>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="adr-loading-state">
+              <div className="adr-loading-spinner"></div>
+              <p>Loading users deletion data...</p>
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="adr-empty-state">
+              <p>No users found matching your criteria.</p>
+              {isFilterActive() && (
+                <button 
+                  className="adr-retry-btn" 
+                  onClick={clearFilters}
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="adr-table-wrapper">
+              <table className='adr-users-table'>
+                <thead>
+                  <tr>
+                    <th>User Information</th>
+                    <th>Deletion Status</th>
+                    <th>Deletion Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map(user => (
+                    <tr key={user.id}>
+                      <td>
+                        <div className="adr-user-info">
+                          <strong>{user.first_name} {user.last_name}</strong>
+                          <small>{user.email}</small>
+                          <div>
+                            Status: <span className={`adr-user-status-badge adr-user-status-${user.status}`}>
+                              {user.status}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`adr-status-badge ${getStatusClass(user)}`}>
+                          {getStatusText(user)}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="adr-progress-container">
+                          <span className="adr-progress-text">
+                            {user.deletion_count || 0} / 3
+                          </span>
+                          <div className="adr-progress-bar">
+                            <div 
+                              className={`adr-progress-fill ${
+                                user.limit_reached 
+                                  ? 'limit-reached' 
+                                  : user.deletion_count >= 2 
+                                  ? 'approaching' 
+                                  : 'normal'
+                              }`}
+                              style={{ width: `${Math.min(((user.deletion_count || 0) / 3) * 100, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </>
+)}
       {/* 🆕 UPDATED: Request Processing Modal with double-click prevention */}
       {requestModal.isOpen && requestModal.request && (
         <div className="adr-modal-overlay" onClick={closeModal}>
@@ -709,7 +642,7 @@ export default function AdminDeletionRequests() {
               </button>
             </div>
           </div>
-        </div>
+        </div> 
       )}
     </>
   );

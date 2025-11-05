@@ -1260,7 +1260,164 @@
   color: #2980B9;
   border: 1px solid #85C1E9;
 }
+/* 🎯 ADDED: Report Thresholds Info (Same as ManageUsers) */
+.thresholds-info {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
+.thresholds-info h3 {
+  margin: 0 0 1rem 0;
+  color: #FF8904;
+  font-size: 1rem;
+}
+
+.thresholds-grid { 
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0.75rem;
+}
+
+.threshold-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #FF8904;
+}
+
+.threshold-badge {
+  font-size: 1.25rem;
+  width: 30px;
+  text-align: center;
+}
+
+.threshold-remove {
+  color: #f59e0b;
+}
+
+.threshold-delete {
+  color: #ef4444;
+}
+
+.threshold-text {
+  font-size: 0.85rem;
+  color: #333;
+}
+
+/* 🎯 ADDED: Report Severity Badges (Same pattern as users) */
+.report-severity-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.report-high {
+  background: #ffebee !important;
+  color: #d32f2f !important;
+  border: 1px solid #f5c6cb !important;
+}
+
+.report-medium {
+  background: #fff3e0 !important;
+  color: #f57c00 !important;
+  border: 1px solid #ffe0b2 !important;
+}
+
+/* 🎯 ADDED: Disabled action buttons */
+.pm-action-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pm-action-btn.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.pm-modal-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pm-modal-btn.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 🎯 ADDED: Report Statistics in Modal */
+.pm-report-stats {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #8B5A2B;
+}
+
+.pm-report-stats h4 {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.pm-report-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.pm-report-stat {
+  text-align: center;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.pm-report-stat .pm-stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.pm-report-stat .pm-stat-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #8B5A2B;
+}
+
+/* 🎯 ADDED: Confirmation modal stats */
+.pm-confirmation-stats {
+  background: #e3f2fd;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  border-left: 4px solid #2196f3;
+}
+
+.pm-confirmation-stats p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+/* 🎯 ADDED: Mobile report severity */
+.pm-mobile-report-severity {
+  margin-bottom: 0.75rem;
+}
 .pm-type-lost {
   background: #AED6F1;
   color: #1B4F72;

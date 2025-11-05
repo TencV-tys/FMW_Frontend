@@ -285,11 +285,7 @@
   border: 1px solid rgba(139, 90, 43, 0.2);
 }
 
-.adr-filter-tag.highlight {
-  background: rgba(139, 90, 43, 0.2);
-  color: #8B5A2B;
-  border: 1px solid #8B5A2B;
-}
+
 
 /* Table - BROWN */
 .adr-table-wrapper {
@@ -534,64 +530,15 @@
   font-size: 0.8rem;
 }
 
-.adr-view-user-btn {
-  background: #8B5A2B; /* BROWN */
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.7rem;
-  margin-left: 0.5rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: all 0.2s ease;
-}
 
 .adr-view-user-btn:hover {
   background: #6d451f; /* DARK BROWN */
   transform: translateY(-1px);
 }
 
-/* Recently Approved Banner */
-.adr-recently-approved-banner {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-}
-
-.adr-navigate-user-btn {
-  background: #8B5A2B; /* BROWN */
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-}
-
 .adr-navigate-user-btn:hover {
   background: #6d451f; /* DARK BROWN */
   transform: translateY(-1px);
-}
-
-.adr-recently-approved-user {
-  background: #fff5e6 !important;
-  border-left: 4px solid #8B5A2B; /* BROWN */
-  animation: adr-highlightFade 3s ease-in-out;
 }
 
 @keyframes adr-highlightFade {
@@ -872,7 +819,7 @@
   font-weight: 600;
   transition: all 0.2s ease;
   white-space: nowrap;
-}
+} 
 
 .adr-clear-filters-btn:hover {
   background: #ef4444; /* DARKER ORANGE */

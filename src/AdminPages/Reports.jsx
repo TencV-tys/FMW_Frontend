@@ -9,7 +9,7 @@ import {
   faTimesCircle,
   faRefresh,
   faExclamationTriangle,
-  faUser,
+  faUser,  
   faNewspaper,
   faCalendar,
   faTrash,
