@@ -79,7 +79,7 @@
   }
   100% {
     transform: scale(1);
-  }
+  } 
 }
 
 /* Hover effects */
@@ -373,7 +373,35 @@
 .notification-btn:hover .notif-icon {
   color: #7c4a1f;
 }
+/* Add to Dashboard.css */
+.refresh-btn {
+  background: #FF8904;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
 
+.refresh-btn:hover:not(:disabled) {
+  background: #e67a00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
 /* Enhanced Notification Badge */
 .notif-badge {
   position: absolute;

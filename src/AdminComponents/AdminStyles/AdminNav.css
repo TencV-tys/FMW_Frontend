@@ -1,4 +1,4 @@
-/* AdminNav.css - Fixed Closed State Icons and Notification Badge */
+/* AdminNav.css - Only improved toggle container sizing */
 .admin-nav-main {
     background-color: #FF8904;
     height: 100dvh;
@@ -38,34 +38,36 @@
     padding: 1rem 0;
 }
 
-/* Toggle Button */
+/* IMPROVED: Toggle Button Container - Better sizing to match header */
 .admin-nav-toggle {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     width: 100%;
-    padding: 0 1rem 1rem 1rem;
+    padding: 0 1rem 1.5rem 1rem; /* Increased bottom padding for better spacing */
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     margin-bottom: 1rem;
+    min-height: 60px; /* Match header height */
+    box-sizing: border-box;
 }
 
 .admin-nav-main.admin-nav-closed .admin-nav-toggle {
     justify-content: center;
-    padding: 0 0.5rem 1rem 0.5rem;
+    padding: 0 0.5rem 1.5rem 0.5rem; /* Consistent spacing */
 }
 
 .admin-toggle-btn {
     border: none;
     background-color: transparent;
-    padding: 0.5rem;
-    border-radius: 4px;
+    padding: 0.6rem;
+    border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 40px; /* Slightly larger to match header buttons */
+    height: 40px;
 }
 
 .admin-toggle-btn:hover {
@@ -77,6 +79,7 @@
     font-size: 1rem;
 }
 
+/* REST OF YOUR ORIGINAL CSS REMAINS EXACTLY THE SAME */
 /* Profile Section */
 .admin-profile-main {
     display: flex;
@@ -213,7 +216,7 @@
     justify-content: center;
     padding: 0.75rem;
     margin: 0 0.5rem;
-    width: auto; /* Allow proper width */
+    width: auto;
 }
 
 .admin-nav-main.admin-nav-closed .admin-nav-text {
@@ -222,8 +225,8 @@
 
 .admin-nav-main.admin-nav-closed .admin-nav-icon {
     margin-right: 0;
-    font-size: 1.2rem; /* Slightly larger icons when closed */
-    width: 24px; /* More space for icons */
+    font-size: 1.2rem;
+    width: 24px;
 }
 
 /* Active Link State */
@@ -271,6 +274,20 @@
     }
 }
 
+/* Smart polling animation */
+.admin-nav-badge.pulsing {
+    animation: smartPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes smartPulse {
+    0%, 100% { 
+        transform: scale(1);
+    }
+    50% { 
+        transform: scale(1.15);
+    }
+}
+
 /* FIXED: Open state - Notification badge positioned at top-right corner */
 .admin-nav-main.admin-nav-open .admin-notification-item {
     position: relative;
@@ -294,7 +311,7 @@
 
 .admin-nav-main.admin-nav-closed .admin-nav-badge {
     top: -6px;
-    right: 6px; /* Position from right edge of the icon container */
+    right: 6px;
     left: auto;
     min-width: 16px;
     height: 16px;
@@ -372,11 +389,12 @@
     }
     
     .admin-nav-toggle {
-        padding: 0 0.75rem 0.75rem 0.75rem;
+        padding: 0 0.75rem 1rem 0.75rem;
+        min-height: 55px;
     }
     
     .admin-nav-main.admin-nav-closed .admin-nav-toggle {
-        padding: 0 0.5rem 0.75rem 0.5rem;
+        padding: 0 0.5rem 1rem 0.5rem;
     }
     
     .admin-profile-main {
@@ -537,9 +555,9 @@
 
 /* FIXED: Ensure closed state has proper icon spacing */
 .admin-nav-main.admin-nav-closed .admin-nav-links-wrapper {
-    padding: 0 0.25rem; /* Reduce padding to give icons more space */
+    padding: 0 0.25rem;
 }
 
 .admin-nav-main.admin-nav-closed .admin-nav-link-item {
-    padding: 0.75rem 0.5rem; /* Adjust padding for better icon display */
+    padding: 0.75rem 0.5rem;
 }
