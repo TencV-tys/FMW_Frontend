@@ -1,11 +1,11 @@
 /* UserNotifications.css */
-.user-notifications-page {
+.user-notif-page {
   padding: 2rem;
   max-width: 1000px;
   margin: 0 auto;
 }
 
-.notifications-header {
+.user-notif-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -14,7 +14,7 @@
   gap: 1rem;
 }
 
-.header-content h1 {
+.user-notif-header-content h1 {
   color: #FF8904;
   margin: 0 0 0.25rem 0;
   font-size: 2rem;
@@ -23,17 +23,17 @@
   gap: 0.5rem;
 }
 
-.header-content p {
+.user-notif-header-content p {
   color: #666;
   margin: 0;
 }
 
-.header-actions {
+.user-notif-header-actions {
   display: flex;
   gap: 1rem;
 }
 
-.btn-mark-all-read {
+.user-notif-btn-mark-all {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -47,26 +47,26 @@
   transition: all 0.3s ease;
 }
 
-.btn-mark-all-read:hover:not(:disabled) {
+.user-notif-btn-mark-all:hover:not(:disabled) {
   background: #e67a00;
   transform: translateY(-2px);
 }
 
-.btn-mark-all-read:disabled {
+.user-notif-btn-mark-all:disabled {
   background: #cbd5e0;
   cursor: not-allowed;
   transform: none;
 }
 
 /* Stats Section */
-.notification-stats {
+.user-notif-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.stat-card {
+.user-notif-stat-card {
   background: white;
   padding: 1.5rem;
   border-radius: 12px;
@@ -77,7 +77,7 @@
   border-left: 4px solid #FF8904;
 }
 
-.stat-icon {
+.user-notif-stat-icon {
   width: 60px;
   height: 60px;
   border-radius: 12px;
@@ -88,38 +88,37 @@
   font-size: 1.5rem;
 }
 
-.stat-icon.total { background: #6b7280; }
-.stat-icon.unread { background: #ef4444; }
+.user-notif-stat-icon.total { background: #6b7280; }
+.user-notif-stat-icon.unread { background: #ef4444; }
 
-.stat-info h3 {
+.user-notif-stat-info h3 {
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
   color: #FF8904;
 }
 
-.stat-info p {
+.user-notif-stat-info p {
   margin: 0.25rem 0 0 0;
   color: #666;
   font-weight: 600;
 }
-/* Add these styles to your existing UserNotification.css */
 
 /* Active stat card state */
-.stat-card.active {
+.user-notif-stat-card.active {
   border-left: 4px solid #FF8904;
   background: #fff9e6;
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.stat-card:hover:not(.active) {
+.user-notif-stat-card:hover:not(.active) {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Active Filter Section */
-.active-filter-section {
+.user-notif-active-filters {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -130,19 +129,19 @@
   border: 1px solid #e9ecef;
 }
 
-.active-filter-label {
+.user-notif-filter-label {
   font-weight: 600;
   color: #FF8904;
   font-size: 0.9rem;
 }
 
-.filter-tags {
+.user-notif-filter-tags {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.filter-tag {
+.user-notif-filter-tag {
   background: rgba(255, 137, 4, 0.1);
   padding: 0.5rem 1rem;
   border-radius: 16px;
@@ -153,20 +152,20 @@
 }
 
 /* Notifications Header Info */
-.notifications-header-info {
+.user-notif-list-header {
   padding: 1rem 1.5rem;
   background: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
 }
 
-.notifications-count {
+.user-notif-count {
   color: #666;
   font-size: 0.9rem;
   font-weight: 600;
 }
 
 /* Clear Filters Button */
-.clear-filters-btn {
+.user-notif-clear-filters {
   padding: 0.75rem 1rem;
   background: #6b7280;
   color: white;
@@ -178,30 +177,17 @@
   margin-left: auto;
 }
 
-.clear-filters-btn:hover {
+.user-notif-clear-filters:hover {
   background: #4b5563;
   transform: translateY(-1px);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .active-filter-section {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .clear-filters-btn {
-    margin-left: 0;
-    width: 100%;
-    text-align: center;
-  }
-}
 /* Filters */
-.notification-filters {
+.user-notif-filters {
   margin-bottom: 2rem;
 }
 
-.filter-group {
+.user-notif-filter-group {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -212,7 +198,7 @@
   max-width: 300px;
 }
  
-.filter-select {
+.user-notif-filter-select {
   border: none;
   outline: none;
   background: transparent;
@@ -222,14 +208,14 @@
 }
 
 /* Notifications List */
-.notifications-list {
+.user-notif-list {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-.notification-item {
+.user-notif-item {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -238,24 +224,24 @@
   transition: background-color 0.3s ease;
 }
 
-.notification-item:last-child {
+.user-notif-item:last-child {
   border-bottom: none;
 }
 
-.notification-item.unread {
+.user-notif-item.unread {
   background: #f8fafc;
   border-left: 4px solid #FF8904;
 }
 
-.notification-item.read {
+.user-notif-item.read {
   opacity: 0.8;
 }
 
-.notification-item:hover {
+.user-notif-item:hover {
   background: #f9fafb;
 }
 
-.notification-icon {
+.user-notif-icon {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -267,29 +253,30 @@
   flex-shrink: 0;
 }
 
-.notification-content {
+.user-notif-content {
   flex: 1;
 }
 
-.notification-content h4 {
+.user-notif-content h4 {
   margin: 0 0 0.5rem 0;
   color: #1f2937;
   font-size: 1.1rem;
 }
 
-.notification-content p {
+.user-notif-content p {
   margin: 0 0 0.75rem 0;
   color: #6b7280;
   line-height: 1.5;
 }
 
-.notification-meta {
+.user-notif-meta {
   display: flex;
   gap: 1rem;
   font-size: 0.8rem;
   color: #9ca3af; 
 }
-.user-notif-btn-delete{
+
+.user-notif-btn-delete {
   color: #ef4444;
   border: none;
   background: transparent;
@@ -302,13 +289,13 @@
   color: white;
 }
 
-.notification-actions {
+.user-notif-actions {
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
 }
 
-.btn-mark-read {
+.user-notif-btn-read {
   padding: 0.5rem;
   border: none;
   border-radius: 6px;
@@ -318,14 +305,13 @@
   color: #10b981;
 }
 
-.btn-mark-read:hover {
+.user-notif-btn-read:hover {
   background: #10b981;
   color: white;
 }
-/* Add to your existing UserNotification.css */
 
 /* Delete All Button */
-.btn-delete-all {
+.user-notif-btn-delete-all {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -339,12 +325,19 @@
   transition: all 0.3s ease;
 }
 
-.btn-delete-all:hover:not(:disabled) {
+.user-notif-btn-delete-all:hover:not(:disabled) {
   background: #dc2626;
   transform: translateY(-2px);
 }
+
+.user-notif-btn-delete-all:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Modal Styles for Notifications */
-.modal-overlay-fmw {
+.user-notif-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -358,7 +351,7 @@
   padding: 1rem;
 }
 
-.modal-content-fmw {
+.user-notif-modal-content {
   background: white;
   border-radius: 12px;
   width: 100%;
@@ -366,10 +359,10 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  animation: modalSlideIn-fmw 0.3s ease;
+  animation: user-notif-modalSlideIn 0.3s ease;
 }
 
-@keyframes modalSlideIn-fmw {
+@keyframes user-notif-modalSlideIn {
   from {
     opacity: 0;
     transform: translateY(-30px);
@@ -380,7 +373,7 @@
   }
 }
 
-.modal-header-fmw {
+.user-notif-modal-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -391,19 +384,19 @@
   border-radius: 12px 12px 0 0;
 }
 
-.modal-header-fmw h3 {
+.user-notif-modal-header h3 {
   margin: 0;
   color: white;
   font-size: 1.2rem;
   flex: 1;
 }
 
-.warning-icon-fmw {
+.user-notif-warning-icon {
   color: #ff6b6b;
   font-size: 1.5rem;
 }
 
-.modal-close-fmw {
+.user-notif-modal-close {
   background: none;
   border: none;
   font-size: 1.2rem;
@@ -419,27 +412,27 @@
   transition: background 0.2s;
 }
 
-.modal-close-fmw:hover {
+.user-notif-modal-close:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.modal-body-fmw {
+.user-notif-modal-body {
   padding: 1.5rem;
 }
 
-.modal-body-fmw p {
+.user-notif-modal-body p {
   margin: 0.75rem 0;
   color: #333;
   line-height: 1.5;
 }
 
-.warning-text-fmw {
+.user-notif-warning-text {
   color: #e74c3c !important;
   font-weight: 700;
   font-size: 1.1rem;
 }
 
-.modal-footer-fmw {
+.user-notif-modal-footer {
   padding: 1.5rem;
   border-top: 1px solid #e5e5e5;
   display: flex;
@@ -447,7 +440,7 @@
   justify-content: flex-end;
 }
 
-.btn-primary-fmw {
+.user-notif-modal-btn-primary {
   background: #8B5A2B;
   color: white;
   border: none;
@@ -461,20 +454,20 @@
   gap: 0.5rem;
 }
 
-.btn-primary-fmw:hover:not(:disabled) {
+.user-notif-modal-btn-primary:hover:not(:disabled) {
   background: #6d451f;
   transform: translateY(-1px);
 }
 
-.btn-primary-fmw.delete-confirm-fmw {
+.user-notif-modal-btn-primary.delete-confirm {
   background: #e74c3c;
 }
 
-.btn-primary-fmw.delete-confirm-fmw:hover {
+.user-notif-modal-btn-primary.delete-confirm:hover {
   background: #c0392b;
 }
 
-.btn-secondary-fmw {
+.user-notif-modal-btn-secondary {
   background: #6c757d;
   color: white;
   border: none;
@@ -485,102 +478,189 @@
   transition: all 0.2s ease;
 }
 
-.btn-secondary-fmw:hover {
+.user-notif-modal-btn-secondary:hover {
   background: #545b62;
   transform: translateY(-1px);
 }
 
-/* Responsive Modal */
-@media (max-width: 768px) {
-  .modal-content-fmw {
-    margin: 1rem;
-    width: calc(100% - 2rem);
-  }
-  
-  .modal-footer-fmw {
-    flex-direction: column;
-  }
-  
-  .modal-footer-fmw button {
-    width: 100%;
-  }
-}
-
-.btn-delete-all:disabled {
-  background: #cbd5e0;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Header Actions Layout */
-.header-actions {
+/* Loading and Empty States - Fixed Centering */
+.user-notif-loading,
+.user-notif-empty {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #6b7280;
+  min-height: 300px;
 }
-/* Add to UserNotification.css - Feedback Notification Styles */
-.notification-item[data-type="feedback_submitted"] .notification-icon {
+
+.user-notif-loading {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+}
+
+.user-notif-loading p {
+  margin: 1rem 0 0 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #FF8904;
+}
+
+.user-notif-empty {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+}
+
+.user-notif-empty h3 {
+  margin: 1.5rem 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.5rem;
+}
+
+.user-notif-empty p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  max-width: 400px;
+}
+
+.user-notif-empty svg {
+  color: #FF8904;
+  opacity: 0.7;
+}
+
+/* Add a loading spinner */
+.user-notif-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #FF8904;
+  border-radius: 50%;
+  animation: user-notif-spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes user-notif-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Feedback Notification Styles */
+.user-notif-item[data-type="feedback_submitted"] .user-notif-icon {
   background: #d1fae5;
 }
 
-.notification-item[data-type="feedback_updated"] .notification-icon {
+.user-notif-item[data-type="feedback_updated"] .user-notif-icon {
   background: #e0e7ff;
 }
 
-.notification-item[data-type="feedback_assigned"] .notification-icon {
+.user-notif-item[data-type="feedback_assigned"] .user-notif-icon {
   background: #fef3c7;
-}
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .header-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .btn-mark-all-read,
-  .btn-delete-all {
-    width: 100%;
-    justify-content: center;
-  }
-}
-/* Loading and Empty States */
-.loading-state,
-.empty-state {
-  padding: 3rem 2rem;
-  text-align: center;
-  color: #6b7280;
-}
-
-.empty-state h3 {
-  margin: 1rem 0 0.5rem 0;
-  color: #374151;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .user-notifications-page {
+  .user-notif-page {
     padding: 1rem;
   }
 
-  .notifications-header {
+  .user-notif-header {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .header-actions {
+  .user-notif-header-actions {
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .user-notif-btn-mark-all,
+  .user-notif-btn-delete-all {
+    width: 100%;
     justify-content: center;
   }
 
-  .notification-stats {
+  .user-notif-stats {
     grid-template-columns: 1fr;
   }
 
-  .notification-item {
+  .user-notif-item {
     flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .user-notif-actions {
+    align-self: center;
+  }
+
+  .user-notif-active-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .user-notif-clear-filters {
+    margin-left: 0;
+    width: 100%;
     text-align: center;
   }
 
-  .notification-actions {
-    align-self: center;
+  .user-notif-modal-content {
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
+  
+  .user-notif-modal-footer {
+    flex-direction: column;
+  }
+  
+  .user-notif-modal-footer button {
+    width: 100%;
+  }
+
+  .user-notif-loading,
+  .user-notif-empty {
+    padding: 3rem 1.5rem;
+    min-height: 250px;
+  }
+  
+  .user-notif-loading p {
+    font-size: 1rem;
+  }
+  
+  .user-notif-empty h3 {
+    font-size: 1.3rem;
+  }
+  
+  .user-notif-empty p {
+    font-size: 0.9rem;
+  }
+  
+  .user-notif-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-notif-loading,
+  .user-notif-empty {
+    padding: 2rem 1rem;
+    min-height: 200px;
+  }
+  
+  .user-notif-empty svg {
+    font-size: 2.5rem !important;
+  }
+  
+  .user-notif-filter-group {
+    max-width: 100%;
   }
 }

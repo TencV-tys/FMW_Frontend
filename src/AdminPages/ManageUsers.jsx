@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+       import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -18,7 +18,8 @@ import {
   faClock,
   faFlag,
   faExclamationTriangle,
-  faTimes
+  faTimes,
+  faBell
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
@@ -107,6 +108,7 @@ export default function ManageUsers() {
     try {
       const usersNeedingWarning = usersData.filter(user => 
         user.status === 'active' && 
+        user.role !== 'admin' &&
         user.monthly_report_count >= REPORT_THRESHOLDS.WARNING
       );
 
@@ -118,7 +120,7 @@ export default function ManageUsers() {
     }
   };
 
-  // 🆕 SEND AUTOMATIC WARNING EMAIL
+  // 🆕 SEND AUTOMATIC WARNING (EMAIL + NOTIFICATION)
   const sendAutomaticWarning = async (user) => {
     try {
       const response = await fetch('http://localhost:8000/api/admin/send-user-warning', {
@@ -180,6 +182,12 @@ export default function ManageUsers() {
   };
 
   const openDeleteModal = (user) => {
+    // Prevent deleting admin users
+    if (user.role === 'admin') {
+      showToast('Cannot delete admin users', 'error');
+      return;
+    }
+
     setSelectedUser(user);
     setShowDeleteModal(true);
   };
@@ -203,6 +211,13 @@ export default function ManageUsers() {
   const handleDelete = async () => {
     if (!selectedUser) return;
     
+    // Double-check admin protection
+    if (selectedUser.role === 'admin') {
+      showToast('Cannot delete admin users', 'error');
+      closeAllModals();
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}`, {
@@ -215,7 +230,8 @@ export default function ManageUsers() {
         showToast('User deleted successfully!', 'success');
         closeAllModals();
       } else {
-        showToast('Failed to delete user', 'error');
+        const errorData = await res.json();
+        showToast(errorData.error || 'Failed to delete user', 'error');
       }
     } catch (error) { 
       console.log(`Delete error: ${error.message}`);
@@ -244,7 +260,8 @@ export default function ManageUsers() {
       const suspendData = {
         status: 'suspended',
         reason: suspensionReason,
-        duration: suspensionDuration
+        duration: suspensionDuration,
+        sendNotification: true // 🆕 Send in-app notification
       };
 
       if (suspensionDuration === 'custom') {
@@ -272,7 +289,8 @@ export default function ManageUsers() {
         showToast(`User "${getUserName(selectedUser)}" suspended for ${result.data.duration} day(s)!`, 'success');
         closeAllModals();
       } else {
-        showToast('Failed to suspend user', 'error');
+        const errorData = await res.json();
+        showToast(errorData.error || 'Failed to suspend user', 'error');
       }
     } catch (error) {
       console.log(`Suspend error: ${error.message}`);
@@ -301,7 +319,8 @@ export default function ManageUsers() {
         },
         body: JSON.stringify({ 
           status: 'banned',
-          reason: banReason.trim()
+          reason: banReason.trim(),
+          sendNotification: true // 🆕 Send in-app notification
         })
       });
       
@@ -312,7 +331,8 @@ export default function ManageUsers() {
         showToast(`User "${getUserName(selectedUser)}" banned successfully!`, 'success');
         closeAllModals();
       } else {
-        showToast('Failed to ban user', 'error');
+        const errorData = await res.json();
+        showToast(errorData.error || 'Failed to ban user', 'error');
       }
     } catch (error) {
       console.log(`Ban error: ${error.message}`);
@@ -334,7 +354,10 @@ export default function ManageUsers() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: 'active' })
+        body: JSON.stringify({ 
+          status: 'active',
+          sendNotification: true // 🆕 Send in-app notification
+        })
       });
       
       if (res.ok) {
@@ -344,7 +367,8 @@ export default function ManageUsers() {
         showToast(`User "${getUserName(selectedUser)}" activated successfully!`, 'success');
         closeAllModals();
       } else {
-        showToast('Failed to activate user', 'error');
+        const errorData = await res.json();
+        showToast(errorData.error || 'Failed to activate user', 'error');
       }
     } catch (error) {
       console.log(`Activate error: ${error.message}`);
@@ -461,6 +485,11 @@ export default function ManageUsers() {
            user.monthly_report_count >= REPORT_THRESHOLDS.CAN_BAN;
   };
 
+  // 🆕 CHECK IF USER CAN BE DELETED
+  const canDeleteUser = (user) => {
+    return user.role !== 'admin';
+  };
+
   // 🆕 GET ACTION BUTTONS WITH VALIDATION
   const getActionButtons = (user) => {
     if (user.status === 'active') {
@@ -469,7 +498,9 @@ export default function ManageUsers() {
           <button
             className={`action-btn suspend ${!canSuspendUser(user) ? 'disabled' : ''}`}
             onClick={() => canSuspendUser(user) && openSuspendModal(user)}
-            title={!canSuspendUser(user) ? `Need ${REPORT_THRESHOLDS.CAN_SUSPEND}+ monthly reports to suspend` : "Suspend User"}
+            title={!canSuspendUser(user) ? 
+              (user.role === 'admin' ? 'Cannot suspend admin users' : `Need ${REPORT_THRESHOLDS.CAN_SUSPEND}+ monthly reports to suspend`) 
+              : "Suspend User"}
             disabled={!canSuspendUser(user)}
           >
             <FontAwesomeIcon icon={faPauseCircle} />
@@ -477,15 +508,18 @@ export default function ManageUsers() {
           <button
             className={`action-btn ban ${!canBanUser(user) ? 'disabled' : ''}`}
             onClick={() => canBanUser(user) && openBanModal(user)}
-            title={!canBanUser(user) ? `Need ${REPORT_THRESHOLDS.CAN_BAN}+ monthly reports to ban` : "Ban User"}
+            title={!canBanUser(user) ? 
+              (user.role === 'admin' ? 'Cannot ban admin users' : `Need ${REPORT_THRESHOLDS.CAN_BAN}+ monthly reports to ban`) 
+              : "Ban User"}
             disabled={!canBanUser(user)}
           >
             <FontAwesomeIcon icon={faUserSlash} />
           </button>
           <button
-            className="action-btn delete"
-            onClick={() => openDeleteModal(user)}
-            title="Delete User"
+            className={`action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
+            onClick={() => canDeleteUser(user) && openDeleteModal(user)}
+            title={!canDeleteUser(user) ? 'Cannot delete admin users' : "Delete User"}
+            disabled={!canDeleteUser(user)}
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
@@ -502,9 +536,10 @@ export default function ManageUsers() {
             <FontAwesomeIcon icon={faCheckCircle} />
           </button>
           <button
-            className="action-btn delete"
-            onClick={() => openDeleteModal(user)}
-            title="Delete User"
+            className={`action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
+            onClick={() => canDeleteUser(user) && openDeleteModal(user)}
+            title={!canDeleteUser(user) ? 'Cannot delete admin users' : "Delete User"}
+            disabled={!canDeleteUser(user)}
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
@@ -645,7 +680,7 @@ export default function ManageUsers() {
       {/* Header Section */}
       <div className="manage-users-header">
         <div className="manage-users-header-content">
-       
+         
           <p>Admin panel for user management and moderation</p>
         </div>
         <button 

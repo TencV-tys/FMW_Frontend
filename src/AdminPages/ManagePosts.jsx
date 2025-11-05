@@ -28,18 +28,7 @@ export default function ManagePosts() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [selectedPosts, setSelectedPosts] = useState(new Set());
   const [viewMode, setViewMode] = useState('table');
-  const [isForceProcessing, setIsForceProcessing] = useState(false);
   const [viewModal, setViewModal] = useState({ isOpen: false, post: null });
-  const [actionModal, setActionModal] = useState({ 
-    isOpen: false, 
-    post: null, 
-    action: '', 
-    message: '', 
-    monthlyReportCount: 0,
-    totalReportCount: 0,
-    requiredCount: 0,
-    requiresForce: false
-  });
   const [confirmationModal, setConfirmationModal] = useState({
     isOpen: false,
     post: null,
@@ -97,7 +86,6 @@ export default function ManagePosts() {
   // Close Modals
   const closeModal = () => {
     setViewModal({ isOpen: false, post: null });
-    setActionModal({ isOpen: false, post: null, action: '', message: '', monthlyReportCount: 0, totalReportCount: 0, requiredCount: 0, requiresForce: false });
     setConfirmationModal({ isOpen: false, post: null, action: '', title: '', message: '', isProcessing: false });
   };
 
@@ -137,67 +125,31 @@ export default function ManagePosts() {
     });
   };
 
-  // Handle post actions with confirmation modal
-  const handlePostAction = async (postId, action, force = false) => {
+  // Handle post actions with report count validation
+  const handlePostAction = async (postId, action) => {
     const post = posts.find(p => p.id === postId);
     
-    // For remove and delete actions, we need to check report counts first
-    if ((action === 'remove' || action === 'delete') && !force) {
-      try {
-        // First, check if the action would require force
-        const checkUrl = action === 'remove' 
-          ? `http://localhost:8000/api/admin/posts/${postId}/remove`
-          : `http://localhost:8000/api/admin/posts/${postId}`;
-        
-        const checkMethod = action === 'remove' ? 'PUT' : 'DELETE';
-        
-        // Make a test request to see if force is needed
-        const testResponse = await fetch(checkUrl, {
-          method: checkMethod,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            reason: 'test', 
-            force: false 
-          }),
-          credentials: 'include'
-        });
-
-        const testData = await testResponse.json();
-
-        if (!testResponse.ok && testData.canForce) {
-          // Show the report validation modal if force is required
-          setActionModal({
-            isOpen: true,
-            post: post,
-            action: action,
-            message: testData.error,
-            monthlyReportCount: testData.monthlyReportCount,
-            totalReportCount: testData.totalReportCount,
-            requiredCount: testData.requiredCount,
-            requiresForce: true
-          });
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking post action:', error);
-        // If check fails, proceed with normal confirmation
+    // For remove and delete actions, check if conditions are met
+    if (action === 'remove' || action === 'delete') {
+      const reportCount = post.total_report_count || 0;
+      
+      if (action === 'remove' && reportCount < 3) {
+        showToast(`Post needs at least 3 reports to be removed (currently has ${reportCount})`, 'error');
+        return;
+      }
+      
+      if (action === 'delete' && reportCount < 5) {
+        showToast(`Post needs at least 5 reports to be permanently deleted (currently has ${reportCount})`, 'error');
+        return;
       }
     }
 
-    // Show confirmation modal for ALL actions (or if no force needed)
-    if (!force) {
-      showConfirmationModal(post, action);
-      return;
-    }
-
-    // If force is true, execute the action directly
-    await executePostAction(postId, action, force);
+    // Show confirmation modal for ALL actions
+    showConfirmationModal(post, action);
   };
 
   // Execute post action after confirmation
-  const executePostAction = async (postId, action, force = false) => {
+  const executePostAction = async (postId, action) => {
     try {
       let url, method, body;
       
@@ -206,16 +158,14 @@ export default function ManagePosts() {
           url = `http://localhost:8000/api/admin/posts/${postId}/remove`;
           method = 'PUT';
           body = { 
-            reason: 'Violation of community guidelines', 
-            force: force
+            reason: 'Violation of community guidelines'
           };
           break;
         case 'delete':
           url = `http://localhost:8000/api/admin/posts/${postId}`;
           method = 'DELETE';
           body = { 
-            reason: 'Severe violation', 
-            force: force
+            reason: 'Severe violation'
           };
           break;
         case 'restore':
@@ -248,10 +198,10 @@ export default function ManagePosts() {
         let successMessage = '';
         switch (action) {
           case 'remove':
-            successMessage = `Post removed from public view${data.forced ? ' (admin override)' : ''}!`;
+            successMessage = 'Post removed from public view!';
             break;
           case 'delete':
-            successMessage = `Post deleted permanently${data.forced ? ' (admin override)' : ''}!`;
+            successMessage = 'Post deleted permanently!';
             break;
           case 'restore':
             successMessage = 'Post restored successfully!';
@@ -263,20 +213,7 @@ export default function ManagePosts() {
         showToast(successMessage, 'success');
         closeModal();
       } else {
-        if (data.canForce) {
-          setActionModal({
-            isOpen: true,
-            post: posts.find(p => p.id === postId),
-            action: action,
-            message: data.error,
-            monthlyReportCount: data.monthlyReportCount,
-            totalReportCount: data.totalReportCount,
-            requiredCount: data.requiredCount,
-            requiresForce: true
-          });
-        } else {
-          showToast(data.error || 'Failed to perform action', 'error');
-        }
+        showToast(data.error || 'Failed to perform action', 'error');
       }
     } catch (error) {
       console.error('Error performing action:', error);
@@ -288,7 +225,7 @@ export default function ManagePosts() {
   const handleConfirmedAction = async () => {
     if (confirmationModal.post && confirmationModal.action && !confirmationModal.isProcessing) {
       setConfirmationModal(prev => ({ ...prev, isProcessing: true }));
-      await executePostAction(confirmationModal.post.id, confirmationModal.action, false);
+      await executePostAction(confirmationModal.post.id, confirmationModal.action);
       setConfirmationModal({ isOpen: false, post: null, action: '', title: '', message: '', isProcessing: false });
     }
   };
@@ -322,20 +259,6 @@ export default function ManagePosts() {
       newSelected.delete(postId);
       return newSelected;
     });
-  };
-
-  // Handle force action from modal
-  const handleForceAction = async () => {
-    if (actionModal.post && actionModal.action && !isForceProcessing) {
-      setIsForceProcessing(true);
-      
-      try {
-        await executePostAction(actionModal.post.id, actionModal.action, true);
-      } finally {
-        setIsForceProcessing(false);
-        setActionModal({ isOpen: false, post: null, action: '', message: '', monthlyReportCount: 0, totalReportCount: 0, requiredCount: 0, requiresForce: false });
-      }
-    }
   };
 
   // Filter posts based on search, status, and type
@@ -440,24 +363,37 @@ export default function ManagePosts() {
   // Get status badge class
   const getStatusClass = (status) => {
     const statusMap = {
-      'Active': 'posts-status-active',
-      'Removed': 'posts-status-removed',
-      'Resolved': 'posts-status-resolved'
+      'Active': 'pm-status-active',
+      'Removed': 'pm-status-removed',
+      'Resolved': 'pm-status-resolved'
     };
-    return statusMap[status] || 'posts-status-active';
+    return statusMap[status] || 'pm-status-active';
   };
 
   // Get type badge class
   const getTypeClass = (type) => {
     const typeMap = {
-      'found': 'posts-type-found',
-      'lost': 'posts-type-lost',
-      'for sale': 'posts-type-sale',
-      'looking to buy': 'posts-type-buy',
-      'service offered': 'posts-type-service',
-      'help wanted': 'posts-type-help'
+      'found': 'pm-type-found',
+      'lost': 'pm-type-lost',
+      'for sale': 'pm-type-sale',
+      'looking to buy': 'pm-type-buy',
+      'service offered': 'pm-type-service',
+      'help wanted': 'pm-type-help'
     };
-    return typeMap[type?.toLowerCase()] || 'posts-type-default';
+    return typeMap[type?.toLowerCase()] || 'pm-type-default';
+  };
+
+  // Get stat card class for types
+  const getStatCardClass = (type) => {
+    const typeMap = {
+      'Found': 'pm-stat-found',
+      'Lost': 'pm-stat-lost',
+      'For Sale': 'pm-stat-sale',
+      'Looking to Buy': 'pm-stat-buy',
+      'Service Offered': 'pm-stat-service',
+      'Help Wanted': 'pm-stat-help'
+    };
+    return typeMap[type] || 'pm-type-stat';
   };
 
   // Render location information with purok
@@ -489,77 +425,91 @@ export default function ManagePosts() {
     }
   };
 
-  // Get action buttons based on post status
+  // Get action buttons based on post status and report count
   const getActionButtons = (post) => {
+    const reportCount = post.total_report_count || 0;
+    const canRemove = reportCount >= 3;
+    const canDelete = reportCount >= 5;
+
     if (post.status === 'Removed') {
       return (
         <>
           <button
-            className="posts-action-btn posts-action-restore"
+            className="pm-action-btn pm-action-restore"
             onClick={() => handlePostAction(post.id, 'restore')}
             title="Restore Post"
           >
             <FontAwesomeIcon icon={faUndo} />
           </button>
-          <button
-            className="posts-action-btn posts-action-delete"
-            onClick={() => handlePostAction(post.id, 'delete')}
-            title="Delete Permanently"
-          >
-            <FontAwesomeIcon icon={faTrash} />
-          </button>
+          {canDelete && (
+            <button
+              className="pm-action-btn pm-action-delete"
+              onClick={() => handlePostAction(post.id, 'delete')}
+              title="Delete Permanently"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          )}
         </>
       );
     } else if (post.status === 'Resolved') {
       return (
         <>
+          {canRemove && (
+            <button
+              className="pm-action-btn pm-action-remove"
+              onClick={() => handlePostAction(post.id, 'remove')}
+              title="Remove Post"
+            >
+              <FontAwesomeIcon icon={faBan} />
+            </button>
+          )}
           <button
-            className="posts-action-btn posts-action-remove"
-            onClick={() => handlePostAction(post.id, 'remove')}
-            title="Remove Post"
-          >
-            <FontAwesomeIcon icon={faBan} />
-          </button>
-          <button
-            className="posts-action-btn posts-action-restore"
+            className="pm-action-btn pm-action-restore"
             onClick={() => handlePostAction(post.id, 'restore')}
             title="Restore to Active"
           >
             <FontAwesomeIcon icon={faUndo} />
           </button>
-          <button
-            className="posts-action-btn posts-action-delete"
-            onClick={() => handlePostAction(post.id, 'delete')}
-            title="Delete Permanently"
-          >
-            <FontAwesomeIcon icon={faTrash} />
-          </button>
+          {canDelete && (
+            <button
+              className="pm-action-btn pm-action-delete"
+              onClick={() => handlePostAction(post.id, 'delete')}
+              title="Delete Permanently"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          )}
         </>
       );
     } else {
       return (
         <>
           <button
-            className="posts-action-btn posts-action-resolve"
+            className="pm-action-btn pm-action-resolve"
             onClick={() => handlePostAction(post.id, 'resolve')}
             title="Mark as Resolved"
           >
             <FontAwesomeIcon icon={faCheckCircle} />
           </button>
-          <button
-            className="posts-action-btn posts-action-remove"
-            onClick={() => handlePostAction(post.id, 'remove')}
-            title="Remove Post"
-          >
-            <FontAwesomeIcon icon={faBan} />
-          </button>
-          <button
-            className="posts-action-btn posts-action-delete"
-            onClick={() => handlePostAction(post.id, 'delete')}
-            title="Delete Permanently"
-          >
-            <FontAwesomeIcon icon={faTrash} />
-          </button>
+          {canRemove && (
+            <button
+              className="pm-action-btn pm-action-remove"
+              onClick={() => handlePostAction(post.id, 'remove')}
+              title="Remove Post"
+            >
+              <FontAwesomeIcon icon={faBan} />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              className="pm-action-btn pm-action-delete"
+              onClick={() => handlePostAction(post.id, 'delete')}
+              title="Delete Permanently"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          )}
         </>
       );
     }
@@ -582,52 +532,142 @@ export default function ManagePosts() {
     'Help Wanted': posts.filter(p => p.type?.toLowerCase() === 'help wanted').length
   };
 
+  // Render modal actions based on post status and report count
+  const renderModalActions = (post) => {
+    const reportCount = post.total_report_count || 0;
+    const canRemove = reportCount >= 3;
+    const canDelete = reportCount >= 5;
+
+    if (post.status === 'Removed') {
+      return (
+        <>
+          <button
+            className="pm-modal-btn pm-modal-restore"
+            onClick={() => handleModalAction('restore')}
+          >
+            <FontAwesomeIcon icon={faUndo} />
+            Restore Post
+          </button>
+          {canDelete && (
+            <button
+              className="pm-modal-btn pm-modal-delete"
+              onClick={() => handleModalAction('delete')}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              Delete Permanently
+            </button>
+          )}
+        </>
+      );
+    } else if (post.status === 'Resolved') {
+      return (
+        <>
+          {canRemove && (
+            <button
+              className="pm-modal-btn pm-modal-remove"
+              onClick={() => handleModalAction('remove')}
+            >
+              <FontAwesomeIcon icon={faBan} />
+              Remove Post
+            </button>
+          )}
+          <button
+            className="pm-modal-btn pm-modal-restore"
+            onClick={() => handleModalAction('restore')}
+          >
+            <FontAwesomeIcon icon={faUndo} />
+            Restore to Active
+          </button>
+          {canDelete && (
+            <button
+              className="pm-modal-btn pm-modal-delete"
+              onClick={() => handleModalAction('delete')}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              Delete Permanently
+            </button>
+          )}
+        </>
+      );
+    } else {
+      return (
+        <>
+          <button
+            className="pm-modal-btn pm-modal-resolve"
+            onClick={() => handleModalAction('resolve')}
+          >
+            <FontAwesomeIcon icon={faCheckCircle} />
+            Mark as Resolved
+          </button>
+          {canRemove && (
+            <button
+              className="pm-modal-btn pm-modal-remove"
+              onClick={() => handleModalAction('remove')}
+            >
+              <FontAwesomeIcon icon={faBan} />
+              Remove Post
+            </button>
+          )}
+          {canDelete && (
+            <button
+              className="pm-modal-btn pm-modal-delete"
+              onClick={() => handleModalAction('delete')}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              Delete Permanently
+            </button>
+          )}
+        </>
+      );
+    }
+  };
+
   // Mobile card view with type
   const MobilePostCard = ({ post }) => (
-    <div className="posts-mobile-card">
-      <div className="posts-mobile-header">
-        <div className="posts-mobile-title">
+    <div className="pm-mobile-card">
+      <div className="pm-mobile-header">
+        <div className="pm-mobile-title">
           <h3>{post.title}</h3>
-          <div className="posts-mobile-author">
+          <div className="pm-mobile-author">
             by {post.first_name} {post.last_name}
           </div>
         </div>
-        <div className="posts-mobile-badges">
-          <span className={`posts-mobile-status ${getStatusClass(post.status)}`}>
+        <div className="pm-mobile-badges">
+          <span className={`pm-mobile-status ${getStatusClass(post.status)}`}>
             {post.status}
           </span>
-          <span className={`posts-mobile-type ${getTypeClass(post.type)}`}>
+          <span className={`pm-mobile-type ${getTypeClass(post.type)}`}>
             {post.type}
           </span>
         </div>
       </div>
       
-      <div className="posts-mobile-details">
-        <div className="posts-mobile-detail">
-          <span className="posts-detail-label">ID</span>
-          <span className="posts-detail-value">#{post.id}</span>
+      <div className="pm-mobile-details">
+        <div className="pm-mobile-detail">
+          <span className="pm-detail-label">ID</span>
+          <span className="pm-detail-value">#{post.id}</span>
         </div>
-        <div className="posts-mobile-detail">
-          <span className="posts-detail-label">Category</span>
-          <span className="posts-detail-value">{post.category_name}</span>
+        <div className="pm-mobile-detail">
+          <span className="pm-detail-label">Category</span>
+          <span className="pm-detail-value">{post.category_name}</span>
         </div>
-        <div className="posts-mobile-detail">
-          <span className="posts-detail-label">Location</span>
-          <span className="posts-detail-value">{renderLocationInfo(post)}</span>
+        <div className="pm-mobile-detail">
+          <span className="pm-detail-label">Location</span>
+          <span className="pm-detail-value">{renderLocationInfo(post)}</span>
         </div>
-        <div className="posts-mobile-detail">
-          <span className="posts-detail-label">Date</span>
-          <span className="posts-detail-value">{formatDate(post.created_at)}</span>
+        <div className="pm-mobile-detail">
+          <span className="pm-detail-label">Date</span>
+          <span className="pm-detail-value">{formatDate(post.created_at)}</span>
         </div>
-        <div className="posts-mobile-detail">
-          <span className="posts-detail-label">Total Reports</span>
-          <span className="posts-detail-value">{post.total_report_count || 0}</span>
+        <div className="pm-mobile-detail">
+          <span className="pm-detail-label">Total Reports</span>
+          <span className="pm-detail-value">{post.total_report_count || 0}</span>
         </div>
       </div>
       
-      <div className="posts-mobile-actions">
+      <div className="pm-mobile-actions">
         <button 
-          className="posts-mobile-btn posts-mobile-view"
+          className="pm-mobile-btn pm-mobile-view"
           onClick={() => openViewModal(post)}
         >
           <FontAwesomeIcon icon={faEye} />
@@ -642,11 +682,11 @@ export default function ManagePosts() {
     <>
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`posts-toast posts-toast-${toast.type}`}>
-          <div className="posts-toast-content">
+        <div className={`pm-toast pm-toast-${toast.type}`}>
+          <div className="pm-toast-content">
             <FontAwesomeIcon 
               icon={toast.type === 'success' ? faCheckCircle : faExclamationTriangle} 
-              className="posts-toast-icon" 
+              className="pm-toast-icon" 
             />
             <span>{toast.message}</span>
           </div>
@@ -654,12 +694,12 @@ export default function ManagePosts() {
       )}
 
       {/* Header Section */}
-      <div className="posts-management-header">
-        <div className="posts-header-content">
+      <div className="pm-header">
+        <div className="pm-header-content">
           <p>Review and moderate community posts</p>
         </div>
         <button 
-          className="posts-refresh-btn"
+          className="pm-refresh-btn"
           onClick={fetchPosts}
           disabled={loading}
         >
@@ -669,8 +709,8 @@ export default function ManagePosts() {
       </div>
 
       {/* Filters and Search */}
-      <div className="posts-management-filters">
-        <div className="posts-search-box">
+      <div className="pm-filters">
+        <div className="pm-search-box">
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
@@ -680,7 +720,7 @@ export default function ManagePosts() {
           />
         </div>
         
-        <div className="posts-filter-group">
+        <div className="pm-filter-group">
           <FontAwesomeIcon icon={faFilter} />
           <select 
             value={statusFilter}
@@ -693,7 +733,7 @@ export default function ManagePosts() {
           </select>
         </div>
 
-        <div className="posts-filter-group">
+        <div className="pm-filter-group">
           <FontAwesomeIcon icon={faTag} />
           <select 
             value={typeFilter}
@@ -706,7 +746,7 @@ export default function ManagePosts() {
           </select>
         </div>
 
-        <div className="posts-filter-group">
+        <div className="pm-filter-group">
           <FontAwesomeIcon icon={faList} />
           <select 
             value={viewMode}
@@ -719,7 +759,7 @@ export default function ManagePosts() {
 
         {isFilterActive() && (
           <button  
-            className="posts-clear-filters-btn"
+            className="pm-clear-filters-btn"
             onClick={clearAllFilters}
             title="Clear all filters"
           >
@@ -728,24 +768,24 @@ export default function ManagePosts() {
         )}
 
         {selectedPosts.size > 0 && (
-          <div className="posts-bulk-actions">
+          <div className="pm-bulk-actions">
             <span>{selectedPosts.size} selected</span>
             <button 
-              className="posts-bulk-btn posts-bulk-remove"
+              className="pm-bulk-btn pm-bulk-remove"
               onClick={() => handleBulkAction('remove')}
             >
               <FontAwesomeIcon icon={faBan} />
               Remove
             </button>
             <button 
-              className="posts-bulk-btn posts-bulk-restore"
+              className="pm-bulk-btn pm-bulk-restore"
               onClick={() => handleBulkAction('restore')}
             >
               <FontAwesomeIcon icon={faUndo} />
               Restore
             </button>
             <button 
-              className="posts-bulk-btn posts-bulk-delete"
+              className="pm-bulk-btn pm-bulk-delete"
               onClick={() => handleBulkAction('delete')}
             >
               <FontAwesomeIcon icon={faTrash} />
@@ -756,75 +796,75 @@ export default function ManagePosts() {
       </div>
 
       {/* Stats Summary */}
-      <div className="posts-management-stats">
+      <div className="pm-stats">
         <div 
-          className={`posts-stat-card ${statusFilter === 'all' && typeFilter === 'all' ? 'posts-stat-active' : ''}`}
+          className={`pm-stat-card ${statusFilter === 'all' && typeFilter === 'all' ? 'pm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('all', 'all')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="posts-stat-number">{posts.length}</span>
-          <span className="posts-stat-label">Total Posts</span>
+          <span className="pm-stat-number">{posts.length}</span>
+          <span className="pm-stat-label">Total Posts</span>
         </div>
         <div 
-          className={`posts-stat-card ${statusFilter === 'Active' ? 'posts-stat-active' : ''}`}
+          className={`pm-stat-card ${statusFilter === 'Active' ? 'pm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'Active')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="posts-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
-          <span className="posts-stat-label">Active</span>
+          <span className="pm-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
+          <span className="pm-stat-label">Active</span>
         </div>
         <div 
-          className={`posts-stat-card ${statusFilter === 'Resolved' ? 'posts-stat-active' : ''}`}
+          className={`pm-stat-card ${statusFilter === 'Resolved' ? 'pm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'Resolved')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="posts-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
-          <span className="posts-stat-label">Resolved</span>
+          <span className="pm-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
+          <span className="pm-stat-label">Resolved</span>
         </div>
         <div 
-          className={`posts-stat-card ${statusFilter === 'Removed' ? 'posts-stat-active' : ''}`}
+          className={`pm-stat-card ${statusFilter === 'Removed' ? 'pm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'Removed')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="posts-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
-          <span className="posts-stat-label">Removed</span>
+          <span className="pm-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
+          <span className="pm-stat-label">Removed</span>
         </div>
         
         {Object.entries(typeStats).map(([type, count]) => (
           count > 0 && (
             <div 
               key={type}
-              className={`posts-stat-card posts-type-stat ${typeFilter === type ? 'posts-stat-active' : ''}`}
+              className={`pm-stat-card ${getStatCardClass(type)} ${typeFilter === type ? 'pm-stat-active' : ''}`}
               onClick={() => handleStatCardClick('type', type)}
               style={{ cursor: 'pointer' }}
             >
-              <span className="posts-stat-number">{count}</span>
-              <span className="posts-stat-label">{type}</span>
+              <span className="pm-stat-number">{count}</span>
+              <span className="pm-stat-label">{type}</span>
             </div>
           )
         ))}
       </div>
 
       {/* Posts Table */}
-      <div className='posts-management-table-container'>
-        <div className='posts-management-table-content'>
-          <div className='posts-management-table-title'>
+      <div className='pm-table-container'>
+        <div className='pm-table-content'>
+          <div className='pm-table-title'>
             <h2>Posts Management</h2>
-            <div className="posts-header-info">
-              <span className="posts-management-count">
+            <div className="pm-header-info">
+              <span className="pm-count">
                 {filteredPosts.length} of {posts.length} posts
               </span>
               {isFilterActive() && (
-                <div className="posts-active-filters">
+                <div className="pm-active-filters">
                   <span>Active filters:</span>
                   {statusFilter !== 'all' && (
-                    <span className="posts-filter-tag">Status: {statusFilter}</span>
+                    <span className="pm-filter-tag">Status: {statusFilter}</span>
                   )}
                   {typeFilter !== 'all' && (
-                    <span className="posts-filter-tag">Type: {typeFilter}</span>
+                    <span className="pm-filter-tag">Type: {typeFilter}</span>
                   )}
                   {searchTerm && (
-                    <span className="posts-filter-tag">Search: "{searchTerm}"</span>
+                    <span className="pm-filter-tag">Search: "{searchTerm}"</span>
                   )}
                 </div>
               )}
@@ -832,16 +872,16 @@ export default function ManagePosts() {
           </div>
 
           {loading ? (
-            <div className="posts-loading-state">
-              <div className="posts-loading-spinner"></div>
+            <div className="pm-loading-state">
+              <div className="pm-loading-spinner"></div>
               <p>Loading posts...</p>
             </div>
           ) : filteredPosts.length === 0 ? (
-            <div className="posts-empty-state">
+            <div className="pm-empty-state">
               <p>No posts found matching your criteria.</p>
               {isFilterActive() && (
                 <button 
-                  className="posts-retry-btn" 
+                  className="pm-retry-btn" 
                   onClick={clearAllFilters}
                 >
                   Clear Filters
@@ -851,8 +891,8 @@ export default function ManagePosts() {
           ) : (
             <>
               {/* Desktop Table View */}
-              <div className="posts-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
-                <table className='posts-management-table'>
+              <div className="pm-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
+                <table className='pm-table'>
                   <thead>
                     <tr>
                       <th>
@@ -875,7 +915,7 @@ export default function ManagePosts() {
                   </thead>
                   <tbody>
                     {filteredPosts.map(post => (
-                      <tr key={post.id} className={selectedPosts.has(post.id) ? 'posts-row-selected' : ''}>
+                      <tr key={post.id} className={selectedPosts.has(post.id) ? 'pm-row-selected' : ''}>
                         <td>
                           <input
                             type="checkbox"
@@ -883,42 +923,42 @@ export default function ManagePosts() {
                             onChange={() => togglePostSelection(post.id)}
                           />
                         </td>
-                        <td className="posts-id">#{post.id}</td>
+                        <td className="pm-id">#{post.id}</td>
                         <td>
-                          <div className="posts-title-author">
-                            <strong className="posts-title">{post.title}</strong>
-                            <span className="posts-author">
+                          <div className="pm-title-author">
+                            <strong className="pm-title">{post.title}</strong>
+                            <span className="pm-author">
                               by {post.first_name} {post.last_name}
                             </span>
                           </div>
                         </td>
                         <td>
-                          <span className={`posts-type-badge ${getTypeClass(post.type)}`}>
+                          <span className={`pm-type-badge ${getTypeClass(post.type)}`}>
                             {post.type}
                           </span>
                         </td>
                         <td>{post.category_name}</td>
                         <td>
-                          <div className="posts-location-info">
-                            <FontAwesomeIcon icon={faMapMarkerAlt} className="posts-location-icon" />
+                          <div className="pm-location-info">
+                            <FontAwesomeIcon icon={faMapMarkerAlt} className="pm-location-icon" />
                             <span>{renderLocationInfo(post)}</span>
                           </div>
                         </td>
                         <td>{formatDate(post.created_at)}</td>
                         <td>
-                          <span className={`posts-status-badge ${getStatusClass(post.status)}`}>
+                          <span className={`pm-status-badge ${getStatusClass(post.status)}`}>
                             {post.status}
                           </span>
                         </td>
                         <td>
-                          <span className="posts-report-count">
+                          <span className="pm-report-count">
                             {post.total_report_count || 0}
                           </span>
                         </td>
                         <td>
-                          <div className='posts-management-actions'>
+                          <div className='pm-actions'>
                             <button
-                              className="posts-action-btn posts-action-view"
+                              className="pm-action-btn pm-action-view"
                               onClick={() => openViewModal(post)}
                               title="View Post"
                             >
@@ -934,7 +974,7 @@ export default function ManagePosts() {
               </div>
 
               {/* Mobile Card View */}
-              <div className="posts-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
+              <div className="pm-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
                 {filteredPosts.map(post => (
                   <MobilePostCard key={post.id} post={post} />
                 ))}
@@ -946,29 +986,29 @@ export default function ManagePosts() {
 
       {/* View Post Modal */}
       {viewModal.isOpen && viewModal.post && (
-        <div className="posts-modal-overlay" onClick={closeModal}>
-          <div className="posts-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="posts-modal-header">
+        <div className="pm-modal-overlay" onClick={closeModal}>
+          <div className="pm-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-header">
               <h2>View Post</h2>
-              <button className="posts-modal-close" onClick={closeModal}>
+              <button className="pm-modal-close" onClick={closeModal}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="posts-modal-body">
+            <div className="pm-modal-body">
               {getPhotoUrl(viewModal.post) && (
-                <div className="posts-photo-container">
+                <div className="pm-photo-container">
                   <label>Post Photo:</label>
-                  <div className="posts-photo">
+                  <div className="pm-photo">
                     <img
                       src={getPhotoUrl(viewModal.post)}
                       alt={viewModal.post.title}
-                      className="posts-photo-display"
+                      className="pm-photo-display"
                       onError={(e) => {
                         e.target.style.display = 'none';
                         e.target.nextSibling.style.display = 'flex';
                       }}
                     />
-                    <div className="posts-photo-fallback" style={{ display: 'none' }}>
+                    <div className="pm-photo-fallback" style={{ display: 'none' }}>
                       <FontAwesomeIcon icon={faImage} />
                       <span>Photo not available</span>
                     </div>
@@ -976,134 +1016,67 @@ export default function ManagePosts() {
                 </div>
               )}
               
-              <div className="posts-details">
-                <div className="posts-detail-row">
+              <div className="pm-details">
+                <div className="pm-detail-row">
                   <label>Title:</label>
                   <span>{viewModal.post.title}</span>
                 </div>
-                <div className="posts-detail-row">
+                <div className="pm-detail-row">
                   <label>Author:</label>
                   <span>{viewModal.post.first_name} {viewModal.post.last_name}</span>
                 </div>
-                <div className="posts-detail-row">
+                <div className="pm-detail-row">
                   <label>Type:</label>
-                  <span className={`posts-type-badge ${getTypeClass(viewModal.post.type)}`}>
+                  <span className={`pm-type-badge ${getTypeClass(viewModal.post.type)}`}>
                     {viewModal.post.type}
                   </span>
                 </div>
-                <div className="posts-detail-row">
+                <div className="pm-detail-row">
                   <label>Category:</label>
                   <span>{viewModal.post.category_name}</span>
                 </div>
-                <div className="posts-detail-row">
+                <div className="pm-detail-row">
                   <label>Location:</label>
                   <span>{renderLocationInfo(viewModal.post)}</span>
                 </div>
-                <div className="posts-detail-row">
+                <div className="pm-detail-row">
                   <label>Status:</label>
-                  <span className={`posts-status-badge ${getStatusClass(viewModal.post.status)}`}>
+                  <span className={`pm-status-badge ${getStatusClass(viewModal.post.status)}`}>
                     {viewModal.post.status}
                   </span>
                 </div>
-                <div className="posts-detail-row">
+                <div className="pm-detail-row">
                   <label>Date Posted:</label>
                   <span>{formatDate(viewModal.post.created_at)}</span>
                 </div>
-                <div className="posts-detail-row">
+                <div className="pm-detail-row">
                   <label>Total Reports:</label>
                   <span>{viewModal.post.total_report_count || 0}</span>
                 </div>
-                <div className="posts-detail-row posts-full-width">
+                <div className="pm-detail-row pm-full-width">
                   <label>Description:</label>
-                  <div className="posts-description">
+                  <div className="pm-description">
                     {viewModal.post.description}
                   </div>
                 </div>
                 {viewModal.post.color && (
-                  <div className="posts-detail-row">
+                  <div className="pm-detail-row">
                     <label>Color:</label>
                     <span>{viewModal.post.color}</span>
                   </div>
                 )}
-                <div className="posts-detail-row posts-full-width">
+                <div className="pm-detail-row pm-full-width">
                   <label>Contact Info:</label>
-                  <div className="posts-contact-info">
+                  <div className="pm-contact-info">
                     {viewModal.post.contact_info}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="posts-modal-footer">
-              <div className="posts-modal-actions">
-                {viewModal.post.status === 'Removed' && (
-                  <>
-                    <button
-                      className="posts-modal-btn posts-modal-restore"
-                      onClick={() => handleModalAction('restore')}
-                    >
-                      <FontAwesomeIcon icon={faUndo} />
-                      Restore Post
-                    </button>
-                    <button
-                      className="posts-modal-btn posts-modal-delete"
-                      onClick={() => handleModalAction('delete')}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                      Delete Permanently
-                    </button>
-                  </>
-                )}
-                {viewModal.post.status === 'Resolved' && (
-                  <>
-                    <button
-                      className="posts-modal-btn posts-modal-remove"
-                      onClick={() => handleModalAction('remove')}
-                    >
-                      <FontAwesomeIcon icon={faBan} />
-                      Remove Post
-                    </button>
-                    <button
-                      className="posts-modal-btn posts-modal-restore"
-                      onClick={() => handleModalAction('restore')}
-                    >
-                      <FontAwesomeIcon icon={faUndo} />
-                      Restore to Active
-                    </button>
-                    <button
-                      className="posts-modal-btn posts-modal-delete"
-                      onClick={() => handleModalAction('delete')}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                      Delete Permanently
-                    </button>
-                  </>
-                )}
-                {viewModal.post.status === 'Active' && (
-                  <>
-                    <button
-                      className="posts-modal-btn posts-modal-resolve"
-                      onClick={() => handleModalAction('resolve')}
-                    >
-                      <FontAwesomeIcon icon={faCheckCircle} />
-                      Mark as Resolved
-                    </button>
-                    <button
-                      className="posts-modal-btn posts-modal-remove"
-                      onClick={() => handleModalAction('remove')}
-                    >
-                      <FontAwesomeIcon icon={faBan} />
-                      Remove Post
-                    </button>
-                    <button
-                      className="posts-modal-btn posts-modal-delete"
-                      onClick={() => handleModalAction('delete')}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                      Delete Permanently
-                    </button>
-                  </>
-                )}
-                <button className="posts-modal-btn posts-modal-close-btn" onClick={closeModal}>
+            <div className="pm-modal-footer">
+              <div className="pm-modal-actions">
+                {renderModalActions(viewModal.post)}
+                <button className="pm-modal-btn pm-modal-close-btn" onClick={closeModal}>
                   Close
                 </button>
               </div>
@@ -1114,42 +1087,42 @@ export default function ManagePosts() {
 
       {/* Confirmation Modal for ALL Actions */}
       {confirmationModal.isOpen && (
-        <div className="posts-modal-overlay" onClick={closeModal}>
-          <div className="posts-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="posts-modal-header">
+        <div className="pm-modal-overlay" onClick={closeModal}>
+          <div className="pm-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-modal-header">
               <h2>{confirmationModal.title}</h2>
-              <button className="posts-modal-close" onClick={closeModal}>
+              <button className="pm-modal-close" onClick={closeModal}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="posts-modal-body">
-              <div className="posts-confirmation-content">
-                <div className="posts-warning-icon-large">
+            <div className="pm-modal-body">
+              <div className="pm-confirmation-content">
+                <div className="pm-warning-icon-large">
                   <FontAwesomeIcon icon={faExclamationTriangle} />
                 </div>
                 <p>{confirmationModal.message}</p>
                 {confirmationModal.action === 'delete' && (
-                  <div className="posts-deletion-warning">
+                  <div className="pm-deletion-warning">
                     <FontAwesomeIcon icon={faExclamationTriangle} />
                     <span>This action cannot be undone!</span>
                   </div>
                 )}
               </div>
             </div>
-            <div className="posts-modal-footer">
+            <div className="pm-modal-footer">
               <button 
-                className="posts-modal-btn posts-modal-cancel" 
+                className="pm-modal-btn pm-modal-cancel" 
                 onClick={closeModal}
                 disabled={confirmationModal.isProcessing}
               >
                 Cancel
               </button>
               <button 
-                className={`posts-modal-btn ${
-                  confirmationModal.action === 'delete' ? 'posts-modal-delete' :
-                  confirmationModal.action === 'remove' ? 'posts-modal-remove' :
-                  confirmationModal.action === 'restore' ? 'posts-modal-restore' :
-                  'posts-modal-resolve'
+                className={`pm-modal-btn ${
+                  confirmationModal.action === 'delete' ? 'pm-modal-delete' :
+                  confirmationModal.action === 'remove' ? 'pm-modal-remove' :
+                  confirmationModal.action === 'restore' ? 'pm-modal-restore' :
+                  'pm-modal-resolve'
                 }`} 
                 onClick={handleConfirmedAction}
                 disabled={confirmationModal.isProcessing}
@@ -1172,102 +1145,6 @@ export default function ManagePosts() {
           </div>
         </div>
       )}
-
-      {/* Report Validation Modal (for low reports) */}
-      {actionModal.isOpen && (
-        <div className="posts-modal-overlay" onClick={closeModal}>
-          <div className="posts-modal-content posts-report-validation-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="posts-modal-header posts-warning-header">
-              <h2>
-                <FontAwesomeIcon icon={faExclamationTriangle} className="posts-warning-icon" />
-                Action Requires Review
-              </h2>
-              <button className="posts-modal-close" onClick={closeModal}>
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-            
-            <div className="posts-modal-body">
-              <div className="posts-report-validation-content">
-                <div className="posts-warning-message">
-                  <p>{actionModal.message}</p>
-                </div>
-                
-                <div className="posts-report-stats">
-                  <div className="posts-stat-item">
-                    <FontAwesomeIcon icon={faFlag} className="posts-stat-icon" />
-                    <span className="posts-stat-label">Monthly Reports:</span>
-                    <span className="posts-stat-value">{actionModal.monthlyReportCount}</span>
-                  </div>
-                  <div className="posts-stat-item">
-                    <FontAwesomeIcon icon={faCheckCircle} className="posts-stat-icon posts-required" />
-                    <span className="posts-stat-label">Required Monthly:</span>
-                    <span className="posts-stat-value">{actionModal.requiredCount}</span>
-                  </div>
-                  <div className="posts-stat-item">
-                    <FontAwesomeIcon icon={faHistory} className="posts-stat-icon" />
-                    <span className="posts-stat-label">All-Time Reports:</span>
-                    <span className="posts-stat-value">{actionModal.totalReportCount}</span>
-                  </div>
-                </div>
-
-                <div className="posts-preview">
-                  <h4>Post Details:</h4>
-                  <div className="posts-preview-content">
-                    <p><strong>Title:</strong> {actionModal.post?.title}</p>
-                    <p><strong>Author:</strong> {actionModal.post?.first_name} {actionModal.post?.last_name}</p>
-                    <p><strong>Type:</strong> 
-                      <span className={`posts-type-badge ${getTypeClass(actionModal.post?.type)}`}>
-                        {actionModal.post?.type}
-                      </span>
-                    </p>
-                    <p><strong>Status:</strong> 
-                      <span className={`posts-status-badge ${getStatusClass(actionModal.post?.status)}`}>
-                        {actionModal.post?.status}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="posts-action-warning">
-                  <FontAwesomeIcon icon={faExclamationTriangle} />
-                  <p>
-                    <strong>Warning:</strong> Proceeding with this action will override the community reporting system. 
-                    This should only be done in cases of severe policy violations.
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="posts-modal-footer">
-              <button 
-                className="posts-modal-btn posts-modal-cancel" 
-                onClick={closeModal}
-                disabled={isForceProcessing}
-              >
-                Cancel
-              </button>
-              <button 
-                className="posts-modal-btn posts-modal-force" 
-                onClick={handleForceAction}
-                disabled={isForceProcessing}
-              >
-                {isForceProcessing ? (
-                  <>
-                    <FontAwesomeIcon icon={faRefresh} spin />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <FontAwesomeIcon icon={faExclamationTriangle} />
-                    Force {actionModal.action === 'remove' ? 'Remove' : 'Delete'}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
-}
+} 
