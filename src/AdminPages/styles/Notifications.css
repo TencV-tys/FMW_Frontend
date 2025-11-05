@@ -178,7 +178,7 @@
 
 .admin-notif-active-filters-label {
   font-weight: 600;
-  color: #8B5A2B;
+  color: #FF8904;
   font-size: 0.9rem;
 }
 
@@ -193,7 +193,8 @@
   padding: 0.5rem 1rem;
   border-radius: 16px;
   font-size: 0.8rem;
-  color: #5D4037;
+  letter-spacing: 0.1rem;
+  color: #FF8904;
   border: 1px solid rgba(139, 90, 43, 0.2);
   font-weight: 600;
 }
@@ -359,6 +360,76 @@
 .admin-notif-btn-delete:hover {
   background: #ef4444;
   color: white;
+}
+/* Toast Notifications */
+.admin-notif-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  min-width: 300px;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: admin-notif-toastSlideIn 0.3s ease;
+}
+
+.admin-notif-toast-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.admin-notif-toast-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.admin-notif-toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-notif-toast-icon {
+  font-size: 1.25rem;
+}
+
+@keyframes admin-notif-toastSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Refresh button */
+.admin-notif-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #3b82f6;
+  color: white;
+}
+
+.admin-notif-refresh-btn:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.admin-notif-refresh-btn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
 }
 
 /* Loading and Empty States */

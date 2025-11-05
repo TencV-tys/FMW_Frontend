@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -38,13 +38,73 @@ export default function AdminNotifications() {
     isOpen: false,
     type: '', // 'markAllRead' or 'clearAll'
     title: '',
-    message: ''
+    message: '',
+    isProcessing: false // Prevent double clicks
+  });
+
+  // Smart polling refs
+  const pollingIntervalRef = useRef(null);
+  const isTabActiveRef = useRef(true);
+
+  // Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
   });
 
   useEffect(() => {
     fetchNotifications();
     fetchNotificationStats();
+
+    // Set up smart polling
+    const handleVisibilityChange = () => {
+      isTabActiveRef.current = !document.hidden;
+      if (isTabActiveRef.current) {
+        // Tab became active, fetch immediately
+        fetchNotifications();
+        fetchNotificationStats();
+        startPolling();
+      } else {
+        // Tab hidden, stop polling
+        stopPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    startPolling();
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [filter]);
+
+  // Smart polling functions
+  const startPolling = () => {
+    stopPolling(); // Clear any existing interval
+    pollingIntervalRef.current = setInterval(() => {
+      if (isTabActiveRef.current) {
+        fetchNotifications();
+        fetchNotificationStats();
+      }
+    }, 60000); // 10 seconds
+  };
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
+
+  // Show toast notification
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -54,7 +114,11 @@ export default function AdminNotifications() {
         : `http://localhost:8000/api/admin/notifications/type/${filter}`;
       
       const response = await fetch(endpoint, {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (response.ok) {
@@ -73,7 +137,11 @@ export default function AdminNotifications() {
   const fetchNotificationStats = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/admin/notifications/stats', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
  
       if (response.ok) {
@@ -91,6 +159,13 @@ export default function AdminNotifications() {
     } catch (error) {
       console.error('Error fetching notification stats:', error);
     }
+  };
+
+  // Manual refresh
+  const handleManualRefresh = async () => {
+    showToast('Refreshing notifications...', 'success');
+    await fetchNotifications();
+    await fetchNotificationStats();
   };
 
   // Handle stat card click for filtering
@@ -118,13 +193,19 @@ export default function AdminNotifications() {
           notif.id === notificationId ? { ...notif, is_read: true } : notif
         ));
         fetchNotificationStats();
+        showToast('Notification marked as read', 'success');
       }
     } catch (error) {
       console.error('Error marking as read:', error);
+      showToast('Error marking notification as read', 'error');
     }
   };
 
   const markAllAsRead = async () => {
+    if (confirmationModal.isProcessing) return;
+    
+    setConfirmationModal(prev => ({ ...prev, isProcessing: true }));
+    
     try {
       const response = await fetch('http://localhost:8000/api/admin/notifications/read-all', {
         method: 'PUT',
@@ -135,9 +216,13 @@ export default function AdminNotifications() {
         setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true })));
         fetchNotificationStats();
         closeConfirmationModal();
+        showToast('All notifications marked as read', 'success');
       }
     } catch (error) {
       console.error('Error marking all as read:', error);
+      showToast('Error marking all notifications as read', 'error');
+    } finally {
+      setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
 
@@ -151,13 +236,19 @@ export default function AdminNotifications() {
       if (response.ok) {
         setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
         fetchNotificationStats();
+        showToast('Notification deleted', 'success');
       }
     } catch (error) {
       console.error('Error deleting notification:', error);
+      showToast('Error deleting notification', 'error');
     }
   };
 
   const clearAllNotifications = async () => {
+    if (confirmationModal.isProcessing) return;
+    
+    setConfirmationModal(prev => ({ ...prev, isProcessing: true }));
+    
     try {
       const response = await fetch('http://localhost:8000/api/admin/notifications', {
         method: 'DELETE',
@@ -168,41 +259,56 @@ export default function AdminNotifications() {
         setNotifications([]);
         fetchNotificationStats();
         closeConfirmationModal();
+        showToast('All notifications cleared', 'success');
       }
     } catch (error) {
       console.error('Error clearing notifications:', error);
+      showToast('Error clearing notifications', 'error');
+    } finally {
+      setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
 
   // Confirmation Modal Functions
   const openMarkAllReadConfirmation = () => {
+    if (stats.unread === 0) return;
+    
     setConfirmationModal({
       isOpen: true,
       type: 'markAllRead',
       title: 'Mark All as Read',
-      message: `Are you sure you want to mark all ${stats.unread} unread notifications as read? This action cannot be undone.`
+      message: `Are you sure you want to mark all ${stats.unread} unread notifications as read? This action cannot be undone.`,
+      isProcessing: false
     });
   };
 
   const openClearAllConfirmation = () => {
+    if (notifications.length === 0) return;
+    
     setConfirmationModal({
       isOpen: true,
       type: 'clearAll',
       title: 'Clear All Notifications',
-      message: `Are you sure you want to clear all ${notifications.length} notifications? This action cannot be undone and all notifications will be permanently deleted.`
+      message: `Are you sure you want to clear all ${notifications.length} notifications? This action cannot be undone and all notifications will be permanently deleted.`,
+      isProcessing: false
     });
   };
 
   const closeConfirmationModal = () => {
+    if (confirmationModal.isProcessing) return;
+    
     setConfirmationModal({
       isOpen: false,
       type: '',
       title: '',
-      message: ''
+      message: '',
+      isProcessing: false
     });
   };
 
   const handleConfirmAction = () => {
+    if (confirmationModal.isProcessing) return;
+    
     if (confirmationModal.type === 'markAllRead') {
       markAllAsRead();
     } else if (confirmationModal.type === 'clearAll') {
@@ -342,6 +448,19 @@ export default function AdminNotifications() {
 
   return (
     <>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`admin-notif-toast admin-notif-toast-${toast.type}`}>
+          <div className="admin-notif-toast-content">
+            <FontAwesomeIcon 
+              icon={toast.type === 'success' ? faCheckCircle : faExclamationTriangle} 
+              className="admin-notif-toast-icon" 
+            />
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="admin-notif-header">
         <div className="admin-notif-header-content">
@@ -349,9 +468,17 @@ export default function AdminNotifications() {
         </div>
         <div className="admin-notif-header-actions">
           <button 
+            className="admin-notif-refresh-btn"
+            onClick={handleManualRefresh}
+            disabled={loading}
+          >
+            <FontAwesomeIcon icon={faCheckCircle} spin={loading} />
+            Refresh
+          </button>
+          <button 
             className="admin-notif-btn-mark-all-read"
             onClick={openMarkAllReadConfirmation}
-            disabled={stats.unread === 0}
+            disabled={stats.unread === 0 || confirmationModal.isProcessing}
           >
             <FontAwesomeIcon icon={faCheckDouble} />
             Mark All as Read
@@ -359,7 +486,7 @@ export default function AdminNotifications() {
           <button 
             className="admin-notif-btn-clear-all"
             onClick={openClearAllConfirmation}
-            disabled={notifications.length === 0}
+            disabled={notifications.length === 0 || confirmationModal.isProcessing}
           >
             <FontAwesomeIcon icon={faTrash} />
             Clear All
@@ -462,6 +589,7 @@ export default function AdminNotifications() {
             value={filter} 
             onChange={(e) => setFilter(e.target.value)}
             className="admin-notif-filter-select"
+            disabled={confirmationModal.isProcessing}
           >
             <option value="all">All Notifications</option>
             <option value="unread">Unread Only</option>
@@ -490,6 +618,7 @@ export default function AdminNotifications() {
             className="admin-notif-clear-filters-btn"
             onClick={clearAllFilters}
             title="Clear all filters"
+            disabled={confirmationModal.isProcessing}
           >
             Clear Filters
           </button>
@@ -597,6 +726,7 @@ export default function AdminNotifications() {
                           markAsRead(notification.id);
                         }}
                         title="Mark as read"
+                        disabled={confirmationModal.isProcessing}
                       >
                         <FontAwesomeIcon icon={faCheckCircle} />
                       </button>
@@ -608,6 +738,7 @@ export default function AdminNotifications() {
                         deleteNotification(notification.id);
                       }}
                       title="Delete notification"
+                      disabled={confirmationModal.isProcessing}
                     >
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
@@ -630,6 +761,7 @@ export default function AdminNotifications() {
               <button 
                 className="admin-notif-retry-btn" 
                 onClick={clearAllFilters}
+                disabled={confirmationModal.isProcessing}
               >
                 Clear Filter
               </button>
@@ -647,6 +779,7 @@ export default function AdminNotifications() {
               <button 
                 className="admin-notif-modal-close"
                 onClick={closeConfirmationModal}
+                disabled={confirmationModal.isProcessing}
               >
                 ×
               </button>
@@ -664,6 +797,7 @@ export default function AdminNotifications() {
               <button 
                 className="admin-notif-btn-secondary"
                 onClick={closeConfirmationModal}
+                disabled={confirmationModal.isProcessing}
               >
                 Cancel
               </button>
@@ -672,8 +806,11 @@ export default function AdminNotifications() {
                   confirmationModal.type === 'clearAll' ? 'admin-notif-warning' : ''
                 }`}
                 onClick={handleConfirmAction}
+                disabled={confirmationModal.isProcessing}
               >
-                {confirmationModal.type === 'markAllRead' ? 'Mark All as Read' : 'Clear All'}
+                {confirmationModal.isProcessing ? 'Processing...' : 
+                  confirmationModal.type === 'markAllRead' ? 'Mark All as Read' : 'Clear All'
+                }
               </button>
             </div>
           </div>
@@ -681,4 +818,4 @@ export default function AdminNotifications() {
       )}
     </>
   );
-}
+} 

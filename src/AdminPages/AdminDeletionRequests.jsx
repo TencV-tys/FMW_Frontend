@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -29,9 +29,64 @@ export default function AdminDeletionRequests() {
   });
   const [recentlyApprovedUser, setRecentlyApprovedUser] = useState(null);
 
+  // 🆕 ADDED: Loading state for actions to prevent double clicks
+  const [actionLoading, setActionLoading] = useState({
+    process: false
+  });
+
+  // 🆕 ADDED: Toast notifications
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  // 🆕 ADDED: Auto-reload reference
+  const autoReloadRef = useRef(null);
+
+  // Show toast notification
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
+
+  // 🆕 ADDED: Smart polling - auto reload every 1 minute
   useEffect(() => {
+    // Initial fetch
     fetchUsersDeletionStats();
     fetchDeletionRequests();
+
+    // Set up auto-reload every 1 minute (60000ms)
+    autoReloadRef.current = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchUsersDeletionStats();
+        fetchDeletionRequests();
+      }
+    }, 60000);
+
+    // Cleanup interval on component unmount
+    return () => {
+      if (autoReloadRef.current) {
+        clearInterval(autoReloadRef.current);
+      }
+    };
+  }, []);
+
+  // 🆕 ADDED: Also reload when tab becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUsersDeletionStats();
+        fetchDeletionRequests();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const fetchUsersDeletionStats = async () => {
@@ -74,7 +129,12 @@ export default function AdminDeletionRequests() {
     }
   };
 
+  // 🆕 UPDATED: Handle process deletion request with double-click prevention
   const handleProcessDeletionRequest = async (requestId, action, adminNotes = '') => {
+    if (actionLoading.process) return; // Prevent double-click
+    
+    setActionLoading(prev => ({ ...prev, process: true }));
+    
     try {
       const response = await fetch(`http://localhost:8000/api/admin/deletion-requests/${requestId}/process`, {
         method: 'PUT',
@@ -90,7 +150,7 @@ export default function AdminDeletionRequests() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(data.message || `Request ${action}d successfully`);
+        showToast(data.message || `Request ${action}d successfully`, 'success');
         
         // Store the approved user info for easy navigation
         if (action === 'approve') {
@@ -115,11 +175,13 @@ export default function AdminDeletionRequests() {
         setRequestModal({ isOpen: false, request: null, action: '', adminNotes: '' });
       } else {
         const errorData = await response.json();
-        alert(errorData.error || `Failed to ${action} request`);
+        showToast(errorData.error || `Failed to ${action} request`, 'error');
       }
     } catch (error) {
       console.error('Error processing deletion request:', error);
-      alert('Error processing deletion request');
+      showToast('Error processing deletion request', 'error');
+    } finally {
+      setActionLoading(prev => ({ ...prev, process: false }));
     }
   };
 
@@ -211,6 +273,19 @@ export default function AdminDeletionRequests() {
 
   return (
     <>
+      {/* 🆕 ADDED: Toast Notification */}
+      {toast.show && (
+        <div className={`adr-toast adr-toast-${toast.type}`}>
+          <div className="adr-toast-content">
+            <FontAwesomeIcon 
+              icon={toast.type === 'success' ? faCheckCircle : faExclamationTriangle} 
+              className="adr-toast-icon" 
+            />
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="adr-header">
         <div className="adr-header-content">
@@ -237,6 +312,7 @@ export default function AdminDeletionRequests() {
             fetchUsersDeletionStats();
             fetchDeletionRequests();
             setRecentlyApprovedUser(null);
+            showToast('Data refreshed successfully', 'success');
           }}
           disabled={loading || requestsLoading}
         >
@@ -245,7 +321,7 @@ export default function AdminDeletionRequests() {
         </button>
       </div>
 
-      {/* Tabs */}
+      {/* 🆕 UPDATED: Tabs - ORANGE THEME */}
       <div className="adr-tabs">
         <button 
           className={`adr-tab-button ${activeTab === 'requests' ? 'active' : ''}`}
@@ -406,7 +482,7 @@ export default function AdminDeletionRequests() {
       {/* User Statistics Tab */}
       {activeTab === 'users' && (
         <>
-          {/* Filters */}
+          {/* 🆕 UPDATED: Filters - ORANGE CLEAR FILTER BUTTON */}
           <div className="adr-filters">
             <div className="adr-search-box">
               <FontAwesomeIcon icon={faSearch} />
@@ -437,7 +513,7 @@ export default function AdminDeletionRequests() {
             )}
           </div>
 
-          {/* Users Table - REMOVED ACTIONS COLUMN */}
+          {/* Users Table */}
           <div className='adr-table-darkbrown'>
             <div className='adr-table-lightbrown'>
               <div className='adr-table-content'>
@@ -483,7 +559,6 @@ export default function AdminDeletionRequests() {
                           <th>User Information</th>
                           <th>Deletion Status</th>
                           <th>Deletion Count</th>
-                          {/* REMOVED ACTIONS COLUMN HEADER */}
                         </tr>
                       </thead>
                       <tbody>
@@ -528,7 +603,6 @@ export default function AdminDeletionRequests() {
                                 </div>
                               </div>
                             </td>
-                            {/* REMOVED ACTIONS COLUMN TD */}
                           </tr>
                         ))}
                       </tbody>
@@ -541,7 +615,7 @@ export default function AdminDeletionRequests() {
         </>
       )}
 
-      {/* Request Processing Modal */}
+      {/* 🆕 UPDATED: Request Processing Modal with double-click prevention */}
       {requestModal.isOpen && requestModal.request && (
         <div className="adr-modal-overlay" onClick={closeModal}>
           <div className="adr-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -610,6 +684,7 @@ export default function AdminDeletionRequests() {
               <button 
                 className="adr-btn-secondary"
                 onClick={closeModal}
+                disabled={actionLoading.process}
               >
                 Cancel
               </button>
@@ -620,8 +695,17 @@ export default function AdminDeletionRequests() {
                   requestModal.action, 
                   requestModal.adminNotes
                 )}
+                disabled={actionLoading.process}
               >
-                {requestModal.action === 'approve' ? 'Approve Request' : 'Reject Request'}
+                <FontAwesomeIcon 
+                  icon={actionLoading.process ? faRefresh : 
+                    requestModal.action === 'approve' ? faCheck : faTimes
+                  } 
+                  spin={actionLoading.process}
+                />
+                {actionLoading.process ? 'Processing...' : 
+                  requestModal.action === 'approve' ? 'Approve Request' : 'Reject Request'
+                }
               </button>
             </div>
           </div>
