@@ -464,11 +464,11 @@ export default function ManageUsers() {
   // Get status badge class
   const getStatusClass = (status) => {
     const statusMap = {
-      active: 'user-status-active',
-      suspended: 'user-status-suspended',
-      banned: 'user-status-banned'
+      active: 'manage-users-status-active',
+      suspended: 'manage-users-status-suspended',
+      banned: 'manage-users-status-banned'
     };
-    return statusMap[status] || 'user-status-active';
+    return statusMap[status] || 'manage-users-status-active';
   };
 
   // Get status display text
@@ -504,7 +504,7 @@ export default function ManageUsers() {
 
   // Get role badge class
   const getRoleClass = (role) => {
-    return role === 'admin' ? 'role-admin' : 'role-user';
+    return role === 'admin' ? 'manage-users-role-admin' : 'manage-users-role-user';
   };
 
   // Get user full name
@@ -549,7 +549,7 @@ export default function ManageUsers() {
       return (
         <>
           <button
-            className={`action-btn suspend ${!canSuspendUser(user) ? 'disabled' : ''}`}
+            className={`manage-users-action-btn suspend ${!canSuspendUser(user) ? 'disabled' : ''}`}
             onClick={() => canSuspendUser(user) && openSuspendModal(user)}
             title={!canSuspendUser(user) ? 
               (user.role === 'admin' ? 'Cannot suspend admin users' : `Need ${REPORT_THRESHOLDS.CAN_SUSPEND}+ monthly reports to suspend`) 
@@ -559,7 +559,7 @@ export default function ManageUsers() {
             <FontAwesomeIcon icon={faPauseCircle} />
           </button>
           <button
-            className={`action-btn ban ${!canBanUser(user) ? 'disabled' : ''}`}
+            className={`manage-users-action-btn ban ${!canBanUser(user) ? 'disabled' : ''}`}
             onClick={() => canBanUser(user) && openBanModal(user)}
             title={!canBanUser(user) ? 
               (user.role === 'admin' ? 'Cannot ban admin users' : `Need ${REPORT_THRESHOLDS.CAN_BAN}+ monthly reports to ban`) 
@@ -569,7 +569,7 @@ export default function ManageUsers() {
             <FontAwesomeIcon icon={faUserSlash} />
           </button>
           <button
-            className={`action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
+            className={`manage-users-action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
             onClick={() => canDeleteUser(user) && openDeleteModal(user)}
             title={!canDeleteUser(user) ? 'Cannot delete admin users' : "Delete User"}
             disabled={!canDeleteUser(user)}
@@ -582,14 +582,14 @@ export default function ManageUsers() {
       return (
         <>
           <button
-            className="action-btn activate"
+            className="manage-users-action-btn activate"
             onClick={() => openActivateModal(user)}
             title="Activate User"
           >
             <FontAwesomeIcon icon={faCheckCircle} />
           </button>
           <button
-            className={`action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
+            className={`manage-users-action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
             onClick={() => canDeleteUser(user) && openDeleteModal(user)}
             title={!canDeleteUser(user) ? 'Cannot delete admin users' : "Delete User"}
             disabled={!canDeleteUser(user)}
@@ -618,17 +618,17 @@ export default function ManageUsers() {
 
     const severityConfig = {
       high: { 
-        class: 'report-high', 
+        class: 'manage-users-report-high', 
         text: 'High Risk - Can Ban', 
         icon: faExclamationTriangle 
       },
       medium: { 
-        class: 'report-medium', 
+        class: 'manage-users-report-medium', 
         text: 'Medium Risk - Can Suspend', 
         icon: faFlag 
       },
       low: { 
-        class: 'report-low', 
+        class: 'manage-users-report-low', 
         text: 'Low Risk - Warning Sent', 
         icon: faFlag 
       }
@@ -637,7 +637,7 @@ export default function ManageUsers() {
     const config = severityConfig[severity];
 
     return (
-      <span className={`report-severity-badge ${config.class}`}>
+      <span className={`manage-users-report-severity-badge ${config.class}`}>
         <FontAwesomeIcon icon={config.icon} />
         {config.text}
       </span>
@@ -646,34 +646,34 @@ export default function ManageUsers() {
 
   // Mobile User Card Component
   const MobileUserCard = ({ user }) => (
-    <div className="mobile-user-card">
-      <div className="mobile-card-header">
-        <div className="mobile-card-title">
+    <div className="manage-users-mobile-card">
+      <div className="manage-users-mobile-header">
+        <div className="manage-users-mobile-title">
           <h3>{user.first_name} {user.last_name}</h3>
-          <div className="mobile-card-id">ID: #{user.id}</div>
+          <div className="manage-users-mobile-id">ID: #{user.id}</div>
         </div>
-        <div className="mobile-card-badges">
-          <span className={`mobile-card-status ${getStatusClass(user.status)}`}>
+        <div className="manage-users-mobile-badges">
+          <span className={`manage-users-mobile-status ${getStatusClass(user.status)}`}>
             <FontAwesomeIcon icon={getStatusIcon(user.status)} />
             {getStatusDisplayText(user)}
           </span>
-          <span className={`mobile-card-role ${getRoleClass(user.role)}`}>
+          <span className={`manage-users-mobile-role ${getRoleClass(user.role)}`}>
             <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
             {user.role}
           </span>
         </div>
       </div>
       
-      <div className="mobile-card-details">
-        <div className="mobile-card-detail">
+      <div className="manage-users-mobile-details">
+        <div className="manage-users-mobile-detail">
           <FontAwesomeIcon icon={faEnvelope} />
           <span>{user.email}</span>
         </div>
-        <div className="mobile-card-detail">
+        <div className="manage-users-mobile-detail">
           <FontAwesomeIcon icon={faVenusMars} />
           <span>{user.gender || 'Not specified'}</span>
         </div>
-        <div className="mobile-card-detail">
+        <div className="manage-users-mobile-detail">
           <FontAwesomeIcon icon={faCalendar} />
           <span>{new Date(user.created_at).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -683,21 +683,21 @@ export default function ManageUsers() {
         </div>
         
         {/* Report Statistics */}
-        <div className="mobile-card-detail">
+        <div className="manage-users-mobile-detail">
           <FontAwesomeIcon icon={faFlag} />
           <span>Monthly Reports: {user.monthly_report_count || 0}</span>
         </div>
-        <div className="mobile-card-detail">
+        <div className="manage-users-mobile-detail">
           <FontAwesomeIcon icon={faFlag} />
           <span>Total Reports: {user.total_report_count || 0}</span>
         </div>
-        <div className="mobile-card-detail">
+        <div className="manage-users-mobile-detail">
           <FontAwesomeIcon icon={faExclamationTriangle} />
           <span>Problem Posts: {user.active_posts_with_reports || 0}</span>
         </div>
 
         {user.status === 'suspended' && user.suspended_until && (
-          <div className="mobile-card-detail">
+          <div className="manage-users-mobile-detail">
             <FontAwesomeIcon icon={faClock} />
             <span>Until: {new Date(user.suspended_until).toLocaleDateString()}</span>
           </div>
@@ -705,11 +705,11 @@ export default function ManageUsers() {
       </div>
 
       {/* Report Severity Indicator */}
-      <div className="mobile-card-report-severity">
+      <div className="manage-users-mobile-report-severity">
         <ReportSeverityBadge user={user} />
       </div>
       
-      <div className="mobile-card-actions">
+      <div className="manage-users-mobile-actions">
         {getActionButtons(user)}
       </div>
     </div>
@@ -733,6 +733,7 @@ export default function ManageUsers() {
       {/* Header Section */}
       <div className="manage-users-header">
         <div className="manage-users-header-content">
+       
           <p>Admin panel for user management and moderation</p>
         </div>
         <button 
@@ -746,48 +747,48 @@ export default function ManageUsers() {
       </div>
 
       {/* Stats Summary */}
-      <div className="users-stats">
+      <div className="manage-users-stats">
         <div 
-          className={`stat-card ${!isFilterActive() ? 'active' : ''}`}
+          className={`manage-users-stat-card ${!isFilterActive() ? 'manage-users-stat-active' : ''}`}
           onClick={() => handleStatCardClick('all', 'all')}
           style={{ cursor: 'pointer' }}
           title="Show all users"
         >
-          <span className="user-stat-number">{userStats.total}</span>
-          <span className="stat-label">Total Users</span>
+          <span className="manage-users-stat-number">{userStats.total}</span>
+          <span className="manage-users-stat-label">Total Users</span>
         </div>
         <div 
-          className={`stat-card ${statusFilter === 'active' ? 'active' : ''}`}
+          className={`manage-users-stat-card ${statusFilter === 'active' ? 'manage-users-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'active')}
           style={{ cursor: 'pointer' }}
           title="Filter by Active status"
         >
-          <span className="user-stat-number">{userStats.active}</span>
-          <span className="stat-label">Active Users</span>
+          <span className="manage-users-stat-number">{userStats.active}</span>
+          <span className="manage-users-stat-label">Active Users</span>
         </div>
         <div 
-          className={`stat-card ${statusFilter === 'suspended' ? 'active' : ''}`}
+          className={`manage-users-stat-card ${statusFilter === 'suspended' ? 'manage-users-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'suspended')}
           style={{ cursor: 'pointer' }}
           title="Filter by Suspended status"
         >
-          <span className="user-stat-number">{userStats.suspended}</span>
-          <span className="stat-label">Suspended Users</span>
+          <span className="manage-users-stat-number">{userStats.suspended}</span>
+          <span className="manage-users-stat-label">Suspended Users</span>
         </div>
         <div 
-          className={`stat-card ${statusFilter === 'banned' ? 'active' : ''}`}
+          className={`manage-users-stat-card ${statusFilter === 'banned' ? 'manage-users-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'banned')}
           style={{ cursor: 'pointer' }}
           title="Filter by Banned status"
         >
-          <span className="user-stat-number">{userStats.banned}</span>
-          <span className="stat-label">Banned Users</span>
+          <span className="manage-users-stat-number">{userStats.banned}</span>
+          <span className="manage-users-stat-label">Banned Users</span>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="users-filters">
-        <div className="search-box">
+      <div className="manage-users-filters">
+        <div className="manage-users-search-box">
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
@@ -797,7 +798,7 @@ export default function ManageUsers() {
           />
         </div>
         
-        <div className="filter-group">
+        <div className="manage-users-filter-group">
           <FontAwesomeIcon icon={faFilter} />
           <select 
             value={statusFilter}
@@ -810,7 +811,7 @@ export default function ManageUsers() {
           </select>
         </div>
 
-        <div className="filter-group">
+        <div className="manage-users-filter-group">
           <FontAwesomeIcon icon={faUser} />
           <select 
             value={roleFilter}
@@ -823,7 +824,7 @@ export default function ManageUsers() {
         </div>
 
         {/* View Toggle */}
-        <div className="filter-group">
+        <div className="manage-users-filter-group">
           <FontAwesomeIcon icon={faList} />
           <select 
             value={viewMode}
@@ -846,27 +847,25 @@ export default function ManageUsers() {
         )}
       </div> 
 
-      
-
       {/* Report Thresholds Info */}
-      <div className="thresholds-info">
+      <div className="manage-users-thresholds-info">
         <h3>Report Thresholds:</h3>
-        <div className="thresholds-grid">
-          <div className="threshold-item">
-            <span className="threshold-badge threshold-warning">⚠️</span>
-            <span className="threshold-text">
+        <div className="manage-users-thresholds-grid">
+          <div className="manage-users-threshold-item">
+            <span className="manage-users-threshold-badge manage-users-threshold-warning">⚠️</span>
+            <span className="manage-users-threshold-text">
               <strong>{REPORT_THRESHOLDS.WARNING}+ Monthly Reports:</strong> Automatic warning email sent
             </span>
           </div>
-          <div className="threshold-item">
-            <span className="threshold-badge threshold-suspend">⏸️</span>
-            <span className="threshold-text">
+          <div className="manage-users-threshold-item">
+            <span className="manage-users-threshold-badge manage-users-threshold-suspend">⏸️</span>
+            <span className="manage-users-threshold-text">
               <strong>{REPORT_THRESHOLDS.CAN_SUSPEND}+ Monthly Reports:</strong> Can suspend user
             </span>
           </div>
-          <div className="threshold-item">
-            <span className="threshold-badge threshold-ban">🚫</span>
-            <span className="threshold-text">
+          <div className="manage-users-threshold-item">
+            <span className="manage-users-threshold-badge manage-users-threshold-ban">🚫</span>
+            <span className="manage-users-threshold-text">
               <strong>{REPORT_THRESHOLDS.CAN_BAN}+ Monthly Reports:</strong> Can ban user
             </span>
           </div>
@@ -874,14 +873,13 @@ export default function ManageUsers() {
       </div>
 
       {/* Users Table */}
-      <div className='manage-users-table-darkbrown'>
-        <div className='manage-users-table-lightbrown'>
+      <div className='manage-users-table-container'>
+        <div className='manage-users-table-inner'>
           <div className='manage-users-table-content'>
-            <div className='manage-users-table-title'>
+            <div className='manage-users-table-header'>
               <h2>Users Management</h2>
-              <div className="users-header-info">
-                {/* 🆕 UPDATED: Same display as AdminFeedback */}
-                <span className="users-count">
+              <div className="manage-users-header-info">
+                <span className="manage-users-count">
                   {filteredUsers.length} of {users.length} user{filteredUsers.length !== 1 ? 's' : ''}
                   {isFilterActive() && ' (Filtered)'}
                 </span>
@@ -889,12 +887,12 @@ export default function ManageUsers() {
             </div>
 
             {loading ? (
-              <div className="loading-state">
-                <div className="loading-spinner"></div>
+              <div className="manage-users-loading-state">
+                <div className="manage-users-loading-spinner"></div>
                 <p>Loading users...</p>
               </div>
             ) : filteredUsers.length === 0 ? (
-              <div className="empty-state">
+              <div className="manage-users-empty-state">
                 <p>
                   {users.length === 0 
                     ? "No users have been registered yet." 
@@ -903,7 +901,7 @@ export default function ManageUsers() {
                 </p>
                 {isFilterActive() && (
                   <button 
-                    className="retry-btn" 
+                    className="manage-users-retry-btn" 
                     onClick={clearAllFilters}
                   >
                     Clear Filters
@@ -913,8 +911,8 @@ export default function ManageUsers() {
             ) : (
               <>
                 {/* Desktop Table View */}
-                <div className="table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
-                  <table className='users-table'>
+                <div className="manage-users-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
+                  <table className='manage-users-table'>
                     <thead>
                       <tr>
                         <th>User Info</th>
@@ -934,7 +932,7 @@ export default function ManageUsers() {
                       {filteredUsers.map((user) => (
                         <tr key={user.id}>
                           <td>
-                            <div className="user-info">
+                            <div className="manage-users-user-info">
                               <strong>{user.first_name} {user.last_name}</strong>
                               <small>ID: #{user.id}</small>
                             </div>
@@ -942,29 +940,29 @@ export default function ManageUsers() {
                           <td>{user.email}</td>
                           <td>{user.gender || '-'}</td>
                           <td>
-                            <span className={`role-badge ${getRoleClass(user.role)}`}>
+                            <span className={`manage-users-role-badge ${getRoleClass(user.role)}`}>
                               <FontAwesomeIcon icon={user.role === 'admin' ? faUserShield : faUser} />
                               {user.role}
                             </span>
                           </td>
                           <td>
-                            <span className={`user-status-badge ${getStatusClass(user.status)}`}>
+                            <span className={`manage-users-status-badge ${getStatusClass(user.status)}`}>
                               <FontAwesomeIcon icon={getStatusIcon(user.status)} />
                               {getStatusDisplayText(user)}
                             </span>
                           </td>
                           <td>
-                            <span className="report-count">
+                            <span className="manage-users-report-count">
                               {user.monthly_report_count || 0}
                             </span>
                           </td>
                           <td>
-                            <span className="report-count">
+                            <span className="manage-users-report-count">
                               {user.total_report_count || 0}
                             </span>
                           </td>
                           <td>
-                            <span className="problem-posts">
+                            <span className="manage-users-problem-posts">
                               {user.active_posts_with_reports || 0}
                             </span>
                           </td>
@@ -979,7 +977,7 @@ export default function ManageUsers() {
                             })}
                           </td>
                           <td>
-                            <div className='users-table-actions'>
+                            <div className='manage-users-actions'>
                               {getActionButtons(user)}
                             </div>
                           </td>
@@ -990,7 +988,7 @@ export default function ManageUsers() {
                 </div>
 
                 {/* Mobile Card View */}
-                <div className="mobile-users-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
+                <div className="manage-users-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
                   {filteredUsers.map(user => (
                     <MobileUserCard key={user.id} user={user} />
                   ))}
@@ -1003,40 +1001,40 @@ export default function ManageUsers() {
 
       {/* Suspend User Modal */}
       {showSuspendModal && selectedUser && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="manage-users-modal-overlay">
+          <div className="manage-users-modal-content">
+            <div className="manage-users-modal-header">
               <h3>Suspend User</h3>
               <button 
-                className="modal-close"
+                className="manage-users-modal-close"
                 onClick={closeAllModals}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="modal-body">
+            <div className="manage-users-modal-body">
               <p>You are about to suspend <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
               
               {/* Report Statistics in Modal */}
-              <div className="user-report-stats">
+              <div className="manage-users-user-report-stats">
                 <h4>User Report Statistics:</h4>
-                <div className="report-stats-grid">
-                  <div className="report-stat">
-                    <span className="stat-label">Monthly Reports:</span>
-                    <span className="stat-value">{selectedUser.monthly_report_count || 0}</span>
+                <div className="manage-users-report-stats-grid">
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Monthly Reports:</span>
+                    <span className="manage-users-stat-value">{selectedUser.monthly_report_count || 0}</span>
                   </div>
-                  <div className="report-stat">
-                    <span className="stat-label">Total Reports:</span>
-                    <span className="stat-value">{selectedUser.total_report_count || 0}</span>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Total Reports:</span>
+                    <span className="manage-users-stat-value">{selectedUser.total_report_count || 0}</span>
                   </div>
-                  <div className="report-stat">
-                    <span className="stat-label">Problem Posts:</span>
-                    <span className="stat-value">{selectedUser.active_posts_with_reports || 0}</span>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Problem Posts:</span>
+                    <span className="manage-users-stat-value">{selectedUser.active_posts_with_reports || 0}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="form-group">
+              <div className="manage-users-form-group">
                 <label htmlFor="suspensionReason">Reason for Suspension *</label>
                 <textarea
                   id="suspensionReason"
@@ -1048,7 +1046,7 @@ export default function ManageUsers() {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="manage-users-form-group">
                 <label htmlFor="suspensionDuration">Suspension Duration *</label>
                 <select
                   id="suspensionDuration"
@@ -1063,7 +1061,7 @@ export default function ManageUsers() {
               </div>
 
               {suspensionDuration === 'custom' && (
-                <div className="form-group">
+                <div className="manage-users-form-group">
                   <label htmlFor="customDays">Number of Days *</label>
                   <input
                     type="number"
@@ -1078,22 +1076,22 @@ export default function ManageUsers() {
                 </div>
               )}
 
-              <div className="suspension-preview">
+              <div className="manage-users-suspension-preview">
                 <p><strong>Preview:</strong> User will be suspended for {
                   suspensionDuration === 'custom' ? `${customDays} day(s)` : `${suspensionDuration} day(s)`
                 }</p>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="manage-users-modal-footer">
               <button 
-                className="btn-secondary"
+                className="manage-users-btn-secondary"
                 onClick={closeAllModals}
                 disabled={isProcessing}
               >
                 Cancel
               </button>
               <button 
-                className="btn-primary suspend"
+                className="manage-users-btn-primary suspend"
                 onClick={handleSuspend}
                 disabled={!suspensionReason.trim() || (suspensionDuration === 'custom' && !customDays) || isProcessing}
               >
@@ -1106,44 +1104,44 @@ export default function ManageUsers() {
 
       {/* Ban User Modal */}
       {showBanModal && selectedUser && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="manage-users-modal-overlay">
+          <div className="manage-users-modal-content">
+            <div className="manage-users-modal-header">
               <h3>Ban User</h3>
               <button 
-                className="modal-close"
+                className="manage-users-modal-close"
                 onClick={closeAllModals}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="warning-banner">
+            <div className="manage-users-modal-body">
+              <div className="manage-users-warning-banner">
                 <FontAwesomeIcon icon={faBan} />
                 <strong>Warning: This action is permanent!</strong>
               </div>
               <p>You are about to <strong>permanently ban</strong> <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
               
               {/* Report Statistics in Modal */}
-              <div className="user-report-stats">
+              <div className="manage-users-user-report-stats">
                 <h4>User Report Statistics:</h4>
-                <div className="report-stats-grid">
-                  <div className="report-stat">
-                    <span className="stat-label">Monthly Reports:</span>
-                    <span className="stat-value">{selectedUser.monthly_report_count || 0}</span>
+                <div className="manage-users-report-stats-grid">
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Monthly Reports:</span>
+                    <span className="manage-users-stat-value">{selectedUser.monthly_report_count || 0}</span>
                   </div>
-                  <div className="report-stat">
-                    <span className="stat-label">Total Reports:</span>
-                    <span className="stat-value">{selectedUser.total_report_count || 0}</span>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Total Reports:</span>
+                    <span className="manage-users-stat-value">{selectedUser.total_report_count || 0}</span>
                   </div>
-                  <div className="report-stat">
-                    <span className="stat-label">Problem Posts:</span>
-                    <span className="stat-value">{selectedUser.active_posts_with_reports || 0}</span>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Problem Posts:</span>
+                    <span className="manage-users-stat-value">{selectedUser.active_posts_with_reports || 0}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="ban-consequences">
+              <div className="manage-users-ban-consequences">
                 <h4>Consequences of Banning:</h4>
                 <ul>
                   <li>User will be permanently blocked from the platform</li>
@@ -1153,7 +1151,7 @@ export default function ManageUsers() {
                 </ul>
               </div>
 
-              <div className="form-group">
+              <div className="manage-users-form-group">
                 <label htmlFor="banReason">Reason for Ban *</label>
                 <textarea
                   id="banReason"
@@ -1165,16 +1163,16 @@ export default function ManageUsers() {
                 />
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="manage-users-modal-footer">
               <button 
-                className="btn-secondary"
+                className="manage-users-btn-secondary"
                 onClick={closeAllModals}
                 disabled={isProcessing}
               >
                 Cancel
               </button>
               <button 
-                className="btn-primary ban"
+                className="manage-users-btn-primary ban"
                 onClick={handleBan}
                 disabled={!banReason.trim() || isProcessing}
               >
@@ -1187,44 +1185,44 @@ export default function ManageUsers() {
 
       {/* Delete User Modal */}
       {showDeleteModal && selectedUser && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="manage-users-modal-overlay">
+          <div className="manage-users-modal-content">
+            <div className="manage-users-modal-header">
               <h3>Delete User</h3>
               <button 
-                className="modal-close"
+                className="manage-users-modal-close"
                 onClick={closeAllModals}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="warning-banner">
+            <div className="manage-users-modal-body">
+              <div className="manage-users-warning-banner">
                 <FontAwesomeIcon icon={faExclamationTriangle} />
                 <strong>Warning: This action cannot be undone!</strong>
               </div>
               <p>You are about to <strong>permanently delete</strong> user <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
               
               {/* Report Statistics in Modal */}
-              <div className="user-report-stats">
+              <div className="manage-users-user-report-stats">
                 <h4>User Report Statistics:</h4>
-                <div className="report-stats-grid">
-                  <div className="report-stat">
-                    <span className="stat-label">Monthly Reports:</span>
-                    <span className="stat-value">{selectedUser.monthly_report_count || 0}</span>
+                <div className="manage-users-report-stats-grid">
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Monthly Reports:</span>
+                    <span className="manage-users-stat-value">{selectedUser.monthly_report_count || 0}</span>
                   </div>
-                  <div className="report-stat">
-                    <span className="stat-label">Total Reports:</span>
-                    <span className="stat-value">{selectedUser.total_report_count || 0}</span>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Total Reports:</span>
+                    <span className="manage-users-stat-value">{selectedUser.total_report_count || 0}</span>
                   </div>
-                  <div className="report-stat">
-                    <span className="stat-label">Problem Posts:</span>
-                    <span className="stat-value">{selectedUser.active_posts_with_reports || 0}</span>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Problem Posts:</span>
+                    <span className="manage-users-stat-value">{selectedUser.active_posts_with_reports || 0}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="deletion-consequences">
+              <div className="manage-users-deletion-consequences">
                 <h4>Consequences of Deletion:</h4>
                 <ul>
                   <li>All user data will be permanently removed</li>
@@ -1234,16 +1232,16 @@ export default function ManageUsers() {
                 </ul>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="manage-users-modal-footer">
               <button 
-                className="btn-secondary"
+                className="manage-users-btn-secondary"
                 onClick={closeAllModals}
                 disabled={isProcessing}
               >
                 Cancel
               </button>
               <button 
-                className="btn-primary delete"
+                className="manage-users-btn-primary delete"
                 onClick={handleDelete}
                 disabled={isProcessing}
               >
@@ -1256,19 +1254,19 @@ export default function ManageUsers() {
 
       {/* Activate User Modal */}
       {showActivateModal && selectedUser && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="manage-users-modal-overlay">
+          <div className="manage-users-modal-content">
+            <div className="manage-users-modal-header">
               <h3>Activate User</h3>
               <button 
-                className="modal-close"
+                className="manage-users-modal-close"
                 onClick={closeAllModals}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="modal-body">
-              <div className="success-banner">
+            <div className="manage-users-modal-body">
+              <div className="manage-users-success-banner">
                 <FontAwesomeIcon icon={faCheckCircle} />
                 <strong>Activate User Account</strong>
               </div>
@@ -1276,8 +1274,8 @@ export default function ManageUsers() {
               
               <p>This will restore their access to the platform and allow them to login again.</p>
 
-              <div className="activation-details">
-                <h4>Current Status: <span className={`user-status-badge ${getStatusClass(selectedUser.status)}`}>
+              <div className="manage-users-activation-details">
+                <h4>Current Status: <span className={`manage-users-status-badge ${getStatusClass(selectedUser.status)}`}>
                   {selectedUser.status}
                 </span></h4>
                 
@@ -1289,16 +1287,16 @@ export default function ManageUsers() {
                 )}
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="manage-users-modal-footer">
               <button 
-                className="btn-secondary"
+                className="manage-users-btn-secondary"
                 onClick={closeAllModals}
                 disabled={isProcessing}
               >
                 Cancel
               </button>
               <button 
-                className="btn-primary activate"
+                className="manage-users-btn-primary activate"
                 onClick={handleActivate}
                 disabled={isProcessing}
               >

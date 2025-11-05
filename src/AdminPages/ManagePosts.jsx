@@ -988,30 +988,6 @@ export default function ManagePosts() {
         </div>
       </div>
 
-      {/* 🆕 UPDATED: Active Filters Display (Same as AdminFeedback) */}
-      {isFilterActive() && (
-        <div className="pm-active-filters-section">
-          <span className="pm-active-filters-label">Active filter:</span>
-          <div className="pm-filter-tags">
-            {statusFilter !== 'all' && (
-              <span className="pm-filter-tag">
-                Status: {statusFilter}
-              </span>
-            )}
-            {typeFilter !== 'all' && (
-              <span className="pm-filter-tag">
-                Type: {typeFilter}
-              </span>
-            )}
-            {searchTerm && (
-              <span className="pm-filter-tag">
-                Search: "{searchTerm}"
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Posts Table */}
       <div className='pm-table-container'>
         <div className='pm-table-content'>
