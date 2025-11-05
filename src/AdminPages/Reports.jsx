@@ -7,12 +7,14 @@ import {
   faCheckCircle, 
   faClock,
   faTimesCircle,
-  faBan,
   faRefresh,
   faExclamationTriangle,
   faUser,
   faNewspaper,
-  faCalendar
+  faCalendar,
+  faTrash,
+  faWarning,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Reports.css';
 
@@ -21,13 +23,22 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedReport, setSelectedReport] = useState(null);
   const [viewModal, setViewModal] = useState({ isOpen: false, report: null });
   const [confirmModal, setConfirmModal] = useState({ 
     isOpen: false, 
     report: null, 
     action: '', 
-    message: '' 
+    message: '',
+    title: ''
+  });
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    report: null
+  });
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
   });
   const [stats, setStats] = useState({
     total: 0,
@@ -36,6 +47,20 @@ export default function Reports() {
     resolved: 0,
     dismissed: 0
   });
+
+  // 🆕 ADDED: Loading state for actions to prevent double clicks
+  const [actionLoading, setActionLoading] = useState({
+    statusUpdate: false,
+    delete: false
+  });
+
+  // Show toast notification
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   useEffect(() => {
     fetchReports();
@@ -55,7 +80,6 @@ export default function Reports() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Fetched reports:', data.reports);
         setReports(data.reports || []);
       } else {
         console.error('Failed to fetch reports');
@@ -112,18 +136,41 @@ export default function Reports() {
           report.id === reportId ? { ...report, status: newStatus } : report
         ));
         fetchReportStats();
-        alert(`Report marked as ${newStatus}`);
+        showToast(`Report marked as ${newStatus.replace('_', ' ')}`, 'success');
       } else {
-        alert('Failed to update report status');
+        showToast('Failed to update report status', 'error');
       }
     } catch (error) {
       console.error('Error updating report status:', error);
-      alert('Error updating report status');
+      showToast('Error updating report status', 'error');
     }
   };
 
+  // DELETE REPORT FUNCTION
+  const deleteReport = async (reportId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/reports/${reportId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setReports(prev => prev.filter(report => report.id !== reportId));
+        fetchReportStats();
+        showToast('Report deleted successfully', 'success');
+        setDeleteModal({ isOpen: false, report: null });
+      } else {
+        const data = await response.json();
+        showToast(data.error || 'Failed to delete report', 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      showToast('Error deleting report', 'error');
+    }
+  };
+
+  // MODAL FUNCTIONS
   const openViewModal = (report) => {
-    console.log('Opening modal with report:', report);
     setViewModal({ isOpen: true, report });
   };
 
@@ -135,23 +182,59 @@ export default function Reports() {
       'pending': 'reopen this report?'
     };
 
+    const actionTitles = {
+      'under_review': 'Mark as Under Review',
+      'resolved': 'Mark as Resolved',
+      'dismissed': 'Dismiss Report',
+      'pending': 'Reopen Report'
+    };
+
     setConfirmModal({
       isOpen: true,
       report,
       action,
-      message: `Are you sure you want to ${actionMessages[action]}`
+      message: `Are you sure you want to ${actionMessages[action]}`,
+      title: actionTitles[action]
+    });
+  };
+
+  const openDeleteModal = (report) => {
+    setDeleteModal({
+      isOpen: true,
+      report
     });
   };
 
   const closeModals = () => {
     setViewModal({ isOpen: false, report: null });
-    setConfirmModal({ isOpen: false, report: null, action: '', message: '' });
+    setConfirmModal({ isOpen: false, report: null, action: '', message: '', title: '' });
+    setDeleteModal({ isOpen: false, report: null });
   };
 
-  const handleConfirmAction = () => {
-    if (confirmModal.report && confirmModal.action) {
-      updateReportStatus(confirmModal.report.id, confirmModal.action);
-      closeModals();
+  // 🆕 UPDATED: Handle confirm action with double-click prevention
+  const handleConfirmAction = async () => {
+    if (confirmModal.report && confirmModal.action && !actionLoading.statusUpdate) {
+      setActionLoading(prev => ({ ...prev, statusUpdate: true }));
+      
+      try {
+        await updateReportStatus(confirmModal.report.id, confirmModal.action);
+        closeModals();
+      } finally {
+        setActionLoading(prev => ({ ...prev, statusUpdate: false }));
+      }
+    }
+  };
+
+  // 🆕 UPDATED: Handle delete confirm with double-click prevention
+  const handleDeleteConfirm = async () => {
+    if (deleteModal.report && !actionLoading.delete) {
+      setActionLoading(prev => ({ ...prev, delete: true }));
+      
+      try {
+        await deleteReport(deleteModal.report.id);
+      } finally {
+        setActionLoading(prev => ({ ...prev, delete: false }));
+      }
     }
   };
 
@@ -165,12 +248,12 @@ export default function Reports() {
 
   const getStatusClass = (status) => {
     const statusMap = {
-      pending: 'reports-status-pending',
-      under_review: 'reports-status-under-review',
-      resolved: 'reports-status-resolved',
-      dismissed: 'reports-status-dismissed'
+      pending: 'rm-status-pending',
+      under_review: 'rm-status-under-review',
+      resolved: 'rm-status-resolved',
+      dismissed: 'rm-status-dismissed'
     };
-    return statusMap[status] || 'reports-status-pending';
+    return statusMap[status] || 'rm-status-pending';
   };
 
   const getStatusIcon = (status) => {
@@ -194,7 +277,7 @@ export default function Reports() {
   };
 
   const isFilterActive = () => {
-    return statusFilter !== 'all';
+    return statusFilter !== 'all' || searchTerm !== '';
   };
 
   const clearAllFilters = () => {
@@ -204,12 +287,12 @@ export default function Reports() {
 
   const getActionButtonClass = (action) => {
     const classMap = {
-      'under_review': 'reports-action-btn review',
-      'resolved': 'reports-action-btn resolve',
-      'dismissed': 'reports-action-btn dismiss',
-      'pending': 'reports-action-btn pending'
+      'under_review': 'rm-btn-warning',
+      'resolved': 'rm-btn-success',
+      'dismissed': 'rm-btn-danger',
+      'pending': 'rm-btn-secondary'
     };
-    return classMap[action] || 'reports-action-btn';
+    return classMap[action] || 'rm-btn-secondary';
   };
 
   const getActionIcon = (action) => {
@@ -222,16 +305,33 @@ export default function Reports() {
     return iconMap[action] || faExclamationTriangle;
   };
 
+  // Check if report can be deleted (only dismissed or resolved)
+  const canDeleteReport = (report) => {
+    return report.status === 'dismissed' || report.status === 'resolved';
+  };
+
   return (
     <>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`rm-toast rm-toast-${toast.type}`}>
+          <div className="rm-toast-content">
+            <FontAwesomeIcon 
+              icon={toast.type === 'success' ? faCheckCircle : faExclamationTriangle} 
+              className="rm-toast-icon" 
+            />
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
-      <div className="reports-management-header">
-        <div className="reports-header-content">
-       
+      <div className="rm-header">
+        <div className="rm-header-content">
           <p>Review and manage user-submitted reports</p>
         </div>
         <button 
-          className="reports-refresh-btn"
+          className="rm-refresh-btn"
           onClick={fetchReports}
           disabled={loading}
         >
@@ -241,57 +341,57 @@ export default function Reports() {
       </div>
 
       {/* Stats Summary */}
-      <div className="reports-management-stats">
+      <div className="rm-stats">
         <div 
-          className={`reports-stat-card ${statusFilter === 'all' ? 'reports-stat-active' : ''}`}
+          className={`rm-stat-card ${statusFilter === 'all' ? 'rm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('all')}
           style={{ cursor: 'pointer' }}
           title="Show all reports"
         >
-          <span className="reports-stat-number">{stats.total}</span>
-          <span className="reports-stat-label">Total Reports</span>
+          <span className="rm-stat-number">{stats.total}</span>
+          <span className="rm-stat-label">Total Reports</span>
         </div>
         <div 
-          className={`reports-stat-card ${statusFilter === 'pending' ? 'reports-stat-active' : ''}`}
+          className={`rm-stat-card ${statusFilter === 'pending' ? 'rm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('pending')}
           style={{ cursor: 'pointer' }}
           title="Show pending reports"
         >
-          <span className="reports-stat-number">{stats.pending}</span>
-          <span className="reports-stat-label">Pending</span>
+          <span className="rm-stat-number">{stats.pending}</span>
+          <span className="rm-stat-label">Pending</span>
         </div>
         <div 
-          className={`reports-stat-card ${statusFilter === 'under_review' ? 'reports-stat-active' : ''}`}
+          className={`rm-stat-card ${statusFilter === 'under_review' ? 'rm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('under_review')}
           style={{ cursor: 'pointer' }}
           title="Show reports under review"
         >
-          <span className="reports-stat-number">{stats.under_review}</span>
-          <span className="reports-stat-label">Under Review</span>
+          <span className="rm-stat-number">{stats.under_review}</span>
+          <span className="rm-stat-label">Under Review</span>
         </div>
         <div 
-          className={`reports-stat-card ${statusFilter === 'resolved' ? 'reports-stat-active' : ''}`}
+          className={`rm-stat-card ${statusFilter === 'resolved' ? 'rm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('resolved')}
           style={{ cursor: 'pointer' }}
           title="Show resolved reports"
         >
-          <span className="reports-stat-number">{stats.resolved}</span>
-          <span className="reports-stat-label">Resolved</span>
+          <span className="rm-stat-number">{stats.resolved}</span>
+          <span className="rm-stat-label">Resolved</span>
         </div>
         <div 
-          className={`reports-stat-card ${statusFilter === 'dismissed' ? 'reports-stat-active' : ''}`}
+          className={`rm-stat-card ${statusFilter === 'dismissed' ? 'rm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('dismissed')}
           style={{ cursor: 'pointer' }}
           title="Show dismissed reports"
         >
-          <span className="reports-stat-number">{stats.dismissed}</span>
-          <span className="reports-stat-label">Dismissed</span>
+          <span className="rm-stat-number">{stats.dismissed}</span>
+          <span className="rm-stat-label">Dismissed</span>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="reports-management-filters">
-        <div className="reports-search-box">
+      <div className="rm-filters">
+        <div className="rm-search-box">
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
@@ -301,7 +401,7 @@ export default function Reports() {
           />
         </div>
         
-        <div className="reports-filter-group">
+        <div className="rm-filter-group">
           <FontAwesomeIcon icon={faFilter} />
           <select 
             value={statusFilter}
@@ -318,7 +418,7 @@ export default function Reports() {
         {/* Clear Filters Button */}
         {isFilterActive() && (
           <button 
-            className="reports-clear-filters-btn"
+            className="rm-clear-filters-btn"
             onClick={clearAllFilters}
             title="Clear all filters"
           >
@@ -327,38 +427,26 @@ export default function Reports() {
         )}
       </div>
 
-      {/* Active Filters Display */}
-      {isFilterActive() && (
-        <div className="reports-active-filters-section">
-          <span className="reports-active-filters-label">Active filter:</span>
-          <div className="reports-filter-tags">
-            <span className="reports-filter-tag">
-              Status: {statusFilter}
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Reports Table */}
-      <div className='reports-management-table-container'>
-        <div className='reports-management-table-content'>
-          <div className='reports-management-table-title'>
+      <div className='rm-table-container'>
+        <div className='rm-table-content'>
+          <div className='rm-table-title'>
             <h2>Reports Management</h2>
-            <div className="reports-management-header-info">
-              <span className="reports-management-count">
+            <div className="rm-header-info">
+              <span className="rm-count">
                 {filteredReports.length} of {reports.length} reports
-                {isFilterActive() && ` (Filtered by: ${statusFilter})`}
+                {isFilterActive() && ` (Filtered)`}
               </span>
             </div>
           </div>
 
           {loading ? (
-            <div className="reports-loading-state">
-              <div className="reports-loading-spinner"></div>
+            <div className="rm-loading">
+              <div className="rm-loading-spinner"></div>
               <p>Loading reports...</p>
             </div>
           ) : filteredReports.length === 0 ? (
-            <div className="reports-empty-state">
+            <div className="rm-empty">
               <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
               <h3>No reports found</h3>
               <p>
@@ -369,7 +457,7 @@ export default function Reports() {
               </p>
               {isFilterActive() && (
                 <button 
-                  className="reports-retry-btn" 
+                  className="rm-retry-btn" 
                   onClick={clearAllFilters}
                 >
                   Clear Filter
@@ -377,8 +465,8 @@ export default function Reports() {
               )}
             </div>
           ) : (
-            <div className="reports-table-wrapper">
-              <table className='reports-management-table'>
+            <div className="rm-table-wrapper">
+              <table className='rm-table'>
                 <thead>
                   <tr>
                     <th>Report Details</th>
@@ -393,43 +481,43 @@ export default function Reports() {
                   {filteredReports.map(report => (
                     <tr key={report.id}>
                       <td>
-                        <div className="reports-management-details">
-                          <strong className="reports-management-reason">{report.reason}</strong>
+                        <div className="rm-details">
+                          <strong className="rm-reason">{report.reason}</strong>
                           {report.additional_info && (
-                            <small className="reports-management-additional">
+                            <small className="rm-additional">
                               {report.additional_info}
                             </small>
                           )}
                         </div>
                       </td>
                       <td>
-                        <div className="reports-user-info">
+                        <div className="rm-user-info">
                           <FontAwesomeIcon icon={faUser} />
                           <span>{report.reporter_name}</span>
                         </div>
                       </td>
                       <td>
-                        <div className="reports-post-info">
+                        <div className="rm-post-info">
                           <FontAwesomeIcon icon={faNewspaper} />
-                          <span className="reports-post-title">{report.post_title}</span>
+                          <span className="rm-post-title">{report.post_title}</span>
                         </div>
                       </td>
                       <td>
-                        <div className="reports-date-info">
+                        <div className="rm-date-info">
                           <FontAwesomeIcon icon={faCalendar} />
                           <span>{formatDate(report.created_at)}</span>
                         </div>
                       </td>
                       <td>
-                        <span className={`reports-status-badge ${getStatusClass(report.status)}`}>
+                        <span className={`rm-status-badge ${getStatusClass(report.status)}`}>
                           <FontAwesomeIcon icon={getStatusIcon(report.status)} />
                           {report.status.replace('_', ' ')}
                         </span>
                       </td>
                       <td>
-                        <div className='reports-management-actions'>
+                        <div className='rm-actions'>
                           <button
-                            className="reports-action-btn view"
+                            className="rm-action-btn view"
                             onClick={() => openViewModal(report)}
                             title="View Report Details"
                           >
@@ -439,21 +527,21 @@ export default function Reports() {
                           {report.status === 'pending' && (
                             <>
                               <button
-                                className="reports-action-btn review"
+                                className="rm-action-btn review"
                                 onClick={() => openConfirmModal(report, 'under_review')}
                                 title="Mark as Under Review"
                               >
                                 <FontAwesomeIcon icon={faExclamationTriangle} />
                               </button>
                               <button
-                                className="reports-action-btn resolve"
+                                className="rm-action-btn resolve"
                                 onClick={() => openConfirmModal(report, 'resolved')}
                                 title="Mark as Resolved"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
                               </button>
                               <button
-                                className="reports-action-btn dismiss"
+                                className="rm-action-btn dismiss"
                                 onClick={() => openConfirmModal(report, 'dismissed')}
                                 title="Dismiss Report"
                               >
@@ -465,14 +553,14 @@ export default function Reports() {
                           {report.status === 'under_review' && (
                             <>
                               <button
-                                className="reports-action-btn resolve"
+                                className="rm-action-btn resolve"
                                 onClick={() => openConfirmModal(report, 'resolved')}
                                 title="Mark as Resolved"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
                               </button>
                               <button
-                                className="reports-action-btn dismiss"
+                                className="rm-action-btn dismiss"
                                 onClick={() => openConfirmModal(report, 'dismissed')}
                                 title="Dismiss Report"
                               >
@@ -483,11 +571,22 @@ export default function Reports() {
                           
                           {(report.status === 'resolved' || report.status === 'dismissed') && (
                             <button
-                              className="reports-action-btn pending"
+                              className="rm-action-btn pending"
                               onClick={() => openConfirmModal(report, 'pending')}
                               title="Reopen Report"
                             >
                               <FontAwesomeIcon icon={faRefresh} />
+                            </button>
+                          )}
+
+                          {/* DELETE BUTTON - Only show for dismissed or resolved reports */}
+                          {canDeleteReport(report) && (
+                            <button
+                              className="rm-action-btn delete"
+                              onClick={() => openDeleteModal(report)}
+                              title="Delete Report"
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
                             </button>
                           )}
                         </div>
@@ -503,94 +602,94 @@ export default function Reports() {
 
       {/* View Report Modal */}
       {viewModal.isOpen && viewModal.report && (
-        <div className="reports-modal-overlay" onClick={closeModals}>
-          <div className="reports-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="reports-modal-header">
+        <div className="rm-modal-overlay" onClick={closeModals}>
+          <div className="rm-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="rm-modal-header">
               <h2>Report Details</h2>
-              <button className="reports-modal-close" onClick={closeModals}>
-                <FontAwesomeIcon icon={faTimesCircle} />
+              <button className="rm-modal-close" onClick={closeModals}>
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="reports-modal-body">
-              <div className="reports-details-modal">
-                <div className="reports-detail-section">
+            <div className="rm-modal-body">
+              <div className="rm-details-modal">
+                <div className="rm-detail-section">
                   <h3>Report Information</h3>
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Report ID:</label>
                     <span>#{viewModal.report.id}</span>
                   </div>
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Status:</label>
-                    <span className={`reports-status-badge ${getStatusClass(viewModal.report.status)}`}>
+                    <span className={`rm-status-badge ${getStatusClass(viewModal.report.status)}`}>
                       <FontAwesomeIcon icon={getStatusIcon(viewModal.report.status)} />
                       {viewModal.report.status.replace('_', ' ')}
                     </span>
                   </div>
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Reason:</label>
                     <span>{viewModal.report.reason}</span>
                   </div>
                   {viewModal.report.additional_info && (
-                    <div className="reports-detail-row full-width">
+                    <div className="rm-detail-row full-width">
                       <label>Additional Information:</label>
-                      <div className="reports-additional-info">
+                      <div className="rm-additional-info">
                         {viewModal.report.additional_info}
                       </div>
                     </div>
                   )}
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Date Reported:</label>
                     <span>{formatDate(viewModal.report.created_at)}</span>
                   </div>
                 </div>
 
-                <div className="reports-detail-section">
+                <div className="rm-detail-section">
                   <h3>Reporter Information</h3>
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Reporter Name:</label>
                     <span>{viewModal.report.reporter_name}</span>
                   </div>
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Reporter ID:</label>
                     <span>#{viewModal.report.reporter_id}</span>
                   </div>
                 </div>
 
-                <div className="reports-detail-section">
+                <div className="rm-detail-section">
                   <h3>Reported Post</h3>
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Post Title:</label>
                     <span>{viewModal.report.post_title}</span>
                   </div>
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Post ID:</label>
                     <span>#{viewModal.report.post_id}</span>
                   </div>
-                  <div className="reports-detail-row">
+                  <div className="rm-detail-row">
                     <label>Post Author:</label>
                     <span>{viewModal.report.post_author_name || 'Unknown Author'}</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="reports-modal-footer">
-              <div className="reports-modal-actions">
+            <div className="rm-modal-footer">
+              <div className="rm-modal-actions">
                 {viewModal.report.status === 'pending' && (
                   <>
                     <button
-                      className="reports-btn reports-btn-warning"
+                      className="rm-btn rm-btn-warning"
                       onClick={() => openConfirmModal(viewModal.report, 'under_review')}
                     >
                       Mark Under Review
                     </button>
                     <button
-                      className="reports-btn reports-btn-success"
+                      className="rm-btn rm-btn-success"
                       onClick={() => openConfirmModal(viewModal.report, 'resolved')}
                     >
                       Mark Resolved
                     </button>
                     <button
-                      className="reports-btn reports-btn-danger"
+                      className="rm-btn rm-btn-danger"
                       onClick={() => openConfirmModal(viewModal.report, 'dismissed')}
                     >
                       Dismiss
@@ -600,13 +699,13 @@ export default function Reports() {
                 {viewModal.report.status === 'under_review' && (
                   <>
                     <button
-                      className="reports-btn reports-btn-success"
+                      className="rm-btn rm-btn-success"
                       onClick={() => openConfirmModal(viewModal.report, 'resolved')}
                     >
                       Mark Resolved
                     </button>
                     <button
-                      className="reports-btn reports-btn-danger"
+                      className="rm-btn rm-btn-danger"
                       onClick={() => openConfirmModal(viewModal.report, 'dismissed')}
                     >
                       Dismiss
@@ -614,14 +713,26 @@ export default function Reports() {
                   </>
                 )}
                 {(viewModal.report.status === 'resolved' || viewModal.report.status === 'dismissed') && (
-                  <button
-                    className="reports-btn reports-btn-secondary"
-                    onClick={() => openConfirmModal(viewModal.report, 'pending')}
-                  >
-                    Reopen Report
-                  </button>
+                  <>
+                    <button
+                      className="rm-btn rm-btn-secondary"
+                      onClick={() => openConfirmModal(viewModal.report, 'pending')}
+                    >
+                      Reopen Report
+                    </button>
+                    {/* DELETE BUTTON in modal - Only for dismissed or resolved */}
+                    {canDeleteReport(viewModal.report) && (
+                      <button
+                        className="rm-btn rm-btn-danger"
+                        onClick={() => openDeleteModal(viewModal.report)}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                        Delete Report
+                      </button>
+                    )}
+                  </>
                 )}
-                <button className="reports-btn reports-btn-primary" onClick={closeModals}>
+                <button className="rm-btn rm-btn-primary" onClick={closeModals}>
                   Close
                 </button>
               </div>
@@ -632,42 +743,101 @@ export default function Reports() {
 
       {/* Confirmation Modal */}
       {confirmModal.isOpen && confirmModal.report && (
-        <div className="reports-modal-overlay" onClick={closeModals}>
-          <div className="reports-modal-content reports-confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="reports-modal-header">
-              <h2>Confirm Action</h2>
-              <button className="reports-modal-close" onClick={closeModals}>
-                <FontAwesomeIcon icon={faTimesCircle} />
+        <div className="rm-modal-overlay" onClick={closeModals}>
+          <div className="rm-modal-content rm-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="rm-modal-header">
+              <h2>{confirmModal.title}</h2>
+              <button className="rm-modal-close" onClick={closeModals}>
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="reports-modal-body">
-              <div className="reports-confirm-content">
-                <div className="reports-confirm-icon">
+            <div className="rm-modal-body">
+              <div className="rm-confirm-content">
+                <div className="rm-confirm-icon">
                   <FontAwesomeIcon icon={getActionIcon(confirmModal.action)} />
                 </div>
                 <h3>Are you sure?</h3>
                 <p>{confirmModal.message}</p>
-                <div className="reports-confirm-details">
+                <div className="rm-confirm-details">
                   <strong>Report #{confirmModal.report.id}</strong>
                   <span>{confirmModal.report.reason}</span>
                   <small>Reporter: {confirmModal.report.reporter_name}</small>
                 </div>
               </div>
             </div>
-            <div className="reports-modal-footer">
-              <div className="reports-modal-actions">
+            <div className="rm-modal-footer">
+              <div className="rm-modal-actions">
                 <button 
-                  className="reports-btn reports-btn-secondary" 
+                  className="rm-btn rm-btn-secondary" 
                   onClick={closeModals}
+                  disabled={actionLoading.statusUpdate}
                 >
                   Cancel
                 </button>
                 <button 
-                  className={`reports-btn ${getActionButtonClass(confirmModal.action)}`}
+                  className={`rm-btn ${getActionButtonClass(confirmModal.action)}`}
                   onClick={handleConfirmAction}
+                  disabled={actionLoading.statusUpdate}
                 >
-                  <FontAwesomeIcon icon={getActionIcon(confirmModal.action)} />
-                  Confirm
+                  <FontAwesomeIcon 
+                    icon={actionLoading.statusUpdate ? faRefresh : getActionIcon(confirmModal.action)} 
+                    spin={actionLoading.statusUpdate}
+                  />
+                  {actionLoading.statusUpdate ? 'Processing...' : 'Confirm'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && deleteModal.report && (
+        <div className="rm-modal-overlay" onClick={closeModals}>
+          <div className="rm-modal-content rm-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="rm-modal-header">
+              <h2>Delete Report</h2>
+              <button className="rm-modal-close" onClick={closeModals}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="rm-modal-body">
+              <div className="rm-confirm-content">
+                <div className="rm-confirm-icon">
+                  <FontAwesomeIcon icon={faWarning} style={{ color: '#ef4444' }} />
+                </div>
+                <h3>Delete Report?</h3>
+                <p>Are you sure you want to permanently delete this report?</p>
+                <div className="rm-confirm-details">
+                  <strong>Report #{deleteModal.report.id}</strong>
+                  <span>{deleteModal.report.reason}</span>
+                  <small>Reporter: {deleteModal.report.reporter_name}</small>
+                  <small>Status: {deleteModal.report.status}</small>
+                </div>
+                <p style={{ color: '#ef4444', fontWeight: 'bold', marginTop: '1rem' }}>
+                  This action cannot be undone!
+                </p>
+              </div>
+            </div>
+            <div className="rm-modal-footer">
+              <div className="rm-modal-actions">
+                <button 
+                  className="rm-btn rm-btn-secondary" 
+                  onClick={closeModals}
+                  disabled={actionLoading.delete}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="rm-btn rm-btn-danger"
+                  onClick={handleDeleteConfirm}
+                  disabled={actionLoading.delete}
+                >
+                  <FontAwesomeIcon 
+                    icon={actionLoading.delete ? faRefresh : faTrash} 
+                    spin={actionLoading.delete}
+                  />
+                  {actionLoading.delete ? 'Deleting...' : 'Delete Report'}
                 </button>
               </div>
             </div>
