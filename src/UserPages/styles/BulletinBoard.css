@@ -60,10 +60,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
   padding: 4rem 2rem;
+  text-align: center;
+  background: #FBFCF8;
+  border-radius: 12px;
   width: 100%;
-  min-height: 60vh;
+  min-height: 100dvh;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   animation: fadeIn-fmw 0.5s ease-out;
 }
 
@@ -378,7 +381,7 @@
 
 .bulletin-post-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 30px rgba(0,0,0,0.2);
   border: 1px solid #8B5A2B;
 }
 
@@ -1092,7 +1095,7 @@
   
   .bulletin-post-image-container {
     height: 250px;
-  }
+  } 
   
   .bulletin-search-filters-section {
     width: 95%;
@@ -1210,8 +1213,8 @@
 
   .bulletin-loading-outer-container,
   .bulletin-error-outer-container {
-    padding: 3rem 1rem;
-    min-height: 250px;
+    padding: 2rem 1rem;
+    min-height: 100dvh;
   }
 }
 

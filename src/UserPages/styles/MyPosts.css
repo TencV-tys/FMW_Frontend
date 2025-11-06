@@ -759,8 +759,8 @@
   background: #FBFCF8;
   border-radius: 12px;
   margin: 2rem;
-  width: 80%;
-  min-height: 300px;
+  width: 100%;
+  min-height: 100dvh;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   animation: fadeIn-fmw 0.5s ease-out;
 }

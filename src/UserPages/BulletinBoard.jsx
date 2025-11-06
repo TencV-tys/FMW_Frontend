@@ -238,7 +238,7 @@ export default function BulletinBoard() {
           <div className="bulletin-loading-spinner-large"></div>
           <p>Loading posts...</p>
         </div>
-      </div>
+      </div> 
     );
   }
 
