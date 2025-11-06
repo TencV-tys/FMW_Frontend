@@ -440,7 +440,7 @@ export default function EditPost() {
                 className="edit-cancel-btn"
                 onClick={() => nav('/user/myposts')}
                 disabled={loading}
-              >
+              > 
                 Cancel
               </button>
               <button

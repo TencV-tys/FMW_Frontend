@@ -325,10 +325,10 @@ const getStatusBadge = (status) => {
 
   if (error) {
     return (
-      <div className="myposts-container-fmw">
+      <div className="myposts-container-fmw"> 
         <UserNav />
         <main className="myposts-content-fmw">
-          <div className="error-container-fmw">
+          <div className="error-container-fmw"> 
             <h3>Something went wrong</h3>
             <p>{error}</p>
             <button onClick={fetchMyPosts} className="retry-btn-fmw">

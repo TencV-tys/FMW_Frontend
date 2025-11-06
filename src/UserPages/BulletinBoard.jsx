@@ -17,6 +17,7 @@ import ReportModal from '../UserComponents/ReportModal';
 import OptionalPhoto from '../assets/Logo.jpg';
 import './styles/BulletinBoard.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+
 export default function BulletinBoard() {
   const [reportModal, setReportModal] = useState({ isOpen: false, post: null });
   const [posts, setPosts] = useState([]);
@@ -78,7 +79,6 @@ export default function BulletinBoard() {
 
   const fetchFormData = async () => {
     try {
-    
       const response = await fetch(`${wifi}/api/posts/form-data`, {
         credentials: 'include'
       });
@@ -162,7 +162,6 @@ export default function BulletinBoard() {
   };
 
   const getUserImage = (user) => {
-   
     if (user.user_photo) {
       return `${wifi}/uploads/${user.user_photo}`;
     }
@@ -190,7 +189,6 @@ export default function BulletinBoard() {
     e.stopPropagation();
   };
 
-  // 🎯 Toggle description expansion
   const toggleDescription = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedDescriptions(prev => ({
@@ -199,7 +197,6 @@ export default function BulletinBoard() {
     }));
   };
 
-  // 🎯 Toggle contact expansion
   const toggleContact = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedContacts(prev => ({
@@ -208,61 +205,51 @@ export default function BulletinBoard() {
     }));
   };
 
-  // 🎯 Check if description needs "Read More"
   const needsReadMore = (description) => {
     return description.length > 120;
   };
 
-  // 🎯 Check if contact needs "Read More"
   const needsContactReadMore = (contact) => {
     return contact.length > 50;
   };
 
-  // 🎯 Get truncated description
   const getTruncatedDescription = (description) => {
     if (description.length <= 120) return description;
     return description.substring(0, 120) + '...';
   };
 
-  // 🎯 Get truncated contact
   const getTruncatedContact = (contact) => {
     if (contact.length <= 50) return contact;
     return contact.substring(0, 50) + '...';
   };
 
+  // LOADING STATE - OUTSIDE BULLETIN BOARD (like MyPosts)
   if (loading) {
     return (
       <div className="bulletin-board-page-container">
         <UserNav />
         <main className="bulletin-board-main-container">
-          <div className='bulletin-board-darkbrown-container'>
-            <div className='bulletin-board-lightbrown-container'>
-              <div className="bulletin-loading-container">
-                <div className="bulletin-loading-spinner"></div>
-                <p>Loading posts...</p>
-              </div>
-            </div>
+          <div className="bulletin-loading-container">
+            <div className="bulletin-loading-spinner"></div>
+            <p>Loading posts...</p>
           </div>
         </main>
-      </div>
+      </div> 
     );
   }
 
+  // ERROR STATE - OUTSIDE BULLETIN BOARD (like MyPosts)
   if (error) {
     return (
       <div className="bulletin-board-page-container">
         <UserNav />
         <main className="bulletin-board-main-container">
-          <div className='bulletin-board-darkbrown-container'>
-            <div className='bulletin-board-lightbrown-container'>
-              <div className="bulletin-error-container">
-                <h3>Something went wrong</h3>
-                <p>{error}</p>
-                <button onClick={fetchPosts} className="bulletin-retry-btn">
-                  Try Again
-                </button>
-              </div>
-            </div>
+          <div className="bulletin-error-container">
+            <h3>Something went wrong</h3>
+            <p>{error}</p>
+            <button onClick={fetchPosts} className="bulletin-retry-btn">
+              Try Again
+            </button>
           </div>
         </main>
       </div>
@@ -275,10 +262,10 @@ export default function BulletinBoard() {
       <main className="bulletin-board-main-container">
         <div className='bulletin-board-darkbrown-container'>
           <div className='bulletin-board-lightbrown-container'>
-            <div className='bulletin-board-content-container'>
+            <div className='bulletin-content-container'>
               
               {/* Header Section */}
-              <div className='bulletin-board-title-section'>
+              <div className='bulletin-title-section'>
                 <h1>Lost & Found Bulletin</h1>
               </div>
 
@@ -423,7 +410,6 @@ export default function BulletinBoard() {
               ) : (
                 <div className='bulletin-posts-grid'>
                   {filteredPosts.map((post) => (
-                    
                     <div 
                       key={post.id} 
                       className='bulletin-post-card'
@@ -493,7 +479,7 @@ export default function BulletinBoard() {
                         <div className='bulletin-post-details'>
                           <h3 className="bulletin-post-title">{post.title}</h3>
                           
-                          {/* 🎯 Description with Read More */}
+                          {/* Description with Read More */}
                           <div className="bulletin-post-description">
                             <div 
                               className={`bulletin-description-text ${expandedDescriptions[post.id] ? 'expanded' : ''}`}
@@ -525,7 +511,7 @@ export default function BulletinBoard() {
                               </div>
                             )}
                             
-                            {/* 🎯 Contact with Read More */}
+                            {/* Contact with Read More */}
                             <div className="bulletin-meta-item contact">
                               <FontAwesomeIcon icon={faPhone} />
                               <span>
@@ -549,7 +535,7 @@ export default function BulletinBoard() {
                         </div>
                       </div>
 
-                      {/* Expand Overlay */}
+                      {/* Expand Overlay - LOWER OPACITY */}
                       <div className="bulletin-expand-overlay">
                         <FontAwesomeIcon icon={faExpand} className="bulletin-expand-icon" />
                         <span>Click to view details</span>
