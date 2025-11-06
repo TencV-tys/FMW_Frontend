@@ -12,13 +12,16 @@ import {
   faBan,
   faSyncAlt,
   faTrash,
+  faEdit,
+  faSave,
+  faTimes,
   faWarning,
-  faFilter,
-  faTimes
+  faFilter
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/Feedback.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+
 export default function Feedback() {
   const [activeTab, setActiveTab] = useState('submit');
   const [formData, setFormData] = useState({
@@ -34,6 +37,13 @@ export default function Feedback() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [editingFeedback, setEditingFeedback] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    type: 'general',
+    title: '',
+    description: '',
+    priority: 'medium'
+  });
 
   const wifi = useWifiUrl();
 
@@ -63,7 +73,7 @@ export default function Feedback() {
       setLoading(true);
       setDebugInfo('Fetching feedback...');
       
-      console.log(`Fetching user feedback from:, ${wifi}/api/feedback/my-feedback`);
+      console.log(`Fetching user feedback from: ${wifi}/api/feedback/my-feedback`);
       
       const response = await fetch(`${wifi}/api/feedback/my-feedback`, {
         credentials: 'include'
@@ -209,6 +219,79 @@ export default function Feedback() {
     }));
   };
 
+  // 🆕 Handle edit button click
+  const handleEditClick = (feedback) => {
+    setEditingFeedback(feedback.id);
+    setEditFormData({
+      type: feedback.type,
+      title: feedback.title,
+      description: feedback.description,
+      priority: feedback.priority
+    });
+  };
+
+  // 🆕 Handle edit form input change
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // 🆕 Handle edit form submission
+  const handleEditSubmit = async (feedbackId) => {
+    try {
+      setLoading(true);
+      setDebugInfo(`Updating feedback: ${editFormData.title}`);
+      
+      const response = await fetch(`${wifi}/api/feedback/my-feedback/${feedbackId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editFormData),
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setDebugInfo('Feedback updated successfully!');
+          setEditingFeedback(null);
+          
+          // Update local state
+          setMyFeedback(prev => prev.map(feedback => 
+            feedback.id === feedbackId 
+              ? { ...feedback, ...editFormData, updated_at: new Date().toISOString() }
+              : feedback
+          ));
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setDebugInfo(`Update failed: ${errorData.error || response.status}`);
+        alert(errorData.error || 'Failed to update feedback. Please try again.');
+      }
+    } catch (error) {
+      setDebugInfo(`Update error: ${error.message}`);
+      console.error('❌ Error updating feedback:', error);
+      alert('Error updating feedback. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🆕 Cancel edit
+  const handleCancelEdit = () => {
+    setEditingFeedback(null);
+    setEditFormData({
+      type: 'general',
+      title: '',
+      description: '',
+      priority: 'medium'
+    });
+  };
+
   const getTypeIcon = (type) => {
     switch (type) {
       case 'bug': return faBug;
@@ -278,6 +361,195 @@ export default function Feedback() {
       rejected: myFeedback.filter(f => f.status === 'rejected').length
     };
     return counts;
+  };
+
+  // Update the feedback card to include edit functionality
+  const renderFeedbackCard = (feedback) => {
+    if (editingFeedback === feedback.id) {
+      return (
+        <div key={feedback.id} className="feedback-card-fmw editing-fmw">
+          <div className="edit-form-fmw">
+            <div className="form-group-fmw">
+              <label>Feedback Type *</label>
+              <div className="type-options-fmw">
+                {[
+                  { value: 'bug', label: 'Bug Report', icon: faBug, description: 'Something is not working' },
+                  { value: 'feature', label: 'Feature Request', icon: faLightbulb, description: 'Suggest a new feature' },
+                  { value: 'suggestion', label: 'Suggestion', icon: faStar, description: 'General improvement idea' },
+                  { value: 'general', label: 'General Feedback', icon: faCommentDots, description: 'Other comments' }
+                ].map(type => (
+                  <div 
+                    key={type.value}
+                    className={`type-option-fmw ${editFormData.type === type.value ? 'selected-fmw' : ''}`}
+                    onClick={() => setEditFormData(prev => ({ ...prev, type: type.value }))}
+                  >
+                    <FontAwesomeIcon icon={type.icon} />
+                    <div className="type-info-fmw">
+                      <strong>{type.label}</strong>
+                      <span>{type.description}</span>
+                    </div>
+                  </div>
+                ))} 
+              </div>
+            </div>
+
+            <div className="form-group-fmw">
+              <label>Priority</label>
+              <select 
+                name="priority"
+                value={editFormData.priority}
+                onChange={handleEditInputChange}
+                className="priority-select-fmw"
+              >
+                <option value="low">Low - Minor issue or enhancement</option>
+                <option value="medium">Medium - Standard issue</option>
+                <option value="high">High - Important issue affecting usage</option>
+                <option value="critical">Critical - System breaking issue</option>
+              </select>
+            </div>
+
+            <div className="form-group-fmw">
+              <label>Title *</label>
+              <input
+                type="text"
+                name="title"
+                value={editFormData.title}
+                onChange={handleEditInputChange}
+                placeholder="Brief description of your feedback..."
+                maxLength="100"
+                required
+              />
+            </div>
+
+            <div className="form-group-fmw">
+              <label>Detailed Description *</label>
+              <textarea
+                name="description"
+                value={editFormData.description}
+                onChange={handleEditInputChange}
+                placeholder="Please provide as much detail as possible..."
+                rows="6"
+                required
+              />
+            </div>
+
+            <div className="edit-actions-fmw">
+              <button
+                className="cancel-edit-btn-fmw"
+                onClick={handleCancelEdit}
+                disabled={loading}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+                Cancel
+              </button>
+              <button
+                className="save-edit-btn-fmw"
+                onClick={() => handleEditSubmit(feedback.id)}
+                disabled={loading || !editFormData.title.trim() || !editFormData.description.trim()}
+              >
+                {loading ? (
+                  <>
+                    <div className="loading-spinner-small-fmw"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faSave} />
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div key={feedback.id} className="feedback-card-fmw">
+        <div className="feedback-card-header-fmw">
+          <div className="feedback-type-fmw">
+            <FontAwesomeIcon icon={getTypeIcon(feedback.type)} />
+            <span>{feedback.type.replace('_', ' ')}</span>
+          </div>
+          <div className="feedback-meta-fmw">
+            <span 
+              className="priority-badge-fmw"
+              style={{ backgroundColor: getPriorityColor(feedback.priority) }}
+            >
+              {feedback.priority}
+            </span>
+            <span 
+              className="status-badge-fmw"
+              style={{ color: getStatusColor(feedback.status) }}
+            >
+              <FontAwesomeIcon icon={getStatusIcon(feedback.status)} />
+              {feedback.status.replace('_', ' ')}
+            </span>
+            <div className="feedback-actions-fmw">
+              <button
+                className="edit-feedback-btn-fmw"
+                onClick={() => handleEditClick(feedback)}
+                title="Edit this feedback"
+              >
+                <FontAwesomeIcon icon={faEdit} />
+              </button>
+              <button
+                className="delete-feedback-btn-fmw"
+                onClick={() => setDeleteConfirm(feedback)}
+                title="Delete this feedback"
+              >
+                <FontAwesomeIcon icon={faTrash} />
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <h3>{feedback.title}</h3>
+        <p className="feedback-description-fmw">{feedback.description}</p>
+        
+        <div className="feedback-footer-fmw">
+          <span className="feedback-date-fmw">
+            {feedback.updated_at !== feedback.created_at ? 'Updated' : 'Submitted'} on {formatDate(feedback.updated_at || feedback.created_at)}
+          </span>
+          {feedback.admin_notes && (
+            <div className="admin-notes-fmw">
+              <strong>Admin Response:</strong> {feedback.admin_notes}
+            </div>
+          )}
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirm && deleteConfirm.id === feedback.id && (
+          <div className="delete-confirmation-overlay-fmw">
+            <div className="delete-confirmation-modal-fmw">
+              <div className="delete-confirmation-header-fmw">
+                <FontAwesomeIcon icon={faWarning} className="warning-icon-fmw" />
+                <h3>Delete Feedback</h3>
+              </div>
+              <p>Are you sure you want to delete this feedback?</p>
+              <p><strong>"{deleteConfirm.title}"</strong></p>
+              <p className="warning-text-fmw">This action cannot be undone.</p>
+              <div className="delete-confirmation-actions-fmw">
+                <button
+                  className="cancel-btn-fmw"
+                  onClick={() => setDeleteConfirm(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="confirm-delete-btn-fmw"
+                  onClick={() => handleDeleteFeedback(deleteConfirm.id, deleteConfirm.title)}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const statusCounts = getStatusCounts();
@@ -498,84 +770,7 @@ export default function Feedback() {
                           {statusFilter !== 'all' && ` (filtered by: ${statusFilter})`}
                         </span>
                       </div>
-                      {filteredFeedback.map((feedback) => (
-                        <div key={feedback.id} className="feedback-card-fmw">
-                          <div className="feedback-card-header-fmw">
-                            <div className="feedback-type-fmw">
-                              <FontAwesomeIcon icon={getTypeIcon(feedback.type)} />
-                              <span>{feedback.type.replace('_', ' ')}</span>
-                            </div>
-                            <div className="feedback-meta-fmw">
-                              <span 
-                                className="priority-badge-fmw"
-                                style={{ backgroundColor: getPriorityColor(feedback.priority) }}
-                              >
-                                {feedback.priority}
-                              </span>
-                              <span 
-                                className="status-badge-fmw"
-                                style={{ color: getStatusColor(feedback.status) }}
-                              >
-                                <FontAwesomeIcon icon={getStatusIcon(feedback.status)} />
-                                {feedback.status.replace('_', ' ')}
-                              </span>
-                              {canDeleteFeedback(feedback) && (
-                                <button
-                                  className="delete-feedback-btn-fmw"
-                                  onClick={() => setDeleteConfirm(feedback)}
-                                  title="Delete this feedback"
-                                >
-                                  <FontAwesomeIcon icon={faTrash} />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <h3>{feedback.title}</h3>
-                          <p className="feedback-description-fmw">{feedback.description}</p>
-                          
-                          <div className="feedback-footer-fmw">
-                            <span className="feedback-date-fmw">
-                              Submitted on {formatDate(feedback.created_at)}
-                            </span>
-                            {feedback.admin_notes && (
-                              <div className="admin-notes-fmw">
-                                <strong>Admin Response:</strong> {feedback.admin_notes}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Delete Confirmation Modal */}
-                          {deleteConfirm && deleteConfirm.id === feedback.id && (
-                            <div className="delete-confirmation-overlay-fmw">
-                              <div className="delete-confirmation-modal-fmw">
-                                <div className="delete-confirmation-header-fmw">
-                                  <FontAwesomeIcon icon={faWarning} className="warning-icon-fmw" />
-                                  <h3>Delete Feedback</h3>
-                                </div>
-                                <p>Are you sure you want to delete this feedback?</p>
-                                <p><strong>"{deleteConfirm.title}"</strong></p>
-                                <p className="warning-text-fmw">This action cannot be undone.</p>
-                                <div className="delete-confirmation-actions-fmw">
-                                  <button
-                                    className="cancel-btn-fmw"
-                                    onClick={() => setDeleteConfirm(null)}
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    className="confirm-delete-btn-fmw"
-                                    onClick={() => handleDeleteFeedback(deleteConfirm.id, deleteConfirm.title)}
-                                  >
-                                    <FontAwesomeIcon icon={faTrash} />
-                                    Delete
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                      {filteredFeedback.map(renderFeedbackCard)}
                     </div>
                   )}
                 </div>

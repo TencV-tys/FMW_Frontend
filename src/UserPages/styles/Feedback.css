@@ -817,7 +817,7 @@
 
 /* ... (keep all previous CSS code) ... */
 
-/* Loading and Empty States */
+/* Loading and Empty States */ 
 .loading-container-fmw,
 .empty-state-fmw {
   display: flex;
@@ -1040,5 +1040,188 @@
   
   .feedback-filter-section-fmw {
     padding: 1rem;
+  }
+}
+/* Add these new styles to your existing Feedback.css */
+
+/* Edit Form Styles */
+.feedback-card-fmw.editing-fmw {
+  background: #f8f9fa;
+  border-left: 4px solid #8B5A2B;
+}
+
+.edit-form-fmw {
+  padding: 1rem;
+}
+
+.edit-actions-fmw {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.cancel-edit-btn-fmw {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-edit-btn-fmw:hover:not(:disabled) {
+  background: #5a6268;
+}
+
+.save-edit-btn-fmw {
+  padding: 0.75rem 1.5rem;
+  background: #8B5A2B;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.save-edit-btn-fmw:hover:not(:disabled) {
+  background: #219653;
+}
+
+.save-edit-btn-fmw:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Feedback Actions */
+.feedback-actions-fmw {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.edit-feedback-btn-fmw {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.edit-feedback-btn-fmw:hover {
+  background: #2980b9;
+  transform: scale(1.05);
+}
+
+.delete-feedback-btn-fmw {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.delete-feedback-btn-fmw:hover {
+  background: #c0392b;
+  transform: scale(1.05);
+}
+
+/* 🆕 FIXED: Empty State Background Color */
+.empty-state-fmw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  width: 100%;
+  min-height: 300px;
+  margin: 0 auto;
+  background: #FBFCF8 !important; /* Force white background */
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* Ensure the empty state container has proper background */
+.my-feedback-container-fmw .empty-state-fmw {
+  background: #FBFCF8 !important;
+}
+
+/* Loading state background */
+.loading-container-fmw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  width: 100%;
+  min-height: 300px;
+  margin: 0 auto;
+  background: #FBFCF8 !important;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* Responsive Design for Edit Form */
+@media (max-width: 768px) {
+  .edit-actions-fmw {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .cancel-edit-btn-fmw,
+  .save-edit-btn-fmw {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .feedback-actions-fmw {
+    gap: 0.25rem;
+  }
+  
+  .edit-feedback-btn-fmw,
+  .delete-feedback-btn-fmw {
+    width: 32px;
+    height: 32px;
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .edit-form-fmw {
+    padding: 0.5rem;
+  }
+  
+  .type-options-fmw {
+    grid-template-columns: 1fr;
   }
 }
