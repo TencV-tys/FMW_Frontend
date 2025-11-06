@@ -175,7 +175,7 @@ export default function Profile() {
                     </div>
                     <div className="profile-role-badge">
                       {user?.role === 'admin' ? 'Administrator' : 'Community Member'}
-                    </div>
+                    </div> 
                   </div>
 
                   {/* 🎯 Profile Details */}

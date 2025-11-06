@@ -1,4 +1,4 @@
-/* styles/MyReports.css - Unique Class Names */
+/* styles/MyReports.css - Enhanced with Animations & Better Readability */
 .my-reports-page-fmw {
   min-height: 100dvh;
   background: #f5f5f5;
@@ -6,6 +6,18 @@
 
 .my-reports-container-fmw {
   padding: 50px;
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .reports-container-darkbrown-fmw {
@@ -13,6 +25,18 @@
   min-height: 100dvh;
   border-radius: 4px;
   padding: 20px;
+  animation: fadeInScale 0.4s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .reports-container-lightbrown-fmw {
@@ -29,98 +53,173 @@
   padding: 20px;
 }
 
+/* 🎯 Header Section */
 .reports-header-fmw {
   background: #FBFCF8;
-  padding: 2rem;
-  border-radius: 8px;
+  padding: 2.5rem;
+  border-radius: 12px;
   text-align: center;
   margin-bottom: 2rem;
   width: 95%;
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.1);
+  animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .reports-header-fmw h1 {
   color: #8B5A2B;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  font-size: 2rem;
+  gap: 0.75rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .reports-header-fmw p {
   color: #666;
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
+/* 🎯 Filters Section */
 .reports-filters-fmw {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
   background: #FBFCF8;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
+  padding: 1.5rem;
+  border-radius: 12px;
   width: 90%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .filter-select-fmw {
   padding: 0.75rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
   background: white;
   color: #8B5A2B;
   font-weight: 600;
   cursor: pointer;
   outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 180px;
+}
+
+.filter-select-fmw:focus {
+  border-color: #FF8904;
+  box-shadow: 0 0 0 3px rgba(255, 137, 4, 0.1);
+  transform: translateY(-2px);
 }
 
 .reports-stats-fmw {
   color: #5D4037;
   font-weight: 600;
+  font-size: 1rem;
+  background: rgba(139, 90, 43, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(139, 90, 43, 0.2);
 }
 
+/* 🎯 Reports List */
 .reports-list-fmw {
   display: flex;
   flex-direction: column;
   width: 80%;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
+/* 🎯 Report Card */
 .report-card-fmw {
   background: #FBFCF8;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   border-left: 4px solid #8B5A2B;
   position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: cardSlideIn 0.5s ease-out both;
+}
+
+/* Stagger animation for report cards */
+.report-card-fmw:nth-child(1) { animation-delay: 0.3s; }
+.report-card-fmw:nth-child(2) { animation-delay: 0.4s; }
+.report-card-fmw:nth-child(3) { animation-delay: 0.5s; }
+.report-card-fmw:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.report-card-fmw:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  border-left-color: #FF8904;
 }
 
 .report-header-fmw {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+.report-post-info-fmw h3 {
+  margin: 0 0 0.75rem 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.3;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.report-date-fmw {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .report-header-actions-fmw {
   display: flex;
   align-items: center;
   gap: 1rem;
-}
-
-.report-post-info-fmw h3 {
-  margin: 0 0 0.5rem 0;
-  color: #2c3e50;
-  font-size: 1.1rem;
-}
-
-.report-date-fmw {
-  color: #7f8c8d;
-  font-size: 0.85rem;
+  flex-shrink: 0;
 }
 
 .report-status-fmw {
@@ -129,107 +228,179 @@
   gap: 0.5rem;
   font-weight: 600;
   text-transform: capitalize;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   background: rgba(0,0,0,0.05);
   border-radius: 20px;
   font-size: 0.85rem;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
+.report-card-fmw:hover .report-status-fmw {
+  transform: scale(1.05);
+}
+
+/* Status-specific colors */
+.report-status-fmw.pending {
+  background: rgba(255, 193, 7, 0.1);
+  color: #856404;
+  border-color: rgba(255, 193, 7, 0.3);
+}
+
+.report-status-fmw.reviewed {
+  background: rgba(23, 162, 184, 0.1);
+  color: #0c5460;
+  border-color: rgba(23, 162, 184, 0.3);
+}
+
+.report-status-fmw.resolved {
+  background: rgba(40, 167, 69, 0.1);
+  color: #155724;
+  border-color: rgba(40, 167, 69, 0.3);
+}
+
+.report-status-fmw.rejected {
+  background: rgba(220, 53, 69, 0.1);
+  color: #721c24;
+  border-color: rgba(220, 53, 69, 0.3);
+}
+
+/* 🎯 Report Details */
 .report-details-fmw {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .report-reason-fmw,
 .report-additional-info-fmw {
   color: #2c3e50;
-  line-height: 1.4;
+  line-height: 1.6;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.report-reason-fmw {
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 1rem;
+  background: rgba(139, 90, 43, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #8B5A2B;
 }
 
 .report-additional-info-fmw {
   background: #f8f9fa;
-  padding: 0.75rem;
-  border-radius: 4px;
+  padding: 1.25rem;
+  border-radius: 8px;
   border-left: 3px solid #D6A96D;
+  font-size: 0.95rem;
 }
 
 .report-update-fmw {
   text-align: right;
   color: #7f8c8d;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0,0,0,0.1);
 }
 
-/* Delete Button Styles */
+/* 🎯 Delete Button */
 .delete-report-btn-fmw {
   background: #e74c3c;
   color: white;
   border: none;
-  padding: 0.6rem;
-  border-radius: 6px;
+  padding: 0.75rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
 }
 
 .delete-report-btn-fmw:hover {
   background: #c0392b;
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
-/* Delete Confirmation Modal */
+/* 🎯 Delete Confirmation Modal */
 .delete-confirmation-overlay-fmw {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+  animation: modalOverlayIn 0.3s ease-out;
+}
+
+@keyframes modalOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .delete-confirmation-modal-fmw {
   background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  max-width: 400px;
-  width: 90%;
+  padding: 2.5rem;
+  border-radius: 16px;
+  max-width: 450px;
+  width: 100%;
   text-align: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #8B5A2B;
+}
+
+@keyframes modalSlideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .delete-confirmation-header-fmw {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .warning-icon-fmw {
   color: #e74c3c;
-  font-size: 2rem;
+  font-size: 2.5rem;
 }
 
 .delete-confirmation-header-fmw h3 {
   margin: 0;
   color: #e74c3c;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .delete-confirmation-modal-fmw p {
-  margin: 0.75rem 0;
+  margin: 1rem 0;
   color: #333;
   word-break: break-word;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-size: 1rem;
 }
 
 .warning-text-fmw {
@@ -251,21 +422,25 @@
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: background-color 0.3s ease;
-  min-width: 100px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 120px;
   flex: 1;
+  box-shadow: 0 2px 4px rgba(149, 165, 166, 0.3);
 }
 
 .cancel-btn-fmw:hover:not(:disabled) {
   background: #7f8c8d;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(149, 165, 166, 0.4);
 }
 
 .cancel-btn-fmw:disabled {
   background: #bdc3c7;
   cursor: not-allowed;
+  transform: none;
 }
 
 .confirm-delete-btn-fmw {
@@ -273,30 +448,34 @@
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background-color 0.3s ease;
-  min-width: 120px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 140px;
   justify-content: center;
   flex: 1;
+  box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
 }
 
 .confirm-delete-btn-fmw:hover:not(:disabled) {
   background: #c0392b;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
 .confirm-delete-btn-fmw:disabled {
   background: #eaa59d;
   cursor: not-allowed;
+  transform: none;
 }
 
 .loading-spinner-small-fmw {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border: 2px solid transparent;
   border-top: 2px solid white;
   border-radius: 50%;
@@ -305,9 +484,20 @@
 
 
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .loading-spinner-fmw {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border: 4px solid #D6A96D;
   border-top: 4px solid #8B5A2B;
   border-radius: 50%;
@@ -319,18 +509,37 @@
   font-size: 4rem;
   color: #bdc3c7;
   margin-bottom: 1.5rem;
+  animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .empty-state-fmw h3 {
   color: #8B5A2B;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .empty-state-fmw p {
   color: #7f8c8d;
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  max-width: 400px;
 }
 
 @keyframes spin-fmw {
@@ -338,26 +547,95 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive */
+/* 🎯 Responsive Design - IMPROVED CENTERING */
 @media (max-width: 768px) {
   .my-reports-container-fmw {
     padding: 20px;
+    animation: slideInUpMobile 0.5s ease-out;
+  }
+
+  @keyframes slideInUpMobile {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .reports-header-fmw {
+    padding: 2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .reports-header-fmw h1 {
+    font-size: 1.8rem;
+    flex-direction: column;
+    gap: 0.5rem;
   }
   
   .reports-filters-fmw {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .filter-select-fmw {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .reports-stats-fmw {
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+  }
+  
+  .reports-list-fmw {
+    width: 100%;
+    align-items: center;
+  }
+  
+  .report-card-fmw {
+    width: 100%;
+    max-width: 500px;
+    padding: 1.5rem;
+    margin: 0 auto;
+    animation: cardSlideInMobile 0.4s ease-out both;
+  }
+
+  @keyframes cardSlideInMobile {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
   .report-header-fmw {
     flex-direction: column;
     align-items: stretch;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .report-post-info-fmw {
+    text-align: center;
   }
   
   .report-header-actions-fmw {
-    align-self: flex-start;
+    align-self: center;
     margin-top: 1rem;
+    justify-content: center;
   }
   
   .delete-confirmation-actions-fmw {
@@ -368,16 +646,24 @@
   .cancel-btn-fmw,
   .confirm-delete-btn-fmw {
     width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
   }
+  
+ 
 }
 
 @media (max-width: 480px) {
-  .reports-content-fmw {
+  .my-reports-container-fmw {
     padding: 10px;
   }
   
+  .reports-content-fmw {
+    padding: 15px;
+  }
+  
   .reports-header-fmw {
-    padding: 1.5rem;
+    padding: 1.5rem 1rem;
     margin-bottom: 1rem;
   }
   
@@ -385,8 +671,12 @@
     font-size: 1.5rem;
   }
   
+  .reports-header-fmw p {
+    font-size: 1rem;
+  }
+  
   .reports-list-fmw {
-    width: 95%;
+    width: 100%;
   }
   
   .report-card-fmw {
@@ -395,17 +685,19 @@
   
   .report-header-actions-fmw {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.75rem;
+    width: 100%;
   }
   
   .delete-report-btn-fmw {
-    width: 32px;
-    height: 32px;
+    width: 100%;
+    max-width: 200px;
+    height: 44px;
   }
   
   .empty-state-fmw {
-    padding: 3rem 1rem;
+    padding: 2rem 1rem;
   }
   
   .empty-icon-fmw {
@@ -414,5 +706,36 @@
   
   .empty-state-fmw h3 {
     font-size: 1.3rem;
+  }
+  
+  .empty-state-fmw p {
+    font-size: 1rem;
+  }
+  
+  .delete-confirmation-modal-fmw {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .my-reports-container-fmw,
+  .reports-container-darkbrown-fmw,
+  .reports-header-fmw,
+  .reports-filters-fmw,
+  .report-card-fmw,
+  .delete-confirmation-overlay-fmw,
+  .delete-confirmation-modal-fmw,
+   {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .report-card-fmw:hover,
+  .delete-report-btn-fmw:hover,
+  .cancel-btn-fmw:hover:not(:disabled),
+  .confirm-delete-btn-fmw:hover:not(:disabled) {
+    transform: none !important;
   }
 }
