@@ -174,15 +174,15 @@ export default function Dashboard() {
   // 🆕 UPDATED: StatCard component with better structure
   const StatCard = ({ icon, value, label, color, type }) => (
     <div 
-      className='stat-card clickable-stat' 
+      className='dashboard-stat-card clickable-stat' 
       onClick={() => handleStatClick(type)}
       title={`Click to view ${label}`}
     >
-      <div className='stat-content'>
-        <div className='stat-icon' style={{ backgroundColor: color }}>
+      <div className='dashboard-stat-content'>
+        <div className='dashboard-stat-icon' style={{ backgroundColor: color }}>
           <FontAwesomeIcon icon={icon} />
         </div>
-        <div className='stat-info'>
+        <div className='dashboard-stat-info'>
           <h3>{loading ? '...' : value.toLocaleString()}</h3>
           <p>{label}</p>
         </div>
@@ -227,8 +227,7 @@ export default function Dashboard() {
       <div className="dashboard-content">
         {/* 🆕 UPDATED: Header with Refresh Button */}
         <div className="dashboard-header">
-          <div className="header-content">
-            <h1>Admin Dashboard</h1>
+          <div className="dashboard-header-content">
             <p>Overview of platform statistics and recent activities</p>
           </div>
           <div className="dashboard-header-right">
@@ -315,7 +314,7 @@ export default function Dashboard() {
                       <div className="empty-state">
                         <p>No recent activities</p>
                       </div>
-                    )}
+                    )} 
                   </div>
                 </div>
               </div>
