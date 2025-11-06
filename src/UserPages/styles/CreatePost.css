@@ -1,162 +1,518 @@
-.create-content{
+.create-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 100px;
+    padding: 80px 20px;
     min-height: 80dvh;
+    background: #f8f9fa;
 }
 
-.create-form-container{
+.create-form-container {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    gap: 10px;
-}
-.create-post-form{
-    box-shadow: 0 0 6px 3px rgb(209, 206, 206);
-    display: flex;
-    gap:10px;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 30px 50px;
-    border-radius: 4px;
-}
-.create-select-container{
-    display: flex;
-    gap: 10px;
-    justify-content: space-between;
-    align-items: center;
-    width: 400px;
-    flex-wrap: wrap;
-}
-.create-select-container .create-select-group{
-    padding: 5px;
-    background-color: #FF8904;
-    border: none;
-    border-radius: 4px;
-}
-.create-select-group select{
-    color: white;
+    gap: 15px;
     width: 100%;
-    background:transparent;
-    background-color: #FF8904;
-    border: none;
-    outline: none;
-    font-weight: 600;
+    max-width: 800px;
 }
 
-/* Purok Select Field Styles */
+.create-post-form {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 40px 30px;
+    border-radius: 12px;
+    background: white;
+    width: 100%;
+    border: 1px solid #e9ecef;
+}
+
+.create-post-title {
+    color: #FF8904; /* Orange color */
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.create-select-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
 .create-select-group {
-    padding: 5px;
-    background-color: #FF8904;
+    padding: 8px 12px;
+    background-color: #FF8904; /* Orange background */
     border: none;
-    border-radius: 4px;
-    width: 400px; /* Match other fields */
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.create-select-group:hover {
+    background-color: #e67e22; /* Darker orange on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
 }
 
 .create-select-group select {
     color: white;
     width: 100%;
     background: transparent;
-    background-color: #FF8904;
     border: none;
     outline: none;
     font-weight: 600;
-    padding: 8px 12px;
+    font-size: 0.95rem;
     cursor: pointer;
+    padding: 8px 0;
+    line-height: 1.4;
 }
 
-/* Style for the purok select specifically */
+/* Purok Select Field */
 .create-select-group:not(.create-select-container .create-select-group) {
-    margin: 10px 0;
+    width: 100%;
+    max-width: 400px;
+    margin: 5px 0 15px 0;
 }
 
-.create-input-group{
-    border-bottom: 1px solid rgb(179, 175, 175);
-    width: 400px;
-    padding: 4px 0;
-}
-.create-input-group input{
+.create-input-group {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
     width: 100%;
-    border: none;
-    outline: none;
-    padding: 0 10px;
- }
-
- .create-textarea-group{
-    width: 400px;
-    border: 1px solid rgb(170, 170, 170);
-    border-radius: 4px;
-    position: relative;
- }
- .create-textarea-group textarea{
-    width: 100%;
-    border: none;
-    resize: none;
-    outline: none;
-    padding: 10px;
-    font-family: inherit;
- }
- .char-counter {
-    position: absolute;
-    bottom: 5px;
-    right: 10px;
-    font-size: 0.8rem;
-    color: #666;
+    max-width: 400px;
+    padding: 12px 15px;
     background: white;
-    padding: 0 5px;
- }
- .char-counter.warning {
-    color: #ff6b00;
-    font-weight: bold;
- }
- .char-counter.error {
-    color: #ff4444;
-    font-weight: bold;
- }
- .submit-post-btn{
-    width: 200px;
-    padding: 8px 10px;
-    background-color: #FF8904;
-    border: none;
-    border-radius: 4px;
-    color: white;
-    font-weight: 600;
-    transition:all 0.3s ease;
-    margin: 10px;
-    cursor: pointer;
- }
-.submit-post-btn:hover:not(:disabled){
-  transform: scale(1.1);
-}
-.submit-post-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-.image-uploader-container input{
-    color: rgb(122, 122, 122);
-    font-weight: 600;
+.create-input-group:focus-within {
+    border-color: #FF8904; /* Orange border on focus */
+    box-shadow: 0 0 0 3px rgba(255, 137, 4, 0.1);
+    transform: translateY(-1px);
+}
+
+.create-input-group input {
     width: 100%;
+    border: none;
+    outline: none;
+    padding: 0;
+    font-size: 1rem;
+    color: #333; /* Dark gray for better readability */
+    background: transparent;
+    line-height: 1.5;
 }
-.image-uploader-container{
-    width: 400px;
-    padding: 10px;
-    margin: 10px;
-  }
 
-::placeholder{
-    font-weight: 600;
+.create-input-group input::placeholder {
+    color: #666; /* Medium gray for placeholders */
+    font-weight: 500;
 }
-.create-post-title{
-    color: rgb(63, 59, 59);
+
+.create-textarea-group {
+    width: 100%;
+    max-width: 400px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    position: relative;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.create-textarea-group:focus-within {
+    border-color: #FF8904; /* Orange border on focus */
+    box-shadow: 0 0 0 3px rgba(255, 137, 4, 0.1);
+    transform: translateY(-1px);
+}
+
+.create-textarea-group textarea {
+    width: 100%;
+    border: none;
+    resize: vertical;
+    outline: none;
+    padding: 15px;
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #333; /* Dark gray for better readability */
+    min-height: 120px;
+    background: transparent;
+}
+
+.create-textarea-group textarea::placeholder {
+    color: #666; /* Medium gray for placeholders */
+    font-weight: 500;
+}
+
+.char-counter {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 0.75rem;
+    color: #666; /* Medium gray */
+    background: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.char-counter.warning {
+    color: #e67e22; /* Orange warning */
+    background: #fffaf0; /* Light orange background */
+}
+
+.char-counter.error {
+    color: #dc2626; /* Red for errors */
+    background: #fef2f2; /* Light red background */
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.submit-post-btn {
+    width: 100%;
+    max-width: 400px;
+    padding: 14px 20px;
+    background: #FF8904; /* Solid orange */
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    margin: 20px 0 10px 0;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 137, 4, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-post-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 137, 4, 0.4);
+    background: #e67e22; /* Darker orange on hover */
+}
+
+.submit-post-btn:active:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.submit-post-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.image-uploader-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 15px;
+    margin: 10px 0;
+    border: 2px dashed #cbd5e0;
+    border-radius: 8px;
+    background: #f8f9fa; /* Light gray background */
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.image-uploader-container:hover {
+    border-color: #FF8904; /* Orange border on hover */
+    background: #fffaf0; /* Very light orange background */
+}
+
+.image-uploader-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #333; /* Dark gray */
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.image-uploader-container input {
+    color: #333; /* Dark gray */
+    font-weight: 500;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.image-uploader-container input:hover {
+    border-color: #FF8904; /* Orange border on hover */
+}
+
+/* Current Photo Display */
+.current-photo-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 15px 0;
+    padding: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8f9fa; /* Light gray background */
+    text-align: center;
+}
+
+.current-photo-container label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #333; /* Dark gray */
+    font-size: 1rem;
+}
+
+.current-photo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.photo-preview {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    object-fit: contain;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.photo-preview:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.remove-photo-btn {
+    padding: 10px 20px;
+    background: #dc2626; /* Red for remove button */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.remove-photo-btn:hover {
+    background: #b91c1c; /* Darker red on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+/* Required field indicators */
+.create-input-group:has(input:required),
+.create-textarea-group:has(textarea:required) {
+    border-left: 4px solid #FF8904; /* Orange indicator */
+}
+
+.create-select-group:has(select:required) {
+    border-left: 4px solid #FF8904; /* Orange indicator */
+}
+
+/* Error states */
+.input-error {
+    border-color: #dc2626 !important; /* Red for errors */
+    background: #fef2f2; /* Light red background */
+}
+
+.error-message {
+    color: #dc2626; /* Red for errors */
+    font-size: 0.8rem;
+    margin-top: 8px;
+    text-align: left;
+    width: 100%;
+    font-weight: 600;
+    padding: 5px 10px;
+    background: #fef2f2; /* Light red background */
+    border-radius: 4px;
+    border-left: 3px solid #dc2626;
+}
+
+/* Enhanced select dropdown styling */
+.create-select-group select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.create-select-group select option {
+    background-color: white;
+    color: #333; /* Dark gray */
+    padding: 12px;
+    font-size: 0.95rem;
+}
+
+/* Focus states for accessibility */
+.create-select-group select:focus-visible,
+.create-input-group input:focus-visible,
+.create-textarea-group textarea:focus-visible {
+    outline: 2px solid #FF8904; /* Orange focus */
+    outline-offset: 2px;
 }
 
 /* Loading State */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #FF8904; /* Orange spinner */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .create-content {
+        padding: 60px 15px;
+    }
+    
+    .create-post-form {
+        padding: 30px 20px;
+        margin: 0 10px;
+    }
+    
+    .create-post-title {
+        font-size: 1.75rem;
+    }
+    
+    .create-select-container {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+        gap: 12px;
+    }
+    
+    .create-select-group,
+    .create-input-group,
+    .create-textarea-group,
+    .image-uploader-container,
+    .current-photo-container,
+    .submit-post-btn {
+        max-width: 100%;
+    }
+    
+    .create-select-group:not(.create-select-container .create-select-group) {
+        max-width: 100%;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .create-content {
+        padding: 40px 10px;
+    }
+    
+    .create-post-form {
+        padding: 25px 15px;
+        gap: 15px;
+    }
+    
+    .create-post-title {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .create-select-group,
+    .create-input-group,
+    .create-textarea-group {
+        padding: 10px;
+    }
+    
+    .create-select-group select,
+    .create-input-group input,
+    .create-textarea-group textarea {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .create-textarea-group textarea {
+        min-height: 100px;
+        padding: 12px;
+    }
+    
+    .submit-post-btn {
+        padding: 16px 20px;
+        font-size: 1rem;
+        margin: 15px 0 5px 0;
+    }
+    
+    .image-uploader-container {
+        padding: 12px;
+    }
+    
+    .current-photo-container {
+        padding: 15px;
+    }
+    
+    .photo-preview {
+        max-height: 200px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 360px) {
+    .create-post-form {
+        padding: 20px 12px;
+    }
+    
+    .create-post-title {
+        font-size: 1.3rem;
+    }
+    
+    .create-select-group select,
+    .create-input-group input,
+    .create-textarea-group textarea {
+        font-size: 14px;
+    }
+    
+    .submit-post-btn {
+        font-size: 0.95rem;
+        padding: 14px 16px;
+    }
+} 
+/* Add to your CreatePost.css */
+
+/* Loading container */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -164,16 +520,39 @@
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  min-height: 300px;
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border: 4px solid #f3f3f3;
   border-top: 4px solid #FF8904;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.loading-container p {
+  color: #666;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Small spinner for buttons */
+.loading-spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
 }
 
 @keyframes spin {
@@ -181,231 +560,300 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Current Photo Display */
-.current-photo-container {
-  width: 400px;
-  margin: 10px;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background: #f9f9f9;
+/* Disabled states */
+.create-input-group input:disabled,
+.create-textarea-group textarea:disabled,
+.create-select-group select:disabled,
+.image-uploader-container input:disabled,
+.remove-photo-btn:disabled,
+.submit-post-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.current-photo-container label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: 600;
-  color: #333;
+.create-select-group select:disabled {
+  background-color: #ccc;
 }
 
-.current-photo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+.remove-photo-btn:disabled {
+  background-color: #999;
 }
 
-.current-photo img {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  object-fit: contain;
+.remove-photo-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
+/* Add these styles to your CreatePost.css */
 
-.photo-preview {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  object-fit: contain;
-}
-
-.remove-photo-btn {
-  padding: 6px 12px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.remove-photo-btn:hover {
-  background: #dc2626;
-}
-
-/* Form Actions */
+/* Form Actions for Edit Post */
 .form-actions {
   display: flex;
   gap: 15px;
   justify-content: center;
   align-items: center;
   width: 100%;
+  max-width: 400px;
   margin-top: 10px;
 }
 
 .edit-cancel-btn {
-  width: 200px;
-  padding: 8px 10px;
-  background-color: #6b7280;
-  border: none;
-  border-radius: 4px;
+  width: 150px;
+  padding: 14px 20px;
+  background: #6b7280; /* Gray color for cancel */
+  border: 2px solid #6b7280;
+  border-radius: 8px;
   color: white;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1rem;
   transition: all 0.3s ease;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+  text-align: center;
 }
 
 .edit-cancel-btn:hover:not(:disabled) {
-  background-color: #4b5563;
-  transform: scale(1.1);
+  background: #4b5563; /* Darker gray on hover */
+  border-color: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
+}
+
+.edit-cancel-btn:active:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .edit-cancel-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Required field indicators */
-.create-input-group input:required,
-.create-textarea-group textarea:required {
-  border-left: 3px solid #FF8904;
+/* Submit button specific styles for Edit Post */
+.submit-post-btn {
+  width: 150px;
+  padding: 14px 20px;
+  background: #FF8904; /* Orange color */
+  border: 2px solid #FF8904;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 137, 4, 0.3);
+  text-align: center;
 }
 
-.create-select-group select:required {
-  border-left: 3px solid #FF8904;
+.submit-post-btn:hover:not(:disabled) {
+  background: #e67e22; /* Darker orange on hover */
+  border-color: #e67e22;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 137, 4, 0.4);
 }
 
-/* Purok select doesn't need required indicator since it's optional */
-.create-select-group select:not([required]) {
-  border-left: 3px solid transparent;
+.submit-post-btn:active:not(:disabled) {
+  transform: translateY(-1px);
 }
 
-/* Error states */
-.input-error {
-  border-color: #ff4444 !important;
+.submit-post-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-.error-message {
-  color: #ff4444;
-  font-size: 0.8rem;
-  margin-top: 5px;
-  text-align: left;
-  width: 100%;
+/* Loading state for buttons */
+.submit-post-btn:disabled,
+.edit-cancel-btn:disabled {
+  position: relative;
 }
 
-/* Select dropdown styling */
-.create-select-group select option {
-  background-color: white;
-  color: #333;
-  padding: 8px;
+/* Loading spinner for buttons */
+.loading-spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
-.create-select-group select:focus {
-  background-color: #e67e22; /* Slightly darker on focus */
+/* Button content alignment */
+.submit-post-btn,
+.edit-cancel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-/* Hover states for select */
-.create-select-group:hover {
-  background-color: #e67e22;
-  transition: background-color 0.3s ease;
-}
-
-/* Responsive adjustments */
+/* Responsive design for form actions */
 @media (max-width: 768px) {
-  .create-content {
-    padding: 50px 20px;
-  }
-  
-  .create-post-form {
-    padding: 20px 30px;
-    width: 90%;
-  }
-  
-  .create-select-container {
-    flex-direction: column;
-    width: 100%;
-    gap: 15px;
-  }
-  
-  .create-select-group {
-    width: 100% !important; /* Ensure purok select is full width on mobile */
-  }
-  
-  .create-select-group,
-  .create-select-container .create-select-group {
-    width: 100%;
-  }
-  
-  .create-select-group select,
-  .create-select-container .create-select-group select {
-    text-align: center;
-    width: 100%;
-  }
-  
-  .create-input-group,
-  .create-textarea-group,
-  .image-uploader-container,
-  .current-photo-container {
-    width: 100%;
-  }
-  
   .form-actions {
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    gap: 12px;
   }
   
-  .edit-cancel-btn,
-  .submit-post-btn {
+  .submit-post-btn,
+  .edit-cancel-btn {
     width: 100%;
     max-width: 300px;
   }
 }
 
-/* Additional mobile optimizations */
 @media (max-width: 480px) {
-  .create-content {
-    padding: 30px 15px;
+  .form-actions {
+    gap: 10px;
   }
   
-  .create-post-form {
-    padding: 15px 20px;
+  .submit-post-btn,
+  .edit-cancel-btn {
+    padding: 12px 16px;
+    font-size: 0.95rem;
   }
-  
-  .create-select-group select {
-    font-size: 14px; /* Slightly smaller font on very small screens */
-    padding: 10px 8px;
-  }
-  
-  .create-input-group input,
-  .create-textarea-group textarea {
-    font-size: 14px;
-  }
-}
-
-/* Enhanced select dropdown appearance */
-.create-select-group select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
-  padding-right: 35px;
-}
-
-/* Ensure proper contrast for accessibility */
-.create-select-group select:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 /* Focus states for accessibility */
-.create-select-group select:focus-visible {
-  outline: 2px solid #e67e22;
+.submit-post-btn:focus-visible,
+.edit-cancel-btn:focus-visible {
+  outline: 2px solid #FF8904;
   outline-offset: 2px;
+}
+
+/* Specific focus for cancel button */
+.edit-cancel-btn:focus-visible {
+  outline-color: #6b7280;
+}
+
+/* Success state for submit button */
+.submit-post-btn.success {
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.submit-post-btn.success:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+/* Warning state for submit button */
+.submit-post-btn.warning {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.submit-post-btn.warning:hover:not(:disabled) {
+  background: #d97706;
+  border-color: #d97706;
+}
+
+/* Current photo container specific styles for Edit Post */
+.current-photo-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 15px 0;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.current-photo-container label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.current-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.photo-preview {
+  max-width: 100%;
+  max-height: 250px;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  object-fit: contain;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.photo-preview:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.remove-photo-btn {
+  padding: 10px 20px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.remove-photo-btn:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.remove-photo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Edit Post specific title */
+.create-post-title {
+  color: #FF8904;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Enhanced visual feedback for edit mode */
+.create-post-form.editing {
+  border-left: 4px solid #FF8904;
+}
+
+/* Animation for form transitions */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.create-post-form {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Error state for the entire form */
+.create-post-form.error {
+  border: 2px solid #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }

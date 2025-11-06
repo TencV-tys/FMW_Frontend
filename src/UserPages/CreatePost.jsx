@@ -4,11 +4,13 @@ import { toast } from 'react-toastify';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/CreatePost.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+
 export default function CreatePost() {
   const [categories, setCategories] = useState([]);
   const [barangays, setBarangays] = useState([]);
   const [puroks, setPuroks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // 🆕 For form data loading
+  const [submitting, setSubmitting] = useState(false); // 🆕 For form submission
   const nav = useNavigate();
   const wifi = useWifiUrl();
   const [formData, setFormData] = useState({
@@ -46,6 +48,7 @@ export default function CreatePost() {
   useEffect(() => {
     const fetchFormData = async () => {
       try {
+        setLoading(true); // 🆕 Start loading
         const res = await fetch(`${wifi}/api/posts/form-data`, {
           credentials: 'include'
         });
@@ -57,10 +60,20 @@ export default function CreatePost() {
             setPuroks(data.puroks || []);
           } else {
             console.error('Failed to fetch form data');
+            toast.error('Failed to load form data. Please refresh the page.', {
+              position: 'top-center',
+              autoClose: 3000
+            });
           }
         }
       } catch (error) {
         console.error('Error fetching form data:', error);
+        toast.error('Network error. Please check your connection.', {
+          position: 'top-center',
+          autoClose: 3000
+        });
+      } finally {
+        setLoading(false); // 🆕 End loading
       }
     };
 
@@ -142,7 +155,7 @@ export default function CreatePost() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true); // 🆕 Start submission loading
 
     try {
       const formDataToSend = new FormData();
@@ -170,7 +183,7 @@ export default function CreatePost() {
       if (result.success) {
         toast.success('Post created successfully! It is now live on the bulletin board.', {
           position: 'top-center',
-          autoClose: 1000
+          autoClose: 2000
         });
         // Reset form
         setFormData({
@@ -187,21 +200,23 @@ export default function CreatePost() {
         setPhotoPreview(null);
         setCharCount({ description: 0, contact_info: 0 });
         // Redirect to bulletin board
-        nav('/user');
+        setTimeout(() => {
+          nav('/user');
+        }, 1500);
       } else {
         toast.error('Error creating post: ' + (result.error || 'Unknown error'), {
           position: 'top-center',
-          autoClose: 1000
+          autoClose: 3000
         });
       }
     } catch (error) {
       console.error('Error creating post:', error);
       toast.error('Error creating post. Please try again.', {
         position: 'top-center',
-        autoClose: 1000
+        autoClose: 3000
       });
     } finally {
-      setLoading(false);
+      setSubmitting(false); // 🆕 End submission loading
     }
   };
 
@@ -210,6 +225,21 @@ export default function CreatePost() {
     if (count > MAX_CHARS * 0.8) return 'warning';
     return '';
   };
+
+  // 🆕 Loading state for form data
+  if (loading) {
+    return (
+      <div className="create-container">
+        <UserNav />
+        <main className="create-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading form data...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="create-container">
@@ -227,19 +257,32 @@ export default function CreatePost() {
                 placeholder='Item/Person Name *'
                 onChange={handleChange}
                 required
+                disabled={submitting} // 🆕 Disable during submission
               />
             </div>
 
             <div className='create-select-container'>
               <div className='create-select-group'>
-                <select name='type' value={formData.type} onChange={handleChange} required>
+                <select 
+                  name='type' 
+                  value={formData.type} 
+                  onChange={handleChange} 
+                  required
+                  disabled={submitting} // 🆕 Disable during submission
+                >
                   <option value="Lost">Lost</option>
                   <option value="Found">Found</option>
                 </select>
               </div>
 
               <div className='create-select-group'>
-                <select name='category_id' value={formData.category_id} onChange={handleChange} required>
+                <select 
+                  name='category_id' 
+                  value={formData.category_id} 
+                  onChange={handleChange} 
+                  required
+                  disabled={submitting} // 🆕 Disable during submission
+                >
                   <option value="">Select Category *</option>
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -248,7 +291,13 @@ export default function CreatePost() {
               </div>
 
               <div className='create-select-group'>
-                <select name='barangay_id' value={formData.barangay_id} onChange={handleChange} required>
+                <select 
+                  name='barangay_id' 
+                  value={formData.barangay_id} 
+                  onChange={handleChange} 
+                  required
+                  disabled={submitting} // 🆕 Disable during submission
+                >
                   <option value="">Select Barangay *</option>
                   {barangays.map(brgy => (
                     <option key={brgy.id} value={brgy.id}>{brgy.name}</option>
@@ -256,8 +305,14 @@ export default function CreatePost() {
                 </select>
               </div>
             </div>
+
             <div className='create-select-group' style={{width: '400px', margin: '10px 0'}}>
-                <select name='purok_id' value={formData.purok_id} onChange={handleChange}>
+                <select 
+                  name='purok_id' 
+                  value={formData.purok_id} 
+                  onChange={handleChange}
+                  disabled={submitting} // 🆕 Disable during submission
+                >
                   <option value="">Select Purok (Optional)</option>
                   {puroks.map(purok => (
                     <option key={purok.id} value={purok.id}>{purok.name}</option>
@@ -272,6 +327,7 @@ export default function CreatePost() {
                 placeholder='Color (optional)'
                 value={formData.color}
                 onChange={handleChange}
+                disabled={submitting} // 🆕 Disable during submission
               />
             </div>
 
@@ -284,6 +340,7 @@ export default function CreatePost() {
                 onChange={handleChange}
                 maxLength={MAX_CHARS}
                 required
+                disabled={submitting} // 🆕 Disable during submission
               />
               <div className={`char-counter ${getCharCounterClass(charCount.description)}`}>
                 {charCount.description}/{MAX_CHARS}
@@ -299,6 +356,7 @@ export default function CreatePost() {
                 onChange={handleChange}
                 maxLength={MAX_CHARS}
                 required
+                disabled={submitting} // 🆕 Disable during submission
               />
               <div className={`char-counter ${getCharCounterClass(charCount.contact_info)}`}>
                 {charCount.contact_info}/{MAX_CHARS}
@@ -319,6 +377,7 @@ export default function CreatePost() {
                     type="button"
                     className="remove-photo-btn"
                     onClick={handleRemovePhoto}
+                    disabled={submitting} // 🆕 Disable during submission
                   >
                     Remove Photo
                   </button>
@@ -336,6 +395,7 @@ export default function CreatePost() {
                 accept='image/*'
                 onChange={handleFileChange}
                 required={requiresPhoto()}
+                disabled={submitting} // 🆕 Disable during submission
               />
               {requiresPhoto() && !formData.photo && (
                 <div className="error-message" style={{marginTop: '5px'}}>
@@ -347,9 +407,16 @@ export default function CreatePost() {
             <button 
               className='submit-post-btn' 
               type='submit'
-              disabled={loading}
+              disabled={submitting || loading} // 🆕 Disable during loading/submission
             >
-              {loading ? 'Submitting...' : 'Submit Post'}
+              {submitting ? ( // 🆕 Show loading state
+                <>
+                  <div className="loading-spinner-small"></div>
+                  Creating Post...
+                </>
+              ) : (
+                'Submit Post'
+              )}
             </button>
           </form>
         </div>

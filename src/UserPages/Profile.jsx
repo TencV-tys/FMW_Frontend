@@ -11,7 +11,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalPosts: 0,
-    activePosts: 0,
+    activePosts: 0, 
     resolvedPosts: 0
   });
  const wifi = useWifiUrl();
@@ -106,35 +106,35 @@ export default function Profile() {
             <FontAwesomeIcon icon={faEdit} />
             <span>Edit Profile</span>
           </Link>
-        </div>
+        </div> 
 
         {/*  Statistics Cards */}
         <div className="profile-stats-container">
-          <div className="stat-card">
-            <div className="stat-icon posts-icon">
+          <div className="profile-stat-card">
+            <div className="profile-stat-icon posts-icon">
               <FontAwesomeIcon icon={faUser} />
             </div>
-            <div className="stat-info">
+            <div className="profile-stat-info">
               <h3>{stats.totalPosts}</h3>
               <p>Total Posts</p>
             </div>
           </div>
           
-          <div className="stat-card">
-            <div className="stat-icon active-icon">
+          <div className="profile-stat-card">
+            <div className="profile-stat-icon active-icon">
               <div className="pulse-dot"></div>
             </div>
-            <div className="stat-info">
+            <div className="profile-stat-info">
               <h3>{stats.activePosts}</h3>
               <p>Active Posts</p>
             </div>
           </div>
           
-          <div className="stat-card">
-            <div className="stat-icon resolved-icon">
+          <div className="profile-stat-card">
+            <div className="profile-stat-icon resolved-icon">
               <span>✓</span>
             </div>
-            <div className="stat-info">
+            <div className="profile-stat-info">
               <h3>{stats.resolvedPosts}</h3>
               <p>Resolved Cases</p>
             </div>

@@ -330,6 +330,17 @@ export default function UserDashboardNav() {
                 </Link>
               </div>
               
+              
+              <div className='user-dropdown-link-container'>
+                <Link 
+                  to='/user/feedback' 
+                  className={`user-dropdown-link ${isActiveLink('/user/feedback') ? 'active' : ''}`}
+                  onClick={closeDropdown}
+                >
+                  <FontAwesomeIcon icon={faCommentDots} />
+                  <span>Feedback & Support</span>
+                </Link>
+              </div>
               <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/user-notification' 
@@ -343,17 +354,6 @@ export default function UserDashboardNav() {
                       {notificationCount}
                     </span>
                   )}
-                </Link>
-              </div>
-              
-              <div className='user-dropdown-link-container'>
-                <Link 
-                  to='/user/feedback' 
-                  className={`user-dropdown-link ${isActiveLink('/user/feedback') ? 'active' : ''}`}
-                  onClick={closeDropdown}
-                >
-                  <FontAwesomeIcon icon={faCommentDots} />
-                  <span>Feedback & Support</span>
                 </Link>
               </div>
 
