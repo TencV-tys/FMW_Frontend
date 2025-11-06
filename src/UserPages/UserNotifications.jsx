@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx - UPDATED WITH UNIQUE CLASS NAMES
+// UserPages/UserNotifications.jsx - FIXED DUPLICATE USERNAV
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,9 +14,6 @@ import {
   faTrashAlt,
   faComments,
   faSyncAlt,
-  faUndo,
-  faPlusCircle,
-  faCalendarAlt, 
   faUserShield,
   faWarning,
   faTimes
@@ -28,20 +25,40 @@ import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function UserNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, notificationId: null, notificationTitle: null });
   const [deleteAllModal, setDeleteAllModal] = useState({ isOpen: false });
   const wifi = useWifiUrl();
 
   useEffect(() => {
-    fetchNotifications();
-    fetchUnreadCount();
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    if (!pageLoading) {
+      fetchNotifications();
+    }
   }, [filter]);
+
+  const fetchInitialData = async () => {
+    try {
+      setPageLoading(true);
+      await Promise.all([
+        fetchNotifications(),
+        fetchUnreadCount()
+      ]);
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+    } finally {
+      setPageLoading(false);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
-      setLoading(true);
+      setDataLoading(true);
       const response = await fetch(`${wifi}/api/notifications`, {
         credentials: 'include'
       });
@@ -50,28 +67,24 @@ export default function UserNotifications() {
         const data = await response.json();
         let filteredNotifications = data.notifications || [];
         
-        // Apply filter - SIMPLIFIED LOGIC
         if (filter !== 'all') {
           if (filter === 'unread') {
-            // Filter by read status
             filteredNotifications = filteredNotifications.filter(
               notification => !notification.is_read
             );
           } else {
-            // Filter by specific type
             filteredNotifications = filteredNotifications.filter(
               notification => notification.type === filter
             );
           }
         }
         
-        // Limit to 50 notifications like admin
         setNotifications(filteredNotifications.slice(0, 50));
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -98,11 +111,9 @@ export default function UserNotifications() {
       });
 
       if (response.ok) {
-        // Update local state
         setNotifications(prev => prev.map(notif => 
           notif.id === notificationId ? { ...notif, is_read: true } : notif
         ));
-        // Update unread count
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
     } catch (error) {
@@ -118,9 +129,7 @@ export default function UserNotifications() {
       });
 
       if (response.ok) {
-        // Update all notifications to read
         setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true })));
-        // Reset unread count
         setUnreadCount(0);
       }
     } catch (error) {
@@ -128,7 +137,6 @@ export default function UserNotifications() {
     }
   };
 
-  // Delete single notification
   const deleteNotification = async (notificationId) => {
     try {
       const response = await fetch(`${wifi}/api/notifications/${notificationId}`, {
@@ -137,10 +145,8 @@ export default function UserNotifications() {
       });
 
       if (response.ok) {
-        // Remove from local state
-        setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
-        // Update count if it was unread
         const deletedNotif = notifications.find(n => n.id === notificationId);
+        setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
         if (deletedNotif && !deletedNotif.is_read) {
           setUnreadCount(prev => Math.max(0, prev - 1));
         }
@@ -151,7 +157,6 @@ export default function UserNotifications() {
     }
   };
 
-  // DELETE ALL NOTIFICATIONS
   const deleteAllNotifications = async () => {
     try {
       const response = await fetch(`${wifi}/api/notifications/delete-all`, {
@@ -160,9 +165,7 @@ export default function UserNotifications() {
       });
       
       if (response.ok) {
-        // Clear all notifications from state
         setNotifications([]);
-        // Reset unread count
         setUnreadCount(0);
         setDeleteAllModal({ isOpen: false });
       } else {
@@ -174,7 +177,6 @@ export default function UserNotifications() {
     }
   };
 
-  // Handle stat card click for filtering
   const handleStatCardClick = (filterType) => {
     setFilter(filterType);
   };
@@ -197,12 +199,10 @@ export default function UserNotifications() {
         return faComments;
       case 'feedback_updated':
         return faSyncAlt;
-      // DELETION REQUEST ICONS
       case 'deletion_request_approved':
         return faCheckCircle;
       case 'deletion_request_rejected':
         return faTimesCircle;
-      // NEW: MONTHLY REPORTING & WARNING ICONS
       case 'user_warning':
         return faUserShield;
       case 'deletion_limit_reached':
@@ -232,12 +232,10 @@ export default function UserNotifications() {
         return '#10b981';
       case 'feedback_updated':
         return '#3b82f6';
-      // DELETION REQUEST COLORS
       case 'deletion_request_approved':
         return '#10b981';
       case 'deletion_request_rejected':
         return '#ef4444';
-      // NEW: MONTHLY REPORTING & WARNING COLORS
       case 'user_warning':
         return '#f59e0b';
       case 'deletion_limit_reached':
@@ -263,275 +261,284 @@ export default function UserNotifications() {
     }
   };
 
+  if (pageLoading) {
+    return (
+      <section className="user-notif-page">
+        <UserNav />
+        <div className="user-notif-loading user-notif-page-loading">
+          <div className="user-notif-spinner"></div>
+          <p>Loading your notifications...</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className='user-notif-page'>
-      <div className="user-notif-page">
-        <UserNav/>
-        {/* Header */}
-        <header className="user-notif-header">
-          <div className="user-notif-header-content">
-            <h1>
-              <FontAwesomeIcon icon={faBell} />
-              Notifications
-            </h1>
-            <p>Stay updated with your account activities</p>
-          </div>
-          <div className="user-notif-header-actions">
-            <button 
-              className="user-notif-btn-mark-all"
-              onClick={markAllAsRead}
-              disabled={unreadCount === 0}
-            >
-              <FontAwesomeIcon icon={faCheckDouble} />
-              Mark All as Read
-            </button>
-            <button 
-              className="user-notif-btn-delete-all"
-              onClick={() => setDeleteAllModal({ isOpen: true })}
-              disabled={notifications.length === 0}
-            >
-              <FontAwesomeIcon icon={faTrashAlt} />
-              Delete All
-            </button>
-          </div>
-        </header>
-
-        {/* Stats - Now Filterable */}
-        <section className="user-notif-stats">
-          <div 
-            className={`user-notif-stat-card ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => handleStatCardClick('all')}
-            style={{ cursor: 'pointer' }}
-            title="Show all notifications"
+    <section className="user-notif-page">
+      <UserNav />
+      
+      {/* Header */}
+      <header className="user-notif-header">
+        <div className="user-notif-header-content">
+          <h1>
+            <FontAwesomeIcon icon={faBell} />
+            Notifications
+          </h1>
+          <p>Stay updated with your account activities</p>
+        </div>
+        <div className="user-notif-header-actions">
+          <button 
+            className="user-notif-btn-mark-all"
+            onClick={markAllAsRead}
+            disabled={unreadCount === 0}
           >
-            <div className="user-notif-stat-icon total">
-              <FontAwesomeIcon icon={faBell} />
-            </div>
-            <div className="user-notif-stat-info">
-              <h3>{notifications.length}</h3>
-              <p>Total</p>
-            </div>
-          </div>
-          <div 
-            className={`user-notif-stat-card ${filter === 'unread' ? 'active' : ''}`}
-            onClick={() => handleStatCardClick('unread')}
-            style={{ cursor: 'pointer' }}
-            title="Show unread notifications"
+            <FontAwesomeIcon icon={faCheckDouble} />
+            Mark All as Read
+          </button>
+          <button 
+            className="user-notif-btn-delete-all"
+            onClick={() => setDeleteAllModal({ isOpen: true })}
+            disabled={notifications.length === 0}
           >
-            <div className="user-notif-stat-icon unread">
-              <FontAwesomeIcon icon={faBell} />
-            </div>
-            <div className="user-notif-stat-info">
-              <h3>{unreadCount}</h3>
-              <p>Unread</p>
-            </div>
-          </div>
-        </section>
+            <FontAwesomeIcon icon={faTrashAlt} />
+            Delete All
+          </button>
+        </div>
+      </header>
 
-        {/* Filters */}
-        <section className="user-notif-filters">
-          <div className="user-notif-filter-group">
-            <FontAwesomeIcon icon={faFilter} />
-            <select 
-              value={filter} 
-              onChange={(e) => setFilter(e.target.value)}
-              className="user-notif-filter-select"
-            >
-              <option value="all">All Notifications</option>
-              <option value="unread">Unread Only</option>
-              <option value="post_resolved">Resolved Posts</option>
-              <option value="post_restored">Restored Posts</option>
-              <option value="post_removed_warning">Post Removal Warnings</option>
-              <option value="post_deleted_warning">Post Deletion Warnings</option>
-              <option value="report_submitted">Reports</option>
-              <option value="report_status_update">Report Updates</option>
-              <option value="feedback_submitted">Feedback Submitted</option>
-              <option value="feedback_updated">Feedback Updates</option>
-              {/* DELETION REQUEST FILTERS */}
-              <option value="deletion_request_approved">Approved Deletions</option>
-              <option value="deletion_request_rejected">Rejected Deletions</option>
-              {/* MONTHLY REPORTING FILTERS */} 
-              <option value="user_warning">Report Warnings</option>
-              <option value="deletion_limit_reached">Deletion Limits</option>
-              <option value="deletion_warning">Deletion Warnings</option>
-            </select>
+      {/* Stats */}
+      <section className="user-notif-stats">
+        <div 
+          className={`user-notif-stat-card ${filter === 'all' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('all')}
+          style={{ cursor: 'pointer' }}
+          title="Show all notifications"
+        >
+          <div className="user-notif-stat-icon total">
+            <FontAwesomeIcon icon={faBell} />
           </div>
-        </section>
+          <div className="user-notif-stat-info">
+            <h3>{notifications.length}</h3>
+            <p>Total</p>
+          </div>
+        </div>
+        <div 
+          className={`user-notif-stat-card ${filter === 'unread' ? 'active' : ''}`}
+          onClick={() => handleStatCardClick('unread')}
+          style={{ cursor: 'pointer' }}
+          title="Show unread notifications"
+        >
+          <div className="user-notif-stat-icon unread">
+            <FontAwesomeIcon icon={faBell} />
+          </div>
+          <div className="user-notif-stat-info">
+            <h3>{unreadCount}</h3>
+            <p>Unread</p>
+          </div>
+        </div>
+      </section>
 
-        {/* Active Filter Display */}
-        {filter !== 'all' && (
-          <div className="user-notif-active-filters">
-            <span className="user-notif-filter-label">Active filter:</span>
-            <div className="user-notif-filter-tags">
-              <span className="user-notif-filter-tag">
-                {filter === 'unread' && 'Unread Only'}
-                {filter === 'post_resolved' && 'Resolved Posts'}
-                {filter === 'post_removed_warning' && 'Post Removal Warnings'}
-                {filter === 'post_deleted_warning' && 'Post Deletion Warnings'}
-                {filter === 'post_restored' && 'Restored Posts'}
-                {filter === 'report_submitted' && 'Reports'}
-                {filter === 'report_status_update' && 'Report Updates'}
-                {filter === 'feedback_submitted' && 'Feedback Submitted'}
-                {filter === 'feedback_updated' && 'Feedback Updates'}
-                {filter === 'deletion_request_approved' && 'Approved Deletions'}
-                {filter === 'deletion_request_rejected' && 'Rejected Deletions'}
-                {filter === 'user_warning' && 'Report Warnings'}
-                {filter === 'deletion_limit_reached' && 'Deletion Limits'}
-                {filter === 'deletion_warning' && 'Deletion Warnings'}
+      {/* Filters */}
+      <section className="user-notif-filters">
+        <div className="user-notif-filter-group">
+          <FontAwesomeIcon icon={faFilter} />
+          <select 
+            value={filter} 
+            onChange={(e) => setFilter(e.target.value)}
+            className="user-notif-filter-select"
+          >
+            <option value="all">All Notifications</option>
+            <option value="unread">Unread Only</option>
+            <option value="post_resolved">Resolved Posts</option>
+            <option value="post_restored">Restored Posts</option>
+            <option value="post_removed_warning">Post Removal Warnings</option>
+            <option value="post_deleted_warning">Post Deletion Warnings</option>
+            <option value="report_submitted">Reports</option>
+            <option value="report_status_update">Report Updates</option>
+            <option value="feedback_submitted">Feedback Submitted</option>
+            <option value="feedback_updated">Feedback Updates</option>
+            <option value="deletion_request_approved">Approved Deletions</option>
+            <option value="deletion_request_rejected">Rejected Deletions</option>
+            <option value="user_warning">Report Warnings</option>
+            <option value="deletion_limit_reached">Deletion Limits</option>
+            <option value="deletion_warning">Deletion Warnings</option>
+          </select>
+        </div>
+      </section>
+
+      {/* Active Filter Display */}
+      {filter !== 'all' && (
+        <div className="user-notif-active-filters">
+          <span className="user-notif-filter-label">Active filter:</span>
+          <div className="user-notif-filter-tags">
+            <span className="user-notif-filter-tag">
+              {filter === 'unread' && 'Unread Only'}
+              {filter === 'post_resolved' && 'Resolved Posts'}
+              {filter === 'post_removed_warning' && 'Post Removal Warnings'}
+              {filter === 'post_deleted_warning' && 'Post Deletion Warnings'}
+              {filter === 'post_restored' && 'Restored Posts'}
+              {filter === 'report_submitted' && 'Reports'}
+              {filter === 'report_status_update' && 'Report Updates'}
+              {filter === 'feedback_submitted' && 'Feedback Submitted'}
+              {filter === 'feedback_updated' && 'Feedback Updates'}
+              {filter === 'deletion_request_approved' && 'Approved Deletions'}
+              {filter === 'deletion_request_rejected' && 'Rejected Deletions'}
+              {filter === 'user_warning' && 'Report Warnings'}
+              {filter === 'deletion_limit_reached' && 'Deletion Limits'}
+              {filter === 'deletion_warning' && 'Deletion Warnings'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Notifications List */}
+      <section className="user-notif-list">
+        {dataLoading ? (
+          <div className="user-notif-loading user-notif-data-loading">
+            <div className="user-notif-spinner"></div>
+            <p>Loading notifications data...</p>
+          </div>
+        ) : notifications.length > 0 ? (
+          <div className="user-notif-list-container">
+            <div className="user-notif-list-header">
+              <span className="user-notif-count">
+                Showing {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
+                {filter !== 'all' && ` (Filtered)`}
               </span>
             </div>
-          </div>
-        )}
-
-        {/* Notifications List */}
-        <section className="user-notif-list">
-          {loading ? (
-            <div className="user-notif-loading">
-              <div className="user-notif-spinner"></div>
-              <p>Loading notifications...</p>
-            </div>
-          ) : notifications.length > 0 ? (
-            <div className="user-notif-list-container">
-              <div className="user-notif-list-header">
-                <span className="user-notif-count">
-                  Showing {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
-                  {filter !== 'all' && ` (Filtered)`}
-                </span>
-              </div>
-              {notifications.map(notification => (
-                <div 
-                  key={notification.id} 
-                  className={`user-notif-item ${notification.is_read ? 'read' : 'unread'}`}
-                  data-type={notification.type}
-                >
-                  <div className="user-notif-icon">
-                    <FontAwesomeIcon 
-                      icon={getNotificationIcon(notification.type)} 
-                      style={{ color: getNotificationColor(notification.type) }}
-                    />
-                  </div>
-                  <div className="user-notif-content">
-                    <h4>{notification.title}</h4>
-                    <p>{notification.message}</p>
-                    <div className="user-notif-meta">
-                      <span className="time">{formatTime(notification.created_at)}</span>
-                    </div>
-                  </div>
-                  <div className="user-notif-actions">
-                    {!notification.is_read && (
-                      <button 
-                        className="user-notif-btn-read"
-                        onClick={() => markAsRead(notification.id)}
-                        title="Mark as read"
-                      >
-                        <FontAwesomeIcon icon={faCheckCircle} />
-                      </button>
-                    )}
-                    <button 
-                      className="user-notif-btn-delete"
-                      onClick={() => setDeleteModal({ 
-                        isOpen: true, 
-                        notificationId: notification.id, 
-                        notificationTitle: notification.title 
-                      })}
-                      title="Delete notification"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
+            {notifications.map(notification => (
+              <div 
+                key={notification.id} 
+                className={`user-notif-item ${notification.is_read ? 'read' : 'unread'}`}
+                data-type={notification.type}
+              >
+                <div className="user-notif-icon">
+                  <FontAwesomeIcon 
+                    icon={getNotificationIcon(notification.type)} 
+                    style={{ color: getNotificationColor(notification.type) }}
+                  />
+                </div>
+                <div className="user-notif-content">
+                  <h4>{notification.title}</h4>
+                  <p>{notification.message}</p>
+                  <div className="user-notif-meta">
+                    <span className="time">{formatTime(notification.created_at)}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="user-notif-empty">
-              <FontAwesomeIcon icon={faBell} size="3x" />
-              <h3>No notifications</h3>
-              <p>
-                {filter === 'all' 
-                  ? "You're all caught up! New notifications will appear here." 
-                  : "No notifications match your filter criteria."
-                }
-              </p>
-            </div>
-          )}
-        </section>
-
-        {/* Delete Single Notification Modal */}
-        {deleteModal.isOpen && (
-          <div className="user-notif-modal-overlay" onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}>
-            <div className="user-notif-modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="user-notif-modal-header">
-                <FontAwesomeIcon icon={faWarning} className="user-notif-warning-icon" />
-                <h3>Delete Notification</h3>
-                <button 
-                  className="user-notif-modal-close"
-                  onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
+                <div className="user-notif-actions">
+                  {!notification.is_read && (
+                    <button 
+                      className="user-notif-btn-read"
+                      onClick={() => markAsRead(notification.id)}
+                      title="Mark as read"
+                    >
+                      <FontAwesomeIcon icon={faCheckCircle} />
+                    </button>
+                  )}
+                  <button 
+                    className="user-notif-btn-delete"
+                    onClick={() => setDeleteModal({ 
+                      isOpen: true, 
+                      notificationId: notification.id, 
+                      notificationTitle: notification.title 
+                    })}
+                    title="Delete notification"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
               </div>
-              <div className="user-notif-modal-body">
-                <p>Are you sure you want to delete this notification?</p>
-                <p><strong>"{deleteModal.notificationTitle}"</strong></p>
-                <p className="user-notif-warning-text">This action cannot be undone.</p>
-              </div>
-              <div className="user-notif-modal-footer">
-                <button 
-                  className="user-notif-modal-btn-secondary"
-                  onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="user-notif-modal-btn-primary delete-confirm"
-                  onClick={() => deleteNotification(deleteModal.notificationId)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                  Delete Notification
-                </button>
-              </div>
-            </div>
+            ))}
+          </div>
+        ) : (
+          <div className="user-notif-empty">
+            <FontAwesomeIcon icon={faBell} size="3x" />
+            <h3>No notifications</h3>
+            <p>
+              {filter === 'all' 
+                ? "You're all caught up! New notifications will appear here." 
+                : "No notifications match your filter criteria."
+              }
+            </p>
           </div>
         )}
+      </section>
 
-        {/* Delete All Notifications Modal */}
-        {deleteAllModal.isOpen && (
-          <div className="user-notif-modal-overlay" onClick={() => setDeleteAllModal({ isOpen: false })}>
-            <div className="user-notif-modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="user-notif-modal-header">
-                <FontAwesomeIcon icon={faWarning} className="user-notif-warning-icon" />
-                <h3>Delete All Notifications</h3>
-                <button 
-                  className="user-notif-modal-close"
-                  onClick={() => setDeleteAllModal({ isOpen: false })}
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
-              </div>
-              <div className="user-notif-modal-body">
-                <p>Are you sure you want to delete ALL notifications?</p>
-                <p><strong>This will permanently delete {notifications.length} notification{notifications.length !== 1 ? 's' : ''}.</strong></p>
-                <p className="user-notif-warning-text">This action cannot be undone and all notification history will be lost.</p>
-              </div>
-              <div className="user-notif-modal-footer">
-                <button 
-                  className="user-notif-modal-btn-secondary"
-                  onClick={() => setDeleteAllModal({ isOpen: false })}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="user-notif-modal-btn-primary delete-confirm"
-                  onClick={deleteAllNotifications}
-                >
-                  <FontAwesomeIcon icon={faTrashAlt} />
-                  Delete All Notifications
-                </button>
-              </div>
+      {/* Delete Single Notification Modal */}
+      {deleteModal.isOpen && (
+        <div className="user-notif-modal-overlay" onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}>
+          <div className="user-notif-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="user-notif-modal-header">
+              <FontAwesomeIcon icon={faWarning} className="user-notif-warning-icon" />
+              <h3>Delete Notification</h3>
+              <button 
+                className="user-notif-modal-close"
+                onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="user-notif-modal-body">
+              <p>Are you sure you want to delete this notification?</p>
+              <p><strong>"{deleteModal.notificationTitle}"</strong></p>
+              <p className="user-notif-warning-text">This action cannot be undone.</p>
+            </div>
+            <div className="user-notif-modal-footer">
+              <button 
+                className="user-notif-modal-btn-secondary"
+                onClick={() => setDeleteModal({ isOpen: false, notificationId: null, notificationTitle: null })}
+              >
+                Cancel
+              </button>
+              <button 
+                className="user-notif-modal-btn-primary delete-confirm"
+                onClick={() => deleteNotification(deleteModal.notificationId)}
+              >
+                <FontAwesomeIcon icon={faTrash} />
+                Delete Notification
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Delete All Notifications Modal */}
+      {deleteAllModal.isOpen && (
+        <div className="user-notif-modal-overlay" onClick={() => setDeleteAllModal({ isOpen: false })}>
+          <div className="user-notif-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="user-notif-modal-header">
+              <FontAwesomeIcon icon={faWarning} className="user-notif-warning-icon" />
+              <h3>Delete All Notifications</h3>
+              <button 
+                className="user-notif-modal-close"
+                onClick={() => setDeleteAllModal({ isOpen: false })}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="user-notif-modal-body">
+              <p>Are you sure you want to delete ALL notifications?</p>
+              <p><strong>This will permanently delete {notifications.length} notification{notifications.length !== 1 ? 's' : ''}.</strong></p>
+              <p className="user-notif-warning-text">This action cannot be undone and all notification history will be lost.</p>
+            </div>
+            <div className="user-notif-modal-footer">
+              <button 
+                className="user-notif-modal-btn-secondary"
+                onClick={() => setDeleteAllModal({ isOpen: false })}
+              >
+                Cancel
+              </button>
+              <button 
+                className="user-notif-modal-btn-primary delete-confirm"
+                onClick={deleteAllNotifications}
+              >
+                <FontAwesomeIcon icon={faTrashAlt} />
+                Delete All Notifications
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
