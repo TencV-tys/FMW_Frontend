@@ -173,8 +173,8 @@ export default function EditProfile() {
       <section className="edit-profile-page">
         <UserDashboardNav />
         <main className="edit-profile-content">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
+          <div className="loading-container-fmw">
+            <div className="loading-spinner-fmw"></div>
             <p>Loading profile data...</p>
           </div>
         </main>

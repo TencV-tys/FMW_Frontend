@@ -757,8 +757,6 @@
   padding: 4rem 2rem;
   text-align: center;
   background: #FBFCF8;
-  border-radius: 12px;
-  margin: 2rem;
   width: 100%;
   min-height: 100dvh;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -1138,7 +1136,7 @@
   .loading-container-fmw,
   .error-container-fmw,
   .empty-state-fmws {
-    width: 95%;
+    width: 100%;
   }
 
   .mypost-image-container-fmw {

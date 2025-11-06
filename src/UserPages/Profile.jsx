@@ -83,8 +83,8 @@ export default function Profile() {
       <section className="profile-page">
         <UserNav />
         <main className="profile-content">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
+          <div className="loading-container-fmw">
+            <div className="loading-spinner-fmw"></div>
             <p>Loading profile...</p>
           </div>
         </main>

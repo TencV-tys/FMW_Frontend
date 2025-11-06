@@ -303,18 +303,7 @@
   animation: spin-fmw 1s linear infinite;
 }
 
-/* Loading and Empty States */
-.loading-container-fmw,
-.empty-state-fmw {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  width: 100%;
-  min-height: 300px;
-}
+
 
 .loading-spinner-fmw {
   width: 40px;

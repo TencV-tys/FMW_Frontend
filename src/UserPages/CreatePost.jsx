@@ -232,8 +232,8 @@ export default function CreatePost() {
       <div className="create-container">
         <UserNav />
         <main className="create-content">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
+          <div className="loading-container-fmw">
+            <div className="loading-spinner-fmw"></div>
             <p>Loading form data...</p>
           </div>
         </main>

@@ -320,7 +320,7 @@ const getStatusBadge = (status) => {
           </div>
         </main>
       </div>
-    );
+    ); 
   }
 
   if (error) {

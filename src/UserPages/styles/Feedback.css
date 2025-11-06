@@ -593,18 +593,6 @@
   background: #c0392b;
 }
 
-/* Loading and Empty States */
-.loading-container-fmw,
-.empty-state-fmw {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  width: 100%;
-  min-height: 300px;
-}
 
 .loading-spinner-fmw {
   width: 40px;
@@ -812,23 +800,6 @@
   .empty-state-fmw p {
     font-size: 0.9rem;
   }
-}
-/* styles/Feedback.css - Updated Empty State Styles */
-
-/* ... (keep all previous CSS code) ... */
-
-/* Loading and Empty States */ 
-.loading-container-fmw,
-.empty-state-fmw {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  width: 100%;
-  min-height: 300px;
-  margin: 0 auto;
 }
 
 .loading-spinner-fmw {
@@ -1175,21 +1146,6 @@
   background: #FBFCF8 !important;
 }
 
-/* Loading state background */
-.loading-container-fmw {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  width: 100%;
-  min-height: 300px;
-  margin: 0 auto;
-  background: #FBFCF8 !important;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-}
 
 /* Responsive Design for Edit Form */
 @media (max-width: 768px) {

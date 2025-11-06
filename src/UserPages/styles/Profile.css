@@ -416,14 +416,7 @@
 }
 
 /* 🎯 Loading State */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-}
+
 
 .loading-spinner {
   width: 40px;
