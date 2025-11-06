@@ -203,7 +203,7 @@ export default function UserNotifications() {
       case 'deletion_request_rejected':
         return faTimesCircle;
       // NEW: MONTHLY REPORTING & WARNING ICONS
-      case 'user_report_warning':
+      case 'user_warning':
         return faUserShield;
       case 'deletion_limit_reached':
         return faExclamationTriangle;
@@ -238,7 +238,7 @@ export default function UserNotifications() {
       case 'deletion_request_rejected':
         return '#ef4444';
       // NEW: MONTHLY REPORTING & WARNING COLORS
-      case 'user_report_warning':
+      case 'user_warning':
         return '#f59e0b';
       case 'deletion_limit_reached':
         return '#ef4444';
@@ -351,7 +351,7 @@ export default function UserNotifications() {
               <option value="deletion_request_approved">Approved Deletions</option>
               <option value="deletion_request_rejected">Rejected Deletions</option>
               {/* MONTHLY REPORTING FILTERS */}
-              <option value="user_report_warning">Report Warnings</option>
+              <option value="user_warning">Report Warnings</option>
               <option value="deletion_limit_reached">Deletion Limits</option>
               <option value="deletion_warning">Deletion Warnings</option>
             </select>
@@ -375,7 +375,7 @@ export default function UserNotifications() {
                 {filter === 'feedback_updated' && 'Feedback Updates'}
                 {filter === 'deletion_request_approved' && 'Approved Deletions'}
                 {filter === 'deletion_request_rejected' && 'Rejected Deletions'}
-                {filter === 'user_report_warning' && 'Report Warnings'}
+                {filter === 'user_warning' && 'Report Warnings'}
                 {filter === 'deletion_limit_reached' && 'Deletion Limits'}
                 {filter === 'deletion_warning' && 'Deletion Warnings'}
               </span>
