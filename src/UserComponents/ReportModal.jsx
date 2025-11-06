@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faFlag, faExclamationTriangle, faUserSlash, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import './styles/ReportModal.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function ReportModal({ isOpen, onClose, post }) {
   const [reason, setReason] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
@@ -11,14 +11,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [isOwnPost, setIsOwnPost] = useState(false);
   const [alreadyReportedThisMonth, setAlreadyReportedThisMonth] = useState(false);
-  
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-  const wifi = isLocalhost 
-    ? 'http://localhost:8000' 
-    : 'http://192.168.1.27:8000';
-
+  const wifi = useWifiUrl();
   const reportReasons = [
     'Inappropriate content',
     'Spam or misleading',

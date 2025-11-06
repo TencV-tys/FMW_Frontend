@@ -17,7 +17,7 @@ import Logo from '../assets/Logo2.jpg';
 import Profile from '../assets/download.png';
 import LogoutButton from '../components/LogoutButton';
 import './styles/UserDashboardNav.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function UserDashboardNav() {
   const [open, setOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
@@ -27,12 +27,7 @@ export default function UserDashboardNav() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-   const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+  const wifi = useWifiUrl();
   
   // 🎯 Check if mobile view
   useEffect(() => {

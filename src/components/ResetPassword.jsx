@@ -6,17 +6,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faSpinner, faEye, faEyeSlash, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import NavAuth from './NavAuth';
 import './styles/ResetPassword.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
-   const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+  const wifi = useWifiUrl();
 
   const [formData, setFormData] = useState({
     password: '',

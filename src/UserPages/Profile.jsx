@@ -5,7 +5,7 @@ import { faUser, faEnvelope, faVenusMars, faCalendar, faEdit } from '@fortawesom
 import UserNav from '../UserComponents/UserDashboardNav';
 import Logo2 from '../assets/Logo2.jpg';
 import './styles/Profile.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,12 +14,7 @@ export default function Profile() {
     activePosts: 0,
     resolvedPosts: 0
   });
-   const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+ const wifi = useWifiUrl();
   //  Fetch user data and statistics
   useEffect(() => {
     const fetchUserData = async () => {

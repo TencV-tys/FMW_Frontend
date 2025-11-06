@@ -6,7 +6,7 @@ import UserNav from '../UserComponents/UserDashboardNav'
 import Logo1 from '../assets/Logo.jpg'
 import './styles/MyPosts.css'
 import { toast } from 'react-toastify'
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function MyPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,13 +18,8 @@ export default function MyPosts() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [resolveConfirm, setResolveConfirm] = useState(null);
   const nav = useNavigate();
+  const wifi = useWifiUrl();
   
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-  const wifi = isLocalhost 
-    ? 'http://localhost:8000' 
-    : 'http://192.168.1.27:8000';
 
   useEffect(() => {
     fetchMyPosts();

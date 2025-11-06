@@ -1,20 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function ProtectedRoute({ allowedRole, children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const wifi = useWifiUrl();
+  
   useEffect(() => {
     const fetchUser = async () => {
       try {
-             // ✅ Simple detection based on current URL
-const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+      
         const res = await fetch(`${wifi}/auth/me`, {
           credentials: 'include', // include cookies
         });

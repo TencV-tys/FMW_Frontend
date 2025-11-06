@@ -6,18 +6,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faSpinner, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import NavAuth from './NavAuth';
 import './styles/ForgotPassword.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-  const wifi = isLocalhost 
-    ? 'http://localhost:8000' 
-    : 'http://192.168.1.27:8000';
-
+  const wifi = useWifiUrl();
   const handleSubmit = async (e) => {
     e.preventDefault();
     

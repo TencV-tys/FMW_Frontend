@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   faUser, 
@@ -9,7 +9,8 @@ import {
   faEye, 
   faCheckCircle,
   faChartLine,
-  faClock
+  faClock,
+  faRefresh
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Dashboard.css';
 
@@ -24,22 +25,91 @@ export default function Dashboard() {
     recentActivities: []
   });
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
   const navigate = useNavigate();
+
+  // 🆕 ADDED: Smart polling refs
+  const pollingIntervalRef = useRef(null);
+  const isTabActiveRef = useRef(true);
 
   useEffect(() => {
     fetchDashboardData();
+
+    // 🆕 ADDED: Smart polling setup (60 seconds)
+    const handleVisibilityChange = () => {
+      isTabActiveRef.current = !document.hidden;
+      if (isTabActiveRef.current) {
+        // Tab became active, fetch immediately
+        fetchDashboardData();
+        startPolling();
+      } else {
+        // Tab hidden, stop polling
+        stopPolling();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    startPolling();
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
+
+  // 🆕 ADDED: Smart polling functions (60 seconds)
+  const startPolling = () => {
+    stopPolling(); // Clear any existing interval
+    pollingIntervalRef.current = setInterval(() => {
+      if (isTabActiveRef.current) {
+        fetchDashboardData();
+      }
+    }, 60000); // 60 seconds
+  };
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
+
+  // 🆕 ADDED: Manual refresh with toast
+  const handleManualRefresh = async () => {
+    showToast('Refreshing dashboard data...', 'success');
+    await fetchDashboardData();
+  };
+
+  // 🆕 ADDED: Show toast notification
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       
       const usersResponse = await fetch('http://localhost:8000/api/users/stats', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       
       const postsResponse = await fetch('http://localhost:8000/api/admin/posts', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache', 
+          'Pragma': 'no-cache'
+        }
       });
 
       if (usersResponse.ok && postsResponse.ok) {
@@ -60,6 +130,7 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      showToast('Error loading dashboard data', 'error');
     } finally {
       setLoading(false);
     }
@@ -100,6 +171,7 @@ export default function Dashboard() {
     }
   };
 
+  // 🆕 UPDATED: StatCard component with better structure
   const StatCard = ({ icon, value, label, color, type }) => (
     <div 
       className='stat-card clickable-stat' 
@@ -111,13 +183,14 @@ export default function Dashboard() {
           <FontAwesomeIcon icon={icon} />
         </div>
         <div className='stat-info'>
-          <h3>{loading ? '...' : value}</h3>
+          <h3>{loading ? '...' : value.toLocaleString()}</h3>
           <p>{label}</p>
         </div>
       </div>
     </div>
   );
 
+  // 🆕 UPDATED: ActivityItem with better structure
   const ActivityItem = ({ activity }) => (
     <div className='activity-item'>
       <div className='activity-icon'>
@@ -137,127 +210,161 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="dashboard-content">
-      {/* Statistics Cards */}
-      <section className="dashboard-stats">
-        <StatCard 
-          icon={faUser} 
-          value={stats.totalUsers} 
-          label="Total Users" 
-          color="#3b82f6"
-          type="users"
-        />
-        <StatCard 
-          icon={faNewspaper} 
-          value={stats.totalPosts} 
-          label="Total Posts" 
-          color="#8b5cf6"
-          type="posts"
-        />
-        <StatCard 
-          icon={faExclamationTriangle} 
-          value={stats.lostPosts} 
-          label="Lost Items" 
-          color="#ef4444"
-          type="lost"
-        />
-        <StatCard 
-          icon={faSearch} 
-          value={stats.foundPosts} 
-          label="Found Items" 
-          color="#10b981"
-          type="found"
-        />
-        <StatCard 
-          icon={faEye} 
-          value={stats.activePosts} 
-          label="Active Posts" 
-          color="#f59e0b"
-          type="active"
-        />
-        <StatCard 
-          icon={faCheckCircle} 
-          value={stats.resolvedPosts} 
-          label="Resolved Cases" 
-          color="#06b6d4"
-          type="resolved"
-        />
-      </section>
+    <>
+      {/* 🆕 ADDED: Toast Notification */}
+      {toast.show && (
+        <div className={`dashboard-toast dashboard-toast-${toast.type}`}>
+          <div className="dashboard-toast-content">
+            <FontAwesomeIcon 
+              icon={toast.type === 'success' ? faCheckCircle : faExclamationTriangle} 
+              className="dashboard-toast-icon" 
+            />
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
 
-      {/* Recent Activities & Quick Stats */}
-      <section className='dashboard-main-content'>
-        <div className='recent-activities-section'>
-          <div className='section-container-darkbrown'>
-            <div className='section-container-lightbrown'>
-              <div className='section-content'>
-                <div className='section-title'>
-                  <h2>
-                    <FontAwesomeIcon icon={faClock} />
-                    Recent Activities
-                  </h2>
-                </div>
-                <div className='activities-list'>
-                  {loading ? (
-                    <div className="loading-state">
-                      <p>Loading activities...</p>
-                    </div>
-                  ) : stats.recentActivities.length > 0 ? (
-                    stats.recentActivities.map(activity => (
-                      <ActivityItem key={activity.id} activity={activity} />
-                    ))
-                  ) : (
-                    <div className="empty-state">
-                      <p>No recent activities</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+      <div className="dashboard-content">
+        {/* 🆕 UPDATED: Header with Refresh Button */}
+        <div className="dashboard-header">
+          <div className="header-content">
+            <h1>Admin Dashboard</h1>
+            <p>Overview of platform statistics and recent activities</p>
+          </div>
+          <div className="dashboard-header-right">
+            <button 
+              className="refresh-btn"
+              onClick={handleManualRefresh}
+              disabled={loading}
+              title="Refresh dashboard data"
+            >
+              <FontAwesomeIcon icon={faRefresh} spin={loading} />
+              Refresh
+            </button>
           </div>
         </div>
 
-        {/* Quick Stats Sidebar */}
-        <div className='quick-stats-section'>
-          <div className='section-container-darkbrown'>
-            <div className='section-container-lightbrown'>
-              <div className='section-content'>
-                <div className='section-title'>
-                  <h2>
-                    <FontAwesomeIcon icon={faChartLine} />
-                    Quick Stats
-                  </h2>
-                </div>
-                <div className='quick-stats'>
-                  <div className='quick-stat-item'>
-                    <span className='stat-label'>Resolution Rate</span>
-                    <span className='stat-value'>
-                      {stats.totalPosts > 0 
-                        ? `${Math.round((stats.resolvedPosts / stats.totalPosts) * 100)}%`
-                        : '0%'
-                      }
-                    </span>
+        {/* Statistics Cards */}
+        <section className="dashboard-stats">
+          <StatCard 
+            icon={faUser} 
+            value={stats.totalUsers} 
+            label="Total Users" 
+            color="#3b82f6"
+            type="users"
+          />
+          <StatCard 
+            icon={faNewspaper} 
+            value={stats.totalPosts} 
+            label="Total Posts" 
+            color="#8b5cf6"
+            type="posts"
+          />
+          <StatCard 
+            icon={faExclamationTriangle} 
+            value={stats.lostPosts} 
+            label="Lost Items" 
+            color="#ef4444"
+            type="lost"
+          />
+          <StatCard 
+            icon={faSearch} 
+            value={stats.foundPosts} 
+            label="Found Items" 
+            color="#10b981"
+            type="found"
+          />
+          <StatCard 
+            icon={faEye} 
+            value={stats.activePosts} 
+            label="Active Posts" 
+            color="#f59e0b"
+            type="active"
+          />
+          <StatCard 
+            icon={faCheckCircle} 
+            value={stats.resolvedPosts} 
+            label="Resolved Cases" 
+            color="#06b6d4"
+            type="resolved"
+          />
+        </section>
+
+        {/* Recent Activities & Quick Stats */}
+        <section className='dashboard-main-content'>
+          <div className='recent-activities-section'>
+            <div className='section-container-darkbrown'>
+              <div className='section-container-lightbrown'>
+                <div className='section-content'>
+                  <div className='section-title'>
+                    <h2>
+                      <FontAwesomeIcon icon={faClock} />
+                      Recent Activities
+                    </h2>
                   </div>
-                  <div className='quick-stat-item'>
-                    <span className='stat-label'>Active Rate</span>
-                    <span className='stat-value'>
-                      {stats.totalPosts > 0 
-                        ? `${Math.round((stats.activePosts / stats.totalPosts) * 100)}%`
-                        : '0%'
-                      }
-                    </span>
-                  </div>
-                  <div className='quick-stat-item'>
-                    <span className='stat-label'>Lost vs Found</span>
-                    <span className='stat-value'>
-                      {stats.lostPosts}:{stats.foundPosts}
-                    </span>
+                  <div className='activities-list'>
+                    {loading ? (
+                      <div className="loading-state">
+                        <p>Loading activities...</p>
+                      </div>
+                    ) : stats.recentActivities.length > 0 ? (
+                      stats.recentActivities.map(activity => (
+                        <ActivityItem key={activity.id} activity={activity} />
+                      ))
+                    ) : (
+                      <div className="empty-state">
+                        <p>No recent activities</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-    </div>
+
+          {/* Quick Stats Sidebar */}
+          <div className='quick-stats-section'>
+            <div className='section-container-darkbrown'>
+              <div className='section-container-lightbrown'>
+                <div className='section-content'>
+                  <div className='section-title'>
+                    <h2>
+                      <FontAwesomeIcon icon={faChartLine} />
+                      Quick Stats
+                    </h2>
+                  </div>
+                  <div className='quick-stats'>
+                    <div className='quick-stat-item'>
+                      <span className='stat-label'>Resolution Rate</span>
+                      <span className='stat-value'>
+                        {stats.totalPosts > 0 
+                          ? `${Math.round((stats.resolvedPosts / stats.totalPosts) * 100)}%`
+                          : '0%'
+                        }
+                      </span>
+                    </div>
+                    <div className='quick-stat-item'>
+                      <span className='stat-label'>Active Rate</span>
+                      <span className='stat-value'>
+                        {stats.totalPosts > 0 
+                          ? `${Math.round((stats.activePosts / stats.totalPosts) * 100)}%`
+                          : '0%'
+                        }
+                      </span>
+                    </div>
+                    <div className='quick-stat-item'>
+                      <span className='stat-label'>Lost vs Found</span>
+                      <span className='stat-value'>
+                        {stats.lostPosts}:{stats.foundPosts}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </>
   );
 }

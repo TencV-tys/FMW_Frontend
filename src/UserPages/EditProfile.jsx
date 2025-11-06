@@ -6,19 +6,15 @@ import { faArrowLeft, faUser, faEnvelope, faVenusMars, faCamera } from '@fortawe
 import UserDashboardNav from '../UserComponents/UserDashboardNav';
 import Profile from '../assets/download.png';
 import './styles/EditProfile.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function EditProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
-    const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+    
+      const wifi = useWifiUrl();
 
   const [formData, setFormData] = useState({
     first_name: '',

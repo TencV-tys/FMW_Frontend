@@ -3,20 +3,14 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/CreatePost.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function CreatePost() {
   const [categories, setCategories] = useState([]);
   const [barangays, setBarangays] = useState([]);
   const [puroks, setPuroks] = useState([]);
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
-   const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
-
+  const wifi = useWifiUrl();
   const [formData, setFormData] = useState({
     title: '',
     type: 'Lost',

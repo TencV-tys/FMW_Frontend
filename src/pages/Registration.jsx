@@ -15,7 +15,7 @@ import {
   faShieldAlt
 } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 // Custom hook for registration form
 const useRegistrationForm = () => {
   const [state, setState] = useState({
@@ -126,15 +126,43 @@ const validationService = {
   }
 };
 
+export default function Registration() {
+  const {
+    first_name,
+    last_name,
+    email,
+    gender,
+    password,
+    password_confirmation,
+    agreedToTerms,
+    isLoading,
+    errors,
+    touched,
+    showPassword,
+    showConfirmPassword,
+    emailVerified,
+    checkingEmail,
+    updateField,
+    setErrors,
+    setLoading,
+    togglePasswordVisibility,
+    toggleConfirmPasswordVisibility,
+    setEmailVerificationStatus,
+    setAgreedToTerms
+  } = useRegistrationForm();
+ 
+  const navigate = useNavigate();
+   const wifi = useWifiUrl();
+
+
+
+
+
 // Email verification service
 const emailVerificationService = {
   checkEmailAvailability: async (email) => {
     try {
-      const isLocalhost = window.location.hostname === 'localhost' || 
-                          window.location.hostname === '127.0.0.1';
-      const wifi = isLocalhost 
-        ? 'http://localhost:8000' 
-        : 'http://192.168.1.27:8000';
+    
       
       const response = await fetch(`${wifi}/auth/check-email?email=${encodeURIComponent(email)}`, {
         method: 'GET',
@@ -167,12 +195,7 @@ const emailVerificationService = {
 // API service
 const registrationService = {
   register: async (userData) => {
-    const isLocalhost = window.location.hostname === 'localhost' || 
-                        window.location.hostname === '127.0.0.1';
-    const wifi = isLocalhost 
-      ? 'http://localhost:8000' 
-      : 'http://192.168.1.27:8000';
-
+    
     const response = await fetch(`${wifi}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -189,33 +212,6 @@ const registrationService = {
     };
   }
 };
-
-export default function Registration() {
-  const {
-    first_name,
-    last_name,
-    email,
-    gender,
-    password,
-    password_confirmation,
-    agreedToTerms,
-    isLoading,
-    errors,
-    touched,
-    showPassword,
-    showConfirmPassword,
-    emailVerified,
-    checkingEmail,
-    updateField,
-    setErrors,
-    setLoading,
-    togglePasswordVisibility,
-    toggleConfirmPasswordVisibility,
-    setEmailVerificationStatus,
-    setAgreedToTerms
-  } = useRegistrationForm();
- 
-  const navigate = useNavigate();
 
   // Real-time email verification
   useEffect(() => {

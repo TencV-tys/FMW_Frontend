@@ -12,21 +12,15 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/MyReports.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function MyReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, pending, under_review, resolved, dismissed
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const wifi = useWifiUrl();
   
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-  const wifi = isLocalhost 
-    ? 'http://localhost:8000' 
-    : 'http://192.168.1.27:8000';
-
   useEffect(() => {
     fetchMyReports();
   }, []);

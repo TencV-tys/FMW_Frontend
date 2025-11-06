@@ -23,6 +23,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
+import {useWifiUrl} from '../hooks/useWifiUrl';
 
 export default function UserNotifications() {
   const [notifications, setNotifications] = useState([]);
@@ -31,12 +32,8 @@ export default function UserNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, notificationId: null, notificationTitle: null });
   const [deleteAllModal, setDeleteAllModal] = useState({ isOpen: false });
-   const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
+  const wifi = useWifiUrl();
 
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
   useEffect(() => {
     fetchNotifications();
     fetchUnreadCount();

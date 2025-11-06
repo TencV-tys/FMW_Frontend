@@ -5,6 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './styles/Login.css';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useWifiUrl } from '../hooks/useWifiUrl';
 
 // Custom hook for form state management
 const useLoginForm = () => {
@@ -45,32 +46,6 @@ const useLoginForm = () => {
   };
 };
 
-// API service abstraction
-const authService = {
-  login: async (credentials) => {
-    const isLocalhost = window.location.hostname === 'localhost' || 
-                        window.location.hostname === '127.0.0.1';
-    const wifi = isLocalhost 
-      ? 'http://localhost:8000' 
-      : 'http://192.168.1.27:8000';
-    
-    const response = await fetch(`${wifi}/auth/login`, {
-      method: "POST",
-      credentials: 'include',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(credentials)
-    });
-
-    const data = await response.json();
-    
-    return {
-      success: response.ok,
-      data,
-      status: response.status
-    };
-  }
-};
-
 // Validation service
 const validationService = {
   validateEmail: (email) => {
@@ -101,6 +76,27 @@ export default function Login() {
   
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const wifiUrl = useWifiUrl(); // ✅ Hook used inside component
+
+  // API service function (moved inside component)
+  const authService = {
+    login: async (credentials) => {
+      const response = await fetch(`${wifiUrl}/auth/login`, { // ✅ Now wifiUrl is available
+        method: "POST",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials)
+      });
+
+      const data = await response.json();
+      
+      return {
+        success: response.ok,
+        data,
+        status: response.status
+      };
+    }
+  };
 
   useEffect(() => {
     const registered = searchParams.get('registered');

@@ -18,7 +18,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/Feedback.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function Feedback() {
   const [activeTab, setActiveTab] = useState('submit');
   const [formData, setFormData] = useState({
@@ -34,12 +34,8 @@ export default function Feedback() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
 
-  const wifi = isLocalhost 
-    ? 'http://localhost:8000' 
-    : 'http://192.168.1.27:8000';
+  const wifi = useWifiUrl();
 
   // Fetch feedback on component mount and when activeTab changes
   useEffect(() => {

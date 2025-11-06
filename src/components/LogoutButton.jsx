@@ -4,17 +4,12 @@ import { faRightFromBracket, faTimes, faExclamationTriangle } from "@fortawesome
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import './styles/LogoutButton.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function LogoutButton({ className = "", isDropdown = false, isOpen = true }) {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-   const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+  const wifi = useWifiUrl();
   const handleLogout = async () => {
     if (isLoggingOut) return; // Prevent multiple clicks
     

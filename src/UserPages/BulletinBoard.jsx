@@ -16,7 +16,7 @@ import UserNav from '../UserComponents/UserDashboardNav.jsx';
 import ReportModal from '../UserComponents/ReportModal';
 import OptionalPhoto from '../assets/Logo.jpg';
 import './styles/BulletinBoard.css';
-
+import {useWifiUrl} from '../hooks/useWifiUrl';
 export default function BulletinBoard() {
   const [reportModal, setReportModal] = useState({ isOpen: false, post: null });
   const [posts, setPosts] = useState([]);
@@ -34,12 +34,8 @@ export default function BulletinBoard() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [expandedContacts, setExpandedContacts] = useState({});
-   const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
+  const wifi = useWifiUrl(); 
 
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
   useEffect(() => {
     fetchPosts();
     fetchFormData();
@@ -166,12 +162,7 @@ export default function BulletinBoard() {
   };
 
   const getUserImage = (user) => {
-     const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-      const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+   
     if (user.user_photo) {
       return `${wifi}/uploads/${user.user_photo}`;
     }

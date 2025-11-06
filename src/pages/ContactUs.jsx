@@ -14,6 +14,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import NavAuth from '../components/NavAuth';
 import './styles/ContactUs.css';
+import { useWifiUrl } from '../hooks/useWifiUrl';
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -26,13 +27,7 @@ export default function ContactUs() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [error, setError] = useState('');
-   
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1';
-
-const wifi = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'http://192.168.1.27:8000';
+  const wifi = useWifiUrl();
 
 
   const handleChange = (e) => {
