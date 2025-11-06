@@ -340,9 +340,9 @@ export default function UserNotifications() {
               <option value="all">All Notifications</option>
               <option value="unread">Unread Only</option>
               <option value="post_resolved">Resolved Posts</option>
+              <option value="post_restored">Restored Posts</option>
               <option value="post_removed_warning">Post Removal Warnings</option>
               <option value="post_deleted_warning">Post Deletion Warnings</option>
-              <option value="post_restored">Restored Posts</option>
               <option value="report_submitted">Reports</option>
               <option value="report_status_update">Report Updates</option>
               <option value="feedback_submitted">Feedback Submitted</option>
@@ -350,7 +350,7 @@ export default function UserNotifications() {
               {/* DELETION REQUEST FILTERS */}
               <option value="deletion_request_approved">Approved Deletions</option>
               <option value="deletion_request_rejected">Rejected Deletions</option>
-              {/* MONTHLY REPORTING FILTERS */}
+              {/* MONTHLY REPORTING FILTERS */} 
               <option value="user_warning">Report Warnings</option>
               <option value="deletion_limit_reached">Deletion Limits</option>
               <option value="deletion_warning">Deletion Warnings</option>
