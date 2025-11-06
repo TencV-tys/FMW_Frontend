@@ -189,6 +189,7 @@ export default function BulletinBoard() {
     e.stopPropagation();
   };
 
+  // Toggle description expansion
   const toggleDescription = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedDescriptions(prev => ({
@@ -197,6 +198,7 @@ export default function BulletinBoard() {
     }));
   };
 
+  // Toggle contact expansion
   const toggleContact = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedContacts(prev => ({
@@ -205,53 +207,53 @@ export default function BulletinBoard() {
     }));
   };
 
+  // Check if description needs "Read More"
   const needsReadMore = (description) => {
     return description.length > 120;
   };
 
+  // Check if contact needs "Read More"
   const needsContactReadMore = (contact) => {
     return contact.length > 50;
   };
 
+  // Get truncated description
   const getTruncatedDescription = (description) => {
     if (description.length <= 120) return description;
     return description.substring(0, 120) + '...';
   };
 
+  // Get truncated contact
   const getTruncatedContact = (contact) => {
     if (contact.length <= 50) return contact;
     return contact.substring(0, 50) + '...';
   };
 
-  // LOADING STATE - OUTSIDE BULLETIN BOARD (like MyPosts)
+  // Loading state - now outside the main container
   if (loading) {
     return (
       <div className="bulletin-board-page-container">
         <UserNav />
-        <main className="bulletin-board-main-container">
-          <div className="bulletin-loading-container">
-            <div className="bulletin-loading-spinner"></div>
-            <p>Loading posts...</p>
-          </div>
-        </main>
-      </div> 
+        <div className="bulletin-loading-outer-container">
+          <div className="bulletin-loading-spinner-large"></div>
+          <p>Loading posts...</p>
+        </div>
+      </div>
     );
   }
 
-  // ERROR STATE - OUTSIDE BULLETIN BOARD (like MyPosts)
+  // Error state - also outside
   if (error) {
     return (
       <div className="bulletin-board-page-container">
         <UserNav />
-        <main className="bulletin-board-main-container">
-          <div className="bulletin-error-container">
-            <h3>Something went wrong</h3>
-            <p>{error}</p>
-            <button onClick={fetchPosts} className="bulletin-retry-btn">
-              Try Again
-            </button>
-          </div>
-        </main>
+        <div className="bulletin-error-outer-container">
+          <h3>Something went wrong</h3>
+          <p>{error}</p>
+          <button onClick={fetchPosts} className="bulletin-retry-btn">
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -262,10 +264,10 @@ export default function BulletinBoard() {
       <main className="bulletin-board-main-container">
         <div className='bulletin-board-darkbrown-container'>
           <div className='bulletin-board-lightbrown-container'>
-            <div className='bulletin-content-container'>
+            <div className='bulletin-board-content-container'>
               
               {/* Header Section */}
-              <div className='bulletin-title-section'>
+              <div className='bulletin-board-title-section'>
                 <h1>Lost & Found Bulletin</h1>
               </div>
 
@@ -409,11 +411,12 @@ export default function BulletinBoard() {
                 </div>
               ) : (
                 <div className='bulletin-posts-grid'>
-                  {filteredPosts.map((post) => (
+                  {filteredPosts.map((post, index) => (
                     <div 
                       key={post.id} 
                       className='bulletin-post-card'
                       onClick={() => openPostModal(post)}
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <span className='bulletin-post-pin'></span>
                       
@@ -535,7 +538,7 @@ export default function BulletinBoard() {
                         </div>
                       </div>
 
-                      {/* Expand Overlay - LOWER OPACITY */}
+                      {/* Expand Overlay */}
                       <div className="bulletin-expand-overlay">
                         <FontAwesomeIcon icon={faExpand} className="bulletin-expand-icon" />
                         <span>Click to view details</span>
