@@ -209,8 +209,8 @@
 /* 🎯 Main Profile Container - BROWN Inner Theme */
 .profile-data-container-darkbrown{
     background-color: #8B5A2B; /* BROWN - Inner theme */
-    border-radius: 12px;
-    padding: 25px;
+    border-radius: 4px;
+    padding: 20px;
     margin: 20px;
     animation: fadeInScale 0.4s ease-out;
 }
@@ -282,7 +282,7 @@
     border-radius: 12px;
     padding: 40px;
     margin: 0;
-    background-color: #F8E38C; /* Light yellow - bulletin board style */
+    background-color: #FFF; /* Light yellow - bulletin board style */
     width: 100%;
     gap: 40px;
     position: relative;
@@ -941,7 +941,7 @@
   
   .profile-stat-card:hover,
   .profile-edit-btn:hover,
-  .profile-pic:hover,
+  .profile-pic:hover, 
   .detail-item:hover,
   .action-btns:hover {
     transform: none !important;

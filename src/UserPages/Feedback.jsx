@@ -33,10 +33,11 @@ export default function Feedback() {
   const [myFeedback, setMyFeedback] = useState([]);
   const [filteredFeedback, setFilteredFeedback] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false); // 🆕 Separate loading for submission
-  const [editLoading, setEditLoading] = useState(false); // 🆕 Separate loading for editing
-  const [deleteLoading, setDeleteLoading] = useState(false); // 🆕 Separate loading for deletion
+  const [pageLoading, setPageLoading] = useState(true); // Global page loading
+  const [dataLoading, setDataLoading] = useState(false); // Data loading for tabs
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [debugInfo, setDebugInfo] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -50,9 +51,14 @@ export default function Feedback() {
 
   const wifi = useWifiUrl();
 
-  // Fetch feedback on component mount and when activeTab changes
+  // Fetch feedback on component mount
   useEffect(() => {
-    if (activeTab === 'my-feedback') {
+    fetchInitialData();
+  }, []);
+
+  // Fetch feedback when activeTab changes
+  useEffect(() => {
+    if (activeTab === 'my-feedback' && !pageLoading) {
       fetchMyFeedback();
     }
   }, [activeTab]);
@@ -66,14 +72,20 @@ export default function Feedback() {
     }
   }, [statusFilter, myFeedback]);
 
-  // Fetch initial feedback count
-  useEffect(() => {
-    fetchMyFeedback();
-  }, []);
+  const fetchInitialData = async () => {
+    try {
+      setPageLoading(true);
+      await fetchMyFeedback();
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+    } finally {
+      setPageLoading(false);
+    }
+  };
 
   const fetchMyFeedback = async () => {
     try {
-      setLoading(true);
+      setDataLoading(true);
       setDebugInfo('Fetching feedback...');
       
       console.log(`Fetching user feedback from: ${wifi}/api/feedback/my-feedback`);
@@ -106,7 +118,7 @@ export default function Feedback() {
       setDebugInfo(`Network error: ${error.message}`);
       console.error('❌ Network error:', error);
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -119,7 +131,7 @@ export default function Feedback() {
     }
 
     try {
-      setSubmitLoading(true); // 🆕 Set submit loading
+      setSubmitLoading(true);
       setDebugInfo('Submitting feedback...');
       
       const submitData = {
@@ -175,13 +187,13 @@ export default function Feedback() {
       console.error('❌ Error submitting feedback:', error);
       alert('Error submitting feedback. Please try again.');
     } finally {
-      setSubmitLoading(false); // 🆕 Clear submit loading
+      setSubmitLoading(false);
     }
   };
 
   const handleDeleteFeedback = async (feedbackId, feedbackTitle) => {
     try {
-      setDeleteLoading(true); // 🆕 Set delete loading
+      setDeleteLoading(true);
       setDebugInfo(`Deleting feedback: ${feedbackTitle}`);
       
       const response = await fetch(`${wifi}/api/feedback/my-feedback/${feedbackId}`, {
@@ -213,7 +225,7 @@ export default function Feedback() {
       console.error('❌ Error deleting feedback:', error);
       alert('Error deleting feedback. Please try again.');
     } finally {
-      setDeleteLoading(false); // 🆕 Clear delete loading
+      setDeleteLoading(false);
     }
   };
 
@@ -225,7 +237,6 @@ export default function Feedback() {
     }));
   };
 
-  // Handle edit button click
   const handleEditClick = (feedback) => {
     setEditingFeedback(feedback.id);
     setEditFormData({
@@ -236,7 +247,6 @@ export default function Feedback() {
     });
   };
 
-  // Handle edit form input change
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
     setEditFormData(prev => ({
@@ -245,10 +255,9 @@ export default function Feedback() {
     }));
   };
 
-  // Handle edit form submission
   const handleEditSubmit = async (feedbackId) => {
     try {
-      setEditLoading(true); // 🆕 Set edit loading
+      setEditLoading(true);
       setDebugInfo(`Updating feedback: ${editFormData.title}`);
       
       const response = await fetch(`${wifi}/api/feedback/my-feedback/${feedbackId}`, {
@@ -283,11 +292,10 @@ export default function Feedback() {
       console.error('❌ Error updating feedback:', error);
       alert('Error updating feedback. Please try again.');
     } finally {
-      setEditLoading(false); // 🆕 Clear edit loading
+      setEditLoading(false);
     }
   };
 
-  // Cancel edit
   const handleCancelEdit = () => {
     setEditingFeedback(null);
     setEditFormData({
@@ -339,10 +347,6 @@ export default function Feedback() {
     }
   };
 
-  const canDeleteFeedback = (feedback) => {
-    return true;
-  };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -369,7 +373,6 @@ export default function Feedback() {
     return counts;
   };
 
-  // Update the feedback card to include edit functionality
   const renderFeedbackCard = (feedback) => {
     if (editingFeedback === feedback.id) {
       return (
@@ -443,7 +446,7 @@ export default function Feedback() {
               <button
                 className="cancel-edit-btn-fmw"
                 onClick={handleCancelEdit}
-                disabled={editLoading} // 🆕 Use editLoading
+                disabled={editLoading}
               >
                 <FontAwesomeIcon icon={faTimes} />
                 Cancel
@@ -451,9 +454,9 @@ export default function Feedback() {
               <button
                 className="save-edit-btn-fmw"
                 onClick={() => handleEditSubmit(feedback.id)}
-                disabled={editLoading || !editFormData.title.trim() || !editFormData.description.trim()} // 🆕 Use editLoading
+                disabled={editLoading || !editFormData.title.trim() || !editFormData.description.trim()}
               >
-                {editLoading ? ( // 🆕 Use editLoading
+                {editLoading ? (
                   <>
                     <div className="loading-spinner-small-fmw"></div>
                     Saving...
@@ -497,7 +500,7 @@ export default function Feedback() {
                 className="edit-feedback-btn-fmw"
                 onClick={() => handleEditClick(feedback)}
                 title="Edit this feedback"
-                disabled={loading} // 🆕 Disable during loading
+                disabled={dataLoading}
               >
                 <FontAwesomeIcon icon={faEdit} />
               </button>
@@ -505,7 +508,7 @@ export default function Feedback() {
                 className="delete-feedback-btn-fmw"
                 onClick={() => setDeleteConfirm(feedback)}
                 title="Delete this feedback"
-                disabled={loading} // 🆕 Disable during loading
+                disabled={dataLoading}
               >
                 <FontAwesomeIcon icon={faTrash} />
               </button>
@@ -527,7 +530,6 @@ export default function Feedback() {
           )}
         </div>
 
-        {/* Delete Confirmation Modal */}
         {deleteConfirm && deleteConfirm.id === feedback.id && (
           <div className="delete-confirmation-overlay-fmw">
             <div className="delete-confirmation-modal-fmw">
@@ -542,16 +544,16 @@ export default function Feedback() {
                 <button
                   className="cancel-btn-fmw"
                   onClick={() => setDeleteConfirm(null)}
-                  disabled={deleteLoading} // 🆕 Disable during delete loading
+                  disabled={deleteLoading}
                 >
                   Cancel
                 </button>
                 <button
                   className="confirm-delete-btn-fmw"
                   onClick={() => handleDeleteFeedback(deleteConfirm.id, deleteConfirm.title)}
-                  disabled={deleteLoading} // 🆕 Disable during delete loading
+                  disabled={deleteLoading}
                 >
-                  {deleteLoading ? ( // 🆕 Show loading in delete button
+                  {deleteLoading ? (
                     <>
                       <div className="loading-spinner-small-fmw"></div>
                       Deleting...
@@ -572,6 +574,19 @@ export default function Feedback() {
   };
 
   const statusCounts = getStatusCounts();
+
+  // Global Page Loading State
+  if (pageLoading) {
+    return (
+      <div className="feedback-page-fmw">
+        <UserNav />
+        <div className="loading-container-fmw">
+          <div className="loading-spinner-fmw"></div>
+          <p>Loading feedback system...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="feedback-page-fmw">
@@ -602,7 +617,7 @@ export default function Feedback() {
                 <button 
                   className={`tab-button-fmw ${activeTab === 'submit' ? 'active-fmw' : ''}`}
                   onClick={() => setActiveTab('submit')}
-                  disabled={loading} // 🆕 Disable tabs during loading
+                  disabled={dataLoading}
                 >
                   <FontAwesomeIcon icon={faPaperPlane} />
                   Submit Feedback
@@ -610,7 +625,7 @@ export default function Feedback() {
                 <button 
                   className={`tab-button-fmw ${activeTab === 'my-feedback' ? 'active-fmw' : ''}`}
                   onClick={() => setActiveTab('my-feedback')}
-                  disabled={loading} // 🆕 Disable tabs during loading
+                  disabled={dataLoading}
                 >
                   <FontAwesomeIcon icon={faClock} />
                   My Feedback ({myFeedback.length})
@@ -661,7 +676,7 @@ export default function Feedback() {
                         value={formData.priority}
                         onChange={handleInputChange}
                         className="priority-select-fmw"
-                        disabled={submitLoading} // 🆕 Disable during submit loading
+                        disabled={submitLoading}
                       >
                         <option value="low">Low - Minor issue or enhancement</option>
                         <option value="medium">Medium - Standard issue</option>
@@ -681,7 +696,7 @@ export default function Feedback() {
                         placeholder="Brief description of your feedback..."
                         maxLength="100"
                         required
-                        disabled={submitLoading} // 🆕 Disable during submit loading
+                        disabled={submitLoading}
                       />
                     </div>
 
@@ -695,7 +710,7 @@ export default function Feedback() {
                         placeholder="Please provide as much detail as possible..."
                         rows="6"
                         required
-                        disabled={submitLoading} // 🆕 Disable during submit loading
+                        disabled={submitLoading}
                       />
                     </div>
 
@@ -703,9 +718,9 @@ export default function Feedback() {
                     <button 
                       type="submit" 
                       className="submit-button-fmw"
-                      disabled={submitLoading || !formData.title.trim() || !formData.description.trim()} // 🆕 Use submitLoading
+                      disabled={submitLoading || !formData.title.trim() || !formData.description.trim()}
                     >
-                      {submitLoading ? ( // 🆕 Use submitLoading
+                      {submitLoading ? (
                         <>
                           <div className="loading-spinner-small-fmw"></div>
                           Submitting...
@@ -743,7 +758,7 @@ export default function Feedback() {
                           key={option.value}
                           className={`filter-option-fmw ${statusFilter === option.value ? 'active-fmw' : ''}`}
                           onClick={() => setStatusFilter(option.value)}
-                          disabled={loading} // 🆕 Disable filters during loading
+                          disabled={dataLoading}
                         >
                           <span className="filter-label-fmw">{option.label}</span>
                           <span className="filter-count-fmw">({option.count})</span>
@@ -754,7 +769,7 @@ export default function Feedback() {
                       <button 
                         className="clear-filter-btn-fmw" 
                         onClick={clearFilter}
-                        disabled={loading} // 🆕 Disable clear filter during loading
+                        disabled={dataLoading}
                       >
                         <FontAwesomeIcon icon={faTimes} />
                         Clear Filter
@@ -762,8 +777,8 @@ export default function Feedback() {
                     )}
                   </div>
 
-                  {loading ? (
-                    <div className="loading-container-fmw">
+                  {dataLoading ? (
+                    <div className="feedback-loading feedback-data-loading-fmw">
                       <div className="loading-spinner-fmw"></div>
                       <p>Loading your feedback...</p>
                     </div>
