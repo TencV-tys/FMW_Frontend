@@ -1,5 +1,4 @@
-/* UserDashboardNav.css - Simplified */
-
+/* UserDashboardNav.css - COMPLETE OPTIMIZED VERSION */
 .user-nav-container {
   position: fixed;
   top: 0;
@@ -12,6 +11,10 @@
   height: 60px;
 }
 
+.user-nav-container.tablet {
+  height: 55px;
+}
+
 .user-nav-container .user-dashboard-nav {
   display: flex;
   justify-content: space-between;
@@ -22,23 +25,22 @@
   height: 100%;
 }
 
+.user-nav-container.tablet .user-dashboard-nav {
+  padding: 0 30px;
+}
+
 .user-nav-container.sticky {
   position: fixed;
   top: 0;
   animation: slideDown 0.3s ease;
-  
 }
 
 @keyframes slideDown {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
 }
 
-/* 🎯 Logo */
+/* Logo */
 .user-dashboard-logo {
   width: 40px;
   height: 40px;
@@ -47,12 +49,17 @@
   cursor: pointer;
 }
 
+.user-nav-container.tablet .user-dashboard-logo {
+  width: 36px;
+  height: 36px;
+}
+
 .user-dashboard-logo-container {
   display: flex;
   align-items: center;
 }
 
-/* 🎯 Navigation Links */
+/* Navigation Links */
 .user-dashboard-links {
   display: flex;
   justify-content: center;
@@ -61,9 +68,17 @@
   padding: 10px;
 }
 
+.user-nav-container.tablet .user-dashboard-links {
+  gap: 20px;
+}
+
 .user-nav-links-group {
   display: flex;
   gap: 25px;
+}
+
+.user-nav-container.tablet .user-nav-links-group {
+  gap: 18px;
 }
 
 .user-dashboard-link-container {
@@ -73,7 +88,7 @@
 }
 
 .user-dashboard-link-container:hover {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 .user-dashboard-nav-link {
@@ -90,12 +105,16 @@
   position: relative;
 }
 
+.user-nav-container.tablet .user-dashboard-nav-link {
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+
 .user-dashboard-nav-link:hover {
   color: black;
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* 🎯 Active Link Styles */
 .user-dashboard-nav-link.active {
   background: rgba(255, 255, 255, 0.25);
   color: #1a1a1a;
@@ -119,7 +138,6 @@
   color: #1a1a1a;
 }
 
-/* 🎯 Create Post Link Special Style */
 .user-create-post-link {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -134,7 +152,7 @@
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* 🎯 User Profile Section */
+/* User Profile Section */
 .user-dashboard-profile-container {
   position: relative;
   display: flex;
@@ -153,6 +171,11 @@
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-nav-container.tablet .user-dashboard-profile-sub {
+  padding: 6px 12px;
+  gap: 10px;
 }
 
 .user-dashboard-profile-sub:hover {
@@ -180,6 +203,14 @@
   line-height: 1.2;
 }
 
+.user-nav-container.tablet .user-dashboard-name {
+  font-size: 0.8rem;
+}
+
+.user-nav-container.tablet .user-dashboard-role {
+  font-size: 0.65rem;
+}
+
 .user-dashboard-profile-image-container {
   display: flex;
   align-items: center;
@@ -194,6 +225,11 @@
   border: 2px solid white;
 }
 
+.user-nav-container.tablet .user-dashboard-profile-img {
+  width: 32px;
+  height: 32px;
+}
+
 .user-dropdown-arrow {
   color: white;
   font-size: 0.8rem;
@@ -204,7 +240,7 @@
   transform: rotate(180deg);
 }
 
-/* 🎯 Dropdown Menu */
+/* Dropdown Menu */
 .user-profile-dropdown-menu {
   display: flex;
   flex-direction: column;
@@ -222,6 +258,11 @@
   margin-top: 10px;
 }
 
+.user-profile-dropdown-menu.tablet {
+  min-width: 220px;
+  padding: 12px 0;
+}
+
 .user-profile-dropdown-menu.mobile {
   position: fixed;
   top: 60px;
@@ -232,21 +273,23 @@
   overflow-y: auto;
 }
 
-@keyframes userFadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.user-nav-container.tablet .user-profile-dropdown-menu.mobile {
+  top: 55px;
 }
 
-/* 🎯 Dropdown Header */
+@keyframes userFadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dropdown Header */
 .user-dropdown-header {
   padding: 0 20px 15px 20px;
   border-bottom: 1px solid #f3f4f6;
+}
+
+.user-profile-dropdown-menu.tablet .user-dropdown-header {
+  padding: 0 16px 12px 16px;
 }
 
 .user-dropdown-user-info {
@@ -261,6 +304,11 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #FF8904;
+}
+
+.user-profile-dropdown-menu.tablet .user-dropdown-user-info img {
+  width: 40px;
+  height: 40px;
 }
 
 .user-dropdown-name {
@@ -281,6 +329,15 @@
   color: #FF8904;
   font-size: 0.7rem;
   font-weight: 500;
+}
+
+.user-profile-dropdown-menu.tablet .user-dropdown-name {
+  font-size: 0.85rem;
+}
+
+.user-profile-dropdown-menu.tablet .user-dropdown-email,
+.user-profile-dropdown-menu.tablet .user-dropdown-role-mobile {
+  font-size: 0.75rem;
 }
 
 .user-dropdown-divider {
@@ -317,6 +374,11 @@
   position: relative;
 }
 
+.user-profile-dropdown-menu.tablet .user-dropdown-link {
+  font-size: 0.8rem;
+  padding: 10px 16px;
+}
+
 .user-dropdown-link:hover {
   color: #FF8904;
   background: #f8f9fa;
@@ -331,7 +393,6 @@
   color: #FF8904;
 }
 
-/* 🎯 Active Dropdown Link */
 .user-dropdown-link.active {
   color: #FF8904;
   background: #fff7ed;
@@ -343,7 +404,6 @@
   color: #FF8904;
 }
 
-/* 🎯 Logout Section */
 .user-dropdown-logout-container {
   border-top: 1px solid #f3f4f6;
   margin-top: 5px;
@@ -380,10 +440,14 @@
   color: #dc2626 !important;
 }
 
-/* 🎯 Notification Bell Styles */
+/* Notification Bell Styles */
 .user-notification-bell-container {
   margin-right: 15px;
   position: relative;
+}
+
+.user-nav-container.tablet .user-notification-bell-container {
+  margin-right: 12px;
 }
 
 .user-notification-bell {
@@ -397,6 +461,11 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
+}
+
+.user-nav-container.tablet .user-notification-bell {
+  font-size: 1.1rem;
+  padding: 6px;
 }
 
 .user-notification-bell:hover {
@@ -427,6 +496,12 @@
   animation: userPulse 2s infinite;
 }
 
+.user-nav-container.tablet .user-notification-badge {
+  min-width: 16px;
+  height: 16px;
+  font-size: 0.65rem;
+}
+
 @keyframes userPulse {
   0% {
     transform: scale(1);
@@ -442,7 +517,6 @@
   }
 }
 
-/* 🎯 Dropdown Notification Badge */
 .user-notification-dropdown-link {
   position: relative;
 }
@@ -462,7 +536,15 @@
   font-weight: 600;
   padding: 0 6px;
 }
-/* 🎯 Responsive Design - CORRECTED */
+
+.user-profile-dropdown-menu.tablet .user-dropdown-notification-badge {
+  right: 16px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 0.65rem;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .user-nav-container .user-dashboard-nav {
     padding: 0 20px;
@@ -472,7 +554,6 @@
     gap: 20px;
   }
   
-  /* 🎯 HIDE main navigation links on mobile - they'll be in dropdown */
   .user-nav-links-group {
     display: none;
   }
@@ -536,4 +617,4 @@
     height: 18px;
     font-size: 0.6rem;
   }
-} 
+}

@@ -1,53 +1,51 @@
-// components/UserDashboardNav.jsx - FIXED MOBILE DROPDOWN
+// components/UserDashboardNav.jsx - COMPLETE OPTIMIZED VERSION
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faUser, 
-  faFileAlt, 
-  faPlus, 
-  faBullhorn,
-  faCaretDown,
-  faSignOutAlt,
-  faBell,
-  faFlag,
-  faCommentDots
+  faUser, faFileAlt, faPlus, faBullhorn,
+  faCaretDown, faSignOutAlt, faBell,
+  faFlag, faCommentDots
 } from '@fortawesome/free-solid-svg-icons';
 import Logo from '../assets/Logo2.jpg';
 import Profile from '../assets/download.png';
 import LogoutButton from '../components/LogoutButton';
 import './styles/UserDashboardNav.css';
-import {useWifiUrl} from '../hooks/useWifiUrl';
+import { useWifiUrl } from '../hooks/useWifiUrl';
+
 export default function UserDashboardNav() {
   const [open, setOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const [user, setUser] = useState(null);
   const [notificationCount, setNotificationCount] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const wifi = useWifiUrl();
   
-  // 🎯 Check if mobile view
+  // 🎯 Check screen size
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width <= 768);
+      setIsTablet(width > 768 && width <= 1024);
     };
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   // 🎯 Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`${wifi}/auth/me`, {
-          credentials: 'include'
+        const response = await fetch(`${wifi}/auth/me`, { 
+          credentials: 'include' 
         });
-        
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
@@ -56,41 +54,82 @@ export default function UserDashboardNav() {
         console.error('Error fetching user data:', error);
       }
     };
-
     fetchUserData();
-  }, []);
+  }, [wifi]);
 
-  // 🎯 Fetch notification count
+  // 🎯 SMART POLLING - Every 3 seconds with retry logic
   useEffect(() => {
+    let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+
     const fetchNotificationCount = async () => {
       try {
         const response = await fetch(`${wifi}/api/notifications/unread-count`, {
-          credentials: 'include'
+          credentials: 'include',
+          headers: { 
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
         
         if (response.ok) {
           const data = await response.json();
-          setNotificationCount(data.count || 0);
+          if (isMounted) {
+            setNotificationCount(data.count || 0);
+            retryCount = 0; // Reset retry count on success
+          }
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
       } catch (error) {
         console.error('Error fetching notification count:', error);
+        if (isMounted && retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Retry attempt ${retryCount} for notifications...`);
+          // Wait 2 seconds before retry
+          setTimeout(fetchNotificationCount, 2000);
+        }
       }
     };
 
+    // Initial fetch
     fetchNotificationCount();
+
+    // Set up polling every 3 seconds
+    const interval = setInterval(fetchNotificationCount, 3000);
     
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotificationCount, 30000);
-    
-    return () => clearInterval(interval);
-  }, []);
+    // Cleanup function
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [wifi]);
+
+  // 🎯 Refresh notifications when page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Refresh notifications when tab becomes active
+        fetch(`${wifi}/api/notifications/unread-count`, {
+          credentials: 'include',
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+          .then(response => response.ok ? response.json() : { count: 0 })
+          .then(data => setNotificationCount(data.count || 0))
+          .catch(console.error);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [wifi]);
 
   // 🎯 Sticky navbar on scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsSticky(window.scrollY > 50);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -102,50 +141,34 @@ export default function UserDashboardNav() {
         setOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 🎯 Check if a link is active
+  // 🎯 Helper functions
   const isActiveLink = (path) => {
-    if (path === '/user') {
-      return location.pathname === '/user';
-    }
+    if (path === '/user') return location.pathname === '/user';
     return location.pathname.startsWith(path);
   };
 
-  // 🎯 Get user profile image
   const getUserImage = () => {
-    if (user?.profile_photo) {
-      return `${wifi}/uploads/${user.profile_photo}`;
-    }
-    return Profile;
+    return user?.profile_photo ? `${wifi}/uploads/${user.profile_photo}` : Profile;
   };
 
-  // 🎯 Get user display name
   const getUserName = () => {
-    if (user?.first_name) {
-      return `${user.first_name} ${user.last_name || ''}`.trim();
-    }
-    return 'User';
+    return user?.first_name 
+      ? `${user.first_name} ${user.last_name || ''}`.trim() 
+      : 'User';
   };
 
-  // 🎯 Toggle dropdown
-  const toggleDropdown = () => {
-    setOpen(!open);
-  };
-
-  // 🎯 Close dropdown
-  const closeDropdown = () => {
-    setOpen(false);
-  };
+  const toggleDropdown = () => setOpen(!open);
+  const closeDropdown = () => setOpen(false);
 
   return (
-    <header className={`user-nav-container ${isSticky ? 'sticky' : ''}`}>
+    <header className={`user-nav-container ${isSticky ? 'sticky' : ''} ${isTablet ? 'tablet' : ''}`}>
       <nav className='user-dashboard-nav'>
         
-        {/* 🎯 Left Side - Logo & Navigation Links */}
+        {/* Left Side - Logo & Navigation Links */}
         <div className='user-dashboard-links'>
           <div className='user-dashboard-logo-container'>
             <img 
@@ -157,43 +180,45 @@ export default function UserDashboardNav() {
             />
           </div>
           
-          {/* 🎯 MAIN NAVIGATION LINKS - Always show on desktop, hide on mobile */}
-          <div className='user-nav-links-group'>
-            <div className='user-dashboard-link-container'>
-              <Link 
-                to='/user' 
-                className={`user-dashboard-nav-link ${isActiveLink('/user') ? 'active' : ''}`}
-              >
-                <FontAwesomeIcon icon={faBullhorn} />
-                <span>Bulletin Board</span>
-              </Link>
+          {/* Main Navigation Links - Hidden on mobile */}
+          {!isMobile && (
+            <div className='user-nav-links-group'>
+              <div className='user-dashboard-link-container'>
+                <Link 
+                  to='/user' 
+                  className={`user-dashboard-nav-link ${isActiveLink('/user') ? 'active' : ''}`}
+                >
+                  <FontAwesomeIcon icon={faBullhorn} />
+                  <span>Bulletin Board</span>
+                </Link>
+              </div>
+              
+              <div className='user-dashboard-link-container'>
+                <Link 
+                  to='/user/myposts' 
+                  className={`user-dashboard-nav-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
+                >
+                  <FontAwesomeIcon icon={faFileAlt} />
+                  <span>My Posts</span>
+                </Link>
+              </div> 
+              
+              <div className='user-dashboard-link-container'>
+                <Link 
+                  to='/user/create' 
+                  className={`user-dashboard-nav-link user-create-post-link ${isActiveLink('/user/create') ? 'active' : ''}`}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                  <span>Create Post</span>
+                </Link>
+              </div>
             </div>
-            
-            <div className='user-dashboard-link-container'>
-              <Link 
-                to='/user/myposts' 
-                className={`user-dashboard-nav-link ${isActiveLink('/user/myposts') ? 'active' : ''}`}
-              >
-                <FontAwesomeIcon icon={faFileAlt} />
-                <span>My Posts</span>
-              </Link>
-            </div> 
-            
-            <div className='user-dashboard-link-container'>
-              <Link 
-                to='/user/create' 
-                className={`user-dashboard-nav-link user-create-post-link ${isActiveLink('/user/create') ? 'active' : ''}`}
-              >
-                <FontAwesomeIcon icon={faPlus} />
-                <span>Create Post</span>
-              </Link>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* 🎯 Right Side - User Profile & Dropdown */}
+        {/* Right Side - User Profile & Dropdown */}
         <div className='user-dashboard-profile-container' ref={dropdownRef}>
-          {/* 🎯 Notification Bell with Badge */}
+          {/* Notification Bell with Badge */}
           <div className="user-notification-bell-container">
             <Link 
               to="/user/user-notification" 
@@ -218,7 +243,9 @@ export default function UserDashboardNav() {
             {!isMobile && (
               <div className="user-dashboard-info">
                 <p className="user-dashboard-name">{getUserName()}</p>
-                <p className="user-dashboard-role">{user?.role === 'admin' ? 'Administrator' : 'Community Member'}</p>
+                <p className="user-dashboard-role">
+                  {user?.role === 'admin' ? 'Administrator' : 'Community Member'}
+                </p>
               </div>
             )}
             
@@ -227,8 +254,8 @@ export default function UserDashboardNav() {
                 src={getUserImage()} 
                 className='user-dashboard-profile-img'
                 alt="User Profile"
-                onError={(e) => {
-                  e.target.src = Profile;
+                onError={(e) => { 
+                  e.target.src = Profile; 
                 }}
               />
               <FontAwesomeIcon 
@@ -238,10 +265,10 @@ export default function UserDashboardNav() {
             </div>
           </div>
 
-          {/* 🎯 Dropdown Menu */}
+          {/* Dropdown Menu */}
           {open && (
             <div 
-              className={`user-profile-dropdown-menu ${isMobile ? 'mobile' : ''}`}
+              className={`user-profile-dropdown-menu ${isMobile ? 'mobile' : ''} ${isTablet ? 'tablet' : ''}`}
               onMouseLeave={!isMobile ? () => setOpen(false) : undefined}
             >
               <div className="user-dropdown-header">
@@ -249,8 +276,8 @@ export default function UserDashboardNav() {
                   <img 
                     src={getUserImage()} 
                     alt="Profile"
-                    onError={(e) => {
-                      e.target.src = Profile;
+                    onError={(e) => { 
+                      e.target.src = Profile; 
                     }}
                   />
                   <div>
@@ -267,7 +294,7 @@ export default function UserDashboardNav() {
               
               <div className="user-dropdown-divider"></div>
               
-              {/* 🎯 MAIN NAVIGATION LINKS - Only show in mobile dropdown */}
+              {/* Main Navigation Links - Only show in mobile dropdown */}
               {isMobile && (
                 <>
                   <div className='user-dropdown-link-container'>
@@ -307,7 +334,7 @@ export default function UserDashboardNav() {
                 </>
               )}
               
-              {/* 🎯 USER MANAGEMENT LINKS - Show on both desktop & mobile */}
+              {/* User Management Links */}
               <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/profile' 
@@ -330,7 +357,6 @@ export default function UserDashboardNav() {
                 </Link>
               </div>
               
-              
               <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/feedback' 
@@ -341,6 +367,7 @@ export default function UserDashboardNav() {
                   <span>Feedback & Support</span>
                 </Link>
               </div>
+              
               <div className='user-dropdown-link-container'>
                 <Link 
                   to='/user/user-notification' 
@@ -353,7 +380,7 @@ export default function UserDashboardNav() {
                     <span className="user-dropdown-notification-badge">
                       {notificationCount}
                     </span>
-                  )}
+                  )} 
                 </Link>
               </div>
 

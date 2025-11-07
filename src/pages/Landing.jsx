@@ -28,17 +28,17 @@ export default function Landing() {
               Join thousands of neighbors helping each other every day.
             </p>
             <div className="hero-stats-fmw">
-              <div className="stat-fmw">
-                <span className="stat-number-fmw">1,000+</span>
-                <span className="stat-label-fmw">Items Reunited</span>
+              <div className="stat-fmws">
+                <span className="stat-number-fmws">1,000+</span>
+                <span className="stat-label-fmws">Items Reunited</span>
               </div>
-              <div className="stat-fmw">
-                <span className="stat-number-fmw">500+</span>
-                <span className="stat-label-fmw">Active Users</span>
+              <div className="stat-fmws">
+                <span className="stat-number-fmws">500+</span>
+                <span className="stat-label-fmws">Active Users</span>
               </div>
-              <div className="stat-fmw">
-                <span className="stat-number-fmw">95%</span>
-                <span className="stat-label-fmw">Success Rate</span>
+              <div className="stat-fmws">
+                <span className="stat-number-fmws">95%</span>
+                <span className="stat-label-fmws">Success Rate</span>
               </div>
             </div>
             <div className="hero-actions-fmw">

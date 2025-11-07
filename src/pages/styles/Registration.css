@@ -1,4 +1,4 @@
-/* Registration.css - Orange & White Theme with Unique Class Names */
+/* Registration.css - Orange & White Theme with Improved Validation Styling */
 .reg-auth-page {
   min-height: 100dvh;
   background: #ffffff;
@@ -19,7 +19,8 @@
   background: #ffffff;
   padding: 2.5rem;
   border-radius: 12px;
-  border: 2px solid #FF8904; /* Removed box-shadow */
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(255, 137, 4, 0.08);
   width: 100%;
   max-width: 480px;
 }
@@ -58,7 +59,7 @@
 .reg-auth-form-input {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.9rem;
   transition: all 0.2s ease;
@@ -66,6 +67,7 @@
   box-sizing: border-box;
   color: #333;
   font-weight: 400;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .reg-auth-form-input::placeholder {
@@ -76,7 +78,7 @@
 .reg-auth-form-select {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.9rem;
   transition: all 0.2s ease;
@@ -84,21 +86,25 @@
   color: #333;
   cursor: pointer;
   font-weight: 400;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .reg-auth-form-input:focus,
 .reg-auth-form-select:focus {
   outline: none;
   border-color: #FF8904;
+  box-shadow: 0 0 0 3px rgba(255, 137, 4, 0.1);
 }
 
 .reg-auth-has-error .reg-auth-form-input,
 .reg-auth-has-error .reg-auth-form-select {
   border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
 }
 
 .reg-auth-has-success .reg-auth-form-input {
   border-color: #38a169;
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
 }
 
 /* Password Input Styles */
@@ -250,22 +256,26 @@
   padding: 1.5rem;
   background: #f8f9fa;
   border-radius: 12px;
-  border: 2px solid #e9ecef;
+  border: 1px solid #e9ecef;
   transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .reg-auth-terms-section:focus-within {
   border-color: #FF8904;
+  box-shadow: 0 0 0 3px rgba(255, 137, 4, 0.1);
 }
 
 .reg-auth-terms-section.reg-auth-has-error {
   border-color: #e53e3e;
   background: #fef5f5;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
 }
 
 .reg-auth-terms-section.reg-auth-accepted {
   border-color: #38a169;
   background: #f0fff4;
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
 }
 
 .reg-auth-terms-header {
@@ -310,6 +320,7 @@
   background: white;
   border-radius: 8px;
   border-left: 3px solid #FF8904;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .reg-auth-term-highlight svg {
@@ -353,6 +364,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .reg-auth-terms-input:checked + .reg-auth-custom-checkbox {
@@ -418,11 +430,13 @@
   cursor: pointer;
   transition: all 0.2s ease;
   margin: 1.5rem 0;
+  box-shadow: 0 2px 4px rgba(255, 137, 4, 0.2);
 }
 
 .reg-auth-submit-btn:hover:not(:disabled):not(.reg-auth-disabled) {
   background: #e67a00;
   transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 137, 4, 0.3);
 }
 
 .reg-auth-submit-btn:disabled,
@@ -430,10 +444,12 @@
   background: #cbd5e0;
   cursor: not-allowed;
   transform: none !important;
+  box-shadow: none;
 }
 
 .reg-auth-submit-btn.reg-auth-loading {
   background: #cbd5e0;
+  box-shadow: none;
 }
 
 .reg-auth-spinner {

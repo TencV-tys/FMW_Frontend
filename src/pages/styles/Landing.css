@@ -52,19 +52,19 @@
   flex-wrap: wrap;
 }
 
-.stat-fmw {
+.stat-fmws {
   text-align: center;
   min-width: 100px;
 }
 
-.stat-number-fmw {
+.stat-number-fmws {
   display: block;
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
-.stat-label-fmw {
+.stat-label-fmws {
   font-size: 0.9rem;
   opacity: 0.8;
 }

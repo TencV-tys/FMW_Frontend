@@ -16,6 +16,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import {useWifiUrl} from '../hooks/useWifiUrl';
+
 // Custom hook for registration form
 const useRegistrationForm = () => {
   const [state, setState] = useState({
@@ -152,66 +153,59 @@ export default function Registration() {
   } = useRegistrationForm();
  
   const navigate = useNavigate();
-   const wifi = useWifiUrl();
+  const wifi = useWifiUrl();
 
-
-
-
-
-// Email verification service
-const emailVerificationService = {
-  checkEmailAvailability: async (email) => {
-    try {
-    
-      
-      const response = await fetch(`${wifi}/auth/check-email?email=${encodeURIComponent(email)}`, {
-        method: 'GET',
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        return { 
-          available: data.available, 
-          message: data.message 
-        };
-      } else {
-        const errorData = await response.json();
+  // Email verification service
+  const emailVerificationService = {
+    checkEmailAvailability: async (email) => {
+      try {
+        const response = await fetch(`${wifi}/auth/check-email?email=${encodeURIComponent(email)}`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          return { 
+            available: data.available, 
+            message: data.message 
+          };
+        } else {
+          const errorData = await response.json();
+          return { 
+            available: true, 
+            message: errorData.error || 'Could not verify email' 
+          };
+        }
+      } catch (error) {
+        console.error('Email verification error:', error);
         return { 
           available: true, 
-          message: errorData.error || 'Could not verify email' 
+          message: 'Network error - could not verify email' 
         };
       }
-    } catch (error) {
-      console.error('Email verification error:', error);
-      return { 
-        available: true, 
-        message: 'Network error - could not verify email' 
+    }
+  };
+
+  // API service
+  const registrationService = {
+    register: async (userData) => {
+      const response = await fetch(`${wifi}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        body: JSON.stringify(userData)
+      });
+
+      const data = await response.json();
+      
+      return {
+        success: response.ok,
+        data,
+        status: response.status
       };
     }
-  }
-};
-
-// API service
-const registrationService = {
-  register: async (userData) => {
-    
-    const response = await fetch(`${wifi}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: 'include',
-      body: JSON.stringify(userData)
-    });
-
-    const data = await response.json();
-    
-    return {
-      success: response.ok,
-      data,
-      status: response.status
-    };
-  }
-};
+  };
 
   // Real-time email verification
   useEffect(() => {
@@ -244,14 +238,25 @@ const registrationService = {
     verifyEmail();
   }, [email, errors.email]);
 
-  // Real-time validation for touched fields
+  // FIXED: Real-time validation only for touched fields
   useEffect(() => {
-    if (Object.keys(touched).length > 0) {
-      const newErrors = validationService.validateForm({
-        first_name, last_name, email, password, password_confirmation, gender, agreedToTerms
-      });
-      setErrors(newErrors);
-    }
+    const newErrors = {};
+    
+    // Only validate fields that have been touched
+    Object.keys(touched).forEach(field => {
+      if (touched[field]) {
+        const error = validationService.validateField(
+          field, 
+          { first_name, last_name, email, password, password_confirmation, agreedToTerms }[field],
+          { first_name, last_name, email, password, password_confirmation, agreedToTerms }
+        );
+        if (error) {
+          newErrors[field] = error;
+        }
+      }
+    });
+
+    setErrors(newErrors);
   }, [first_name, last_name, email, password, password_confirmation, agreedToTerms, touched]);
 
   const handleViewTerms = () => {
@@ -264,6 +269,7 @@ const registrationService = {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Mark all fields as touched when submitting
     const allTouched = {
       first_name: true, 
       last_name: true, 
@@ -273,6 +279,7 @@ const registrationService = {
       agreedToTerms: true
     };
     
+    // Validate all fields on submit
     const formErrors = validationService.validateForm({
       first_name, last_name, email, password, password_confirmation, gender, agreedToTerms
     });
@@ -289,6 +296,9 @@ const registrationService = {
 
     // Check for form validation errors
     if (Object.keys(formErrors).length > 0) {
+      toast.error('Please fix the errors in the form before submitting.', {
+        position: 'bottom-center'
+      });
       return;
     }
 
@@ -376,7 +386,10 @@ const registrationService = {
   };
 
   const getFieldClassName = (fieldName) => {
-    return `reg-auth-input-group ${errors[fieldName] ? 'reg-auth-has-error' : ''} ${touched[fieldName] && !errors[fieldName] ? 'reg-auth-has-success' : ''}`;
+    const hasError = errors[fieldName] && touched[fieldName];
+    const hasSuccess = touched[fieldName] && !errors[fieldName] && fieldName !== 'agreedToTerms';
+    
+    return `reg-auth-input-group ${hasError ? 'reg-auth-has-error' : ''} ${hasSuccess ? 'reg-auth-has-success' : ''}`;
   };
 
   const getEmailStatusIcon = () => {
@@ -456,7 +469,7 @@ const registrationService = {
                 autoComplete="given-name"
                 aria-describedby={errors.first_name ? "first-name-error" : undefined}
               />
-              {errors.first_name && (
+              {errors.first_name && touched.first_name && (
                 <span id="first-name-error" className="reg-auth-error-text" role="alert">
                   {errors.first_name}
                 </span>
@@ -475,7 +488,7 @@ const registrationService = {
                 autoComplete="family-name"
                 aria-describedby={errors.last_name ? "last-name-error" : undefined}
               />
-              {errors.last_name && (
+              {errors.last_name && touched.last_name && (
                 <span id="last-name-error" className="reg-auth-error-text" role="alert">
                   {errors.last_name}
                 </span>
@@ -546,12 +559,12 @@ const registrationService = {
                 />
               </button>
             </div>
-            {errors.password && (
+            {errors.password && touched.password && (
               <span id="password-error" className="reg-auth-error-text" role="alert">
                 {errors.password}
               </span>
             )}
-            {password && !errors.password && (
+            {password && !errors.password && touched.password && (
               <div className="reg-auth-password-strength strong">
                 <FontAwesomeIcon icon={faCheckCircle} />
                 Password meets requirements
@@ -586,12 +599,12 @@ const registrationService = {
                 />
               </button>
             </div>
-            {errors.password_confirmation && (
+            {errors.password_confirmation && touched.password_confirmation && (
               <span id="password-confirm-error" className="reg-auth-error-text" role="alert">
                 {errors.password_confirmation}
               </span>
             )}
-            {password_confirmation && !errors.password_confirmation && (
+            {password_confirmation && !errors.password_confirmation && touched.password_confirmation && (
               <div className="reg-auth-password-match success">
                 <FontAwesomeIcon icon={faCheckCircle} />
                 Passwords match
