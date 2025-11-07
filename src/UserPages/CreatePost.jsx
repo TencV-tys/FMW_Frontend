@@ -238,7 +238,7 @@ export default function CreatePost() {
           </div>
         </main>
       </div>
-    );
+    ); 
   }
 
   return (

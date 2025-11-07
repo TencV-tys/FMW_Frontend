@@ -265,14 +265,14 @@ export default function UserNotifications() {
     return (
       <section className="user-notif-page">
         <UserNav />
-        <div className="user-notif-loading user-notif-page-loading">
-          <div className="user-notif-spinner"></div>
+        <div className="loading-container-fmw">
+          <div className="loading-spinner-fmw"></div>
           <p>Loading your notifications...</p>
         </div>
       </section>
     );
-  }
-
+  } 
+ 
   return (
     <section className="user-notif-page">
       <UserNav />
