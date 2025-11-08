@@ -1,4 +1,4 @@
-/* NavAuth.css - Unique Class Names with Linear Gradient Buttons */
+/* NavAuth.css - Brown Theme with Linear Gradient Buttons */
 .nav-auth-header-fmw {
   background: white;
   border-bottom: 1px solid #e0e0e0;
@@ -37,7 +37,7 @@
 }
 
 .logo-link-fmw:hover {
-  color: #FF8904;
+  color: #8B5A2B; /* Brown hover */
 }
 
 .logo-pic-fmw {
@@ -66,7 +66,7 @@
 }
 
 .mobile-menu-toggle-fmw:hover {
-  color: #FF8904;
+  color: #8B5A2B; /* Brown hover */
   transform: scale(1.1);
 }
 
@@ -104,7 +104,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 137, 4, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 90, 43, 0.1), transparent); /* Brown gradient */
   transition: left 0.6s ease;
 }
 
@@ -113,8 +113,8 @@
 }
 
 .nav-link-fmw:hover {
-  color: #FF8904;
-  background: #f8f9fa;
+  color: #8B5A2B; /* Brown hover */
+  background: #f8f5f2; /* Light brown background */
   transform: translateY(-2px);
 }
 
@@ -139,9 +139,9 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Sign Up Button with Linear Gradient */
+/* Sign Up Button with Brown Linear Gradient */
 .signup-btn-fmw {
-  background: linear-gradient(135deg, #FF8904, #e67a00);
+  background: linear-gradient(135deg, #8B5A2B, #654321); /* Brown gradient */
   color: white;
   position: relative;
 }
@@ -162,20 +162,20 @@
 }
 
 .signup-btn-fmw:hover {
-  background: linear-gradient(135deg, #e67a00, #FF8904);
+  background: linear-gradient(135deg, #654321, #8B5A2B); /* Reversed brown gradient */
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(255, 137, 4, 0.4);
+  box-shadow: 0 6px 20px rgba(139, 90, 43, 0.4); /* Brown shadow */
 }
 
 .signup-btn-fmw:active {
   transform: translateY(-1px);
-  box-shadow: 0 3px 12px rgba(255, 137, 4, 0.3);
+  box-shadow: 0 3px 12px rgba(139, 90, 43, 0.3); /* Brown shadow */
 }
 
-/* Login Button with Linear Gradient */
+/* Login Button with Brown Border Gradient */
 .login-btn-fmw {
   background: linear-gradient(135deg, transparent, transparent);
-  color: #FF8904;
+  color: #8B5A2B; /* Brown color */
   border: 2px solid transparent;
   background-clip: padding-box;
   position: relative;
@@ -188,7 +188,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #FF8904, #e67a00);
+  background: linear-gradient(135deg, #8B5A2B, #654321); /* Brown gradient */
   border-radius: 8px;
   padding: 2px;
   -webkit-mask: 
@@ -206,7 +206,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 137, 4, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 90, 43, 0.1), transparent); /* Brown gradient */
   transition: left 0.6s ease;
 }
 
@@ -215,10 +215,10 @@
 }
 
 .login-btn-fmw:hover {
-  background: linear-gradient(135deg, #FF8904, #e67a00);
+  background: linear-gradient(135deg, #8B5A2B, #654321); /* Brown gradient */
   color: white;
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(255, 137, 4, 0.3);
+  box-shadow: 0 6px 20px rgba(139, 90, 43, 0.3); /* Brown shadow */
 }
 
 .login-btn-fmw:hover::before {
@@ -227,7 +227,7 @@
 
 .login-btn-fmw:active {
   transform: translateY(-1px);
-  box-shadow: 0 3px 12px rgba(255, 137, 4, 0.2);
+  box-shadow: 0 3px 12px rgba(139, 90, 43, 0.2); /* Brown shadow */
 }
 
 /* Hide class for navigation */
@@ -303,8 +303,9 @@
   }
 
   .nav-link-fmw:hover {
-    background: #f8f9fa;
+    background: #f8f5f2; /* Light brown background */
     transform: translateX(8px);
+    color: #8B5A2B; /* Brown color */
   }
 
   .auth-buttons-fmw {
@@ -426,7 +427,7 @@
 .nav-link-fmw:focus-visible,
 .auth-button-fmw:focus-visible,
 .mobile-menu-toggle-fmw:focus-visible {
-  outline: 2px solid #FF8904;
+  outline: 2px solid #8B5A2B; /* Brown focus */
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -454,4 +455,48 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-} 
+}
+
+/* 🎯 BROWN THEME ENHANCEMENTS */
+.nav-link-fmw.active-fmw {
+  color: #8B5A2B; /* Brown color */
+  background: rgba(139, 90, 43, 0.1); /* Light brown background */
+  font-weight: 600;
+}
+
+.nav-link-fmw.active-fmw::before {
+  background: linear-gradient(90deg, transparent, rgba(139, 90, 43, 0.2), transparent); /* Stronger brown gradient */
+}
+
+/* Mobile menu close button */
+.mobile-close-btn-fmw {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #8B5A2B; /* Brown color */
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 1003;
+}
+
+.mobile-close-btn-fmw:hover {
+  background: rgba(139, 90, 43, 0.1); /* Light brown background */
+  transform: rotate(90deg);
+}
+
+/* Enhanced mobile menu backdrop */
+.nav-content-fmw.mobile-open-fmw::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(139, 90, 43, 0.05); /* Very light brown backdrop */
+  z-index: -1;
+}

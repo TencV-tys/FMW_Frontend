@@ -1,93 +1,72 @@
 // components/ResetPassword.jsx
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLock, faSpinner, faEye, faEyeSlash, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
-import NavAuth from './NavAuth';
+import { faEye, faEyeSlash, faSpinner, faLock } from '@fortawesome/free-solid-svg-icons';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useWifiUrl } from '../hooks/useWifiUrl';
+import CustomToast from '../components/CustomToast'; // Import your custom toast
 import './styles/ResetPassword.css';
-import {useWifiUrl} from '../hooks/useWifiUrl';
-const ResetPassword = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const token = searchParams.get('token');
-  const wifi = useWifiUrl();
 
-  const [formData, setFormData] = useState({
-    password: '',
-    password_confirmation: ''
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(true);
-  const [tokenValid, setTokenValid] = useState(false);
+const ResetPassword = () => {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const wifi = useWifiUrl();
+  
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast();
 
- useEffect(() => {
-  const verifyToken = async () => {
+  const token = searchParams.get('token');
+
+  useEffect(() => {
+    setMounted(true);
+    
     if (!token) {
-      setTokenValid(false);
-      setIsVerifying(false);
-      toast.error('Invalid reset link');
-      return;
+      toast.error('Invalid or missing reset token');
+      setTimeout(() => navigate('/forgot-password'), 2000);
     }
+  }, [token, navigate, toast]);
 
-    try {
-   
-      
-      const response = await fetch(`${wifi}/auth/verify-reset-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      const data = await response.json();
-      
-      
-      if (data.success) {
-       
-        setTokenValid(true);
-      } else {
-       
-        setTokenValid(false);
-        toast.error(data.error || 'Invalid or expired reset link');
-      }
-    } catch (error) {
-      console.error('🔐 Frontend: Token verification error:', error);
-      setTokenValid(false);
-      toast.error('Network error verifying reset link');
-    } finally {
-      setIsVerifying(false);
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters long';
     }
-  };
-
-  verifyToken();
-}, [token, wifi]);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    if (!/(?=.*[a-z])/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    if (!/(?=.*[@$!%*?&])/.test(password)) {
+      return 'Password must contain at least one special character';
+    }
+    return '';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.password || !formData.password_confirmation) {
+    
+    if (!password || !confirmPassword) {
       toast.error('Please fill in all fields');
       return;
     }
 
-    if (formData.password !== formData.password_confirmation) {
-      toast.error('Passwords do not match');
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      toast.error(passwordError);
       return;
     }
 
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
       return;
     }
 
@@ -99,21 +78,18 @@ const ResetPassword = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
-        body: JSON.stringify({
-          token,
-          password: formData.password,
-          password_confirmation: formData.password_confirmation
+        body: JSON.stringify({ 
+          token, 
+          newPassword: password 
         }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
-        toast.success('Password reset successfully! Redirecting to login...');
-        setTimeout(() => {
-          navigate('/login?reset=success');
-        }, 2000);
+      if (response.ok && data.success) {
+        setIsSuccess(true);
+        toast.success('Password reset successfully! Redirecting to login...', 3000);
+        setTimeout(() => navigate('/login'), 3000);
       } else {
         toast.error(data.error || 'Failed to reset password');
       }
@@ -125,36 +101,23 @@ const ResetPassword = () => {
     }
   };
 
-  if (isVerifying) {
+  if (isSuccess) {
     return (
       <div className="reset-password-page">
-        <NavAuth disabled="Hide" />
-        <div className="reset-password-container">
-          <div className="loading-state">
-            <FontAwesomeIcon icon={faSpinner} className="spinner large" />
-            <h2>Verifying Reset Link...</h2>
-            <p>Please wait while we verify your reset link.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!tokenValid) {
-    return (
-      <div className="reset-password-page">
-        <NavAuth disabled="Hide" />
-        <div className="reset-password-container">
-          <div className="error-state">
-            <h2>Invalid Reset Link</h2>
-            <p>The password reset link is invalid or has expired.</p>
-            <p>Please request a new reset link from the login page.</p>
-            <button 
-              onClick={() => navigate('/forgot-password')}
-              className="request-new-link"
-            >
-              Request New Reset Link
-            </button>
+        <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
+        <div className={`reset-password-container ${mounted ? 'reset-password-mounted' : ''}`}>
+          <div className="reset-password-success">
+            <div className="success-icon">
+              <FontAwesomeIcon icon={faLock} />
+            </div>
+            <h2>Password Reset Successful!</h2>
+            <p>Your password has been reset successfully.</p>
+            <p>Redirecting you to login page...</p>
+            <div className="reset-password-actions">
+              <Link to="/login" className="reset-password-link">
+                Go to Login
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -163,29 +126,23 @@ const ResetPassword = () => {
 
   return (
     <div className="reset-password-page">
-      <NavAuth disabled="Hide" />
-      
-      <div className="reset-password-container">
+      <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
+      <div className={`reset-password-container ${mounted ? 'reset-password-mounted' : ''}`}>
         <form onSubmit={handleSubmit} className="reset-password-form">
           <div className="form-header">
-            <div className="success-icon">
-              <FontAwesomeIcon icon={faCheckCircle} />
-            </div>
-            <h2>Create New Password</h2>
-            <p>Enter your new password below.</p>
+            <h2>Reset Your Password</h2>
+            <p>Enter your new password below</p>
           </div>
 
           <div className="input-group">
             <div className="password-input-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
-                name="password"
                 placeholder="New password"
-                value={formData.password}
-                onChange={handleChange}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                autoComplete="new-password"
-                required
+                className="password-input"
               />
               <button
                 type="button"
@@ -193,7 +150,10 @@ const ResetPassword = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isLoading}
               >
-                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                <FontAwesomeIcon 
+                  icon={showPassword ? faEyeSlash : faEye} 
+                  className="password-toggle-icon"
+                />
               </button>
             </div>
           </div>
@@ -202,13 +162,11 @@ const ResetPassword = () => {
             <div className="password-input-wrapper">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                name="password_confirmation"
                 placeholder="Confirm new password"
-                value={formData.password_confirmation}
-                onChange={handleChange}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isLoading}
-                autoComplete="new-password"
-                required
+                className="password-input"
               />
               <button
                 type="button"
@@ -216,14 +174,17 @@ const ResetPassword = () => {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 disabled={isLoading}
               >
-                <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+                <FontAwesomeIcon 
+                  icon={showConfirmPassword ? faEyeSlash : faEye} 
+                  className="password-toggle-icon"
+                />
               </button>
             </div>
           </div>
 
           <button 
             type="submit" 
-            className="submit-button"
+            className={`submit-button ${isLoading ? 'loading' : ''}`}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -238,6 +199,12 @@ const ResetPassword = () => {
               </>
             )}
           </button>
+
+          <div className="form-footer">
+            <Link to="/login" className="back-link">
+              Back to Login
+            </Link>
+          </div>
         </form>
       </div>
     </div>

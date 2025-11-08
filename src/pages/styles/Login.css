@@ -1,4 +1,4 @@
-/* Login.css - Orange & White Theme */
+/* Login.css - Brown & White Theme */
 .login-auth-page {
   min-height: 100dvh;
   background: #ffffff;
@@ -31,7 +31,7 @@
   border-radius: 16px;
   border: 1px solid #e2e8f0;
   box-shadow: 
-    0 4px 20px rgba(255, 137, 4, 0.08),
+    0 4px 20px rgba(139, 90, 43, 0.08), /* Brown shadow */
     0 1px 4px rgba(0, 0, 0, 0.04);
   width: 100%;
   max-width: 440px;
@@ -41,7 +41,7 @@
 
 .login-auth-form:hover {
   box-shadow: 
-    0 8px 30px rgba(255, 137, 4, 0.12),
+    0 8px 30px rgba(139, 90, 43, 0.12), /* Brown shadow */
     0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -63,7 +63,7 @@
 }
 
 .login-auth-title {
-  color: #FF8904;
+  color: #8B5A2B; /* Brown color */
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
@@ -141,16 +141,16 @@
 
 .login-auth-input-group input:focus {
   outline: none;
-  border-color: #FF8904;
+  border-color: #8B5A2B; /* Brown focus */
   box-shadow: 
-    0 0 0 4px rgba(255, 137, 4, 0.1),
-    0 4px 12px rgba(255, 137, 4, 0.08);
+    0 0 0 4px rgba(139, 90, 43, 0.1), /* Brown shadow */
+    0 4px 12px rgba(139, 90, 43, 0.08);
   transform: translateY(-1px);
 }
 
 .login-auth-has-error input {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+  border-color: #a52a2a; /* Brown-red error */
+  box-shadow: 0 0 0 4px rgba(165, 42, 42, 0.1);
 }
 
 .login-auth-has-success input {
@@ -193,8 +193,8 @@
 }
 
 .login-auth-password-toggle:hover:not(:disabled) {
-  color: #FF8904;
-  background: rgba(255, 137, 4, 0.1);
+  color: #8B5A2B; /* Brown hover */
+  background: rgba(139, 90, 43, 0.1); /* Brown background */
   transform: scale(1.05);
 }
 
@@ -214,14 +214,14 @@
 }
 
 .login-auth-error-text {
-  color: #dc2626;
+  color: #a52a2a; /* Brown-red error */
   font-size: 0.85rem;
   margin-top: 0.5rem;
   display: block;
   font-weight: 500;
   min-height: 1.5rem;
   padding-left: 0.5rem;
-  border-left: 2px solid #dc2626;
+  border-left: 2px solid #a52a2a;
   animation: login-auth-fadeInUp 0.3s ease-out;
 }
 
@@ -244,7 +244,7 @@
 }
 
 .login-auth-forgot-link {
-  color: #FF8904;
+  color: #8B5A2B; /* Brown color */
   font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
@@ -254,16 +254,16 @@
 }
 
 .login-auth-forgot-link:hover {
-  color: #e67a00;
+  color: #654321; /* Darker brown */
   text-decoration: none;
-  background: rgba(255, 137, 4, 0.1);
+  background: rgba(139, 90, 43, 0.1); /* Brown background */
   transform: translateY(-1px);
 }
 
 .login-auth-submit-btn {
   width: 100%;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, #FF8904, #e67a00);
+  background: linear-gradient(135deg, #8B5A2B, #654321); /* Brown gradient */
   color: white;
   border: none;
   border-radius: 12px;
@@ -277,7 +277,7 @@
   transition: all 0.4s ease;
   margin: 1.5rem 0;
   box-shadow: 
-    0 4px 15px rgba(255, 137, 4, 0.3),
+    0 4px 15px rgba(139, 90, 43, 0.3), /* Brown shadow */
     0 1px 4px rgba(0, 0, 0, 0.1);
   animation: login-auth-slideInUp 0.6s ease-out 0.7s both;
   position: relative;
@@ -313,14 +313,14 @@
 .login-auth-submit-btn:hover:not(:disabled) {
   transform: translateY(-3px);
   box-shadow: 
-    0 8px 25px rgba(255, 137, 4, 0.4),
+    0 8px 25px rgba(139, 90, 43, 0.4), /* Brown shadow */
     0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 .login-auth-submit-btn:active:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 
-    0 4px 15px rgba(255, 137, 4, 0.3),
+    0 4px 15px rgba(139, 90, 43, 0.3),
     0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -362,7 +362,7 @@
 }
 
 .login-auth-redirect-link {
-  color: #FF8904;
+  color: #8B5A2B; /* Brown color */
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s ease;
@@ -372,9 +372,9 @@
 }
 
 .login-auth-redirect-link:hover {
-  color: #e67a00;
+  color: #654321; /* Darker brown */
   text-decoration: none;
-  background: rgba(255, 137, 4, 0.1);
+  background: rgba(139, 90, 43, 0.1); /* Brown background */
   transform: translateY(-1px);
 }
 
@@ -412,7 +412,7 @@
 .login-auth-input-group input:focus-visible,
 .login-auth-forgot-link:focus-visible,
 .login-auth-redirect-link:focus-visible {
-  outline: 2px solid #FF8904;
+  outline: 2px solid #8B5A2B; /* Brown focus */
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -433,4 +433,81 @@
   .login-auth-input-group input {
     border-width: 2px;
   }
+}
+
+/* Additional Brown Theme Enhancements */
+.login-auth-form::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #8B5A2B, #654321);
+  border-radius: 16px 16px 0 0;
+}
+
+.login-auth-input-group input:valid {
+  border-color: rgba(139, 90, 43, 0.3);
+}
+
+.login-auth-success-message {
+  color: #8B5A2B;
+  background: rgba(139, 90, 43, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #8B5A2B;
+  margin-bottom: 1rem;
+  animation: login-auth-fadeInUp 0.3s ease-out;
+}
+
+/* Loading state with brown theme */
+.login-auth-submit-btn.loading {
+  background: linear-gradient(135deg, #a07854, #8B5A2B);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-auth-submit-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: login-auth-shine 1.5s infinite;
+}
+
+@keyframes login-auth-shine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Password strength indicator with brown theme */
+.login-auth-password-strength {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.login-auth-password-weak {
+  background: rgba(165, 42, 42, 0.1);
+  color: #a52a2a;
+  border: 1px solid rgba(165, 42, 42, 0.3);
+}
+
+.login-auth-password-medium {
+  background: rgba(139, 90, 43, 0.1);
+  color: #8B5A2B;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+}
+
+.login-auth-password-strong {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(22, 163, 74, 0.3);
 }

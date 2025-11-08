@@ -1,62 +1,71 @@
 // components/ForgotPassword.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faSpinner, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import NavAuth from './NavAuth';
 import './styles/ForgotPassword.css';
-import {useWifiUrl} from '../hooks/useWifiUrl';
+import { useWifiUrl } from '../hooks/useWifiUrl';
+import CustomToast from '../components/CustomToast'; // Import your custom toast
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const wifi = useWifiUrl();
+  
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!email) {
-      toast.error('Please enter your email address');
-      return;
+  e.preventDefault();
+  
+  if (!email) {
+    toast.error('Please enter your email address');
+    return;
+  }
+
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    toast.error('Please enter a valid email address');
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(`${wifi}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      setEmailSent(true);
+      toast.success(data.message || 'Password reset email sent successfully!');
+    } else {
+      // Handle error responses
+      toast.error(data.error || 'Failed to send reset email');
     }
-
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${wifi}/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setEmailSent(true);
-        toast.success(data.message);
-      } else {
-        toast.error(data.error || 'Failed to send reset email');
-      }
-    } catch (error) {
-      console.error('Forgot password error:', error);
-      toast.error('Network error. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    toast.error('Network error. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   if (emailSent) {
     return (
       <div className="forgot-pw-page">
-        <NavAuth disabled="Hide" />
-        <div className="forgot-pw-container">
+        <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
+        <div className={`forgot-pw-container ${mounted ? 'forgot-pw-mounted' : ''}`}>
           <div className="forgot-pw-success">
             <div className="forgot-pw-success-icon">
               <FontAwesomeIcon icon={faEnvelope} />
@@ -89,9 +98,8 @@ const ForgotPassword = () => {
 
   return (
     <div className="forgot-pw-page">
-      <NavAuth disabled="Hide" />
-      
-      <div className="forgot-pw-container">
+      <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
+      <div className={`forgot-pw-container ${mounted ? 'forgot-pw-mounted' : ''}`}>
         <form onSubmit={handleSubmit} className="forgot-pw-form">
           <div className="forgot-pw-header">
             <h2 className="forgot-pw-title">Reset Your Password</h2>
@@ -122,7 +130,7 @@ const ForgotPassword = () => {
                 Sending Reset Link...
               </>
             ) : (
-              <>
+              <> 
                 <FontAwesomeIcon icon={faEnvelope} />
                 Send Reset Link
               </>
@@ -138,7 +146,7 @@ const ForgotPassword = () => {
         </form>
       </div>
     </div>
-  );
+  );  
 };
 
 export default ForgotPassword;

@@ -17,11 +17,11 @@
   width: 100%;
   border-left: 4px solid #8B5A2B;
 }
-
+ 
 /* Error Icon */
 .error-icon {
   font-size: 4rem;
-  color: #e74c3c;
+  color: #a52a2a;
   margin-bottom: 2rem;
 }
 .error-message{
@@ -88,13 +88,13 @@
 }
 
 .nf-action-btn.secondary {
-  background: #FF8904;
+  background: #8B5A2B;
   color: white;
-  border-color: #FF8904;
+  border-color: #8B5A2B;
 }
 
 .nf-action-btn.secondary:hover {
-  background: #e67a00;
+  background: #6d451f;
   transform: translateY(-2px);
 }
 
