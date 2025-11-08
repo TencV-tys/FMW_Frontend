@@ -197,12 +197,7 @@ export default function EditPost() {
         formDataToSend.append('photo', formData.photo);
       }
 
-      if (!formData.currentPhoto && !formData.photo && requiresPhoto()) {
-        toast.error('Photo is required for Person or Pets categories');
-        setLoading(false);
-        return;
-      }
-
+      // Check if photo was removed (both currentPhoto and new photo are null)
       if (!formData.currentPhoto && !formData.photo) {
         formDataToSend.append('remove_photo', 'true');
       }
