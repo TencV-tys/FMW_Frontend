@@ -1,18 +1,22 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/CreatePost.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+import CustomToast from '../components/CustomToast';
 
 export default function CreatePost() {
   const [categories, setCategories] = useState([]);
   const [barangays, setBarangays] = useState([]);
   const [puroks, setPuroks] = useState([]);
-  const [loading, setLoading] = useState(false); // 🆕 For form data loading
-  const [submitting, setSubmitting] = useState(false); // 🆕 For form submission
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const nav = useNavigate();
   const wifi = useWifiUrl();
+  
+  // Use custom toast
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast();
+
   const [formData, setFormData] = useState({
     title: '',
     type: 'Lost',
@@ -33,14 +37,12 @@ export default function CreatePost() {
 
   const MAX_CHARS = 200;
 
-  // Check if current category requires photo
   const requiresPhoto = () => {
     if (!formData.category_id) return false;
     
     const selectedCategory = categories.find(cat => cat.id == formData.category_id);
     if (!selectedCategory) return false;
 
-    // Make photo required for "Person" or "Pets" categories
     const categoryName = selectedCategory.name.toLowerCase();
     return categoryName.includes('person') || categoryName.includes('pet');
   };
@@ -48,7 +50,7 @@ export default function CreatePost() {
   useEffect(() => {
     const fetchFormData = async () => {
       try {
-        setLoading(true); // 🆕 Start loading
+        setLoading(true);
         const res = await fetch(`${wifi}/api/posts/form-data`, {
           credentials: 'include'
         });
@@ -60,20 +62,14 @@ export default function CreatePost() {
             setPuroks(data.puroks || []);
           } else {
             console.error('Failed to fetch form data');
-            toast.error('Failed to load form data. Please refresh the page.', {
-              position: 'top-center',
-              autoClose: 3000
-            });
+            toast.error('Failed to load form data. Please refresh the page.');
           }
         }
       } catch (error) {
         console.error('Error fetching form data:', error);
-        toast.error('Network error. Please check your connection.', {
-          position: 'top-center',
-          autoClose: 3000
-        });
+        toast.error('Network error. Please check your connection.');
       } finally {
-        setLoading(false); // 🆕 End loading
+        setLoading(false);
       }
     };
 
@@ -83,7 +79,6 @@ export default function CreatePost() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Handle character counting for textareas
     if (name === 'description' || name === 'contact_info') {
       setCharCount(prev => ({
         ...prev,
@@ -105,7 +100,6 @@ export default function CreatePost() {
         photo: file
       }));
 
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhotoPreview(e.target.result);
@@ -120,7 +114,6 @@ export default function CreatePost() {
       photo: null
     }));
     setPhotoPreview(null);
-    // Reset file input
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = '';
   };
@@ -128,34 +121,22 @@ export default function CreatePost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.title || !formData.category_id || !formData.barangay_id || !formData.description || !formData.contact_info) {
-      toast.error('Please fill in all required fields', {
-        position: 'top-center',
-        autoClose: 1000
-      });
+      toast.error('Please fill in all required fields');
       return;
     }
 
-    // Validate photo requirement for Person/Pets categories
     if (requiresPhoto() && !formData.photo) {
-      toast.error('Photo is required for Person or Pets categories', {
-        position: 'top-center',
-        autoClose: 1000
-      });
+      toast.error('Photo is required for Person or Pets categories');
       return;
     }
 
-    // Validate character limits
     if (formData.description.length > MAX_CHARS || formData.contact_info.length > MAX_CHARS) {
-      toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`, {
-        position: 'top-center',
-        autoClose: 1000
-      });
+      toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`);
       return;
     }
 
-    setSubmitting(true); // 🆕 Start submission loading
+    setSubmitting(true);
 
     try {
       const formDataToSend = new FormData();
@@ -181,11 +162,7 @@ export default function CreatePost() {
       const result = await res.json();
 
       if (result.success) {
-        toast.success('Post created successfully! It is now live on the bulletin board.', {
-          position: 'top-center',
-          autoClose: 2000
-        });
-        // Reset form
+        toast.success('Post created successfully! It is now live on the bulletin board.');
         setFormData({
           title: '',
           type: 'Lost',
@@ -199,24 +176,17 @@ export default function CreatePost() {
         });
         setPhotoPreview(null);
         setCharCount({ description: 0, contact_info: 0 });
-        // Redirect to bulletin board
         setTimeout(() => {
           nav('/user');
         }, 1500);
       } else {
-        toast.error('Error creating post: ' + (result.error || 'Unknown error'), {
-          position: 'top-center',
-          autoClose: 3000
-        });
+        toast.error('Error creating post: ' + (result.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error creating post:', error);
-      toast.error('Error creating post. Please try again.', {
-        position: 'top-center',
-        autoClose: 3000
-      });
+      toast.error('Error creating post. Please try again.');
     } finally {
-      setSubmitting(false); // 🆕 End submission loading
+      setSubmitting(false);
     }
   };
 
@@ -226,7 +196,6 @@ export default function CreatePost() {
     return '';
   };
 
-  // 🆕 Loading state for form data
   if (loading) {
     return (
       <div className="create-container">
@@ -257,18 +226,18 @@ export default function CreatePost() {
                 placeholder='Item/Person Name *'
                 onChange={handleChange}
                 required
-                disabled={submitting} // 🆕 Disable during submission
+                disabled={submitting}
               />
             </div>
-
-            <div className='create-select-container'>
+        
+            <div className='create-selects-horizontal'>
               <div className='create-select-group'>
                 <select 
                   name='type' 
                   value={formData.type} 
                   onChange={handleChange} 
                   required
-                  disabled={submitting} // 🆕 Disable during submission
+                  disabled={submitting}
                 >
                   <option value="Lost">Lost</option>
                   <option value="Found">Found</option>
@@ -281,7 +250,7 @@ export default function CreatePost() {
                   value={formData.category_id} 
                   onChange={handleChange} 
                   required
-                  disabled={submitting} // 🆕 Disable during submission
+                  disabled={submitting}
                 >
                   <option value="">Select Category *</option>
                   {categories.map(cat => (
@@ -296,7 +265,7 @@ export default function CreatePost() {
                   value={formData.barangay_id} 
                   onChange={handleChange} 
                   required
-                  disabled={submitting} // 🆕 Disable during submission
+                  disabled={submitting}
                 >
                   <option value="">Select Barangay *</option>
                   {barangays.map(brgy => (
@@ -306,18 +275,18 @@ export default function CreatePost() {
               </div>
             </div>
 
-            <div className='create-select-group' style={{width: '400px', margin: '10px 0'}}>
-                <select 
-                  name='purok_id' 
-                  value={formData.purok_id} 
-                  onChange={handleChange}
-                  disabled={submitting} // 🆕 Disable during submission
-                >
-                  <option value="">Select Purok (Optional)</option>
-                  {puroks.map(purok => (
-                    <option key={purok.id} value={purok.id}>{purok.name}</option>
-                  ))}
-                </select>
+            <div className='create-select-group purok-select'>
+              <select 
+                name='purok_id' 
+                value={formData.purok_id} 
+                onChange={handleChange}
+                disabled={submitting}
+              >
+                <option value="">Select Purok (Optional)</option>
+                {puroks.map(purok => (
+                  <option key={purok.id} value={purok.id}>{purok.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className='create-input-group'>
@@ -327,7 +296,7 @@ export default function CreatePost() {
                 placeholder='Color (optional)'
                 value={formData.color}
                 onChange={handleChange}
-                disabled={submitting} // 🆕 Disable during submission
+                disabled={submitting}
               />
             </div>
 
@@ -340,7 +309,7 @@ export default function CreatePost() {
                 onChange={handleChange}
                 maxLength={MAX_CHARS}
                 required
-                disabled={submitting} // 🆕 Disable during submission
+                disabled={submitting}
               />
               <div className={`char-counter ${getCharCounterClass(charCount.description)}`}>
                 {charCount.description}/{MAX_CHARS}
@@ -356,14 +325,13 @@ export default function CreatePost() {
                 onChange={handleChange}
                 maxLength={MAX_CHARS}
                 required
-                disabled={submitting} // 🆕 Disable during submission
+                disabled={submitting}
               />
               <div className={`char-counter ${getCharCounterClass(charCount.contact_info)}`}>
                 {charCount.contact_info}/{MAX_CHARS}
               </div>
             </div>
 
-            {/* Photo Preview */}
             {photoPreview && (
               <div className="current-photo-container">
                 <label>Photo Preview:</label>
@@ -377,10 +345,10 @@ export default function CreatePost() {
                     type="button"
                     className="remove-photo-btn"
                     onClick={handleRemovePhoto}
-                    disabled={submitting} // 🆕 Disable during submission
+                    disabled={submitting}
                   >
                     Remove Photo
-                  </button>
+                  </button> 
                 </div>
               </div>
             )}
@@ -395,21 +363,21 @@ export default function CreatePost() {
                 accept='image/*'
                 onChange={handleFileChange}
                 required={requiresPhoto()}
-                disabled={submitting} // 🆕 Disable during submission
+                disabled={submitting}
               />
               {requiresPhoto() && !formData.photo && (
-                <div className="error-message" style={{marginTop: '5px'}}>
+                <div className="error-message">
                   Photo is required for Person or Pets categories
                 </div>
               )}
             </div>
 
             <button 
-              className='submit-post-btn' 
+              className='submit-post-btns' 
               type='submit'
-              disabled={submitting || loading} // 🆕 Disable during loading/submission
+              disabled={submitting || loading}
             >
-              {submitting ? ( // 🆕 Show loading state
+              {submitting ? (
                 <>
                   <div className="loading-spinner-small"></div>
                   Creating Post...
@@ -420,6 +388,9 @@ export default function CreatePost() {
             </button>
           </form>
         </div>
+
+        {/* Custom Toast Container */}
+        <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
       </main>
     </div>
   );

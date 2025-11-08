@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
 import UserNav from '../UserComponents/UserDashboardNav';
 import './styles/CreatePost.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+import CustomToast from '../components/CustomToast';
+
 export default function EditPost() {
   const [categories, setCategories] = useState([]);
   const [barangays, setBarangays] = useState([]);
@@ -13,6 +14,9 @@ export default function EditPost() {
   const nav = useNavigate();
   const { id } = useParams();
   const wifi = useWifiUrl();
+  
+  // Use custom toast
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -35,19 +39,16 @@ export default function EditPost() {
 
   const MAX_CHARS = 200;
 
-  // Check if current category requires photo
   const requiresPhoto = () => {
     if (!formData.category_id) return false;
     
     const selectedCategory = categories.find(cat => cat.id == formData.category_id);
     if (!selectedCategory) return false;
 
-    // Make photo required for "Person" or "Pets" categories
     const categoryName = selectedCategory.name.toLowerCase();
     return categoryName.includes('person') || categoryName.includes('pet');
   };
 
-  // Check if photo exists (either current photo or new photo)
   const hasPhoto = () => {
     return formData.currentPhoto || formData.photo;
   };
@@ -142,7 +143,6 @@ export default function EditPost() {
         photo: file
       }));
 
-      // Create preview for new photo
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhotoPreview(e.target.result);
@@ -158,7 +158,6 @@ export default function EditPost() {
       photo: null
     }));
     setPhotoPreview(null);
-    // Reset file input
     const fileInput = document.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = '';
   };
@@ -167,28 +166,17 @@ export default function EditPost() {
     e.preventDefault();
 
     if (!formData.title || !formData.category_id || !formData.barangay_id || !formData.description || !formData.contact_info) {
-      toast.error('Please fill in all required fields', {
-        position: 'top-center',
-        autoClose: 1000
-      });
+      toast.error('Please fill in all required fields');
       return;
     }
 
-    // Validate photo requirement for Person/Pets categories
     if (requiresPhoto() && !hasPhoto()) {
-      toast.error('Photo is required for Person or Pets categories', {
-        position: 'top-center',
-        autoClose: 1000
-      });
+      toast.error('Photo is required for Person or Pets categories');
       return;
     }
 
-    // Validate character limits
     if (formData.description.length > MAX_CHARS || formData.contact_info.length > MAX_CHARS) {
-      toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`, {
-        position: 'top-center',
-        autoClose: 1000
-      });
+      toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`);
       return;
     }
 
@@ -209,17 +197,12 @@ export default function EditPost() {
         formDataToSend.append('photo', formData.photo);
       }
 
-      // If current photo was removed and category requires photo, send error
       if (!formData.currentPhoto && !formData.photo && requiresPhoto()) {
-        toast.error('Photo is required for Person or Pets categories', {
-          position: 'top-center',
-          autoClose: 1000
-        });
+        toast.error('Photo is required for Person or Pets categories');
         setLoading(false);
         return;
       }
 
-      // If current photo was removed, send a flag
       if (!formData.currentPhoto && !formData.photo) {
         formDataToSend.append('remove_photo', 'true');
       }
@@ -233,23 +216,14 @@ export default function EditPost() {
       const result = await res.json();
 
       if (result.success) {
-        toast.success('Post updated successfully!', {
-          position: 'top-center',
-          autoClose: 1000
-        });
+        toast.success('Post updated successfully!');
         nav('/user/myposts');
       } else {
-        toast.error('Error updating post: ' + (result.error || 'Unknown error'), {
-          position: 'top-center',
-          autoClose: 1000
-        });
+        toast.error('Error updating post: ' + (result.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error updating post:', error);
-      toast.error('Error updating post. Please try again.', {
-        position: 'top-center',
-        autoClose: 1000
-      });
+      toast.error('Error updating post. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -291,19 +265,21 @@ export default function EditPost() {
                 placeholder='Item/Person Name *'
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
 
-            <div className='create-select-container'>
+            {/* Horizontal Selects - Same as CreatePost */}
+            <div className='create-selects-horizontal'>
               <div className='create-select-group'>
-                <select name='type' value={formData.type} onChange={handleChange} required>
+                <select name='type' value={formData.type} onChange={handleChange} required disabled={loading}>
                   <option value="Lost">Lost</option>
                   <option value="Found">Found</option>
                 </select>
               </div>
 
               <div className='create-select-group'>
-                <select name='category_id' value={formData.category_id} onChange={handleChange} required>
+                <select name='category_id' value={formData.category_id} onChange={handleChange} required disabled={loading}>
                   <option value="">Select Category *</option>
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -312,7 +288,7 @@ export default function EditPost() {
               </div>
 
               <div className='create-select-group'>
-                <select name='barangay_id' value={formData.barangay_id} onChange={handleChange} required>
+                <select name='barangay_id' value={formData.barangay_id} onChange={handleChange} required disabled={loading}>
                   <option value="">Select Barangay *</option>
                   {barangays.map(brgy => (
                     <option key={brgy.id} value={brgy.id}>{brgy.name}</option>
@@ -321,14 +297,14 @@ export default function EditPost() {
               </div>
             </div>
 
-            {/* Purok Select Field */}
-            <div className='create-select-group' style={{width: '400px', margin: '10px 0'}}>
-                <select name='purok_id' value={formData.purok_id} onChange={handleChange}>
-                  <option value="">Select Purok (Optional)</option>
-                  {puroks.map(purok => (
-                    <option key={purok.id} value={purok.id}>{purok.name}</option>
-                  ))}
-                </select>
+            {/* Purok Select - Same styling */}
+            <div className='create-select-group purok-select'>
+              <select name='purok_id' value={formData.purok_id} onChange={handleChange} disabled={loading}>
+                <option value="">Select Purok (Optional)</option>
+                {puroks.map(purok => (
+                  <option key={purok.id} value={purok.id}>{purok.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className='create-input-group'>
@@ -338,6 +314,7 @@ export default function EditPost() {
                 placeholder='Color (optional)'
                 value={formData.color}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
@@ -350,6 +327,7 @@ export default function EditPost() {
                 onChange={handleChange}
                 maxLength={MAX_CHARS}
                 required
+                disabled={loading}
               />
               <div className={`char-counter ${getCharCounterClass(charCount.description)}`}>
                 {charCount.description}/{MAX_CHARS}
@@ -365,6 +343,7 @@ export default function EditPost() {
                 onChange={handleChange}
                 maxLength={MAX_CHARS}
                 required
+                disabled={loading}
               />
               <div className={`char-counter ${getCharCounterClass(charCount.contact_info)}`}>
                 {charCount.contact_info}/{MAX_CHARS}
@@ -388,6 +367,7 @@ export default function EditPost() {
                     type="button"
                     className="remove-photo-btn"
                     onClick={handleRemovePhoto}
+                    disabled={loading}
                   >
                     Remove Photo
                   </button>
@@ -409,6 +389,7 @@ export default function EditPost() {
                     type="button"
                     className="remove-photo-btn"
                     onClick={handleRemovePhoto}
+                    disabled={loading}
                   >
                     Remove Photo
                   </button>
@@ -426,9 +407,11 @@ export default function EditPost() {
                 name='image'
                 accept='image/*'
                 onChange={handleFileChange}
+                required={requiresPhoto()}
+                disabled={loading}
               />
               {requiresPhoto() && !hasPhoto() && (
-                <div className="error-message" style={{marginTop: '5px'}}>
+                <div className="error-message">
                   Photo is required for Person or Pets categories
                 </div>
               )}
@@ -444,15 +427,25 @@ export default function EditPost() {
                 Cancel
               </button>
               <button
-                className='submit-post-btn'
+                className='submit-post-btns'
                 type='submit'
                 disabled={loading}
               >
-                {loading ? 'Updating...' : 'Update Post'}
+                {loading ? (
+                  <>
+                    <div className="loading-spinner-small"></div>
+                    Updating...
+                  </>
+                ) : (
+                  'Update Post'
+                )}
               </button>
             </div>
           </form>
         </div>
+
+        {/* Custom Toast Container */}
+        <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
       </main>
     </div>
   );
