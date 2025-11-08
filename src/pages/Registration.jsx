@@ -1,6 +1,6 @@
 import NavAuth from "../components/NavAuth";
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './styles/Registration.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -12,10 +12,99 @@ import {
   faTimesCircle, 
   faCircleNotch,
   faFileContract,
-  faShieldAlt
+  faShieldAlt,
+  faTimes
 } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "react-toastify";
 import {useWifiUrl} from '../hooks/useWifiUrl';
+
+// Custom Toast Hook - FIXED VERSION
+const useCustomToast = () => {
+  const [toasts, setToasts] = useState([]);
+
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  }, []);
+
+  const showToast = useCallback((message, type = 'info', duration = 4000) => {
+    const id = Date.now() + Math.random();
+    const toast = { id, message, type, duration };
+    
+    setToasts(prev => [...prev, toast]);
+    
+    if (duration > 0) {
+      setTimeout(() => removeToast(id), duration);
+    }
+    
+    return id;
+  }, [removeToast]);
+
+  const toast = useCallback({
+    success: (message, duration) => showToast(message, 'success', duration),
+    error: (message, duration) => showToast(message, 'error', duration),
+    info: (message, duration) => showToast(message, 'info', duration),
+    warning: (message, duration) => showToast(message, 'warning', duration)
+  }, [showToast]);
+
+  return { toasts, removeToast, toast };
+};
+
+// Custom Toast Component
+const CustomToastContainer = ({ toasts, removeToast }) => {
+  const getToastIcon = (type) => {
+    switch (type) {
+      case 'success': return faCheckCircle;
+      case 'error': return faTimes;
+      case 'warning': return faTimes;
+      default: return faCheckCircle;
+    }
+  };
+
+  const getToastColor = (type) => {
+    switch (type) {
+      case 'success': return '#16a34a';
+      case 'error': return '#dc2626';
+      case 'warning': return '#d97706';
+      default: return '#FF8904';
+    }
+  };
+
+  return (
+    <div className="custom-toast-container">
+      {toasts.map((toast) => (
+        <div
+          key={toast.id}
+          className={`custom-toast custom-toast-${toast.type}`}
+          style={{ borderLeftColor: getToastColor(toast.type) }}
+          onClick={() => removeToast(toast.id)}
+        >
+          <div className="custom-toast-icon">
+            <FontAwesomeIcon icon={getToastIcon(toast.type)} />
+          </div>
+          <div className="custom-toast-content">
+            <p className="custom-toast-message">{toast.message}</p>
+          </div>
+          <button
+            className="custom-toast-close"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeToast(toast.id);
+            }}
+            aria-label="Close notification"
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+          <div 
+            className="custom-toast-progress" 
+            style={{ 
+              animationDuration: `${toast.duration}ms`,
+              backgroundColor: getToastColor(toast.type)
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
 
 // Custom hook for registration form
 const useRegistrationForm = () => {
@@ -33,7 +122,8 @@ const useRegistrationForm = () => {
     showPassword: false,
     showConfirmPassword: false,
     emailVerified: false,
-    checkingEmail: false
+    checkingEmail: false,
+    formMounted: false
   });
 
   const updateField = (field, value) => {
@@ -74,6 +164,10 @@ const useRegistrationForm = () => {
     setState(prev => ({ ...prev, agreedToTerms: agreed }));
   };
 
+  const setFormMounted = (mounted) => {
+    setState(prev => ({ ...prev, formMounted: mounted }));
+  };
+
   return {
     ...state,
     updateField,
@@ -82,7 +176,8 @@ const useRegistrationForm = () => {
     togglePasswordVisibility,
     toggleConfirmPasswordVisibility,
     setEmailVerificationStatus,
-    setAgreedToTerms
+    setAgreedToTerms,
+    setFormMounted
   };
 };
 
@@ -143,17 +238,25 @@ export default function Registration() {
     showConfirmPassword,
     emailVerified,
     checkingEmail,
+    formMounted,
     updateField,
     setErrors,
     setLoading,
     togglePasswordVisibility,
     toggleConfirmPasswordVisibility,
     setEmailVerificationStatus,
-    setAgreedToTerms
+    setAgreedToTerms,
+    setFormMounted
   } = useRegistrationForm();
  
+  const { toasts, removeToast, toast } = useCustomToast();
   const navigate = useNavigate();
   const wifi = useWifiUrl();
+
+  // Set form mounted for animations
+  useEffect(() => {
+    setFormMounted(true);
+  }, []);
 
   // Email verification service
   const emailVerificationService = {
@@ -219,9 +322,9 @@ export default function Registration() {
             setEmailVerificationStatus(result.available, false);
             
             if (!result.available && result.message) {
-              setErrors({ ...errors, email: result.message });
+              setErrors(prev => ({ ...prev, email: result.message }));
             } else if (!result.available) {
-              setErrors({ ...errors, email: 'This email is already registered' });
+              setErrors(prev => ({ ...prev, email: 'This email is already registered' }));
             }
           } catch (error) {
             console.error('Email verification failed:', error);
@@ -270,16 +373,6 @@ export default function Registration() {
     e.preventDefault();
     
     // Mark all fields as touched when submitting
-    const allTouched = {
-      first_name: true, 
-      last_name: true, 
-      email: true, 
-      password: true, 
-      password_confirmation: true,
-      agreedToTerms: true
-    };
-    
-    // Validate all fields on submit
     const formErrors = validationService.validateForm({
       first_name, last_name, email, password, password_confirmation, gender, agreedToTerms
     });
@@ -288,31 +381,23 @@ export default function Registration() {
 
     // Check if email is already taken
     if (email && !emailVerified && !checkingEmail) {
-      toast.error('This email is already registered. Please use a different email.', {
-        position: 'bottom-center'
-      });
+      toast.error('This email is already registered. Please use a different email.', 5000);
       return;
     }
 
     // Check for form validation errors
     if (Object.keys(formErrors).length > 0) {
-      toast.error('Please fix the errors in the form before submitting.', {
-        position: 'bottom-center'
-      });
+      toast.error('Please fix the errors in the form before submitting.', 4000);
       return;
     }
 
     // Additional check for email verification status
     if (email && !emailVerified) {
       if (checkingEmail) {
-        toast.info('Please wait while we verify your email availability...', {
-          position: 'bottom-center'
-        });
+        toast.info('Please wait while we verify your email availability...', 3000);
         return;
       } else {
-        toast.error('This email is not available. Please use a different email address.', {
-          position: 'bottom-center'
-        });
+        toast.error('This email is not available. Please use a different email address.', 5000);
         return;
       }
     }
@@ -330,14 +415,11 @@ export default function Registration() {
       });
 
       if (result.success) {
-        toast.success('Account created successfully! Redirecting to login...', {
-          position: 'bottom-center',
-          autoClose: 1000
-        });
+        toast.success('Account created successfully! Redirecting to login...', 2000);
 
         setTimeout(() => 
           navigate('/login?registered=success', { replace: true }), 
-          1000
+          1500
         );
 
       } else {
@@ -363,26 +445,20 @@ export default function Registration() {
 
     // Only show toast for non-email errors
     if (status !== 409) {
-      toast.error(errorMessages[status] || errorMessages.default, {
-        position: 'bottom-center',
-        autoClose: 4000
-      });
+      toast.error(errorMessages[status] || errorMessages.default, 5000);
     }
 
     if (data.errors) {
       setErrors(data.errors);
     } else if (status === 409) {
-      setErrors({ ...errors, email: 'This email is already registered' });
+      setErrors(prev => ({ ...prev, email: 'This email is already registered' }));
       setEmailVerificationStatus(false, false);
     }
   };
 
   const handleNetworkError = (error) => {
     console.error('Registration network error:', error);
-    toast.error('Network error. Please check your connection and try again.', {
-      position: 'bottom-center',
-      autoClose: 3000
-    });
+    toast.error('Network error. Please check your connection and try again.', 4000);
   };
 
   const getFieldClassName = (fieldName) => {
@@ -405,37 +481,37 @@ export default function Registration() {
     return null;
   };
 
-  const getEmailStatusText = () => {
-    if (!email) return null;
-    
-    if (checkingEmail) {
-      return (
-        <div className="reg-auth-email-verification checking">
-          <FontAwesomeIcon icon={faCircleNotch} className="reg-auth-verification-icon" spin />
-          Checking email availability...
-        </div>
-      );
-    } else if (emailVerified) {
-      return (
-        <div className="reg-auth-email-verification verified">
-          <FontAwesomeIcon icon={faCheckCircle} className="reg-auth-verification-icon" />
-          Email is available
-        </div>
-      );
-    } else if (errors.email && touched.email) {
-      return (
-        <div className="reg-auth-email-verification not-verified">
-          <FontAwesomeIcon icon={faTimesCircle} className="reg-auth-verification-icon" />
-          {errors.email}
-        </div>
-      );
-    }
-    return null;
-  };
+ const getEmailStatusText = () => {
+  if (!email) return null;
+  
+  if (checkingEmail) {
+    return (
+      <div className="reg-auth-email-verification checking">
+        <FontAwesomeIcon icon={faCircleNotch} className="reg-auth-verification-icon" spin />
+        Checking email availability...
+      </div>
+    );
+  } else if (emailVerified) {
+    return (
+      <div className="reg-auth-email-verification verified">
+        <FontAwesomeIcon icon={faCheckCircle} className="reg-auth-verification-icon" />
+        Email is available
+      </div>
+    );
+  } else if (errors.email && touched.email) {
+    return (
+      <div className="reg-auth-email-verification not-verified">
+        <FontAwesomeIcon icon={faTimesCircle} className="reg-auth-verification-icon" />
+        {errors.email}
+      </div>  // Changed from </span> to </div>
+    );
+  }
+  return null;
+};
 
   const isFormValid = () => {
     return first_name && 
-           last_name && 
+           last_name &&  
            email && 
            password && 
            password_confirmation && 
@@ -447,8 +523,9 @@ export default function Registration() {
   return (
     <div className="reg-auth-page">
       <NavAuth disabled="Hide" />
+      <CustomToastContainer toasts={toasts} removeToast={removeToast} />
       
-      <div className="reg-auth-form-container">
+      <div className={`reg-auth-form-container ${formMounted ? 'reg-auth-mounted' : ''}`}>
         <form className="reg-auth-form" onSubmit={handleSubmit} noValidate>
           <div className="reg-auth-header">
             <h2 className="reg-auth-title">Create Your Account</h2>

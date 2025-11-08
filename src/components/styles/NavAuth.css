@@ -1,4 +1,4 @@
-/* NavAuth.css - Unique Class Names */
+/* NavAuth.css - Unique Class Names with Linear Gradient Buttons */
 .nav-auth-header-fmw {
   background: white;
   border-bottom: 1px solid #e0e0e0;
@@ -62,6 +62,12 @@
   padding: 0.5rem;
   z-index: 1002;
   position: relative;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle-fmw:hover {
+  color: #FF8904;
+  transform: scale(1.1);
 }
 
 /* Navigation Content */
@@ -84,14 +90,32 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link-fmw::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 137, 4, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.nav-link-fmw:hover::before {
+  left: 100%;
 }
 
 .nav-link-fmw:hover {
   color: #FF8904;
   background: #f8f9fa;
+  transform: translateY(-2px);
 }
 
 .auth-buttons-fmw {
@@ -106,32 +130,104 @@
   gap: 0.5rem;
   text-decoration: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  transition: all 0.4s ease;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* Sign Up Button with Linear Gradient */
 .signup-btn-fmw {
-  background: #FF8904;
+  background: linear-gradient(135deg, #FF8904, #e67a00);
   color: white;
+  position: relative;
+}
+
+.signup-btn-fmw::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.signup-btn-fmw:hover::before {
+  left: 100%;
 }
 
 .signup-btn-fmw:hover {
-  background: #e67a00;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
+  background: linear-gradient(135deg, #e67a00, #FF8904);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 137, 4, 0.4);
 }
 
+.signup-btn-fmw:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px rgba(255, 137, 4, 0.3);
+}
+
+/* Login Button with Linear Gradient */
 .login-btn-fmw {
-  background: transparent;
+  background: linear-gradient(135deg, transparent, transparent);
   color: #FF8904;
-  border-color: #FF8904;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+
+.login-btn-fmw::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #FF8904, #e67a00);
+  border-radius: 8px;
+  padding: 2px;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+}
+
+.login-btn-fmw::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 137, 4, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.login-btn-fmw:hover::after {
+  left: 100%;
 }
 
 .login-btn-fmw:hover {
-  background: #FF8904;
+  background: linear-gradient(135deg, #FF8904, #e67a00);
   color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 137, 4, 0.3);
+}
+
+.login-btn-fmw:hover::before {
+  opacity: 0;
+}
+
+.login-btn-fmw:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px rgba(255, 137, 4, 0.2);
 }
 
 /* Hide class for navigation */
@@ -208,6 +304,7 @@
 
   .nav-link-fmw:hover {
     background: #f8f9fa;
+    transform: translateX(8px);
   }
 
   .auth-buttons-fmw {
@@ -222,6 +319,13 @@
     width: 100%;
     text-align: center;
     box-sizing: border-box;
+    font-size: 1.1rem;
+  }
+
+  /* Mobile-specific button adjustments */
+  .signup-btn-fmw:hover,
+  .login-btn-fmw:hover {
+    transform: translateY(-2px);
   }
 
   /* Ensure body doesn't scroll when menu is open */
@@ -238,6 +342,27 @@
   }
 }
 
+/* 🎯 TABLET STYLES */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .navigation-auth-fmw {
+    padding: 0.5rem 1.5rem;
+  }
+  
+  .nav-links-fmw {
+    gap: 1.5rem;
+  }
+  
+  .auth-buttons-fmw {
+    gap: 0.75rem;
+  }
+  
+  .auth-button-fmw {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* 🎯 MOBILE STYLES */
 @media (max-width: 480px) {
   .navigation-auth-fmw {
     padding: 0.5rem 1rem;
@@ -260,4 +385,73 @@
   .nav-content-fmw.mobile-open-fmw {
     padding: 70px 1.5rem 1.5rem;
   }
+
+  .auth-button-fmw {
+    padding: 1.125rem;
+    font-size: 1.05rem;
+  }
 }
+
+/* 🎯 ANIMATION ENHANCEMENTS */
+@keyframes buttonShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .nav-link-fmw,
+  .auth-button-fmw,
+  .mobile-menu-toggle-fmw {
+    transition: none !important;
+  }
+  
+  .nav-link-fmw::before,
+  .signup-btn-fmw::before,
+  .login-btn-fmw::after {
+    display: none;
+  }
+  
+  .nav-link-fmw:hover,
+  .auth-button-fmw:hover {
+    transform: none !important;
+  }
+}
+
+/* 🎯 FOCUS STATES FOR ACCESSIBILITY */
+.nav-link-fmw:focus-visible,
+.auth-button-fmw:focus-visible,
+.mobile-menu-toggle-fmw:focus-visible {
+  outline: 2px solid #FF8904;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 🎯 LOADING STATE (if needed in future) */
+.auth-button-fmw.loading-fmw {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.auth-button-fmw.loading-fmw::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 

@@ -1,11 +1,99 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen, faSpinner, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faDoorOpen, faSpinner, faEye, faEyeSlash, faTimes, faCheckCircle, faExclamationTriangle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import NavAuth from "../components/NavAuth";
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './styles/Login.css';
-import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { useState, useEffect, useCallback } from 'react';
 import { useWifiUrl } from '../hooks/useWifiUrl';
+
+// Custom Toast Hook - FIXED VERSION
+const useCustomToast = () => {
+  const [toasts, setToasts] = useState([]);
+
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  }, []);
+
+  const showToast = useCallback((message, type = 'info', duration = 4000) => {
+    const id = Date.now() + Math.random();
+    const toast = { id, message, type, duration };
+    
+    setToasts(prev => [...prev, toast]);
+    
+    if (duration > 0) {
+      setTimeout(() => removeToast(id), duration);
+    }
+    
+    return id;
+  }, [removeToast]);
+
+  const toast = useCallback({
+    success: (message, duration) => showToast(message, 'success', duration),
+    error: (message, duration) => showToast(message, 'error', duration),
+    info: (message, duration) => showToast(message, 'info', duration),
+    warning: (message, duration) => showToast(message, 'warning', duration)
+  }, [showToast]);
+
+  return { toasts, removeToast, toast };
+};
+
+// Custom Toast Component
+const CustomToastContainer = ({ toasts, removeToast }) => {
+  const getToastIcon = (type) => {
+    switch (type) {
+      case 'success': return faCheckCircle;
+      case 'error': return faTimes;
+      case 'warning': return faExclamationTriangle;
+      default: return faInfoCircle;
+    }
+  };
+
+  const getToastColor = (type) => {
+    switch (type) {
+      case 'success': return '#16a34a';
+      case 'error': return '#dc2626';
+      case 'warning': return '#d97706';
+      default: return '#FF8904';
+    }
+  };
+
+  return (
+    <div className="custom-toast-container">
+      {toasts.map((toast) => (
+        <div
+          key={toast.id}
+          className={`custom-toast custom-toast-${toast.type}`}
+          style={{ borderLeftColor: getToastColor(toast.type) }}
+          onClick={() => removeToast(toast.id)}
+        >
+          <div className="custom-toast-icon">
+            <FontAwesomeIcon icon={getToastIcon(toast.type)} />
+          </div>
+          <div className="custom-toast-content">
+            <p className="custom-toast-message">{toast.message}</p>
+          </div>
+          <button
+            className="custom-toast-close"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeToast(toast.id);
+            }}
+            aria-label="Close notification"
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+          <div 
+            className="custom-toast-progress" 
+            style={{ 
+              animationDuration: `${toast.duration}ms`,
+              backgroundColor: getToastColor(toast.type)
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
 
 // Custom hook for form state management
 const useLoginForm = () => {
@@ -14,7 +102,8 @@ const useLoginForm = () => {
     password: '',
     isLoading: false,
     errors: {},
-    showPassword: false
+    showPassword: false,
+    formMounted: false
   });
 
   const updateField = (field, value) => {
@@ -37,12 +126,17 @@ const useLoginForm = () => {
     setState(prev => ({ ...prev, showPassword: !prev.showPassword }));
   };
 
+  const setFormMounted = (mounted) => {
+    setState(prev => ({ ...prev, formMounted: mounted }));
+  };
+
   return {
     ...state,
     updateField,
     setErrors,
     setLoading,
-    togglePasswordVisibility
+    togglePasswordVisibility,
+    setFormMounted
   };
 };
 
@@ -68,20 +162,28 @@ export default function Login() {
     isLoading, 
     errors, 
     showPassword,
+    formMounted,
     updateField, 
     setErrors, 
     setLoading,
-    togglePasswordVisibility 
+    togglePasswordVisibility,
+    setFormMounted
   } = useLoginForm();
   
+  const { toasts, removeToast, toast } = useCustomToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const wifiUrl = useWifiUrl(); // ✅ Hook used inside component
+  const wifiUrl = useWifiUrl();
 
-  // API service function (moved inside component)
+  // Set form mounted for animations
+  useEffect(() => {
+    setFormMounted(true);
+  }, []);
+
+  // API service function
   const authService = {
     login: async (credentials) => {
-      const response = await fetch(`${wifiUrl}/auth/login`, { // ✅ Now wifiUrl is available
+      const response = await fetch(`${wifiUrl}/auth/login`, {
         method: "POST",
         credentials: 'include',
         headers: { "Content-Type": "application/json" },
@@ -103,17 +205,13 @@ export default function Login() {
     const reset = searchParams.get('reset');
     
     if (registered === 'success') {
-      toast.success('Account created successfully! Please login.', {
-        position: "bottom-center"
-      });
+      toast.success('Account created successfully! Please login.', 5000);
     }
     
     if (reset === 'success') {
-      toast.success('Password reset successfully! Please login.', {
-        position: "bottom-center"
-      });
+      toast.success('Password reset successfully! Please login.', 5000);
     }
-  }, [searchParams]);
+  }, [searchParams, toast]);
 
   const validateForm = () => {
     const newErrors = {
@@ -131,7 +229,7 @@ export default function Login() {
     e.preventDefault();
     
     if (!validateForm()) {
-      toast.error('Please fix the form errors', { position: "bottom-center" });
+      toast.error('Please fix the form errors before submitting.', 4000);
       return;
     }
 
@@ -143,13 +241,10 @@ export default function Login() {
       if (result.success) {
         const { user } = result.data;
         
-        toast.success(`Welcome back, ${user.first_name}!`, {
-          position: "bottom-center",
-          autoClose: 1000
-        });
+        toast.success(`Welcome back, ${user.first_name}!`, 2000);
 
         const redirectPath = user.role === 'admin' ? '/admin' : '/user';
-        setTimeout(() => navigate(redirectPath, { replace: true }), 1000);
+        setTimeout(() => navigate(redirectPath, { replace: true }), 1500);
 
       } else {
         handleLoginError(result);
@@ -176,18 +271,12 @@ export default function Login() {
       default: data.error || data.message || 'Login failed'
     };
 
-    toast.error(errorMessages[status] || errorMessages.default, {
-      position: "bottom-center",
-      autoClose: 4000
-    });
+    toast.error(errorMessages[status] || errorMessages.default, 5000);
   };
 
   const handleNetworkError = (error) => {
     console.error('Login network error:', error);
-    toast.error('Network error. Please check your connection and try again.', {
-      position: "bottom-center",
-      autoClose: 3000
-    });
+    toast.error('Network error. Please check your connection and try again.', 4000);
   };
 
   const handleKeyPress = (e) => {
@@ -196,15 +285,23 @@ export default function Login() {
     }
   };
 
+  const getFieldClassName = (fieldName) => {
+    const hasError = errors[fieldName];
+    const hasValue = fieldName === 'email' ? email : password;
+    
+    return `login-auth-input-group ${hasError ? 'login-auth-has-error' : ''} ${hasValue && !hasError ? 'login-auth-has-success' : ''}`;
+  };
+
   return (
     <div className='login-auth-page'>
       <NavAuth disabled="Hide" />
+      <CustomToastContainer toasts={toasts} removeToast={removeToast} />
       
-      <div className='login-auth-container'>
+      <div className={`login-auth-container ${formMounted ? 'login-auth-mounted' : ''}`}>
         <form 
           className='login-auth-form' 
           onSubmit={handleSubmit}
-          noValidate
+          noValidate 
         >
           <div className='login-auth-header'>
             <h2 className='login-auth-title'>Welcome Back</h2>
@@ -212,7 +309,7 @@ export default function Login() {
           </div>
 
           <div className='login-auth-form-group'>
-            <div className={`login-auth-input-group ${errors.email ? 'login-auth-has-error' : ''}`}>
+            <div className={getFieldClassName('email')}>
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -230,7 +327,7 @@ export default function Login() {
               )}
             </div>
 
-            <div className={`login-auth-input-group login-auth-password-group ${errors.password ? 'login-auth-has-error' : ''}`}>
+            <div className={`login-auth-password-group ${getFieldClassName('password')}`}>
               <div className="login-auth-password-wrapper">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -300,5 +397,5 @@ export default function Login() {
         </form>
       </div>
     </div>
-  );
+  ); 
 }

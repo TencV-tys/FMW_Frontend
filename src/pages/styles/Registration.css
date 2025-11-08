@@ -6,6 +6,7 @@
   flex-direction: column;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: hidden;
+  position: relative;
 }
  
 .reg-auth-form-container {
@@ -16,18 +17,12 @@
   padding: 2rem 1rem;
   opacity: 0;
   transform: translateY(30px);
-  animation: reg-auth-slideInUp 0.6s ease-out forwards;
+  transition: all 0.6s ease-out;
 }
 
-@keyframes reg-auth-slideInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.reg-auth-form-container.reg-auth-mounted {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .reg-auth-form {
@@ -707,11 +702,157 @@
   transform: translateY(-1px);
 }
 
+/* Custom Toast Styles */
+.custom-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+  width: auto;
+}
+
+.custom-toast {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem 1rem 1rem 3rem;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #FF8904;
+  cursor: pointer;
+  transform: translateX(100%);
+  animation: toastSlideIn 0.4s ease-out forwards;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+
+@keyframes toastSlideIn {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.custom-toast:hover {
+  transform: translateX(-4px);
+  box-shadow: 
+    0 12px 35px rgba(0, 0, 0, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.custom-toast-success {
+  border-left-color: #16a34a;
+}
+
+.custom-toast-error {
+  border-left-color: #dc2626;
+}
+
+.custom-toast-warning {
+  border-left-color: #d97706;
+}
+
+.custom-toast-info {
+  border-left-color: #FF8904;
+}
+
+.custom-toast-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.25rem;
+  width: 20px;
+  height: 20px;
+}
+
+.custom-toast-success .custom-toast-icon {
+  color: #16a34a;
+}
+
+.custom-toast-error .custom-toast-icon {
+  color: #dc2626;
+}
+
+.custom-toast-warning .custom-toast-icon {
+  color: #d97706;
+}
+
+.custom-toast-info .custom-toast-icon {
+  color: #FF8904;
+}
+
+.custom-toast-content {
+  flex: 1;
+}
+
+.custom-toast-message {
+  margin: 0;
+  color: #1e293b;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.custom-toast-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-toast-close:hover {
+  color: #64748b;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.custom-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  animation: toastProgress linear forwards;
+  transform-origin: left;
+}
+
+@keyframes toastProgress {
+  0% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+
 /* Responsive Design */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .reg-auth-form {
     padding: 2rem 1.5rem;
-    margin: 0.5rem;
+    margin: 1rem;
     border-radius: 12px;
   }
   
@@ -753,6 +894,25 @@
     padding: 1.125rem 1.5rem;
     font-size: 1.05rem;
   }
+.custom-toast-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    width: calc(100% - 20px);
+  }
+
+  .custom-toast {
+    min-width: auto;
+    width: 100%;
+    padding: 0.875rem 0.875rem 0.875rem 2.75rem;
+  }
+
+  .custom-toast-icon {
+    left: 0.875rem;
+    font-size: 1.1rem;
+  }
+  
 }
 
 /* Focus states for accessibility */
@@ -806,5 +966,9 @@ html {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  
+  .custom-toast-progress {
+    animation: none !important;
   }
 }
