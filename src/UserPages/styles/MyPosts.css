@@ -286,19 +286,20 @@
   border-color: #8B5A2B;
 }
 
-.filter-label-fmw {
-  font-weight: 600;
+.filter-label-fmws {
+  font-weight: 700;
 }
 
-.filter-count-fmw {
+.filter-count-fmws {
   background: rgba(255, 255, 255, 0.2);
   padding: 0.3rem 0.6rem;
   border-radius: 12px;
   font-size: 0.8rem;
   font-weight: 700;
+  letter-spacing: 0.2rem;
 }
 
-.clear-filter-btn-fmw {
+.clear-filter-btn-fmws {
   background: #6c757d;
   color: white;
   border: none;
@@ -313,7 +314,7 @@
   font-size: 0.9rem;
 }
 
-.clear-filter-btn-fmw:hover {
+.clear-filter-btn-fmws:hover {
   background: #545b62;
 }
 

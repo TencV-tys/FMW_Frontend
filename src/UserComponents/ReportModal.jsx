@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faFlag, faExclamationTriangle, faUserSlash, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
-import { toast } from 'react-toastify';
+import { faTimes, faFlag, faExclamationTriangle, faUserSlash, faCalendarAlt, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import './styles/ReportModal.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+import CustomToast from '../components/CustomToast';
+
 export default function ReportModal({ isOpen, onClose, post }) {
   const [reason, setReason] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
@@ -11,7 +12,11 @@ export default function ReportModal({ isOpen, onClose, post }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [isOwnPost, setIsOwnPost] = useState(false);
   const [alreadyReportedThisMonth, setAlreadyReportedThisMonth] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false); // NEW: Track if report was successful
   const wifi = useWifiUrl();
+
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast();
+
   const reportReasons = [
     'Inappropriate content',
     'Spam or misleading',
@@ -33,7 +38,6 @@ export default function ReportModal({ isOpen, onClose, post }) {
           const userData = await response.json();
           if (userData.success) {
             setCurrentUser(userData.user);
-            // Check if the current user is the post owner
             if (post && userData.user.id === post.user_id) {
               setIsOwnPost(true);
             } else {
@@ -42,7 +46,6 @@ export default function ReportModal({ isOpen, onClose, post }) {
           }
         } else {
           console.warn('Failed to fetch user profile, using fallback method');
-          // Fallback: try to get user ID from localStorage or session
           try {
             const userFromStorage = localStorage.getItem('currentUser');
             if (userFromStorage) {
@@ -58,7 +61,6 @@ export default function ReportModal({ isOpen, onClose, post }) {
         }
       } catch (error) {
         console.error('Error fetching current user:', error);
-        // Fallback method if API fails
         try {
           const userFromStorage = localStorage.getItem('currentUser');
           if (userFromStorage) {
@@ -76,27 +78,21 @@ export default function ReportModal({ isOpen, onClose, post }) {
 
     if (isOpen && post) {
       fetchCurrentUser();
-      setAlreadyReportedThisMonth(false); // Reset when modal opens
+      setAlreadyReportedThisMonth(false);
+      setReportSubmitted(false); // Reset when modal opens
     }
   }, [isOpen, post]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Prevent self-reporting
     if (isOwnPost) {
-      toast.error('You cannot report your own post', {
-        position: 'top-center',
-        autoClose: 2000
-      });
+      toast.error('You cannot report your own post');
       return;
     }
 
     if (!reason) {
-      toast.error('Please select a reason for reporting', {
-        position: 'top-right',
-        autoClose: 2000
-      });
+      toast.error('Please select a reason for reporting');
       return;
     }
 
@@ -119,57 +115,68 @@ export default function ReportModal({ isOpen, onClose, post }) {
       const result = await response.json();
 
       if (result.success) {
-        toast.success('Report submitted successfully!', {
-          position: 'top-right',
-          autoClose: 2000
-        });
-        onClose();
-        // Reset form
+        // Show success in the modal AND toast
+        setReportSubmitted(true);
+        toast.success('Report submitted successfully!');
+        
+        // Reset form but don't close modal yet
         setReason('');
         setAdditionalInfo('');
         setAlreadyReportedThisMonth(false);
       } else {
-        // CHECK IF ERROR IS ABOUT MONTHLY REPORTING LIMIT
         if (result.error && result.error.includes('this month')) {
           setAlreadyReportedThisMonth(true);
-          toast.error(result.error, {
-            position: 'top-right',
-            autoClose: 3000
-          });
+          toast.error(result.error);
         } else {
-          toast.error(result.error || 'Failed to submit report', {
-            position: 'top-right',
-            autoClose: 2000
-          });
+          toast.error(result.error || 'Failed to submit report');
         }
       }
     } catch (error) {
       console.error('Error submitting report:', error);
-      toast.error('Error submitting report. Please try again.', {
-        position: 'top-right',
-        autoClose: 2000
-      });
+      toast.error('Error submitting report. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleClose = () => {
+    // Reset everything when closing
+    setReason('');
+    setAdditionalInfo('');
+    setReportSubmitted(false);
+    setAlreadyReportedThisMonth(false);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="report-modal-overlay" onClick={onClose}>
+    <div className="report-modal-overlay" onClick={handleClose}>
       <div className="report-modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="report-modal-header">
           <div className="report-modal-title">
             <FontAwesomeIcon icon={faFlag} className="report-modal-icon" />
             <h2>Report Post</h2>
           </div>
-          <button className="report-modal-close-btn" onClick={onClose}>
+          <button className="report-modal-close-btn" onClick={handleClose}>
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
 
         <div className="report-modal-body">
+          {/* Success message */}
+          {reportSubmitted && (
+            <div className="report-success-message">
+              <div className="report-success-icon">
+                <FontAwesomeIcon icon={faCheckCircle} />
+              </div>
+              <div className="report-success-content">
+                <h3>Report Submitted Successfully!</h3>
+                <p>Thank you for your report. Our admin team will review it shortly.</p>
+              </div>
+            </div>
+          )}
+
           {/* Self-reporting warning */}
           {isOwnPost && (
             <div className="report-warning-message report-own-post-warning">
@@ -196,8 +203,8 @@ export default function ReportModal({ isOpen, onClose, post }) {
             </div>
           )}
 
-          {/* Only show post preview and form if not self-reporting and not already reported */}
-          {!isOwnPost && !alreadyReportedThisMonth && (
+          {/* Only show post preview and form if not self-reporting, not already reported, and not successful */}
+          {!isOwnPost && !alreadyReportedThisMonth && !reportSubmitted && (
             <>
               {/* Post Preview */}
               <div className="report-post-preview">
@@ -264,7 +271,7 @@ export default function ReportModal({ isOpen, onClose, post }) {
                   <button 
                     type="button" 
                     className="report-btn-cancel" 
-                    onClick={onClose}
+                    onClick={handleClose}
                     disabled={loading}
                   >
                     Cancel
@@ -281,13 +288,13 @@ export default function ReportModal({ isOpen, onClose, post }) {
             </>
           )}
 
-          {/* Show close button only when there are warnings */}
-          {(isOwnPost || alreadyReportedThisMonth) && (
+          {/* Show close button for success and warning states */}
+          {(reportSubmitted || isOwnPost || alreadyReportedThisMonth) && (
             <div className="report-modal-actions">
               <button 
                 type="button" 
                 className="report-btn-close-warning" 
-                onClick={onClose}
+                onClick={handleClose}
               >
                 Close
               </button>
@@ -295,6 +302,9 @@ export default function ReportModal({ isOpen, onClose, post }) {
           )}
         </div>
       </div>
+
+      {/* Custom Toast Container */}
+      <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 }

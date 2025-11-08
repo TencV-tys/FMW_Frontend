@@ -17,6 +17,7 @@ import ReportModal from '../UserComponents/ReportModal';
 import OptionalPhoto from '../assets/Logo.jpg';
 import './styles/BulletinBoard.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+import CustomToast from '../components/CustomToast'; // Import the toast
 
 export default function BulletinBoard() {
   const [reportModal, setReportModal] = useState({ isOpen: false, post: null });
@@ -26,7 +27,7 @@ export default function BulletinBoard() {
   const [barangays, setBarangays] = useState([]);
   const [puroks, setPuroks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -36,6 +37,9 @@ export default function BulletinBoard() {
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [expandedContacts, setExpandedContacts] = useState({});
   const wifi = useWifiUrl(); 
+
+  // Initialize toast
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast();
 
   useEffect(() => {
     fetchPosts();
@@ -72,6 +76,7 @@ export default function BulletinBoard() {
     } catch (err) {
       console.error('Error fetching posts:', err);
       setError(err.message);
+      toast.error('Failed to load posts');
     } finally {
       setLoading(false);
     }
@@ -93,6 +98,7 @@ export default function BulletinBoard() {
       }
     } catch (error) {
       console.error('Error fetching form data:', error);
+      toast.error('Failed to load filter options');
     }
   };
 
@@ -101,13 +107,13 @@ export default function BulletinBoard() {
 
     if (searchTerm) {
       filtered = filtered.filter(post => 
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.barangay_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.barangay_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.purok_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.last_name.toLowerCase().includes(searchTerm.toLowerCase())
+        post.category_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -116,11 +122,11 @@ export default function BulletinBoard() {
     }
 
     if (filterCategory !== 'all') {
-      filtered = filtered.filter(post => post.category_id.toString() === filterCategory);
+      filtered = filtered.filter(post => post.category_id?.toString() === filterCategory);
     }
 
     if (filterBarangay !== 'all') {
-      filtered = filtered.filter(post => post.barangay_id.toString() === filterBarangay);
+      filtered = filtered.filter(post => post.barangay_id?.toString() === filterBarangay);
     }
     if (filterPurok !== 'all') {
       filtered = filtered.filter(post => post.purok_id?.toString() === filterPurok); 
@@ -134,6 +140,7 @@ export default function BulletinBoard() {
     setFilterCategory('all');
     setFilterBarangay('all');
     setFilterPurok('all'); 
+    toast.info('Filters cleared');
   };
 
   const isFilterActive = () => {
@@ -209,27 +216,29 @@ export default function BulletinBoard() {
 
   // Check if description needs "Read More"
   const needsReadMore = (description) => {
-    return description.length > 120;
+    return description && description.length > 120;
   };
 
   // Check if contact needs "Read More"
   const needsContactReadMore = (contact) => {
-    return contact.length > 50;
+    return contact && contact.length > 50;
   };
 
   // Get truncated description
   const getTruncatedDescription = (description) => {
+    if (!description) return '';
     if (description.length <= 120) return description;
     return description.substring(0, 120) + '...';
   };
 
   // Get truncated contact
   const getTruncatedContact = (contact) => {
+    if (!contact) return '';
     if (contact.length <= 50) return contact;
     return contact.substring(0, 50) + '...';
   };
 
-  // Loading state - now outside the main container
+  // Loading state
   if (loading) {
     return (
       <div className="bulletin-board-page-container">
@@ -242,7 +251,7 @@ export default function BulletinBoard() {
     );
   }
 
-  // Error state - also outside
+  // Error state
   if (error) {
     return (
       <div className="bulletin-board-page-container">
@@ -396,11 +405,16 @@ export default function BulletinBoard() {
               {/* Posts Grid */}
               {filteredPosts.length === 0 ? (
                 <div className="bulletin-empty-state">
-                  <h3>No posts found</h3>
+                  <h3>
+                    {posts.length === 0 
+                      ? "No posts available yet" 
+                      : "No posts match your search criteria"
+                    }
+                  </h3>
                   <p>
                     {posts.length === 0 
-                      ? "No posts available yet. Be the first to create a post!" 
-                      : "No posts match your search criteria. Try adjusting your filters."
+                      ? "Be the first to create a post!" 
+                      : "Try adjusting your filters or search terms."
                     }
                   </p>
                   {isFilterActive() && (
@@ -418,8 +432,6 @@ export default function BulletinBoard() {
                       onClick={() => openPostModal(post)}
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <span className='bulletin-post-pin'></span>
-                      
                       {/* Post Header with User Info */}
                       <div className="bulletin-post-header">
                         <div className="bulletin-user-info">
@@ -555,6 +567,9 @@ export default function BulletinBoard() {
               onClose={closeReportModal}
               post={reportModal.post}
             />
+
+            {/* Toast Container */}
+            <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
 
             {/* Post Detail Modal */}
             {selectedPost && (

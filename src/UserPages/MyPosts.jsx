@@ -430,8 +430,8 @@ export default function MyPosts() {
                       onClick={() => setStatusFilter(option.value)}
                       disabled={loading}
                     >
-                      <span className="filter-label-fmw">{option.label}</span>
-                      <span className="filter-count-fmw">({option.count})</span>
+                      <span className="filter-label-fmws">{option.label}</span>
+                      <span className="filter-count-fmws">({option.count})</span>
                     </button>
                   ))}
                 </div>

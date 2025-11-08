@@ -1,4 +1,4 @@
-/* BulletinBoard.css - FIXED VERSION */
+/* BulletinBoard.css - FIXED RESPONSIVE VERSION */
 
 .bulletin-board-page-container {
   min-height: 100dvh;
@@ -53,7 +53,7 @@
   align-items: center;
 }
 
-/* FIXED Loading and Error States - Match your component classes */
+/* FIXED Loading and Error States */
 .bulletin-loading-outer-container,
 .bulletin-error-outer-container {
   display: flex;
@@ -205,13 +205,14 @@
   color: #999;
 }
 
-/* Filters Container */
+/* Filters Container - FIXED FOR RESPONSIVE */
 .bulletin-filters-container {
   display: flex;
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
 }
 
 .bulletin-filter-group {
@@ -224,6 +225,9 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: filterSlideIn 0.5s ease-out;
+  flex: 1;
+  min-width: 150px;
+  max-width: 200px;
 }
 
 @keyframes filterSlideIn {
@@ -246,6 +250,7 @@
   color: #8B5A2B;
   font-size: 0.9rem;
   width: 16px;
+  flex-shrink: 0;
 }
 
 .bulletin-filter-select {
@@ -257,7 +262,7 @@
   font-weight: 600;
   cursor: pointer;
   outline: none;
-  min-width: 140px;
+  width: 100%;
   transition: all 0.3s ease;
 }
 
@@ -276,6 +281,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 0.85rem;
   animation: bounceIn 0.6s ease-out;
+  white-space: nowrap;
 }
 
 @keyframes bounceIn {
@@ -348,7 +354,7 @@
   width: 95%;
 }
 
-/* FIXED Post Card - 1px border on hover */
+/* FIXED Post Card - Removed Pin */
 .bulletin-post-card {
   display: flex;
   flex-direction: column;
@@ -381,18 +387,6 @@
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 1px 30px rgba(0,0,0,0.2);
   border: 1px solid #8B5A2B;
-}
-
-.bulletin-post-pin {
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #e74c3c;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 /* Fixed Post Header */
@@ -804,16 +798,19 @@
   transform: translateY(-2px);
 }
 
-/* Empty State */
+/* FIXED: Empty State - Matches MyPosts Style */
 .bulletin-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  background: #FBFCF8;
   padding: 4rem 2rem;
-  width: 100%;
-  min-height: 300px;
+  border-radius: 16px;
+  margin: 2rem auto;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   animation: fadeInUp 0.6s ease-out;
 }
 
@@ -830,13 +827,16 @@
 
 .bulletin-empty-state h3 {
   color: #8B5A2B;
+  font-size: 1.8rem;
   margin-bottom: 1rem;
+  font-weight: 700;
 }
 
 .bulletin-empty-state p {
   color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
   margin-bottom: 2rem;
-  max-width: 400px;
 }
 
 /* Modal Styles */
@@ -1070,7 +1070,8 @@
   width: 16px;
 }
 
-/* Responsive Design */
+/* ========== RESPONSIVE DESIGN - FIXED FOR 768px AND BELOW ========== */
+
 @media (max-width: 1200px) {
   .bulletin-posts-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1081,35 +1082,78 @@
   }
 }
 
+/* FIXED: Tablet and Mobile (768px and below) */
 @media (max-width: 768px) {
   .bulletin-board-main-container {
-    padding: 20px;
+    padding: 20px 5px;
+  }
+  
+  .bulletin-board-darkbrown-container {
+    padding: 15px;
+  }
+  
+  .bulletin-board-lightbrown-container {
+    padding: 10px;
+  }
+  
+  .bulletin-board-title-section {
+    width: 90%;
+    margin: 15px;
+    padding: 12px;
+  }
+
+  .bulletin-board-title-section h1 {
+    font-size: 1.6rem;
+  }
+  
+  .bulletin-search-filters-section {
+    width: 100%;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .bulletin-search-input-container {
+    width: 100%;
+    max-width: none;
+    min-width: auto;
+  }
+  
+  .bulletin-filters-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  
+  .bulletin-filter-group {
+    max-width: none;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .bulletin-filter-select {
+    flex: 1;
+  }
+  
+  .bulletin-clear-filters-btn {
+    width: 100%;
+    margin-top: 0.5rem;
   }
   
   .bulletin-posts-grid {
     grid-template-columns: 1fr;
     gap: 20px;
+    margin: 5px;
+    width: 100%;
+  }
+  
+  .bulletin-post-card {
+    margin: 5px;
+    padding: 20px;
   }
   
   .bulletin-post-image-container {
     height: 250px;
-  } 
-  
-  .bulletin-search-filters-section {
-    width: 95%;
-    flex-direction: column; 
-    gap: 1rem;
-  }
-  
-  .bulletin-filters-container {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  
-  .bulletin-filter-group {
-    flex: 1;
-    min-width: 150px;
   }
   
   .bulletin-post-modal-body {
@@ -1150,20 +1194,20 @@
     font-size: 1.6rem;
   }
 
-  .bulletin-board-title-section {
-    width: 90%;
-    margin: 15px;
-    padding: 12px;
+  .bulletin-posts-info {
+    width: 100%;
+    padding: 0 10px;
   }
 
-  .bulletin-board-title-section h1 {
-    font-size: 1.6rem;
+  .bulletin-active-filters {
+    justify-content: flex-start;
   }
 }
 
+/* FIXED: Small Mobile (480px and below) */
 @media (max-width: 480px) {
   .bulletin-board-main-container {
-    padding:20px 5px;
+    padding: 20px 5px;
   }
   
   .bulletin-board-darkbrown-container {
@@ -1171,29 +1215,15 @@
   }
   
   .bulletin-board-lightbrown-container {
-    padding: 14px;
+    padding: 8px;
   }
   
   .bulletin-post-image-container {
     height: 200px;
   }
   
-  .bulletin-filters-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .bulletin-filter-group {
-    width: 100%;
-  }
-  
-  .bulletin-filter-select {
-    width: 100%;
-  }
-  
   .bulletin-post-card {
-    padding: 20px;
-    margin: 5px;
+    padding: 15px;
   }
 
   .bulletin-user-avatar {
@@ -1213,6 +1243,27 @@
   .bulletin-error-outer-container {
     padding: 2rem 1rem;
     min-height: 100dvh;
+  }
+
+  .bulletin-empty-state {
+    margin: 1rem auto;
+    padding: 3rem 1.5rem;
+  }
+
+  .bulletin-empty-state h3 {
+    font-size: 1.5rem;
+  }
+
+  .bulletin-empty-state p {
+    font-size: 1rem;
+  }
+
+  .bulletin-search-bar {
+    padding: 8px 30px 8px 12px;
+  }
+
+  .bulletin-search-input::placeholder {
+    font-size: 14px;
   }
 }
 
