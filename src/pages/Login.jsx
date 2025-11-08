@@ -200,6 +200,8 @@ export default function Login() {
     }
   };
 
+  // REMOVED THE PROBLEMATIC useEffect BLOCK THAT WAS HERE
+
   useEffect(() => {
     const registered = searchParams.get('registered');
     const reset = searchParams.get('reset');
@@ -397,5 +399,5 @@ export default function Login() {
         </form>
       </div>
     </div>
-  ); 
+  );
 }
