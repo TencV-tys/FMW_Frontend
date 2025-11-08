@@ -607,7 +607,6 @@
   background: white;
   border-radius: 8px;
   padding: 1rem;
-  border-left: 4px solid #8B5A2B;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   width: 100%;
   max-width: 700px;
@@ -876,18 +875,19 @@
   cursor: not-allowed;
 }
 
-/* Delete Confirmation Modal */
+/* Delete Confirmation Modal - FIXED CENTERING */
 .delete-confirmation-overlay-fmw {
   position: fixed;
-  top: 0;
-  left: 0;
+  top:-50px;
+  left: -10px;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 1rem;
   animation: overlayFadeIn 0.3s ease-out;
 }
 
@@ -900,11 +900,12 @@
   background: white;
   padding: 1.5rem;
   border-radius: 8px;
-  max-width: 350px;
-  width: 90%;
+  max-width: 400px;
+  z-index: 9999;
+  width: 100%;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   animation: modalSlideUp 0.4s ease-out;
+  margin: 0 auto;
 }
 
 @keyframes modalSlideUp {
@@ -1282,5 +1283,19 @@
   .loading-spinner-fmw,
   .loading-spinner-small-fmw {
     animation: none !important;
+  }
+}
+/* Add this mobile-specific fix */
+@media (max-width: 480px) {
+  .delete-confirmation-overlay-fmw {
+    padding: 0.5rem;
+    align-items: center; /* Ensure vertical centering */
+    justify-content: center; /* Ensure horizontal centering */
+  }
+  
+  .delete-confirmation-modal-fmw {
+    width: 100%; /* Slightly wider on very small screens */
+    max-width: 100%; /* Allow it to use more screen space */
+    margin: 0 auto; /* Force centering */
   }
 }

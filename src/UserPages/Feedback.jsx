@@ -372,7 +372,17 @@ export default function Feedback() {
     };
     return counts;
   };
+// Add this function near your other helper functions
+const canEditFeedback = (feedback) => {
+  // Allow editing only for pending and reviewed feedback
+  // Disable editing for completed, rejected, and in_progress
+  return feedback.status === 'pending' || feedback.status === 'reviewed';
+};
 
+const canDeleteFeedback = (feedback) => {
+  // Allow deletion for all statuses except maybe completed if you want restrictions
+  return true; // Or add specific logic if needed
+};
   const renderFeedbackCard = (feedback) => {
     if (editingFeedback === feedback.id) {
       return (
@@ -496,23 +506,27 @@ export default function Feedback() {
               {feedback.status.replace('_', ' ')}
             </span>
             <div className="feedback-actions-fmw">
-              <button
-                className="edit-feedback-btn-fmw"
-                onClick={() => handleEditClick(feedback)}
-                title="Edit this feedback"
-                disabled={dataLoading}
-              >
-                <FontAwesomeIcon icon={faEdit} />
-              </button>
-              <button
-                className="delete-feedback-btn-fmw"
-                onClick={() => setDeleteConfirm(feedback)}
-                title="Delete this feedback"
-                disabled={dataLoading}
-              >
-                <FontAwesomeIcon icon={faTrash} />
-              </button>
-            </div>
+      {canEditFeedback(feedback) && (
+       <button
+      className="edit-feedback-btn-fmw"
+      onClick={() => handleEditClick(feedback)}
+      title="Edit this feedback"
+      disabled={dataLoading}
+      >
+      <FontAwesomeIcon icon={faEdit} />
+      </button>
+       )}
+      {canDeleteFeedback(feedback) && (
+        <button
+      className="delete-feedback-btn-fmw"
+      onClick={() => setDeleteConfirm(feedback)}
+      title="Delete this feedback"
+      disabled={dataLoading}
+        >
+        <FontAwesomeIcon icon={faTrash} />
+        </button>
+         )}
+          </div>
           </div>
         </div>
         
@@ -546,7 +560,7 @@ export default function Feedback() {
                   onClick={() => setDeleteConfirm(null)}
                   disabled={deleteLoading}
                 >
-                  Cancel
+                  Cancel 
                 </button>
                 <button
                   className="confirm-delete-btn-fmw"

@@ -739,3 +739,198 @@
     transform: none !important;
   }
 }
+/* 🆕 EDIT REPORT STYLES */
+.report-actions-fmw {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.edit-report-btn-fmw {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+}
+
+.edit-report-btn-fmw:hover:not(:disabled) {
+  background: #2980b9;
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.edit-report-btn-fmw:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Edit Form Styles */
+.report-edit-form-fmw {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #3498db;
+  animation: editFormSlideIn 0.3s ease-out;
+}
+
+@keyframes editFormSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.edit-form-group-fmw {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-form-group-fmw label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.edit-reason-select-fmw {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #2c3e50;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.edit-reason-select-fmw:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.edit-additional-info-textarea-fmw {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #2c3e50;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.3s ease;
+  line-height: 1.5;
+}
+
+.edit-additional-info-textarea-fmw:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.edit-form-actions-fmw {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.cancel-edit-btn-fmw {
+  background: #95a5a6;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.cancel-edit-btn-fmw:hover:not(:disabled) {
+  background: #7f8c8d;
+  transform: translateY(-1px);
+}
+
+.save-edit-btn-fmw {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.save-edit-btn-fmw:hover:not(:disabled) {
+  background: #219a52;
+  transform: translateY(-1px);
+}
+
+.save-edit-btn-fmw:disabled {
+  background: #a3d7b9;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Enhanced card styling when editing */
+.report-card-fmw.editing {
+  border-left-color: #3498db;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+}
+
+/* Responsive adjustments for edit form */
+@media (max-width: 768px) {
+  .edit-form-actions-fmw {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .cancel-edit-btn-fmw,
+  .save-edit-btn-fmw {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .report-actions-fmw {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+  
+  .edit-report-btn-fmw,
+  .delete-report-btn-fmw {
+    width: 100%;
+    max-width: 200px;
+    height: 44px;
+  }
+}
