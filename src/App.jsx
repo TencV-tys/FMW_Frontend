@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import './index.css';
 
+// Pages
 import Login from './pages/Login'; 
 import Landing from './pages/Landing';
 import Registration from './pages/Registration'; 
@@ -13,7 +13,7 @@ import About from './pages/About';
 import Privacy from './pages/Privacy';
 import ContactUs from './pages/ContactUs';
 
-
+// Admin Pages
 import Dashboard from './AdminPages/Dashboard';
 import ManageUsers from './AdminPages/ManageUsers';
 import ManagePosts from './AdminPages/ManagePosts';
@@ -22,9 +22,11 @@ import Reports from './AdminPages/Reports';
 import AdminFeedBack from './AdminPages/AdminFeedback';
 import AdminDeletionRequests from './AdminPages/AdminDeletionRequests';
 
+// Components
 import NotFound from './components/NotFound';
 import ProtectedRoute from './components/ProtectedRoutes';
 
+// User Pages
 import BulletinBoard from './UserPages/BulletinBoard';
 import CreatePost from './UserPages/CreatePost';
 import MyPosts from './UserPages/MyPosts';
@@ -35,7 +37,7 @@ import MyReports from './UserPages/MyReports';
 import UserNotifications from './UserPages/UserNotifications';
 import Feedback from './UserPages/Feedback';
 
-
+// Auth Components
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 
@@ -43,6 +45,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route path='/' element={<Landing/>}/>
         <Route path='/registration' element={<Registration/>}/>
         <Route path='/login' element={<Login/>}/>
@@ -51,17 +54,21 @@ function App() {
         <Route path='/privacy-policy'element={<Privacy />} />
         <Route path='/contact' element={<ContactUs/>} />
 
+        {/* Auth Routes */}
         <Route path='/forgot-password' element={<ForgotPassword/>}/>
         <Route path='/reset-password' element={<ResetPassword/>}/>
 
+        {/* Protected User Routes */}
         <Route 
-          path='/user' element={
-          <ProtectedRoute allowedRole='user'>
-            <User/>
-          </ProtectedRoute>
-          }>
+          path='/user' 
+          element={
+            <ProtectedRoute allowedRole='user'>
+              <User/>
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<BulletinBoard/>} />
-          <Route path='create'  element={<CreatePost/>} />
+          <Route path='create' element={<CreatePost/>} />
           <Route path='myposts' element={<MyPosts/>} />
           <Route path='profile' element={<Profile/>} />
           <Route path='edit-profile' element={<EditProfile/>} /> 
@@ -71,12 +78,15 @@ function App() {
           <Route path='feedback' element={<Feedback />} />
         </Route>
 
-        
-        <Route path='/admin' element={
-          <ProtectedRoute allowedRole='admin'>
-            <Admin/>
-          </ProtectedRoute>
-          }>
+        {/* Protected Admin Routes */}
+        <Route 
+          path='/admin' 
+          element={
+            <ProtectedRoute allowedRole='admin'>
+              <Admin/>
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Dashboard/>} /> 
           <Route path='manage-users' element={<ManageUsers/>} />
           <Route path='manage-posts' element={<ManagePosts/>} />
@@ -86,17 +96,11 @@ function App() {
           <Route path="deletion-requests" element={<AdminDeletionRequests />} />
         </Route>
 
+        {/* 404 Route */}
         <Route path='*' element={<NotFound/>} />
       </Routes>
-
-      <ToastContainer
-        position='top-right'
-        autoClose={1000}
-        theme='colored'
-        newestOnTop={true}
-      />
     </BrowserRouter>
-  )
+  );
 }
 
 export default App;

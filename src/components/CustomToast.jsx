@@ -2,8 +2,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faCheckCircle, faExclamationTriangle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { useState, useCallback } from 'react';
 
-// Custom Toast Hook - Built right into the component
-const useCustomToast = () => {
+// Custom Toast Hook
+export const useCustomToast = () => {
   const [toasts, setToasts] = useState([]);
 
   const removeToast = useCallback((id) => {
@@ -34,7 +34,7 @@ const useCustomToast = () => {
 };
 
 // Custom Toast Component
-const CustomToastContainer = ({ toasts, removeToast }) => {
+export const CustomToastContainer = ({ toasts, removeToast }) => {
   const getToastIcon = (type) => {
     switch (type) {
       case 'success': return faCheckCircle;
@@ -91,4 +91,5 @@ const CustomToastContainer = ({ toasts, removeToast }) => {
   );
 };
 
+// Default export for backward compatibility
 export default { useCustomToast, CustomToastContainer };

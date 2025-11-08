@@ -4,17 +4,19 @@ import { faRightFromBracket, faTimes, faExclamationTriangle } from "@fortawesome
 import { useNavigate } from "react-router-dom";
 import './styles/LogoutButton.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
-import CustomToast from '../components/CustomToast'; // Import the external toast component
+import CustomToast from '../components/CustomToast';
 
 export default function LogoutButton({ className = "", isDropdown = false, isOpen = true }) {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const wifi = useWifiUrl();
-  const { toast } = CustomToast.useCustomToast(); // Use the external toast hook
+  
+  // Use the custom toast hook - get ALL return values
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast();
 
   const handleLogout = async () => {
-    if (isLoggingOut) return; // Prevent multiple clicks
+    if (isLoggingOut) return;
     
     setIsLoggingOut(true);
     
@@ -149,6 +151,9 @@ export default function LogoutButton({ className = "", isDropdown = false, isOpe
               </button>
             </div>
           </div>
+
+          {/* ADD THE TOAST CONTAINER INSIDE THE MODAL OVERLAY */}
+          <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
         </div>
       )}
     </>

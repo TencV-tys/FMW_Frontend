@@ -1,6 +1,6 @@
 import NavAuth from "../components/NavAuth";
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './styles/Registration.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -15,7 +15,7 @@ import {
   faShieldAlt
 } from "@fortawesome/free-solid-svg-icons";
 import {useWifiUrl} from '../hooks/useWifiUrl';
-import CustomToast from '../components/CustomToast'; // Import the external toast component
+import { useCustomToast, CustomToastContainer } from '../components/CustomToast';
 
 // Custom hook for registration form
 const useRegistrationForm = () => {
@@ -37,7 +37,7 @@ const useRegistrationForm = () => {
     formMounted: false
   });
 
-  const updateField = (field, value) => {
+  const updateField = useCallback((field, value) => {
     setState(prev => ({
       ...prev,
       [field]: value,
@@ -45,39 +45,39 @@ const useRegistrationForm = () => {
       touched: { ...prev.touched, [field]: true },
       emailVerified: field === 'email' ? false : prev.emailVerified
     }));
-  };
+  }, []);
 
-  const setErrors = (errors) => {
+  const setErrors = useCallback((errors) => {
     setState(prev => ({ ...prev, errors }));
-  };
+  }, []);
 
-  const setLoading = (isLoading) => {
+  const setLoading = useCallback((isLoading) => {
     setState(prev => ({ ...prev, isLoading }));
-  };
+  }, []);
 
-  const togglePasswordVisibility = () => {
+  const togglePasswordVisibility = useCallback(() => {
     setState(prev => ({ ...prev, showPassword: !prev.showPassword }));
-  };
+  }, []);
 
-  const toggleConfirmPasswordVisibility = () => {
+  const toggleConfirmPasswordVisibility = useCallback(() => {
     setState(prev => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }));
-  };
+  }, []);
 
-  const setEmailVerificationStatus = (verified, checking = false) => {
+  const setEmailVerificationStatus = useCallback((verified, checking = false) => {
     setState(prev => ({ 
       ...prev, 
       emailVerified: verified, 
       checkingEmail: checking 
     }));
-  };
+  }, []);
 
-  const setAgreedToTerms = (agreed) => {
+  const setAgreedToTerms = useCallback((agreed) => {
     setState(prev => ({ ...prev, agreedToTerms: agreed }));
-  };
+  }, []);
 
-  const setFormMounted = (mounted) => {
+  const setFormMounted = useCallback((mounted) => {
     setState(prev => ({ ...prev, formMounted: mounted }));
-  };
+  }, []);
 
   return {
     ...state,
@@ -160,14 +160,15 @@ export default function Registration() {
     setFormMounted
   } = useRegistrationForm();
  
-  const { toasts, removeToast, toast } = CustomToast.useCustomToast(); // Use the external toast hook
+  // Use the custom toast hook correctly
+  const { toasts, removeToast, toast } = useCustomToast();
   const navigate = useNavigate();
   const wifi = useWifiUrl();
 
   // Set form mounted for animations
   useEffect(() => {
     setFormMounted(true);
-  }, []);
+  }, [setFormMounted]);
 
   // Email verification service
   const emailVerificationService = {
@@ -187,14 +188,14 @@ export default function Registration() {
         } else {
           const errorData = await response.json();
           return { 
-            available: true, 
+            available: false, 
             message: errorData.error || 'Could not verify email' 
           };
         }
       } catch (error) {
         console.error('Email verification error:', error);
         return { 
-          available: true, 
+          available: false, 
           message: 'Network error - could not verify email' 
         };
       }
@@ -232,10 +233,13 @@ export default function Registration() {
             const result = await emailVerificationService.checkEmailAvailability(email);
             setEmailVerificationStatus(result.available, false);
             
-            if (!result.available && result.message) {
-              setErrors(prev => ({ ...prev, email: result.message }));
-            } else if (!result.available) {
-              setErrors(prev => ({ ...prev, email: 'This email is already registered' }));
+            if (!result.available) {
+              setErrors(prev => ({ 
+                ...prev, 
+                email: result.message || 'This email is already registered' 
+              }));
+            } else {
+              setErrors(prev => ({ ...prev, email: '' }));
             }
           } catch (error) {
             console.error('Email verification failed:', error);
@@ -250,9 +254,9 @@ export default function Registration() {
     };
 
     verifyEmail();
-  }, [email, errors.email]);
+  }, [email, errors.email, setEmailVerificationStatus, setErrors]);
 
-  // FIXED: Real-time validation only for touched fields
+  // Real-time validation only for touched fields
   useEffect(() => {
     const newErrors = {};
     
@@ -271,7 +275,7 @@ export default function Registration() {
     });
 
     setErrors(newErrors);
-  }, [first_name, last_name, email, password, password_confirmation, agreedToTerms, touched]);
+  }, [first_name, last_name, email, password, password_confirmation, agreedToTerms, touched, setErrors]);
 
   const handleViewTerms = () => {
     sessionStorage.setItem('fromRegistration', 'true');
@@ -283,7 +287,22 @@ export default function Registration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // PREVENT DUPLICATE CLICKS
+    if (isLoading) {
+      return;
+    }
+    
     // Mark all fields as touched when submitting
+    const newTouched = {
+      first_name: true, 
+      last_name: true, 
+      email: true, 
+      password: true, 
+      password_confirmation: true,
+      agreedToTerms: true
+    };
+    
+    // Validate all fields on submit
     const formErrors = validationService.validateForm({
       first_name, last_name, email, password, password_confirmation, gender, agreedToTerms
     });
@@ -383,7 +402,7 @@ export default function Registration() {
     if (!email) return null;
     
     if (checkingEmail) {
-      return <FontAwesomeIcon icon={faCircleNotch} className="reg-auth-email-status checking" />;
+      return <FontAwesomeIcon icon={faCircleNotch} className="reg-auth-email-status checking" spin />;
     } else if (emailVerified) {
       return <FontAwesomeIcon icon={faCheckCircle} className="reg-auth-email-status verified" />;
     } else if (errors.email && touched.email) {
@@ -392,37 +411,37 @@ export default function Registration() {
     return null;
   };
 
- const getEmailStatusText = () => {
-  if (!email) return null;
-  
-  if (checkingEmail) {
-    return (
-      <div className="reg-auth-email-verification checking">
-        <FontAwesomeIcon icon={faCircleNotch} className="reg-auth-verification-icon" spin />
-        Checking email availability...
-      </div>
-    );
-  } else if (emailVerified) {
-    return (
-      <div className="reg-auth-email-verification verified">
-        <FontAwesomeIcon icon={faCheckCircle} className="reg-auth-verification-icon" />
-        Email is available
-      </div>
-    );
-  } else if (errors.email && touched.email) {
-    return (
-      <div className="reg-auth-email-verification not-verified">
-        <FontAwesomeIcon icon={faTimesCircle} className="reg-auth-verification-icon" />
-        {errors.email}
-      </div>
-    );
-  }
-  return null;
-};
+  const getEmailStatusText = () => {
+    if (!email) return null;
+    
+    if (checkingEmail) {
+      return (
+        <div className="reg-auth-email-verification checking">
+          <FontAwesomeIcon icon={faCircleNotch} className="reg-auth-verification-icon" spin />
+          Checking email availability...
+        </div>
+      );
+    } else if (emailVerified) {
+      return (
+        <div className="reg-auth-email-verification verified">
+          <FontAwesomeIcon icon={faCheckCircle} className="reg-auth-verification-icon" />
+          Email is available
+        </div>
+      );
+    } else if (errors.email && touched.email) {
+      return (
+        <div className="reg-auth-email-verification not-verified">
+          <FontAwesomeIcon icon={faTimesCircle} className="reg-auth-verification-icon" />
+          {errors.email}
+        </div>
+      );
+    }
+    return null;
+  };
 
   const isFormValid = () => {
     return first_name && 
-           last_name &&  
+           last_name && 
            email && 
            password && 
            password_confirmation && 
@@ -434,7 +453,9 @@ export default function Registration() {
   return (
     <div className="reg-auth-page">
       <NavAuth disabled="Hide" />
-      <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
+      
+      {/* Toast Container */}
+      <CustomToastContainer toasts={toasts} removeToast={removeToast} />
       
       <div className={`reg-auth-form-container ${formMounted ? 'reg-auth-mounted' : ''}`}>
         <form className="reg-auth-form" onSubmit={handleSubmit} noValidate>
@@ -677,7 +698,7 @@ export default function Registration() {
           >
             {isLoading ? (
               <>
-                <FontAwesomeIcon icon={faSpinner} className="reg-auth-spinner" />
+                <FontAwesomeIcon icon={faSpinner} className="reg-auth-spinner" spin />
                 Creating Account...
               </>
             ) : (
@@ -701,6 +722,6 @@ export default function Registration() {
           </div>
         </form>
       </div>
-    </div>
+    </div> 
   );
 }
