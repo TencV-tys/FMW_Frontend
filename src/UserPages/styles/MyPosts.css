@@ -1,9 +1,10 @@
-/* MyPosts.css - FIXED VERSION */
+/* MyPosts.css - FIXED CENTERED VERSION */
 
 .myposts-container-fmw {
   min-height: 100dvh;
   background: #f5f5f5;
 }
+
 /* Loading and Error States */
 .loading-container-fmw,
 .error-container-fmw {
@@ -85,6 +86,7 @@
 .retry-btn-fmw:hover {
   background: #654321;
 }
+
 .myposts-content-fmw {
   padding: 2rem;
   max-width: 1400px;
@@ -92,7 +94,7 @@
 }
 
 .myposts-content-darkbrown-fmw {
-  background-color: #8B5A2B; 
+  background-color: #8B5A2B;  
   min-height: 100dvh;
   border-radius: 4px;
   padding: 15px;
@@ -114,49 +116,208 @@
   padding: 1rem;
 }
 
-/* Enhanced Header */
+/* FIXED: Enhanced Header - CENTERED CONTENT */
 .myposts-content-title-fmw {
   background-color: #FBFCF8;
   width: 90%;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   margin: 2rem auto;
-  padding: 1.5rem 2rem;
+  padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   animation: slideInDown-fmw 0.5s ease-out;
-  flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.5rem;
+  text-align: center;
 }
 
 .myposts-content-title-fmw h1 {
   color: #8B5A2B;
-  font-size: 2.2rem;
+  font-size: 2.5rem;
   margin: 0;
   font-weight: 700;
   letter-spacing: -0.5px;
   line-height: 1.2;
 }
 
+/* FIXED: Centered Header Info */
 .posts-header-info-fmw {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; 
+  align-items: center;
   gap: 1rem;
-  flex-shrink: 0;
+  width: 100%;
 }
 
 .posts-counts-fmw {
   background: linear-gradient(135deg, #8B5A2B, #654321);
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 1rem 2rem;
   border-radius: 25px;
-  font-weight: 600;
-  font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(139, 90, 43, 0.3);
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 15px rgba(139, 90, 43, 0.4);
+  text-align: center;
+  min-width: 200px;
 }
 
+/* FIXED: Centered Deletion Limit Container */
+.deletion-limit-container-fmw {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.deletion-limit-info-fmw {
+  background: #f8f9fa;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+.deletion-limit-info-fmw.limit-reached-fmw {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+  animation: pulse-warning 2s infinite;
+}
+
+.deletion-limit-info-fmw.limit-warning-fmw {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #d97706;
+}
+
+.deletion-stats-fmw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deletion-icon-fmw {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.deletion-text-fmw {
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.limit-warning-text-fmw {
+  color: #dc3545;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.remaining-text-fmw {
+  color: #28a745;
+  font-weight: 700;
+}
+
+/* Enhanced Filter Section */
+.myposts-filter-section-fmw {
+  background: #FBFCF8;
+  width: 90%;
+  margin: 0 auto 2rem auto;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  animation: slideInUp-fmw 0.5s ease-out 0.2s both;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.filter-header-fmw {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 700;
+  color: #8B5A2B;
+  font-size: 1.2rem;
+}
+
+.filter-options-fmw {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-option-fmw {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 25px;
+  padding: 0.8rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #495057;
+}
+
+.filter-option-fmw:hover {
+  background: #e9ecef;
+  border-color: #8B5A2B;
+}
+
+.filter-option-fmw.active-fmw {
+  background: #8B5A2B;
+  color: white;
+  border-color: #8B5A2B;
+}
+
+.filter-label-fmw {
+  font-weight: 600;
+}
+
+.filter-count-fmw {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.clear-filter-btn-fmw {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.clear-filter-btn-fmw:hover {
+  background: #545b62;
+}
+
+/* Rest of your existing CSS remains the same... */
 /* CARD STRUCTURE - FIXED SAME HEIGHT */
 .myposts-list-fmw {
   display: grid;
@@ -181,7 +342,7 @@
   flex-direction: column;
   overflow: hidden;
   height: fit-content;
-  min-height: 650px; /* Fixed minimum height for consistency */
+  min-height: 650px;
 }
 
 .mypost-cards-fmw:hover {
@@ -190,10 +351,10 @@
   border-color: #8B5A2B;
 }
 
-/* Top Section: Image - ORIGINAL STYLE WITH CENTERED OBJECT-FIT */
+/* Top Section: Image */
 .mypost-image-container-fmw {
   width: 100%;
-  height: 250px; /* Fixed height for all cards */
+  height: 250px;
   overflow: hidden;
   background: #FBFCF8;
   display: flex;
@@ -201,13 +362,13 @@
   justify-content: center;
   border-bottom: 2px solid rgba(139, 90, 43, 0.1);
   position: relative;
-  flex-shrink: 0; /* Prevent image from shrinking */
+  flex-shrink: 0;
 }
 
 .mypost-image-container-fmw img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Changed to contain to show full image centered */
+  object-fit: contain;
   object-position: center;
   transition: transform 0.3s ease;
   background: #f8f9fa;
@@ -218,7 +379,7 @@
   transform: scale(1.05);
 }
 
-/* Middle Section: Status and Type - ALWAYS CENTERED */
+/* Middle Section: Status and Type */
 .mypost-header-fmw {
   display: flex;
   flex-direction: column;
@@ -242,7 +403,7 @@
   width: 100%;
 }
 
-/* Enhanced Status Badges - CENTERED */
+/* Enhanced Status Badges */
 .myposts-status-badge-fmw {
   padding: 0.6rem 1.5rem;
   border-radius: 25px;
@@ -285,7 +446,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  flex: 1; /* Take remaining space */
+  flex: 1;
   justify-content: space-between;
 }
 
@@ -406,7 +567,7 @@
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: auto; /* Push to bottom */
+  margin-top: auto;
   padding-top: 1rem;
   border-top: 2px solid rgba(139, 90, 43, 0.1);
   flex-shrink: 0;
@@ -488,60 +649,6 @@
   box-shadow: 0 4px 12px rgba(255, 137, 4, 0.4);
 }
 
-/* Enhanced Deletion Limit Info */
-.deletion-limit-info-fmw {
-  background: #f8f9fa;
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
-  border: 2px solid #e9ecef;
-  font-size: 0.9rem;
-  max-width: 320px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-.deletion-limit-info-fmw.limit-reached-fmw {
-  background: #fee2e2;
-  border-color: #fecaca;
-  color: #dc2626;
-  animation: pulse-warning 2s infinite;
-}
-
-.deletion-limit-info-fmw.limit-warning-fmw {
-  background: #fef3c7;
-  border-color: #fde68a;
-  color: #d97706;
-}
-
-.deletion-stats-fmw {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.deletion-icon-fmw {
-  font-size: 0.9rem;
-}
-
-.deletion-text-fmw {
-  font-weight: 500;
-  font-size: 0.85rem;
-  line-height: 1.4;
-}
-
-.limit-warning-text-fmw {
-  color: #dc3545;
-  font-weight: 600;
-  font-size: 0.7rem;
-  display: block;
-  margin-top: 2px;
-}
-
-.remaining-text-fmw {
-  color: #28a745;
-  font-weight: 600;
-}
-
 /* Empty State */
 .empty-state-fmws {
   display: flex;
@@ -592,7 +699,7 @@
   color: white;
 }
 
-/* MODAL STYLES - FIXED AND READABLE */
+/* MODAL STYLES */
 .modal-overlay-fmw {
   position: fixed;
   top: 0;
@@ -884,15 +991,15 @@
   }
   
   .myposts-content-title-fmw {
-    flex-direction: column;
-    text-align: center;
-    gap: 1.5rem;
     padding: 1.5rem;
   }
   
   .posts-header-info-fmw {
-    align-items: center;
     width: 100%;
+  }
+  
+  .myposts-filter-section-fmw {
+    padding: 1.25rem;
   }
   
   .myposts-list-fmw {
@@ -928,7 +1035,7 @@
   }
   
   .myposts-content-title-fmw h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
   
   .mypost-cards-fmw {

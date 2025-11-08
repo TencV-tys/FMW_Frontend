@@ -33,7 +33,8 @@
   justify-content: center;
   flex-direction: column;
   padding: 40px 30px;
-  border-radius: 12px;
+  border-radius: 4px 4px 16px 16px;
+  border-top: 4px solid #8B5A2B;
   background: white;
   width: 100%;
   animation: slideIn 0.3s ease-out;

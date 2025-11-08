@@ -57,7 +57,7 @@ const ForgotPassword = () => {
     console.error('Forgot password error:', error);
     toast.error('Network error. Please try again.');
   } finally {
-    setIsLoading(false);
+    setIsLoading(false); 
   }
 };
 
@@ -102,7 +102,7 @@ const ForgotPassword = () => {
       <div className={`forgot-pw-container ${mounted ? 'forgot-pw-mounted' : ''}`}>
         <form onSubmit={handleSubmit} className="forgot-pw-form">
           <div className="forgot-pw-header">
-            <h2 className="forgot-pw-title">Reset Your Password</h2>
+            <h2 className="forgot-pw-title">Forgot Your Password ?</h2>
             <p className="forgot-pw-subtitle">Enter your email address and we'll send you a link to reset your password.</p>
           </div>
 

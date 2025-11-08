@@ -93,7 +93,8 @@
     width: 100%;
     max-width: 600px;
     background: white;
-    border-radius: 12px;
+    border-radius: 4px 4px 16px 16px;
+    border-top:4px solid #8B5A2B;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     animation: cardSlideIn 0.5s ease-out;
 }
@@ -588,7 +589,7 @@
 
 @media (max-width: 480px) {
     .edit-profile-content {
-        padding: 10px;
+        padding: 20px 5px;
     }
     
     .edit-profile-form {

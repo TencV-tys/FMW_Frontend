@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
-import { faEdit, faTrash, faCheckCircle, faExclamationTriangle, faEnvelope, faPlus, faTimes, faWarning } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faTrash, faCheckCircle, faExclamationTriangle, faEnvelope, faPlus, faTimes, faWarning, faFilter } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import UserNav from '../UserComponents/UserDashboardNav'
 import Logo1 from '../assets/Logo.jpg'
@@ -10,6 +10,8 @@ import CustomToast from '../components/CustomToast';
 
 export default function MyPosts() {
   const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'resolved'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
@@ -29,6 +31,20 @@ export default function MyPosts() {
     fetchDeletionStats();
   }, []);
 
+  // FIXED: Filter posts when status filter or posts change
+  useEffect(() => {
+    if (statusFilter === 'all') {
+      setFilteredPosts(posts);
+    } else {
+      // Normalize status values for comparison
+      setFilteredPosts(posts.filter(post => {
+        const postStatus = post.status?.toLowerCase().trim();
+        const filterStatus = statusFilter.toLowerCase().trim();
+        return postStatus === filterStatus;
+      }));
+    }
+  }, [statusFilter, posts]);
+
   const fetchMyPosts = async () => {
     try {
       setLoading(true);
@@ -47,6 +63,7 @@ export default function MyPosts() {
 
       if (result.success) {
         setPosts(result.posts || []);
+        setFilteredPosts(result.posts || []);
       } else {
         throw new Error(result.error || 'Failed to load posts');
       }
@@ -298,34 +315,52 @@ export default function MyPosts() {
     const hasUsedDeletions = currentMonthDeletions > 0;
 
     return (
-      <div className={`deletion-limit-info-fmw ${limitReached ? 'limit-reached-fmw' : hasUsedDeletions ? 'limit-warning-fmw' : ''}`}>
-        <div className="deletion-stats-fmw">
-          <FontAwesomeIcon 
-            icon={limitReached ? faExclamationTriangle : hasUsedDeletions ? faTrash : faTrash} 
-            className="deletion-icon-fmw" 
-          />
-          <span className="deletion-text-fmw">
-            {limitReached ? (
-              <>
-                <strong>Monthly Limit Reached:</strong> {currentMonthDeletions}/{monthlyLimit} deletions
-                <span className="limit-warning-text-fmw"> - Contact admin for additional deletions</span>
-              </>
-            ) : hasUsedDeletions ? (
-              <>
-                <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
-                <span className="remaining-text-fmw"> ({remainingDeletions} remaining)</span>
-              </>
-            ) : (
-              <>
-                <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
-                <span className="remaining-text-fmw"> (Full limit available)</span>
-              </>
-            )}
-          </span>
+      <div className="deletion-limit-container-fmw">
+        <div className={`deletion-limit-info-fmw ${limitReached ? 'limit-reached-fmw' : hasUsedDeletions ? 'limit-warning-fmw' : ''}`}>
+          <div className="deletion-stats-fmw">
+            <FontAwesomeIcon 
+              icon={limitReached ? faExclamationTriangle : hasUsedDeletions ? faTrash : faTrash} 
+              className="deletion-icon-fmw" 
+            />
+            <span className="deletion-text-fmw">
+              {limitReached ? (
+                <>
+                  <strong>Monthly Limit Reached:</strong> {currentMonthDeletions}/{monthlyLimit} deletions
+                  <span className="limit-warning-text-fmw"> - Contact admin for additional deletions</span>
+                </>
+              ) : hasUsedDeletions ? (
+                <>
+                  <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
+                  <span className="remaining-text-fmw"> ({remainingDeletions} remaining)</span>
+                </>
+              ) : (
+                <>
+                  <strong>Monthly Deletions:</strong> {currentMonthDeletions}/{monthlyLimit} 
+                  <span className="remaining-text-fmw"> (Full limit available)</span>
+                </>
+              )}
+            </span>
+          </div>
         </div>
       </div>
     );
   };
+
+  // FIXED: Get status counts with normalized status values
+  const getStatusCounts = () => {
+    const counts = {
+      all: posts.length,
+      active: posts.filter(post => post.status?.toLowerCase() === 'active').length,
+      resolved: posts.filter(post => post.status?.toLowerCase() === 'resolved').length
+    };
+    return counts;
+  };
+
+  const clearFilter = () => {
+    setStatusFilter('all');
+  };
+
+  const statusCounts = getStatusCounts();
 
   if (loading) {
     return (
@@ -366,6 +401,7 @@ export default function MyPosts() {
           <div className='myposts-content-lightbrown-fmw'>
             <div className='myposts-content-container-fmw'>
 
+              {/* FIXED: Centered Header */}
               <div className='myposts-content-title-fmw'>
                 <h1>My Posts</h1>
                 <div className="posts-header-info-fmw">
@@ -376,17 +412,71 @@ export default function MyPosts() {
                 </div>
               </div>
 
-              {posts.length === 0 ? (
+              {/* Enhanced Filter Section */}
+              <div className="myposts-filter-section-fmw">
+                <div className="filter-header-fmw">
+                  <FontAwesomeIcon icon={faFilter} />
+                  <span>Filter by Status</span>
+                </div>
+                <div className="filter-options-fmw">
+                  {[
+                    { value: 'all', label: 'All', count: statusCounts.all },
+                    { value: 'active', label: 'Active', count: statusCounts.active },
+                    { value: 'resolved', label: 'Resolved', count: statusCounts.resolved }
+                  ].map(option => (
+                    <button
+                      key={option.value}
+                      className={`filter-option-fmw ${statusFilter === option.value ? 'active-fmw' : ''}`}
+                      onClick={() => setStatusFilter(option.value)}
+                      disabled={loading}
+                    >
+                      <span className="filter-label-fmw">{option.label}</span>
+                      <span className="filter-count-fmw">({option.count})</span>
+                    </button>
+                  ))}
+                </div>
+                {statusFilter !== 'all' && (
+                  <button 
+                    className="clear-filter-btn-fmw" 
+                    onClick={clearFilter}
+                    disabled={loading}
+                  >
+                    <FontAwesomeIcon icon={faTimes} />
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+
+              {filteredPosts.length === 0 ? (
                 <div className="empty-state-fmws">
-                  <h3>No posts yet</h3>
-                  <p>You haven't created any posts. Start by creating your first lost or found item post!</p>
-                  <Link to="/user/create" className="create-first-post-btn-fmw">
-                    Create Your First Post
-                  </Link>
+                  <h3>
+                    {statusFilter === 'all' 
+                      ? 'No posts yet' 
+                      : `No ${statusFilter} posts found`
+                    }
+                  </h3>
+                  <p>
+                    {statusFilter === 'all' 
+                      ? 'You haven\'t created any posts. Start by creating your first lost or found item post!'
+                      : `You don't have any ${statusFilter} posts.`
+                    }
+                  </p>
+                  {statusFilter === 'all' ? (
+                    <Link to="/user/create" className="create-first-post-btn-fmw">
+                      Create Your First Post
+                    </Link>
+                  ) : (
+                    <button 
+                      className="create-first-post-btn-fmw"
+                      onClick={clearFilter}
+                    >
+                      Show All Posts
+                    </button>
+                  )}
                 </div> 
               ) : (
                 <div className='myposts-list-fmw'>
-                  {posts.map((post) => {
+                  {filteredPosts.map((post) => {
                     const status = getStatusBadge(post.status);
                     const isLimitReached = deletionStats?.limitReached;
                    
