@@ -1,6 +1,6 @@
 import NavAuth from "../components/NavAuth";
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import './styles/Registration.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -12,99 +12,10 @@ import {
   faTimesCircle, 
   faCircleNotch,
   faFileContract,
-  faShieldAlt,
-  faTimes
+  faShieldAlt
 } from "@fortawesome/free-solid-svg-icons";
 import {useWifiUrl} from '../hooks/useWifiUrl';
-
-// Custom Toast Hook - FIXED VERSION
-const useCustomToast = () => {
-  const [toasts, setToasts] = useState([]);
-
-  const removeToast = useCallback((id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  }, []);
-
-  const showToast = useCallback((message, type = 'info', duration = 4000) => {
-    const id = Date.now() + Math.random();
-    const toast = { id, message, type, duration };
-    
-    setToasts(prev => [...prev, toast]);
-    
-    if (duration > 0) {
-      setTimeout(() => removeToast(id), duration);
-    }
-    
-    return id;
-  }, [removeToast]);
-
-  const toast = useCallback({
-    success: (message, duration) => showToast(message, 'success', duration),
-    error: (message, duration) => showToast(message, 'error', duration),
-    info: (message, duration) => showToast(message, 'info', duration),
-    warning: (message, duration) => showToast(message, 'warning', duration)
-  }, [showToast]);
-
-  return { toasts, removeToast, toast };
-};
-
-// Custom Toast Component
-const CustomToastContainer = ({ toasts, removeToast }) => {
-  const getToastIcon = (type) => {
-    switch (type) {
-      case 'success': return faCheckCircle;
-      case 'error': return faTimes;
-      case 'warning': return faTimes;
-      default: return faCheckCircle;
-    }
-  };
-
-  const getToastColor = (type) => {
-    switch (type) {
-      case 'success': return '#16a34a';
-      case 'error': return '#dc2626';
-      case 'warning': return '#d97706';
-      default: return '#FF8904';
-    }
-  };
-
-  return (
-    <div className="custom-toast-container">
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          className={`custom-toast custom-toast-${toast.type}`}
-          style={{ borderLeftColor: getToastColor(toast.type) }}
-          onClick={() => removeToast(toast.id)}
-        >
-          <div className="custom-toast-icon">
-            <FontAwesomeIcon icon={getToastIcon(toast.type)} />
-          </div>
-          <div className="custom-toast-content">
-            <p className="custom-toast-message">{toast.message}</p>
-          </div>
-          <button
-            className="custom-toast-close"
-            onClick={(e) => {
-              e.stopPropagation();
-              removeToast(toast.id);
-            }}
-            aria-label="Close notification"
-          >
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-          <div 
-            className="custom-toast-progress" 
-            style={{ 
-              animationDuration: `${toast.duration}ms`,
-              backgroundColor: getToastColor(toast.type)
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
+import CustomToast from '../components/CustomToast'; // Import the external toast component
 
 // Custom hook for registration form
 const useRegistrationForm = () => {
@@ -249,7 +160,7 @@ export default function Registration() {
     setFormMounted
   } = useRegistrationForm();
  
-  const { toasts, removeToast, toast } = useCustomToast();
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast(); // Use the external toast hook
   const navigate = useNavigate();
   const wifi = useWifiUrl();
 
@@ -503,7 +414,7 @@ export default function Registration() {
       <div className="reg-auth-email-verification not-verified">
         <FontAwesomeIcon icon={faTimesCircle} className="reg-auth-verification-icon" />
         {errors.email}
-      </div>  // Changed from </span> to </div>
+      </div>
     );
   }
   return null;
@@ -523,7 +434,7 @@ export default function Registration() {
   return (
     <div className="reg-auth-page">
       <NavAuth disabled="Hide" />
-      <CustomToastContainer toasts={toasts} removeToast={removeToast} />
+      <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
       
       <div className={`reg-auth-form-container ${formMounted ? 'reg-auth-mounted' : ''}`}>
         <form className="reg-auth-form" onSubmit={handleSubmit} noValidate>

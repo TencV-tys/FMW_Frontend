@@ -1,99 +1,11 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDoorOpen, faSpinner, faEye, faEyeSlash, faTimes, faCheckCircle, faExclamationTriangle, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faDoorOpen, faSpinner, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import NavAuth from "../components/NavAuth";
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './styles/Login.css';
 import { useState, useEffect, useCallback } from 'react';
 import { useWifiUrl } from '../hooks/useWifiUrl';
-
-// Custom Toast Hook - FIXED VERSION
-const useCustomToast = () => {
-  const [toasts, setToasts] = useState([]);
-
-  const removeToast = useCallback((id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  }, []);
-
-  const showToast = useCallback((message, type = 'info', duration = 4000) => {
-    const id = Date.now() + Math.random();
-    const toast = { id, message, type, duration };
-    
-    setToasts(prev => [...prev, toast]);
-    
-    if (duration > 0) {
-      setTimeout(() => removeToast(id), duration);
-    }
-    
-    return id;
-  }, [removeToast]);
-
-  const toast = useCallback({
-    success: (message, duration) => showToast(message, 'success', duration),
-    error: (message, duration) => showToast(message, 'error', duration),
-    info: (message, duration) => showToast(message, 'info', duration),
-    warning: (message, duration) => showToast(message, 'warning', duration)
-  }, [showToast]);
-
-  return { toasts, removeToast, toast };
-};
-
-// Custom Toast Component
-const CustomToastContainer = ({ toasts, removeToast }) => {
-  const getToastIcon = (type) => {
-    switch (type) {
-      case 'success': return faCheckCircle;
-      case 'error': return faTimes;
-      case 'warning': return faExclamationTriangle;
-      default: return faInfoCircle;
-    }
-  };
-
-  const getToastColor = (type) => {
-    switch (type) {
-      case 'success': return '#16a34a';
-      case 'error': return '#dc2626';
-      case 'warning': return '#d97706';
-      default: return '#FF8904';
-    }
-  };
-
-  return (
-    <div className="custom-toast-container">
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          className={`custom-toast custom-toast-${toast.type}`}
-          style={{ borderLeftColor: getToastColor(toast.type) }}
-          onClick={() => removeToast(toast.id)}
-        >
-          <div className="custom-toast-icon">
-            <FontAwesomeIcon icon={getToastIcon(toast.type)} />
-          </div>
-          <div className="custom-toast-content">
-            <p className="custom-toast-message">{toast.message}</p>
-          </div>
-          <button
-            className="custom-toast-close"
-            onClick={(e) => {
-              e.stopPropagation();
-              removeToast(toast.id);
-            }}
-            aria-label="Close notification"
-          >
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-          <div 
-            className="custom-toast-progress" 
-            style={{ 
-              animationDuration: `${toast.duration}ms`,
-              backgroundColor: getToastColor(toast.type)
-            }}
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
+import CustomToast from '../components/CustomToast'; // Import the external toast component
 
 // Custom hook for form state management
 const useLoginForm = () => {
@@ -170,7 +82,7 @@ export default function Login() {
     setFormMounted
   } = useLoginForm();
   
-  const { toasts, removeToast, toast } = useCustomToast();
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast(); // Use the external toast hook
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const wifiUrl = useWifiUrl();
@@ -199,8 +111,6 @@ export default function Login() {
       };
     }
   };
-
-  // REMOVED THE PROBLEMATIC useEffect BLOCK THAT WAS HERE
 
   useEffect(() => {
     const registered = searchParams.get('registered');
@@ -297,7 +207,7 @@ export default function Login() {
   return (
     <div className='login-auth-page'>
       <NavAuth disabled="Hide" />
-      <CustomToastContainer toasts={toasts} removeToast={removeToast} />
+      <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
       
       <div className={`login-auth-container ${formMounted ? 'login-auth-mounted' : ''}`}>
         <form 
