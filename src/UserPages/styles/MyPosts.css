@@ -92,10 +92,10 @@
 }
 
 .myposts-content-darkbrown-fmw {
-  background-color: #8B5A2B;
+  background-color: #8B5A2B; 
   min-height: 100dvh;
   border-radius: 4px;
-  padding: 20px;
+  padding: 15px;
 }
 
 .myposts-content-lightbrown-fmw {
@@ -924,7 +924,7 @@
 /* Mobile */
 @media (max-width: 768px) {
   .myposts-content-fmw {
-    padding: 0.75rem;
+    padding: 20px 5px;
   }
   
   .myposts-content-title-fmw h1 {

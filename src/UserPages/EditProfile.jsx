@@ -199,7 +199,7 @@ export default function EditProfile() {
           <form className='edit-profile-form' onSubmit={handleSubmit}>
             
             {/* 🎯 Form Title */}
-            <div className="form-header">
+            <div className="edit-profile-form-header">
               <h2>Edit Your Profile</h2>
               <p>Update your personal information and profile picture</p>
             </div>

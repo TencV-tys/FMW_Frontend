@@ -5,7 +5,7 @@
 }
 
 .my-reports-container-fmw {
-  padding: 50px;
+  padding: 2rem;
   animation: slideInUp 0.6s ease-out;
 }
 
@@ -24,7 +24,7 @@
   background-color: #8B5A2B;
   min-height: 100dvh;
   border-radius: 4px;
-  padding: 20px;
+  padding: 15px;
   animation: fadeInScale 0.4s ease-out;
 }
 
@@ -550,7 +550,7 @@
 /* 🎯 Responsive Design - IMPROVED CENTERING */
 @media (max-width: 768px) {
   .my-reports-container-fmw {
-    padding: 20px;
+    padding: 20px 5px;
     animation: slideInUpMobile 0.5s ease-out;
   }
 
@@ -655,7 +655,7 @@
 
 @media (max-width: 480px) {
   .my-reports-container-fmw {
-    padding: 10px;
+    padding: 20px 5px;
   }
   
   .reports-content-fmw {

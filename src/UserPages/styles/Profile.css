@@ -1,4 +1,4 @@
-/* Profile.css - Updated with MyPosts & Bulletin Animations */
+/* Profile.css - Updated with Brown Theme Compatibility */
 
 .profile-page {
   min-height: 100vh;
@@ -6,7 +6,7 @@
 }
 
 .profile-content{
-    padding: 50px;
+    padding: 2rem;
     animation: slideInUp 0.6s ease-out;
 }
 
@@ -21,7 +21,7 @@
   }
 }
 
-/* 🎯 Header Section - ORANGE */
+/* 🎯 Header Section - BROWN */
 .profile-action{
     display: flex;
     align-items: center;
@@ -43,7 +43,7 @@
 }
 
 .profile-welcome {
-  color: #FF8904; /* ORANGE - Outer theme */
+  color: #8B5A2B; /* BROWN - Outer theme */
   font-size: 2rem;
   margin: 0;
   font-weight: 700;
@@ -51,7 +51,7 @@
 }
 
 .profile-edit-btn{
-    background-color: #FF8904; /* ORANGE - Outer theme */
+    background-color: #8B5A2B; /* BROWN - Outer theme */
     padding: 12px 24px;
     border-radius: 8px;
     border: none;
@@ -60,7 +60,7 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(139, 90, 43, 0.3);
     text-decoration: none;
     color: white;
     font-weight: 600;
@@ -68,12 +68,12 @@
 }
 
 .profile-edit-btn:hover{
-   background: #e67a00; /* Darker orange */
+   background: #654321; /* Darker brown */
    transform: translateY(-2px) scale(1.05);
-   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+   box-shadow: 0 4px 12px rgba(139, 90, 43, 0.4);
 }
 
-/* 🎯 Statistics Section - ORANGE borders, BROWN text */
+/* 🎯 Statistics Section - BROWN borders, BROWN text */
 .profile-stats-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -91,7 +91,7 @@
   align-items: center;
   gap: 15px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-left: 4px solid #FF8904; /* ORANGE - Outer theme */
+  border-left: 4px solid #8B5A2B; /* BROWN - Outer theme */
   animation: cardSlideIn 0.5s ease-out both;
 }
 
@@ -134,7 +134,7 @@
 }
 
 .posts-icon {
-  background: #3b82f6;
+  background: #8B5A2B; /* BROWN */
 }
 
 .active-icon {
@@ -169,7 +169,7 @@
 }
 
 .resolved-icon {
-  background: #8b5a2b; /* BROWN - Inner theme */
+  background: #654321; /* DARK BROWN */
 }
 
 .resolved-icon span {
@@ -185,7 +185,7 @@
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
-  color: #FF8904;
+  color: #8B5A2B; /* BROWN */
   line-height: 1;
   transition: all 0.3s ease;
 }
@@ -300,7 +300,7 @@
     top: -8px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #e74c3c; /* Red pin - bulletin board style */
+    background-color: #8B5A2B; /* Brown pin - bulletin board style */
     border-radius: 50%;
     width: 16px;
     height: 16px;
@@ -376,7 +376,7 @@
 }
 
 .profile-pic-overlay a:hover {
-  color: #FF8904;
+  color: #D6A96D; /* Light brown */
 }
 
 .profile-pic:hover .profile-pic-overlay {
@@ -467,7 +467,7 @@
 }
 
 .detail-item:hover .detail-icon {
-  color: #FF8904;
+  color: #654321; /* Darker brown */
   transform: scale(1.2);
 }
 
@@ -504,7 +504,7 @@
   color: #5D4037;
 }
 
-/* 🎯 Quick Actions - ORANGE Outer Theme */
+/* 🎯 Quick Actions - BROWN Theme */
 .profile-actions h3 {
   color: #8B5A2B; /* BROWN - Inner theme (header) */
   margin: 0 0 15px 0;
@@ -554,15 +554,15 @@
 }
 
 .action-btns.primary {
-  background: #FF8904; /* ORANGE - Outer theme */
+  background: #8B5A2B; /* BROWN - Outer theme */
   color: white;
-  box-shadow: 0 2px 4px rgba(255, 137, 4, 0.3);
+  box-shadow: 0 2px 4px rgba(139, 90, 43, 0.3);
 }
 
 .action-btns.primary:hover {
-  background: #e67a00; /* Darker orange */
+  background: #654321; /* Darker brown */
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(255, 137, 4, 0.4);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.4);
 }
 
 .action-btns.secondary {
@@ -646,7 +646,7 @@
 /* 🎯 Responsive Design - UPDATED FOR TABLET & MOBILE */
 @media (max-width: 768px) {
   .profile-content {
-    padding: 20px;
+    padding: 30px;
     animation: slideInUpMobile 0.5s ease-out;
   }
 
@@ -832,7 +832,7 @@
 
 @media (max-width: 480px) {
   .profile-content {
-    padding: 10px;
+    padding: 20px 5px;
   }
   
   .profile-container {

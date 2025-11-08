@@ -12,7 +12,7 @@
 }
 
 .feedback-container-fmw {
-  padding: 20px;
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
   animation: feedbackContainerSlideIn 0.6s ease-out;
@@ -1072,7 +1072,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .feedback-container-fmw {
-    padding: 15px;
+    padding: 20px 5px;
   }
   
   .feedback-tabs-fmw {

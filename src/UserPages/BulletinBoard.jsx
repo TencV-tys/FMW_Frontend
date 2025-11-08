@@ -256,7 +256,7 @@ export default function BulletinBoard() {
         </div>
       </div>
     );
-  }
+  } 
 
   return (
     <div className="bulletin-board-page-container">

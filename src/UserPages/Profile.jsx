@@ -157,7 +157,7 @@ export default function Profile() {
 
                 {/* 🎯 Profile Content */}
                 <div className='profile-container'>
-                  <span className='profile-pin'></span>
+              
                   
                   {/* 🎯 Profile Picture */}
                   <div className='profile-pic-section'>

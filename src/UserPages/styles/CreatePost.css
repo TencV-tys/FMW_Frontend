@@ -10,7 +10,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
+  padding:2rem;
   min-height: 80dvh;
   background: #f8f9fa;
 }

@@ -273,7 +273,7 @@ export default function UserNotifications() {
     );
   } 
  
-  return (
+  return ( 
     <section className="user-notif-page">
       <UserNav />
       
