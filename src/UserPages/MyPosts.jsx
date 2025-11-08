@@ -1,12 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { faEdit, faTrash, faCheckCircle, faExclamationTriangle, faEnvelope, faPlus, faTimes, faWarning } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import UserNav from '../UserComponents/UserDashboardNav'
 import Logo1 from '../assets/Logo.jpg'
 import './styles/MyPosts.css'
-import { toast } from 'react-toastify'
-import {useWifiUrl} from '../hooks/useWifiUrl';
+import { useWifiUrl } from '../hooks/useWifiUrl';
+import CustomToast from '../components/CustomToast';
+
 export default function MyPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,9 +18,11 @@ export default function MyPosts() {
   const [contactAdminModal, setContactAdminModal] = useState({ isOpen: false, postId: null });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [resolveConfirm, setResolveConfirm] = useState(null);
+  const [processingAction, setProcessingAction] = useState(null);
   const nav = useNavigate();
   const wifi = useWifiUrl();
   
+  const { toasts, removeToast, toast } = CustomToast.useCustomToast();
 
   useEffect(() => {
     fetchMyPosts();
@@ -80,6 +83,9 @@ export default function MyPosts() {
   };
 
   const handleDeletePost = async (postId, postTitle) => {
+    if (processingAction) return;
+    
+    setProcessingAction('delete');
     try {
       const response = await fetch(`${wifi}/api/posts/${postId}`, {
         method: 'DELETE',
@@ -134,15 +140,21 @@ export default function MyPosts() {
     } catch (err) {
       console.error('Error deleting post:', err);
       toast.error('Failed to delete post');
+    } finally {
+      setProcessingAction(null);
     }
   };
 
   const handleContactAdmin = async () => {
+    if (processingAction) return;
+    
+    setProcessingAction('contact');
     const reasonInput = document.getElementById('deletion-reason');
     const reason = reasonInput?.value?.trim();
 
     if (!reason) {
-      alert('Please provide a reason for your deletion request.');
+      toast.error('Please provide a reason for your deletion request.');
+      setProcessingAction(null);
       return;
     }
 
@@ -170,6 +182,8 @@ export default function MyPosts() {
     } catch (error) {
       console.error('Error contacting admin:', error);
       toast.error('Error sending request. Please try again.');
+    } finally {
+      setProcessingAction(null);
     }
   };
 
@@ -178,6 +192,9 @@ export default function MyPosts() {
   };
 
   const handleMarkAsResolved = async (postId, postTitle) => {
+    if (processingAction) return;
+    
+    setProcessingAction('resolve');
     try {
       const response = await fetch(`${wifi}/api/posts/${postId}/status`, {
         method: 'PUT',
@@ -205,6 +222,8 @@ export default function MyPosts() {
     } catch (err) {
       console.error('Error updating post status:', err);
       toast.error(err.message || 'Failed to mark post as resolved');
+    } finally {
+      setProcessingAction(null);
     }
   };
 
@@ -218,16 +237,15 @@ export default function MyPosts() {
     });
   };
 
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      'Active': { class: 'myposts-status-active-fmw', text: 'Active' },
+      'Resolved': { class: 'myposts-status-resolved-fmw', text: 'Resolved' },
+      'Removed': { class: 'myposts-status-removed-fmw', text: 'Removed' }
+    };
 
-const getStatusBadge = (status) => {
-  const statusConfig = {
-    'Active': { class: 'myposts-status-active-fmw', text: 'Active' },
-    'Resolved': { class: 'myposts-status-resolved-fmw', text: 'Resolved' },
-    'Removed': { class: 'myposts-status-removed-fmw', text: 'Removed' }
+    return statusConfig[status] || { class: 'myposts-status-default-fmw', text: status };
   };
-
-  return statusConfig[status] || { class: 'myposts-status-default-fmw', text: status };
-};
 
   const toggleDescription = (postId, e) => {
     if (e) e.stopPropagation();
@@ -372,18 +390,91 @@ const getStatusBadge = (status) => {
                     const status = getStatusBadge(post.status);
                     const isLimitReached = deletionStats?.limitReached;
                    
-                       const canDelete = (post.status === 'Active' || post.status === 'Removed') && !isLimitReached;
-  const showRequestButton = (post.status === 'Active' || post.status === 'Removed') && isLimitReached;
+                    const canDelete = (post.status === 'Active' || post.status === 'Removed') && !isLimitReached;
+                    const showRequestButton = (post.status === 'Active' || post.status === 'Removed') && isLimitReached;
 
                     return (
                       <div key={post.id} className='mypost-cards-fmw'>
-                        <span className='myposts-pins-fmw'></span>
+                        {/* Top Section: Image */}
+                        <div className='mypost-image-container-fmw'>
+                          <img
+                            src={post.photo ? `${wifi}/uploads/${post.photo}` : Logo1}
+                            alt={post.title}
+                            onError={(e) => {
+                              e.target.src = Logo1;
+                            }}
+                          />
+                        </div>
 
-                        <div className='lost-type-fmw'>
+                        {/* Middle Section: Status and Type */}
+                        <div className='mypost-header-fmw'>
                           <div className={`myposts-status-badge-fmw ${status.class}`}>
                             <span className="myposts-status-text-fmw">{status.text}</span>
                           </div>
-                          <h1>{post.type} {post.category_name}</h1>
+                          <h1 className="post-type-fmw">{post.type} {post.category_name}</h1>
+                        </div>
+
+                        {/* Bottom Section: Content and Actions */}
+                        <div className='mypost-content-fmw'>
+                          <h2 className="post-title-fmw">{post.title}</h2>
+                          
+                          <div className="post-description-fmw">
+                            <div 
+                              className={`description-text-fmw ${expandedDescriptions[post.id] ? 'expanded-fmw' : ''}`}
+                            >
+                              {expandedDescriptions[post.id] 
+                                ? post.description 
+                                : getTruncatedDescription(post.description)
+                              }
+                            </div>
+                            {needsReadMore(post.description) && (
+                              <button 
+                                className="read-more-btn-fmw"
+                                onClick={(e) => toggleDescription(post.id, e)}
+                              >
+                                {expandedDescriptions[post.id] ? 'Read Less' : 'Read More'}
+                              </button>
+                            )}
+                          </div>
+                          
+                          <div className="post-meta-fmw">
+                            <div className="meta-item-fmw">
+                              <strong>Category:</strong> {post.category_name}
+                            </div>
+                            <div className="meta-item-fmw">
+                              <strong>Location:</strong> {renderLocationInfo(post)}
+                            </div>
+                            
+                            <div className="meta-item-fmw">
+                              <strong>Contact:</strong>
+                              <div className="contact-container-fmw">
+                                <div className={`contact-text-fmw ${expandedContacts[post.id] ? 'expanded-fmw' : ''}`}>
+                                  {expandedContacts[post.id] 
+                                    ? post.contact_info 
+                                    : getTruncatedContact(post.contact_info)
+                                  }
+                                </div>
+                                {needsContactReadMore(post.contact_info) && (
+                                  <button 
+                                    className="contact-read-more-btn-fmw"
+                                    onClick={(e) => toggleContact(post.id, e)}
+                                  >
+                                    {expandedContacts[post.id] ? 'Read Less' : 'Read More'}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {post.color && (
+                              <div className="meta-item-fmw">
+                                <strong>Color:</strong> {post.color}
+                              </div>
+                            )}
+                            <div className="meta-item-fmw">
+                              <strong>Posted:</strong> {formatDate(post.created_at)}
+                            </div>
+                          </div>
+
                           <div className='mypost-actions-fmw'>
                             {post.status === 'Active' && (
                               <button
@@ -392,6 +483,7 @@ const getStatusBadge = (status) => {
                                 title="Mark as resolved"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
+                                <span className="btn-text-fmw">Resolve</span>
                               </button>
                             )}
                             
@@ -402,6 +494,7 @@ const getStatusBadge = (status) => {
                               title={post.status !== 'Active' ? 'Cannot edit resolved or removed posts' : 'Edit post'}
                             >
                               <FontAwesomeIcon icon={faEdit} />
+                              <span className="btn-text-fmw">Edit</span>
                             </button>
                             
                             {canDelete && (
@@ -411,7 +504,7 @@ const getStatusBadge = (status) => {
                                 title="Delete post"
                               >
                                 <FontAwesomeIcon icon={faTrash} />
-                              <span className="btn-text-fmw">Delete</span>
+                                <span className="btn-text-fmw">Delete</span>
                               </button>
                             )}
                             
@@ -427,79 +520,6 @@ const getStatusBadge = (status) => {
                             )}
                           </div>
                         </div>
-
-                        <div className='mypost-details-container-fmw'>
-                          <div className='mypost-image-container-fmw'>
-                            <img
-                              src={post.photo ? `${wifi}/uploads/${post.photo}` : Logo1}
-                              alt={post.title}
-                              onError={(e) => {
-                                e.target.src = Logo1;
-                              }}
-                            />
-                          </div>
-                          
-                          <div className='mypost-details-fmw'>
-                            <h2 className="post-title-fmw">{post.title}</h2>
-                            
-                            <div className="post-description-fmw">
-                              <div 
-                                className={`description-text-fmw ${expandedDescriptions[post.id] ? 'expanded-fmw' : ''}`}
-                              >
-                                {expandedDescriptions[post.id] 
-                                  ? post.description 
-                                  : getTruncatedDescription(post.description)
-                                }
-                              </div>
-                              {needsReadMore(post.description) && (
-                                <button 
-                                  className="read-more-btn-fmw"
-                                  onClick={(e) => toggleDescription(post.id, e)}
-                                >
-                                  {expandedDescriptions[post.id] ? 'Read Less' : 'Read More'}
-                                </button>
-                              )}
-                            </div>
-                            
-                            <div className="post-meta-fmw">
-                              <div className="meta-item-fmw">
-                                <strong>Category:</strong> {post.category_name}
-                              </div>
-                              <div className="meta-item-fmw">
-                                <strong>Location:</strong> {renderLocationInfo(post)}
-                              </div>
-                              
-                              <div className="meta-item-fmw">
-                                <strong>Contact:</strong>
-                                <div className="contact-container-fmw">
-                                  <div className={`contact-text-fmw ${expandedContacts[post.id] ? 'expanded-fmw' : ''}`}>
-                                    {expandedContacts[post.id] 
-                                      ? post.contact_info 
-                                      : getTruncatedContact(post.contact_info)
-                                    }
-                                  </div>
-                                  {needsContactReadMore(post.contact_info) && (
-                                    <button 
-                                      className="contact-read-more-btn-fmw"
-                                      onClick={(e) => toggleContact(post.id, e)}
-                                    >
-                                      {expandedContacts[post.id] ? 'Read Less' : 'Read More'}
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              {post.color && (
-                                <div className="meta-item-fmw">
-                                  <strong>Color:</strong> {post.color}
-                                </div>
-                              )}
-                              <div className="meta-item-fmw">
-                                <strong>Posted:</strong> {formatDate(post.created_at)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     )
                   })}
@@ -513,15 +533,20 @@ const getStatusBadge = (status) => {
           <FontAwesomeIcon icon={faPlus} />
         </Link>
 
+        {/* Custom Toast Container */}
+        <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
+
+        {/* Delete Confirmation Modal */}
         {deleteConfirm && (
-          <div className="modal-overlay-fmw" onClick={() => setDeleteConfirm(null)}>
+          <div className="modal-overlay-fmw" onClick={() => !processingAction && setDeleteConfirm(null)}>
             <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header-fmw">
                 <FontAwesomeIcon icon={faWarning} className="warning-icon-fmw" />
                 <h3>Delete Post</h3>
                 <button 
                   className="modal-close-fmw"
-                  onClick={() => setDeleteConfirm(null)}
+                  onClick={() => !processingAction && setDeleteConfirm(null)}
+                  disabled={processingAction}
                 >
                   <FontAwesomeIcon icon={faTimes} />
                 </button>
@@ -534,34 +559,35 @@ const getStatusBadge = (status) => {
               <div className="modal-footer-fmw">
                 <button 
                   className="btn-secondary-fmw"
-                  onClick={() => setDeleteConfirm(null)}
+                  onClick={() => !processingAction && setDeleteConfirm(null)}
+                  disabled={processingAction}
                 >
                   Cancel 
                 </button>
                 <button 
                   className="btn-primary-fmw delete-confirm-fmw"
-                  onClick={() => {
-                    handleDeletePost(deleteConfirm.postId, deleteConfirm.postTitle);
-                    setDeleteConfirm(null);
-                  }}
+                  onClick={() => handleDeletePost(deleteConfirm.postId, deleteConfirm.postTitle)}
+                  disabled={processingAction}
                 >
                   <FontAwesomeIcon icon={faTrash} />
-                  Delete Post
+                  {processingAction === 'delete' ? 'Deleting...' : 'Delete Post'}
                 </button>
               </div>
             </div>
           </div>
         )}
 
+        {/* Resolve Confirmation Modal */}
         {resolveConfirm && (
-          <div className="modal-overlay-fmw" onClick={() => setResolveConfirm(null)}>
+          <div className="modal-overlay-fmw" onClick={() => !processingAction && setResolveConfirm(null)}>
             <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header-fmw">
                 <FontAwesomeIcon icon={faCheckCircle} className="success-icon-fmw" />
                 <h3>Mark as Resolved</h3>
                 <button 
                   className="modal-close-fmw"
-                  onClick={() => setResolveConfirm(null)}
+                  onClick={() => !processingAction && setResolveConfirm(null)}
+                  disabled={processingAction}
                 >
                   <FontAwesomeIcon icon={faTimes} />
                 </button>
@@ -574,33 +600,35 @@ const getStatusBadge = (status) => {
               <div className="modal-footer-fmw">
                 <button 
                   className="btn-secondary-fmw"
-                  onClick={() => setResolveConfirm(null)}
+                  onClick={() => !processingAction && setResolveConfirm(null)}
+                  disabled={processingAction}
                 >
                   Cancel
                 </button>
                 <button 
                   className="btn-primary-fmw resolve-confirm-fmw"
-                  onClick={() => {
-                    handleMarkAsResolved(resolveConfirm.postId, resolveConfirm.postTitle);
-                    setResolveConfirm(null);
-                  }}
+                  onClick={() => handleMarkAsResolved(resolveConfirm.postId, resolveConfirm.postTitle)}
+                  disabled={processingAction}
                 >
                   <FontAwesomeIcon icon={faCheckCircle} />
-                  Mark as Resolved
+                  {processingAction === 'resolve' ? 'Marking...' : 'Mark as Resolved'}
                 </button>
               </div>
             </div>
           </div>
         )}
 
+        {/* Contact Admin Modal */}
         {contactAdminModal.isOpen && (
-          <div className="modal-overlay-fmw" onClick={() => setContactAdminModal({ isOpen: false, postId: null })}>
+          <div className="modal-overlay-fmw" onClick={() => !processingAction && setContactAdminModal({ isOpen: false, postId: null })}>
             <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header-fmw">
-                <h3>Monthly Deletion Limit Reached</h3>
+                <FontAwesomeIcon icon={faExclamationTriangle} className="warning-icon-fmw" />
+                <h3>Request Additional Deletion</h3>
                 <button 
                   className="modal-close-fmw"
-                  onClick={() => setContactAdminModal({ isOpen: false, postId: null })}
+                  onClick={() => !processingAction && setContactAdminModal({ isOpen: false, postId: null })}
+                  disabled={processingAction}
                 >
                   <FontAwesomeIcon icon={faTimes} />
                 </button>
@@ -608,17 +636,20 @@ const getStatusBadge = (status) => {
               <div className="modal-body-fmw">
                 <div className="warning-banner-fmw">
                   <FontAwesomeIcon icon={faExclamationTriangle} />
-                  You've reached your monthly deletion limit of {deletionStats?.monthlyLimit || 3} posts.
+                  Monthly deletion limit reached
                 </div>
                 
-                <p>You have already deleted <strong>{deletionStats?.currentMonthDeletions || 0}</strong> posts this month.</p>
+                <p>You've used all <strong>{deletionStats?.monthlyLimit || 3}</strong> deletions this month. To delete more posts, please contact the administrator with a valid reason.</p>
                 
                 <div className="form-group-fmw">
-                  <label>Reason for additional deletion request:</label>
+                  <label htmlFor="deletion-reason">
+                    <strong>Reason for deletion request:</strong>
+                  </label>
                   <textarea
-                    placeholder="Please explain why you need to delete this post..."
+                    placeholder="Please explain why you need to delete this post (required)..."
                     rows="4"
                     id="deletion-reason"
+                    className="form-textarea-fmw"
                   /> 
                 </div>
 
@@ -628,22 +659,24 @@ const getStatusBadge = (status) => {
                     <li>Your request will be sent to administrators</li>
                     <li>Admin will review your request within 24 hours</li>
                     <li>You'll receive a notification when approved</li>
-                    <li>Limit resets automatically at the start of next month</li>
+                    <li>Monthly limit automatically resets</li>
                   </ul>
                 </div>
               </div>
               <div className="modal-footer-fmw">
                 <button 
                   className="btn-secondary-fmw"
-                  onClick={() => setContactAdminModal({ isOpen: false, postId: null })}
+                  onClick={() => !processingAction && setContactAdminModal({ isOpen: false, postId: null })}
+                  disabled={processingAction}
                 >
                   Cancel
                 </button>
                 <button 
                   className="btn-primary-fmw"
                   onClick={handleContactAdmin}
+                  disabled={processingAction}
                 >
-                  Send Request to Admin
+                  {processingAction === 'contact' ? 'Sending Request...' : 'Send Request to Admin'}
                 </button>
               </div>
             </div>

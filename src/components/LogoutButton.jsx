@@ -2,14 +2,17 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faTimes, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import './styles/LogoutButton.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+import CustomToast from '../components/CustomToast'; // Import the external toast component
+
 export default function LogoutButton({ className = "", isDropdown = false, isOpen = true }) {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const wifi = useWifiUrl();
+  const { toast } = CustomToast.useCustomToast(); // Use the external toast hook
+
   const handleLogout = async () => {
     if (isLoggingOut) return; // Prevent multiple clicks
     
@@ -17,10 +20,7 @@ export default function LogoutButton({ className = "", isDropdown = false, isOpe
     
     try {
       // Show loading state
-      toast.info("Logging out...", {
-        position: 'top-center',
-        autoClose: 1000,
-      });
+      toast.info("Logging out...", 1000);
 
       // Add a small delay to prevent flash
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -39,15 +39,9 @@ export default function LogoutButton({ className = "", isDropdown = false, isOpe
       await new Promise(resolve => setTimeout(resolve, 800));
 
       if (res.ok) {
-        toast.success("Logged out successfully", {
-          position: 'top-center',
-          autoClose: 1000,
-        });
+        toast.success("Logged out successfully", 1000);
       } else {
-        toast.success("Logged out successfully", {
-          position: 'top-center',
-          autoClose: 1000,
-        });
+        toast.success("Logged out successfully", 1000);
       }
 
       // Navigate after toast is visible
@@ -57,10 +51,7 @@ export default function LogoutButton({ className = "", isDropdown = false, isOpe
 
     } catch (error) {
       console.error("Logout failed:", error);
-      toast.success("Logged out successfully", {
-        position: 'top-center',
-        autoClose: 1000,
-      });
+      toast.success("Logged out successfully", 1000);
       
       setTimeout(() => {
         navigate("/login");
