@@ -383,8 +383,8 @@ export default function MyReports() {
 
                       {/* Delete Confirmation Modal */}
                       {deleteConfirm && deleteConfirm.id === report.id && (
-                        <div className="delete-confirmation-overlay-fmw">
-                          <div className="delete-confirmation-modal-fmw">
+                        <div className="delete-confirmation-overlay-fmws">
+                          <div className="delete-confirmation-modal-fmws">
                             <div className="delete-confirmation-header-fmw">
                               <FontAwesomeIcon icon={faWarning} className="warning-icon-fmw" />
                               <h3>Delete Report</h3>

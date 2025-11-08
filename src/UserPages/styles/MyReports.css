@@ -159,7 +159,6 @@
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  border-left: 4px solid #8B5A2B;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: cardSlideIn 0.5s ease-out both;
@@ -331,13 +330,13 @@
 }
 
 /* 🎯 Delete Confirmation Modal */
-.delete-confirmation-overlay-fmw {
+.delete-confirmation-overlay-fmws {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -352,14 +351,14 @@
   to { opacity: 1; }
 }
 
-.delete-confirmation-modal-fmw {
+.delete-confirmation-modal-fmws {
   background: white;
   padding: 2.5rem;
   border-radius: 16px;
   max-width: 450px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+ 
   animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid #8B5A2B;
 }
@@ -395,7 +394,7 @@
   font-weight: 700;
 }
 
-.delete-confirmation-modal-fmw p {
+.delete-confirmation-modal-fmws p {
   margin: 1rem 0;
   color: #333;
   word-break: break-word;
@@ -461,7 +460,7 @@
   box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
 }
 
-.confirm-delete-btn-fmw:hover:not(:disabled) {
+.confirm-delete-btn-fmws:hover:not(:disabled) {
   background: #c0392b;
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
@@ -638,13 +637,13 @@
     justify-content: center;
   }
   
-  .delete-confirmation-actions-fmw {
+  .delete-confirmation-actions-fmws {
     flex-direction: column;
     align-items: stretch;
   }
   
   .cancel-btn-fmw,
-  .confirm-delete-btn-fmw {
+  .confirm-delete-btn-fmws {
     width: 100%;
     max-width: 200px;
     margin: 0 auto;
@@ -712,7 +711,7 @@
     font-size: 1rem;
   }
   
-  .delete-confirmation-modal-fmw {
+  .delete-confirmation-modal-fmws{
     padding: 2rem 1.5rem;
     margin: 1rem;
   }
@@ -725,8 +724,8 @@
   .reports-header-fmw,
   .reports-filters-fmw,
   .report-card-fmw,
-  .delete-confirmation-overlay-fmw,
-  .delete-confirmation-modal-fmw,
+  .delete-confirmation-overlay-fmws,
+  .delete-confirmation-modal-fmws,
    {
     animation: none !important;
     transition: none !important;
@@ -928,7 +927,7 @@
   }
   
   .edit-report-btn-fmw,
-  .delete-report-btn-fmw {
+  .delete-report-btn-fmw { 
     width: 100%;
     max-width: 200px;
     height: 44px;
