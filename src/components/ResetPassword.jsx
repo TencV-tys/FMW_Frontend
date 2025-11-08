@@ -52,77 +52,83 @@ const ResetPassword = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!password || !confirmPassword) {
-      toast.error('Please fill in all fields');
-      return;
+  e.preventDefault();
+  
+  // Trim inputs to remove whitespace
+  const trimmedPassword = password.trim();
+  const trimmedConfirmPassword = confirmPassword.trim();
+  
+  if (!trimmedPassword || !trimmedConfirmPassword) {
+    toast.error('Please fill in all fields');
+    return;
+  }
+
+  const passwordError = validatePassword(trimmedPassword);
+  if (passwordError) {
+    toast.error(passwordError);
+    return;
+  }
+
+  if (trimmedPassword !== trimmedConfirmPassword) {
+    toast.error('Passwords do not match');
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(`${wifi}/auth/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        token, 
+        password: trimmedPassword,           // ← Changed from 'newPassword'
+        password_confirmation: trimmedConfirmPassword  // ← Added this field
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      setIsSuccess(true);
+      toast.success('Password reset successfully! Redirecting to login...', 3000);
+      setTimeout(() => navigate('/login'), 3000);
+    } else {
+      toast.error(data.error || 'Failed to reset password');
     }
-
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      toast.error(passwordError);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${wifi}/auth/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          token, 
-          newPassword: password 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setIsSuccess(true);
-        toast.success('Password reset successfully! Redirecting to login...', 3000);
-        setTimeout(() => navigate('/login'), 3000);
-      } else {
-        toast.error(data.error || 'Failed to reset password');
-      }
-    } catch (error) {
-      console.error('Reset password error:', error);
-      toast.error('Network error. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (isSuccess) {
-    return (
-      <div className="reset-password-page">
-        <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
-        <div className={`reset-password-container ${mounted ? 'reset-password-mounted' : ''}`}>
-          <div className="reset-password-success">
-            <div className="success-icon">
-              <FontAwesomeIcon icon={faLock} />
-            </div>
-            <h2>Password Reset Successful!</h2>
+  } catch (error) {
+    console.error('Reset password error:', error);
+    toast.error('Network error. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+if (isSuccess) {
+  return (
+    <div className="reset-password-page">
+      <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
+      <div className={`reset-password-container ${mounted ? 'reset-password-mounted' : ''}`}>
+        <div className="reset-password-success">
+          <div className="success-icon">
+            <FontAwesomeIcon icon={faLock} />
+          </div>
+          <h2>Password Reset Successful!</h2>
+          <div className="success-message">
             <p>Your password has been reset successfully.</p>
             <p>Redirecting you to login page...</p>
-            <div className="reset-password-actions">
-              <Link to="/login" className="reset-password-link">
-                Go to Login
-              </Link>
-            </div>
+          </div>
+          <div className="reset-password-actions">
+            <Link to="/login" className="reset-password-link">
+              Go to Login Immediately
+            </Link>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="reset-password-page">
