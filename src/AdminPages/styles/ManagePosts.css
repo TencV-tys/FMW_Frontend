@@ -1,4 +1,4 @@
-/* AdminPosts.css - IMPROVED READABILITY WITH ORANGE/BROWN THEME */
+ /* ManagePosts.css - DARK BROWN GRADIENT THEME (Same as ManageUsers) */
 
 .pm-page {
   padding: 2rem;
@@ -8,7 +8,7 @@
   min-height: 100vh;
 }
 
-/* Header - ORANGE - IMPROVED READABILITY */
+/* Header - DARK BROWN GRADIENT */
 .pm-header {
   display: flex;
   justify-content: space-between;
@@ -16,28 +16,23 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
-  background: white;
+  background: linear-gradient(135deg, #8B5A2B, #654321);
+  color: white;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.pm-header-content h1 {
-  color: #FF8904; /* ORANGE */
-  margin: 0 0 0.5rem 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-}
-
 .pm-header-content p {
-  color: #666;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   line-height: 1.4;
+  font-weight: 500;
 }
 
 .pm-refresh-btn {
-  background: #FF8904; /* ORANGE */
+  background: #8B5A2B;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -50,12 +45,13 @@
   transition: all 0.3s ease;
   white-space: nowrap;
   font-size: 0.9rem;
+  border: 1px solid #654321;
 }
 
 .pm-refresh-btn:hover:not(:disabled) {
-  background: #e67a00; /* DARKER ORANGE */
+  background: #654321;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
 }
 
 .pm-refresh-btn:disabled {
@@ -65,7 +61,7 @@
   box-shadow: none;
 }
 
-/* Stats Section - ORANGE - IMPROVED READABILITY */
+/* Stats Section - DARK BROWN THEME */
 .pm-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -79,7 +75,7 @@
   border-radius: 12px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-left: 4px solid #FF8904; /* ORANGE LEFT BORDER */
+  border-left: 4px solid #8B5A2B;
   transition: all 0.3s ease;
   cursor: pointer;
   border: 1px solid #e5e7eb;
@@ -91,18 +87,18 @@
 }
 
 .pm-stat-card.pm-stat-active {
-  border-left: 4px solid #FF6B00; /* DARKER ORANGE */
+  border-left: 4px solid #654321;
   background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(255, 137, 4, 0.2);
-  border: 1px solid #FF8904;
+  box-shadow: 0 8px 20px rgba(139, 90, 43, 0.2);
+  border: 1px solid #8B5A2B;
 }
 
 .pm-stat-number {
   display: block;
   font-size: 2rem;
   font-weight: 800;
-  color: #FF8904; /* ORANGE NUMBER */
+  color: #8B5A2B;
   line-height: 1.2;
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -116,101 +112,125 @@
   margin: 0.5rem 0 0 0;
 }
 
-/* Type Stats - IMPROVED READABILITY */
+/* Type Stats with different colors but brown active state */
 .pm-type-stat {
   border-left: 4px solid #6c757d;
 }
 
 .pm-type-stat.pm-stat-active {
-  border-left: 4px solid #495057;
-  background: #f8f9fa;
+  border-left: 4px solid #654321;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
 }
 
-/* Found Type - Blue */
+/* Found Type - Green */
 .pm-stat-found {
-  border-left: 4px solid #3498DB;
+  border-left: 4px solid #10b981;
 }
 
 .pm-stat-found .pm-stat-number {
-  color: #3498DB;
+  color: #10b981;
 }
 
 .pm-stat-found.pm-stat-active {
-  border-left: 4px solid #2980B9;
-  background: #EBF5FB;
+  border-left: 4px solid #654321;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
 }
 
-/* Lost Type - Darker Blue */
+.pm-stat-found.pm-stat-active .pm-stat-number {
+  color: #8B5A2B;
+}
+
+/* Lost Type - Blue */
 .pm-stat-lost {
-  border-left: 4px solid #2980B9;
+  border-left: 4px solid #3b82f6;
 }
 
 .pm-stat-lost .pm-stat-number {
-  color: #2980B9;
+  color: #3b82f6;
 }
 
 .pm-stat-lost.pm-stat-active {
-  border-left: 4px solid #1B4F72;
-  background: #D6EAF8;
+  border-left: 4px solid #654321;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
 }
 
-/* For Sale Type - Green */
+.pm-stat-lost.pm-stat-active .pm-stat-number {
+  color: #8B5A2B;
+}
+
+/* For Sale Type - Purple */
 .pm-stat-sale {
-  border-left: 4px solid #27AE60;
+  border-left: 4px solid #8b5cf6;
 }
 
 .pm-stat-sale .pm-stat-number {
-  color: #27AE60;
+  color: #8b5cf6;
 }
 
 .pm-stat-sale.pm-stat-active {
-  border-left: 4px solid #1E8449;
-  background: #EAFAF1;
+  border-left: 4px solid #654321;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
 }
 
-/* Looking to Buy Type - Purple */
+.pm-stat-sale.pm-stat-active .pm-stat-number {
+  color: #8B5A2B;
+}
+
+/* Looking to Buy Type - Orange */
 .pm-stat-buy {
-  border-left: 4px solid #8E44AD;
+  border-left: 4px solid #f59e0b;
 }
 
 .pm-stat-buy .pm-stat-number {
-  color: #8E44AD;
+  color: #f59e0b;
 }
 
 .pm-stat-buy.pm-stat-active {
-  border-left: 4px solid #6C3483;
-  background: #F4ECF7;
+  border-left: 4px solid #654321;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
+}
+
+.pm-stat-buy.pm-stat-active .pm-stat-number {
+  color: #8B5A2B;
 }
 
 /* Service Offered Type - Teal */
 .pm-stat-service {
-  border-left: 4px solid #17A2B8;
+  border-left: 4px solid #06b6d4;
 }
 
 .pm-stat-service .pm-stat-number {
-  color: #17A2B8;
+  color: #06b6d4;
 }
 
 .pm-stat-service.pm-stat-active {
-  border-left: 4px solid #117A8B;
-  background: #E8F6F8;
+  border-left: 4px solid #654321;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
+}
+
+.pm-stat-service.pm-stat-active .pm-stat-number {
+  color: #8B5A2B;
 }
 
 /* Help Wanted Type - Red */
 .pm-stat-help {
-  border-left: 4px solid #E74C3C;
+  border-left: 4px solid #ef4444;
 }
 
 .pm-stat-help .pm-stat-number {
-  color: #E74C3C;
+  color: #ef4444;
 }
 
 .pm-stat-help.pm-stat-active {
-  border-left: 4px solid #CB4335;
-  background: #FDEDEC;
+  border-left: 4px solid #654321;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
 }
 
-/* FILTERS SECTION - IMPROVED READABILITY */
+.pm-stat-help.pm-stat-active .pm-stat-number {
+  color: #8B5A2B;
+}
+
+/* FILTERS SECTION - DARK BROWN THEME */
 .pm-filters {
   display: flex;
   gap: 1rem;
@@ -234,7 +254,7 @@
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #FF8904; /* ORANGE */
+  color: #8B5A2B;
   z-index: 1;
 }
 
@@ -250,8 +270,8 @@
 
 .pm-search-box input:focus {
   outline: none;
-  border-color: #FF8904;
-  box-shadow: 0 0 0 3px rgba(255, 137, 4, 0.1);
+  border-color: #8B5A2B;
+  box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.1);
 }
 
 .pm-filter-group {
@@ -266,7 +286,7 @@
 }
 
 .pm-filter-group svg {
-  color: #FF8904; /* ORANGE */
+  color: #8B5A2B;
 }
 
 .pm-filter-group select {
@@ -282,7 +302,7 @@
 
 .pm-clear-filters-btn {
   padding: 0.75rem 1.5rem;
-  background: #FF8904; /* ORANGE */
+  background: #8B5A2B;
   color: white;
   border: none;
   border-radius: 8px;
@@ -291,15 +311,16 @@
   transition: all 0.2s ease;
   white-space: nowrap;
   font-size: 0.9rem;
+  border: 1px solid #654321;
 }
 
 .pm-clear-filters-btn:hover {
-  background: #e67a00; /* DARKER ORANGE */
+  background: #654321;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
 }
 
-/* Bulk Actions - IMPROVED READABILITY */
+/* Bulk Actions */
 .pm-bulk-actions {
   display: flex;
   align-items: center;
@@ -356,9 +377,9 @@
   border-color: #f5c6cb;
 }
 
-/* Table Container - BROWN BULLETIN BOARD - IMPROVED READABILITY */
+/* Table Container - DARK BROWN BULLETIN BOARD */
 .pm-table-container {
-  background-color: #8B5A2B; /* BROWN */
+  background: linear-gradient(135deg, #8B5A2B, #654321);
   border-radius: 12px;
   padding: 1rem;
   margin: 0;
@@ -366,9 +387,9 @@
 }
 
 .pm-table-content {
-  background-color: #D6A96D; /* LIGHT BROWN */
+  background-color: #D6A96D;
   border-radius: 8px;
-  box-shadow: inset 0px 0px 10px 2px rgba(139, 90, 43, 0.3); /* BROWN */
+  box-shadow: inset 0px 0px 10px 2px rgba(139, 90, 43, 0.3);
   padding: 1.5rem;
 }
 
@@ -387,7 +408,7 @@
 
 .pm-table-title h2 {
   margin: 0;
-  color: #8B5A2B; /* BROWN */
+  color: #8B5A2B;
   font-size: 1.3rem;
   font-weight: 700;
 }
@@ -424,7 +445,7 @@
   font-weight: 600;
 }
 
-/* Table - IMPROVED READABILITY */
+/* Table */
 .pm-table-wrapper {
   background: #FBFCF8;
   border-radius: 8px;
@@ -441,7 +462,7 @@
 }
 
 .pm-table th {
-  background: #8B5A2B; /* BROWN */
+  background: linear-gradient(135deg, #8B5A2B, #654321);
   color: white;
   padding: 1.25rem 1rem;
   text-align: left;
@@ -478,7 +499,7 @@
   border-bottom: none;
 }
 
-/* Checkbox styling - IMPROVED READABILITY */
+/* Checkbox styling */
 .pm-table input[type="checkbox"] {
   width: 20px;
   height: 20px;
@@ -493,7 +514,7 @@
   border-color: #8B5A2B;
 }
 
-/* Post title and author - IMPROVED READABILITY */
+/* Post title and author */
 .pm-title-author {
   display: flex;
   flex-direction: column;
@@ -523,7 +544,7 @@
   border: 1px solid #e5e7eb;
 }
 
-/* Status Badges - IMPROVED READABILITY */
+/* Status Badges */
 .pm-status-badge {
   padding: 0.6rem 1rem;
   border-radius: 20px;
@@ -555,7 +576,7 @@
   border-color: #b3d7ff;
 }
 
-/* Type Badges - IMPROVED READABILITY */
+/* Type Badges */
 .pm-type-badge {
   padding: 0.6rem 1rem;
   border-radius: 20px;
@@ -611,7 +632,7 @@
   border-color: #e9ecef;
 }
 
-/* Location Info - IMPROVED READABILITY */
+/* Location Info */
 .pm-location-info {
   display: flex;
   align-items: center;
@@ -624,7 +645,7 @@
   font-size: 0.9rem;
 }
 
-/* Report Count - IMPROVED READABILITY */
+/* Report Count */
 .pm-report-count {
   font-weight: 700;
   padding: 0.5rem 0.75rem;
@@ -635,7 +656,7 @@
   color: #333;
 }
 
-/* Actions - IMPROVED READABILITY */
+/* Actions */
 .pm-actions {
   display: flex;
   gap: 0.5rem;
@@ -703,7 +724,7 @@
   box-shadow: none;
 }
 
-/* Loading and Empty States - IMPROVED READABILITY */
+/* Loading and Empty States */
 .pm-loading-state, .pm-empty-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -757,6 +778,7 @@
   margin-top: 1.5rem;
   transition: all 0.3s ease;
   font-size: 1rem;
+  border: 1px solid #654321;
 }
 
 .pm-retry-btn:hover {
@@ -765,19 +787,19 @@
   box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
 }
 
-/* 🎯 ADDED: Report Thresholds Info */
+/* 🎯 UPDATED: Report Thresholds Info - DARK BROWN THEME */
 .thresholds-info {
   background: white;
   padding: 1.5rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-left: 4px solid #FF8904;
+  border-left: 4px solid #8B5A2B;
 }
 
 .thresholds-info h3 {
   margin: 0 0 1rem 0;
-  color: #FF8904;
+  color: #8B5A2B;
   font-size: 1.1rem;
   font-weight: 700;
 }
@@ -795,7 +817,7 @@
   padding: 1rem;
   background: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #FF8904;
+  border-left: 4px solid #8B5A2B;
 }
 
 .threshold-badge {
@@ -818,7 +840,7 @@
   font-weight: 500;
 }
 
-/* 🎯 ADDED: Report Severity Badges */
+/* 🎯 UPDATED: Report Severity Badges - Same as ManageUsers */
 .report-severity-badge {
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -845,7 +867,13 @@
   border-color: #ffe0b2 !important;
 }
 
-/* Mobile Cards View - IMPROVED READABILITY */
+.report-none {
+  background: #e3f2fd !important;
+  color: #1976d2 !important;
+  border-color: #bbdefb !important;
+}
+
+/* Mobile Cards View */
 .pm-mobile-cards {
   display: none;
   flex-direction: column;
@@ -985,7 +1013,7 @@
   margin-bottom: 1rem;
 }
 
-/* Toast Notifications - IMPROVED READABILITY */
+/* Toast Notifications */
 .pm-toast {
   position: fixed;
   top: 20px;
@@ -1032,7 +1060,7 @@
   }
 }
 
-/* Modal Styles - IMPROVED READABILITY */
+/* Modal Styles */
 .pm-modal-overlay {
   position: fixed;
   top: 0;
@@ -1076,13 +1104,14 @@
   align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #8B5A2B, #654321);
+  color: white;
   border-radius: 12px 12px 0 0;
 }
 
 .pm-modal-header h2 {
   margin: 0;
-  color: #8B5A2B;
+  color: white;
   font-size: 1.5rem;
   font-weight: 700;
 }
@@ -1091,7 +1120,7 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #666;
+  color: white;
   cursor: pointer;
   padding: 0.5rem;
   width: 40px;
@@ -1104,8 +1133,7 @@
 }
 
 .pm-modal-close:hover {
-  background: #e9ecef;
-  color: #333;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .pm-modal-body {
@@ -1122,7 +1150,7 @@
   border-radius: 0 0 12px 12px;
 }
 
-/* Modal Actions - IMPROVED READABILITY */
+/* Modal Actions */
 .pm-modal-actions {
   display: flex;
   gap: 0.75rem;
@@ -1163,27 +1191,27 @@
 }
 
 .pm-modal-resolve {
-  background: #d1fae5;
-  color: #065f46;
-  border-color: #a7f3d0;
+  background: #8B5A2B;
+  color: white;
+  border-color: #654321;
 }
 
 .pm-modal-remove {
-  background: #fef3c7;
-  color: #92400e;
-  border-color: #fde68a;
+  background: #f59e0b;
+  color: white;
+  border-color: #d97706;
 }
 
 .pm-modal-restore {
-  background: #d1fae5;
-  color: #065f46;
-  border-color: #a7f3d0;
+  background: #10b981;
+  color: white;
+  border-color: #059669;
 }
 
 .pm-modal-delete {
-  background: #fee2e2;
-  color: #991b1b;
-  border-color: #fecaca;
+  background: #ef4444;
+  color: white;
+  border-color: #dc2626;
 }
 
 .pm-modal-close-btn {
@@ -1203,7 +1231,7 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Post Details in View Modal - IMPROVED READABILITY */
+/* Post Details in View Modal */
 .pm-details {
   display: flex;
   flex-direction: column;
@@ -1249,7 +1277,7 @@
   font-size: 0.95rem;
 }
 
-/* Photo display in modals - IMPROVED READABILITY */
+/* Photo display in modals */
 .pm-photo-container {
   margin-bottom: 1.5rem;
   padding: 1.25rem;
@@ -1359,7 +1387,7 @@
   font-weight: 500;
 }
 
-/* Confirmation Modal Styles - IMPROVED READABILITY */
+/* Confirmation Modal Styles */
 .pm-confirmation-content {
   text-align: center;
   padding: 2rem;

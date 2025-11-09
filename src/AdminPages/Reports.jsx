@@ -124,8 +124,8 @@ export default function Reports() {
     try {
       setLoading(true);
       const endpoint = statusFilter === 'all' 
-        ? 'http://localhost:8000/api/reports'
-        : `http://localhost:8000/api/reports/status/${statusFilter}`;
+        ? 'http://localhost:8000/api/admin/reports'
+        : `http://localhost:8000/api/admin/reports/status/${statusFilter}`;
       
       const response = await fetch(endpoint, {
         credentials: 'include',
@@ -150,7 +150,7 @@ export default function Reports() {
 
   const fetchReportStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/reports', {
+      const response = await fetch('http://localhost:8000/api/admin/reports', {
         credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache',
@@ -183,7 +183,7 @@ export default function Reports() {
 
   const updateReportStatus = async (reportId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/reports/${reportId}/status`, {
+      const response = await fetch(`http://localhost:8000/api/admin/reports/${reportId}/status`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -210,7 +210,7 @@ export default function Reports() {
   // DELETE REPORT FUNCTION
   const deleteReport = async (reportId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/reports/${reportId}`, {
+      const response = await fetch(`http://localhost:8000/api/admin/reports/${reportId}`, {
         method: 'DELETE',
         credentials: 'include'
       });

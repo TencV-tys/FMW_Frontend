@@ -16,7 +16,7 @@
 .admin-nav-main.admin-nav-open {
     width: 200px;
     min-width: 200px;
-    transform: translateX(0);
+    transform: translateX(0); 
     opacity: 1;
     visibility: visible;
 }

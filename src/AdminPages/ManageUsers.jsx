@@ -19,7 +19,8 @@ import {
   faFlag,
   faExclamationTriangle,
   faTimes,
-  faBell
+  faBell,
+  faUndo
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
@@ -50,9 +51,10 @@ export default function ManageUsers() {
     type: 'success'
   });
 
-  // 🆕 ADDED: Smart polling refs
+  // 🆕 ADDED: Smart polling refs and warned users tracking
   const pollingIntervalRef = useRef(null);
   const isTabActiveRef = useRef(true);
+  const [warnedUsers, setWarnedUsers] = useState(new Set());
 
   // Report thresholds
   const REPORT_THRESHOLDS = {
@@ -136,7 +138,7 @@ export default function ManageUsers() {
       console.log(`Error fetching users with reports: ${error.message}`);
       // Fallback to basic user data
       try {
-        const fallbackRes = await fetch('http://localhost:8000/api/users', {
+        const fallbackRes = await fetch('http://localhost:8000/api/admin/users', {
           credentials: 'include'
         });
         const fallbackData = await fallbackRes.json();
@@ -155,24 +157,32 @@ export default function ManageUsers() {
     }
   };
 
-  // 🆕 AUTOMATIC WARNING CHECK
+  // 🆕 UPDATED: AUTOMATIC WARNING CHECK WITH SPAM PREVENTION
   const checkForAutomaticWarnings = async (usersData) => {
     try {
       const usersNeedingWarning = usersData.filter(user => 
         user.status === 'active' && 
         user.role !== 'admin' &&
-        user.monthly_report_count >= REPORT_THRESHOLDS.WARNING
+        user.monthly_report_count >= REPORT_THRESHOLDS.WARNING &&
+        !warnedUsers.has(user.id) // 🆕 Prevent duplicate warnings
       );
 
+      const newWarnedUsers = new Set(warnedUsers);
+      
       for (const user of usersNeedingWarning) {
-        await sendAutomaticWarning(user);
+        const success = await sendAutomaticWarning(user);
+        if (success) {
+          newWarnedUsers.add(user.id);
+        }
       }
+      
+      setWarnedUsers(newWarnedUsers);
     } catch (error) {
       console.error('Error checking automatic warnings:', error);
     }
   };
 
-  // 🆕 SEND AUTOMATIC WARNING (EMAIL + NOTIFICATION)
+  // 🆕 UPDATED: SEND AUTOMATIC WARNING WITH SUCCESS TRACKING
   const sendAutomaticWarning = async (user) => {
     try {
       const response = await fetch('http://localhost:8000/api/admin/send-user-warning', {
@@ -190,9 +200,12 @@ export default function ManageUsers() {
 
       if (response.ok) {
         console.log(`Warning sent to user: ${user.first_name} ${user.last_name}`);
+        return true; // 🆕 Return success status
       }
+      return false;
     } catch (error) {
       console.error('Error sending automatic warning:', error);
+      return false;
     }
   };
 
@@ -272,7 +285,7 @@ export default function ManageUsers() {
 
     setIsProcessing(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/users/${selectedUser.id}`, {
+      const res = await fetch(`http://localhost:8000/api/admin/users/${selectedUser.id}`, {
         method: "DELETE",
         credentials: 'include'
       });
@@ -313,7 +326,7 @@ export default function ManageUsers() {
         status: 'suspended',
         reason: suspensionReason,
         duration: suspensionDuration,
-        sendNotification: true // 🆕 Send in-app notification
+        sendNotification: true
       };
 
       if (suspensionDuration === 'custom') {
@@ -372,7 +385,7 @@ export default function ManageUsers() {
         body: JSON.stringify({ 
           status: 'banned',
           reason: banReason.trim(),
-          sendNotification: true // 🆕 Send in-app notification
+          sendNotification: true
         })
       });
       
@@ -408,7 +421,7 @@ export default function ManageUsers() {
         },
         body: JSON.stringify({ 
           status: 'active',
-          sendNotification: true // 🆕 Send in-app notification
+          sendNotification: true
         })
       });
       
@@ -425,6 +438,37 @@ export default function ManageUsers() {
     } catch (error) {
       console.log(`Activate error: ${error.message}`);
       showToast('Error activating user', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // 🆕 ADDED: RESTORE USER FUNCTION
+  const handleRestore = async (user) => {
+    if (!user) return;
+    
+    setIsProcessing(true);
+    try {
+      const res = await fetch(`http://localhost:8000/api/admin/users/${user.id}/restore`, {
+        method: "PUT",
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (res.ok) {
+        setUsers(users.map(u => 
+          u.id === user.id ? { ...u, status: 'active', deleted_at: null } : u
+        ));
+        showToast(`User "${getUserName(user)}" restored successfully!`, 'success');
+      } else {
+        const errorData = await res.json();
+        showToast(errorData.error || 'Failed to restore user', 'error');
+      }
+    } catch (error) {
+      console.log(`Restore error: ${error.message}`);
+      showToast('Error restoring user', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -458,7 +502,8 @@ export default function ManageUsers() {
     total: users.length,
     active: users.filter(u => u.status === 'active').length,
     suspended: users.filter(u => u.status === 'suspended').length,
-    banned: users.filter(u => u.status === 'banned').length
+    banned: users.filter(u => u.status === 'banned').length,
+    deleted: users.filter(u => u.deleted_at).length
   };
 
   // Get status badge class
@@ -473,6 +518,10 @@ export default function ManageUsers() {
 
   // Get status display text
   const getStatusDisplayText = (user) => {
+    if (user.deleted_at) {
+      return 'Deleted';
+    }
+
     if (user.status === 'suspended' && user.suspended_until) {
       const untilDate = new Date(user.suspended_until);
       const now = new Date();
@@ -528,6 +577,7 @@ export default function ManageUsers() {
   const canSuspendUser = (user) => {
     return user.role !== 'admin' && 
            user.status === 'active' && 
+           !user.deleted_at &&
            user.monthly_report_count >= REPORT_THRESHOLDS.CAN_SUSPEND;
   };
 
@@ -535,16 +585,41 @@ export default function ManageUsers() {
   const canBanUser = (user) => {
     return user.role !== 'admin' && 
            user.status === 'active' && 
+           !user.deleted_at &&
            user.monthly_report_count >= REPORT_THRESHOLDS.CAN_BAN;
   };
 
   // 🆕 CHECK IF USER CAN BE DELETED
   const canDeleteUser = (user) => {
-    return user.role !== 'admin';
+    return user.role !== 'admin' && !user.deleted_at;
   };
 
-  // 🆕 GET ACTION BUTTONS WITH VALIDATION
+  // 🆕 UPDATED: GET ACTION BUTTONS WITH RESTORE FUNCTIONALITY
   const getActionButtons = (user) => {
+    // 🆕 Check if user is deleted (has deleted_at timestamp)
+    if (user.deleted_at) {
+      return (
+        <>
+          <button
+            className="manage-users-action-btn restore"
+            onClick={() => handleRestore(user)}
+            title="Restore User"
+            disabled={isProcessing}
+          >
+            <FontAwesomeIcon icon={faUndo} />
+          </button>
+          <button
+            className="manage-users-action-btn delete permanent"
+            onClick={() => openDeleteModal(user)}
+            title="Permanently Delete User"
+            disabled={isProcessing}
+          >
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
+        </>
+      );
+    }
+
     if (user.status === 'active') {
       return (
         <>
@@ -554,7 +629,7 @@ export default function ManageUsers() {
             title={!canSuspendUser(user) ? 
               (user.role === 'admin' ? 'Cannot suspend admin users' : `Need ${REPORT_THRESHOLDS.CAN_SUSPEND}+ monthly reports to suspend`) 
               : "Suspend User"}
-            disabled={!canSuspendUser(user)}
+            disabled={!canSuspendUser(user) || isProcessing}
           >
             <FontAwesomeIcon icon={faPauseCircle} />
           </button>
@@ -564,7 +639,7 @@ export default function ManageUsers() {
             title={!canBanUser(user) ? 
               (user.role === 'admin' ? 'Cannot ban admin users' : `Need ${REPORT_THRESHOLDS.CAN_BAN}+ monthly reports to ban`) 
               : "Ban User"}
-            disabled={!canBanUser(user)}
+            disabled={!canBanUser(user) || isProcessing}
           >
             <FontAwesomeIcon icon={faUserSlash} />
           </button>
@@ -572,7 +647,7 @@ export default function ManageUsers() {
             className={`manage-users-action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
             onClick={() => canDeleteUser(user) && openDeleteModal(user)}
             title={!canDeleteUser(user) ? 'Cannot delete admin users' : "Delete User"}
-            disabled={!canDeleteUser(user)}
+            disabled={!canDeleteUser(user) || isProcessing}
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
@@ -585,6 +660,7 @@ export default function ManageUsers() {
             className="manage-users-action-btn activate"
             onClick={() => openActivateModal(user)}
             title="Activate User"
+            disabled={isProcessing}
           >
             <FontAwesomeIcon icon={faCheckCircle} />
           </button>
@@ -592,7 +668,7 @@ export default function ManageUsers() {
             className={`manage-users-action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
             onClick={() => canDeleteUser(user) && openDeleteModal(user)}
             title={!canDeleteUser(user) ? 'Cannot delete admin users' : "Delete User"}
-            disabled={!canDeleteUser(user)}
+            disabled={!canDeleteUser(user) || isProcessing}
           >
             <FontAwesomeIcon icon={faTrash} />
           </button>
@@ -601,21 +677,22 @@ export default function ManageUsers() {
     }
   };
 
-  // Report severity indicator
+  // 🆕 UPDATED: Report severity indicator with "No Risk"
   const getReportSeverity = (user) => {
+    if (user.deleted_at) return 'deleted';
+    
     const monthlyReports = user.monthly_report_count || 0;
     
     if (monthlyReports >= REPORT_THRESHOLDS.CAN_BAN) return 'high';
     if (monthlyReports >= REPORT_THRESHOLDS.CAN_SUSPEND) return 'medium';
     if (monthlyReports >= REPORT_THRESHOLDS.WARNING) return 'low';
-    return 'none';
+    return 'none'; // 🆕 No risk for users below warning threshold
   };
 
-  // Report severity badge
+  // 🆕 UPDATED: Report severity badge with "No Risk" option
   const ReportSeverityBadge = ({ user }) => {
     const severity = getReportSeverity(user);
-    if (severity === 'none') return null;
-
+    
     const severityConfig = {
       high: { 
         class: 'manage-users-report-high', 
@@ -631,6 +708,16 @@ export default function ManageUsers() {
         class: 'manage-users-report-low', 
         text: 'Low Risk - Warning Sent', 
         icon: faFlag 
+      },
+      none: { 
+        class: 'manage-users-report-none', 
+        text: 'No Risk', 
+        icon: faCheckCircle 
+      },
+      deleted: { 
+        class: 'manage-users-report-deleted', 
+        text: 'User Deleted', 
+        icon: faUserSlash 
       }
     };
 
@@ -653,8 +740,8 @@ export default function ManageUsers() {
           <div className="manage-users-mobile-id">ID: #{user.id}</div>
         </div>
         <div className="manage-users-mobile-badges">
-          <span className={`manage-users-mobile-status ${getStatusClass(user.status)}`}>
-            <FontAwesomeIcon icon={getStatusIcon(user.status)} />
+          <span className={`manage-users-mobile-status ${getStatusClass(user.status)} ${user.deleted_at ? 'manage-users-status-deleted' : ''}`}>
+            <FontAwesomeIcon icon={user.deleted_at ? faUserSlash : getStatusIcon(user.status)} />
             {getStatusDisplayText(user)}
           </span>
           <span className={`manage-users-mobile-role ${getRoleClass(user.role)}`}>
@@ -702,6 +789,13 @@ export default function ManageUsers() {
             <span>Until: {new Date(user.suspended_until).toLocaleDateString()}</span>
           </div>
         )}
+
+        {user.deleted_at && (
+          <div className="manage-users-mobile-detail">
+            <FontAwesomeIcon icon={faCalendar} />
+            <span>Deleted: {new Date(user.deleted_at).toLocaleDateString()}</span>
+          </div>
+        )}
       </div>
 
       {/* Report Severity Indicator */}
@@ -733,7 +827,7 @@ export default function ManageUsers() {
       {/* Header Section */}
       <div className="manage-users-header">
         <div className="manage-users-header-content">
-       
+      
           <p>Admin panel for user management and moderation</p>
         </div>
         <button 
@@ -784,6 +878,15 @@ export default function ManageUsers() {
           <span className="manage-users-stat-number">{userStats.banned}</span>
           <span className="manage-users-stat-label">Banned Users</span>
         </div>
+        <div 
+          className={`manage-users-stat-card ${statusFilter === 'deleted' ? 'manage-users-stat-active' : ''}`}
+          onClick={() => handleStatCardClick('status', 'deleted')}
+          style={{ cursor: 'pointer' }}
+          title="Filter by Deleted status"
+        >
+          <span className="manage-users-stat-number">{userStats.deleted}</span>
+          <span className="manage-users-stat-label">Deleted Users</span>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -808,6 +911,7 @@ export default function ManageUsers() {
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
             <option value="banned">Banned</option>
+            <option value="deleted">Deleted</option>
           </select>
         </div>
 
@@ -946,8 +1050,8 @@ export default function ManageUsers() {
                             </span>
                           </td>
                           <td>
-                            <span className={`manage-users-status-badge ${getStatusClass(user.status)}`}>
-                              <FontAwesomeIcon icon={getStatusIcon(user.status)} />
+                            <span className={`manage-users-status-badge ${getStatusClass(user.status)} ${user.deleted_at ? 'manage-users-status-deleted' : ''}`}>
+                              <FontAwesomeIcon icon={user.deleted_at ? faUserSlash : getStatusIcon(user.status)} />
                               {getStatusDisplayText(user)}
                             </span>
                           </td>

@@ -510,42 +510,47 @@ export default function ManagePosts() {
     }
   };
 
-  // 🎯 UPDATED: Get report severity for posts (same pattern as users)
-  const getReportSeverity = (post) => {
-    const reportCount = post.total_report_count || 0;
-    
-    if (reportCount >= REPORT_THRESHOLDS.CAN_DELETE) return 'high';
-    if (reportCount >= REPORT_THRESHOLDS.CAN_REMOVE) return 'medium';
-    return 'none';
+  // 🎯 UPDATED: Get report severity for posts - ADD "No Risk" like ManageUsers
+const getReportSeverity = (post) => {
+  const reportCount = post.total_report_count || 0;
+  
+  if (reportCount >= REPORT_THRESHOLDS.CAN_DELETE) return 'high';
+  if (reportCount >= REPORT_THRESHOLDS.CAN_REMOVE) return 'medium';
+  return 'none'; // 🆕 No risk for posts below remove threshold
+};
+
+// 🎯 UPDATED: Report severity badge component - ADD "No Risk" badge
+const ReportSeverityBadge = ({ post }) => {
+  const severity = getReportSeverity(post);
+  
+  const severityConfig = {
+    high: { 
+      class: 'report-high', 
+      text: 'High Risk - Can Delete', 
+      icon: faExclamationTriangle 
+    },
+    medium: { 
+      class: 'report-medium', 
+      text: 'Medium Risk - Can Remove', 
+      icon: faFlag 
+    },
+    none: { 
+      class: 'report-none', 
+      text: 'No Risk', 
+      icon: faCheckCircle 
+    }
   };
 
-  // 🎯 NEW: Report severity badge component (same pattern as users)
-  const ReportSeverityBadge = ({ post }) => {
-    const severity = getReportSeverity(post);
-    if (severity === 'none') return null;
+  const config = severityConfig[severity];
 
-    const severityConfig = {
-      high: { 
-        class: 'report-high', 
-        text: 'High Risk - Can Delete', 
-        icon: faExclamationTriangle 
-      },
-      medium: { 
-        class: 'report-medium', 
-        text: 'Medium Risk - Can Remove', 
-        icon: faFlag 
-      }
-    };
+  return (
+    <span className={`report-severity-badge ${config.class}`}>
+      <FontAwesomeIcon icon={config.icon} />
+      {config.text}
+    </span>
+  );
+};
 
-    const config = severityConfig[severity];
-
-    return (
-      <span className={`report-severity-badge ${config.class}`}>
-        <FontAwesomeIcon icon={config.icon} />
-        {config.text}
-      </span>
-    );
-  };
 
   // 🎯 UPDATED: Get action buttons with threshold validation (same pattern as users)
   const getActionButtons = (post) => {
@@ -979,7 +984,7 @@ export default function ManagePosts() {
               <strong>{REPORT_THRESHOLDS.CAN_REMOVE}+ Total Reports:</strong> Can remove post from public view
             </span>
           </div>
-          <div className="threshold-item">
+          <div className="threshold-item"> 
             <span className="threshold-badge threshold-delete">🚫</span>
             <span className="threshold-text">
               <strong>{REPORT_THRESHOLDS.CAN_DELETE}+ Total Reports:</strong> Can permanently delete post

@@ -127,7 +127,7 @@ export default function AdminFeedback() {
   const fetchFeedback = async () => {
     try {
       setLoading(true);
-      let url = 'http://localhost:8000/api/feedback';
+      let url = 'http://localhost:8000/api/admin/feedback';
       const params = new URLSearchParams();
       
       if (statusFilter !== 'all') params.append('status', statusFilter);
@@ -160,7 +160,7 @@ export default function AdminFeedback() {
 
   const fetchFeedbackStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/feedback/stats', {
+      const response = await fetch('http://localhost:8000/api/admin/feedback/stats', {
         credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache',
@@ -251,7 +251,7 @@ export default function AdminFeedback() {
   // 🆕 UPDATED: Execute status update with toast
   const executeUpdateStatus = async (feedbackId, newStatus, adminNotes = '') => {
     try {
-      const response = await fetch(`http://localhost:8000/api/feedback/${feedbackId}/status`, {
+      const response = await fetch(`http://localhost:8000/api/admin/feedback/${feedbackId}/status`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -281,7 +281,7 @@ export default function AdminFeedback() {
   // 🆕 UPDATED: Execute feedback deletion with toast
   const executeDeleteFeedback = async (feedbackId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/feedback/${feedbackId}`, {
+      const response = await fetch(`http://localhost:8000/api/admin/feedback/${feedbackId}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -301,7 +301,7 @@ export default function AdminFeedback() {
 
   const assignFeedback = async (feedbackId, adminId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/feedback/${feedbackId}/assign`, {
+      const response = await fetch(`http://localhost:8000/api/admin/feedback/${feedbackId}/assign`, {
         method: 'PUT',
         credentials: 'include',
         headers: {

@@ -1,4 +1,4 @@
-/* Dashboard Header - Exactly like ManageUsers */
+/* Dashboard Header - Exactly like original */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -6,20 +6,18 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
-  background: white;
+  background: linear-gradient(135deg, #8B5A2B, #654321);
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* Center the text content but keep refresh button on right */
-
 .dashboard-header-content p {
-  color: #666;
+  color: white;
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.4;
-
 }
 
 .dashboard-header-right {
@@ -29,7 +27,7 @@
 }
 
 .refresh-btn {
-  background: #FF8904;
+  background: #8B5A2B;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -42,12 +40,13 @@
   transition: all 0.3s ease;
   white-space: nowrap;
   font-size: 0.9rem;
+  border: 1px solid #654321;
 }
 
 .refresh-btn:hover:not(:disabled) {
-  background: #e67a00;
+  background: #654321;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
 }
 
 .refresh-btn:disabled {
@@ -57,7 +56,7 @@
   box-shadow: none;
 }
 
-/* Statistics Grid - Simple like ManageUsers (no left border) */
+/* Statistics Grid - Simple like original (no left border) */
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -81,7 +80,7 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* FIXED: Stat Content - Keep icons but simple layout */
+/* Stat Content - Keep icons but simple layout */
 .dashboard-stat-content {
   display: flex;
   align-items: center;
@@ -112,7 +111,7 @@
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
-  color: #FF8904;
+  color: #8B5A2B;
   line-height: 1;
 }
 
@@ -326,7 +325,7 @@
   }
 }
 
-/* FIXED: Clickable Stat Cards */
+/* Clickable Stat Cards */
 .clickable-stat {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -343,14 +342,14 @@
   transform: translateY(-2px);
 }
 
-/* FIXED: Tooltip for stat cards - only show on desktop */
-.stat-card {
+/* Tooltip for stat cards - only show on desktop */
+.dashboard-stat-card {
   position: relative;
 }
 
 /* Only show tooltip on larger screens */
 @media (min-width: 769px) {
-  .stat-card:hover::after {
+  .dashboard-stat-card:hover::after {
     content: 'Click to view details';
     position: absolute;
     bottom: -30px;
@@ -377,53 +376,37 @@
   }
 }
 
-/* MOBILE FIXES - Remove all extra padding/margin below 768px */
+/* MOBILE FIXES */
 @media (max-width: 768px) {
-  .dashboard-content {
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-  }
-  
   .dashboard-header {
-    margin: 0 !important;
-    padding: 1rem 1rem 0.5rem 1rem !important;
-    width: 100% !important;
+    padding: 1rem;
   }
   
   .dashboard-stats {
-    margin: 0 !important;
-    padding: 0.5rem 1rem !important;
-    width: 100% !important;
-    gap: 1rem !important;
-    grid-template-columns: 1fr !important;
+    padding: 0.5rem 0;
+    grid-template-columns: 1fr;
   }
   
   .dashboard-main-content {
-    margin: 0 !important;
-    padding: 0.5rem 1rem 1rem 1rem !important;
-    width: 100% !important;
-    gap: 1rem !important;
+    padding: 0.5rem 0;
+    gap: 1rem;
   }
   
-  .stat-card {
-    margin: 0 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    padding: 1.25rem !important;
+  .dashboard-stat-card {
+    padding: 1.25rem;
   }
   
   .section-content {
-    padding: 1rem !important;
+    padding: 1rem;
   }
   
   .section-title {
-    padding: 1rem !important;
-    margin-bottom: 1rem !important;
+    padding: 1rem;
+    margin-bottom: 1rem;
   }
   
   /* Remove tooltip on mobile */
-  .stat-card:hover::after {
+  .dashboard-stat-card:hover::after {
     display: none;
   }
   
@@ -431,119 +414,52 @@
   .clickable-stat:hover {
     transform: translateY(-3px);
   }
-  
-  /* Ensure cards are always centered */
-  .stat-card {
-    display: flex;
-    justify-content: center;
-  }
-  
-  .stat-content {
-    flex-direction: column;
-    gap: 0.75rem;
-    width: 100%;
-  }
-  
-  .stat-info {
-    width: 100%;
-  }
 }
 
 @media (max-width: 480px) {
-  .dashboard-content {
-    padding: 0 !important;
-  }
-  
   .dashboard-header {
-    padding: 0.75rem 0.75rem 0.25rem 0.75rem !important;
+    padding: 0.75rem;
     flex-wrap: nowrap;
   }
   
   .dashboard-stats {
-    padding: 0.25rem 0.75rem !important;
-    gap: 0.75rem !important;
+    gap: 0.75rem;
   }
   
   .dashboard-main-content {
-    padding: 0.25rem 0.75rem 0.75rem 0.75rem !important;
-    gap: 0.75rem !important;
+    gap: 0.75rem;
   }
   
-  .header-content {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .header-content p {
+  .dashboard-header-content p {
     display: none;
-  }
-  
-  .dashboard-header-right {
-    flex-shrink: 0;
   }
   
   .activity-item {
     flex-direction: column;
     text-align: center;
     gap: 0.75rem;
-    padding: 0.75rem !important;
+    padding: 0.75rem;
   }
   
   .activity-content {
     text-align: center;
   }
   
-  /* Reduce card padding further */
-  .stat-card {
-    padding: 1rem !important;
+  .dashboard-stat-card {
+    padding: 1rem;
   }
   
-  .stat-content {
+  .dashboard-stat-content {
     gap: 0.5rem;
   }
   
-  .stat-icon {
+  .dashboard-stat-icon {
     width: 50px;
     height: 50px;
     font-size: 1.25rem;
   }
   
-  .stat-info h3 {
+  .dashboard-stat-info h3 {
     font-size: 1.75rem;
-  }
-}
-
-/* Extra small screens */
-@media (max-width: 360px) {
-  .dashboard-header {
-    gap: 0.5rem;
-  }
-  
-  .stat-card {
-    padding: 0.75rem !important;
-  }
-  
-  .stat-content {
-    gap: 0.5rem;
-  }
-  
-  .dashboard-stats {
-    padding: 0.25rem 0.5rem !important;
-  }
-  
-  .dashboard-main-content {
-    padding: 0.25rem 0.5rem 0.5rem 0.5rem !important;
-  }
-}
-
-/* Nuclear option for any remaining spacing issues */
-@media (max-width: 768px) {
-  .dashboard-content > *,
-  .dashboard-content > div > * {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    max-width: 100% !important;
   }
 }

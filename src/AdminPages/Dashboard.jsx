@@ -10,7 +10,11 @@ import {
   faCheckCircle,
   faChartLine,
   faClock,
-  faRefresh
+  faRefresh,
+  faFlag,
+  faComment,
+  faTrash,
+  faBell
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Dashboard.css';
 
@@ -18,10 +22,10 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPosts: 0,
-    lostPosts: 0,
-    foundPosts: 0,
-    activePosts: 0,
-    resolvedPosts: 0,
+    totalReports: 0,
+    totalFeedback: 0,
+    totalDeletionRequests: 0,
+    totalUnreadNotifications: 0,
     recentActivities: []
   });
   const [loading, setLoading] = useState(true);
@@ -32,14 +36,14 @@ export default function Dashboard() {
   });
   const navigate = useNavigate();
 
-  // 🆕 ADDED: Smart polling refs
+  // Smart polling refs
   const pollingIntervalRef = useRef(null);
   const isTabActiveRef = useRef(true);
 
   useEffect(() => {
     fetchDashboardData();
 
-    // 🆕 ADDED: Smart polling setup (60 seconds)
+    // Smart polling setup (60 seconds)
     const handleVisibilityChange = () => {
       isTabActiveRef.current = !document.hidden;
       if (isTabActiveRef.current) {
@@ -61,7 +65,7 @@ export default function Dashboard() {
     };
   }, []);
 
-  // 🆕 ADDED: Smart polling functions (60 seconds)
+  // Smart polling functions (60 seconds)
   const startPolling = () => {
     stopPolling(); // Clear any existing interval
     pollingIntervalRef.current = setInterval(() => {
@@ -78,13 +82,13 @@ export default function Dashboard() {
     }
   };
 
-  // 🆕 ADDED: Manual refresh with toast
+  // Manual refresh with toast
   const handleManualRefresh = async () => {
     showToast('Refreshing dashboard data...', 'success');
     await fetchDashboardData();
   };
 
-  // 🆕 ADDED: Show toast notification
+  // Show toast notification
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => {
@@ -96,7 +100,7 @@ export default function Dashboard() {
     try {
       setLoading(true);
       
-      const usersResponse = await fetch('http://localhost:8000/api/users/stats', {
+      const usersResponse = await fetch('http://localhost:8000/api/admin/users/stats', {
         credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache',
@@ -112,19 +116,42 @@ export default function Dashboard() {
         }
       });
 
-      if (usersResponse.ok && postsResponse.ok) {
+      // NEW: Fetch additional stats
+      const reportsResponse = await fetch('http://localhost:8000/api/admin/reports', {
+        credentials: 'include'
+      });
+
+      const feedbackResponse = await fetch('http://localhost:8000/api/admin/feedback/stats', {
+        credentials: 'include'
+      });
+
+      const deletionRequestsResponse = await fetch('http://localhost:8000/api/admin/users-deletion-stats', {
+        credentials: 'include'
+      });
+
+      const unreadNotificationsResponse = await fetch('http://localhost:8000/api/admin/notifications/unread', {
+        credentials: 'include'
+      });
+
+      if (usersResponse.ok && postsResponse.ok) { 
         const usersData = await usersResponse.json();
         const postsData = await postsResponse.json();
         
         const posts = postsData.posts || [];
         
+        // Calculate new stats
+        const totalReports = reportsResponse.ok ? (await reportsResponse.json()).length || 0 : 0;
+        const totalFeedback = feedbackResponse.ok ? (await feedbackResponse.json()).totalFeedback || 0 : 0;
+        const totalDeletionRequests = deletionRequestsResponse.ok ? (await deletionRequestsResponse.json()).pendingRequests || 0 : 0;
+        const totalUnreadNotifications = unreadNotificationsResponse.ok ? (await unreadNotificationsResponse.json()).length || 0 : 0;
+
         setStats({
           totalUsers: usersData.stats?.totalUsers || 0,
           totalPosts: posts.length,
-          lostPosts: posts.filter(post => post.type === 'Lost' || post.type === 'lost').length,
-          foundPosts: posts.filter(post => post.type === 'Found' || post.type === 'found').length,
-          activePosts: posts.filter(post => post.status === 'Active' || post.status === 'active').length,
-          resolvedPosts: posts.filter(post => post.status === 'Resolved' || post.status === 'resolved').length,
+          totalReports,
+          totalFeedback,
+          totalDeletionRequests,
+          totalUnreadNotifications,
           recentActivities: generateRecentActivities(posts)
         });
       }
@@ -154,24 +181,24 @@ export default function Dashboard() {
       case 'posts':
         navigate('/admin/manage-posts');
         break;
-      case 'lost':
-        navigate('/admin/manage-posts?type=lost');
+      case 'reports':
+        navigate('/admin/reports');
         break;
-      case 'found':
-        navigate('/admin/manage-posts?type=found');
+      case 'feedback':
+        navigate('/admin/feedback');
         break;
-      case 'active':
-        navigate('/admin/manage-posts?status=active');
+      case 'deletion-requests': 
+        navigate('/admin/deletion-requests');
         break;
-      case 'resolved':
-        navigate('/admin/manage-posts?status=resolved');
+      case 'notifications':
+        navigate('/admin/notifications');
         break;
       default:
         break;
     }
   };
 
-  // 🆕 UPDATED: StatCard component with better structure
+  // StatCard component with better structure
   const StatCard = ({ icon, value, label, color, type }) => (
     <div 
       className='dashboard-stat-card clickable-stat' 
@@ -190,7 +217,7 @@ export default function Dashboard() {
     </div>
   );
 
-  // 🆕 UPDATED: ActivityItem with better structure
+  // ActivityItem with better structure
   const ActivityItem = ({ activity }) => (
     <div className='activity-item'>
       <div className='activity-icon'>
@@ -211,7 +238,7 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* 🆕 ADDED: Toast Notification */}
+      {/* Toast Notification */}
       {toast.show && (
         <div className={`dashboard-toast dashboard-toast-${toast.type}`}>
           <div className="dashboard-toast-content">
@@ -225,7 +252,7 @@ export default function Dashboard() {
       )}
 
       <div className="dashboard-content">
-        {/* 🆕 UPDATED: Header with Refresh Button */}
+        {/* Header with Refresh Button */}
         <div className="dashboard-header">
           <div className="dashboard-header-content">
             <p>Overview of platform statistics and recent activities</p>
@@ -260,32 +287,32 @@ export default function Dashboard() {
             type="posts"
           />
           <StatCard 
-            icon={faExclamationTriangle} 
-            value={stats.lostPosts} 
-            label="Lost Items" 
+            icon={faFlag} 
+            value={stats.totalReports} 
+            label="Total Reports" 
             color="#ef4444"
-            type="lost"
+            type="reports"
           />
           <StatCard 
-            icon={faSearch} 
-            value={stats.foundPosts} 
-            label="Found Items" 
+            icon={faComment} 
+            value={stats.totalFeedback} 
+            label="Total Feedback" 
             color="#10b981"
-            type="found"
+            type="feedback"
           />
           <StatCard 
-            icon={faEye} 
-            value={stats.activePosts} 
-            label="Active Posts" 
+            icon={faTrash} 
+            value={stats.totalDeletionRequests} 
+            label="Deletion Requests" 
             color="#f59e0b"
-            type="active"
+            type="deletion-requests"
           />
           <StatCard 
-            icon={faCheckCircle} 
-            value={stats.resolvedPosts} 
-            label="Resolved Cases" 
+            icon={faBell} 
+            value={stats.totalUnreadNotifications} 
+            label="Unread Notifications" 
             color="#06b6d4"
-            type="resolved"
+            type="notifications"
           />
         </section>
 
@@ -334,27 +361,27 @@ export default function Dashboard() {
                   </div>
                   <div className='quick-stats'>
                     <div className='quick-stat-item'>
-                      <span className='stat-label'>Resolution Rate</span>
+                      <span className='stat-label'>Report Rate</span>
                       <span className='stat-value'>
-                        {stats.totalPosts > 0 
-                          ? `${Math.round((stats.resolvedPosts / stats.totalPosts) * 100)}%`
+                        {stats.totalUsers > 0 
+                          ? `${Math.round((stats.totalReports / stats.totalUsers) * 100)}%`
                           : '0%'
                         }
                       </span>
                     </div>
                     <div className='quick-stat-item'>
-                      <span className='stat-label'>Active Rate</span>
+                      <span className='stat-label'>Feedback Rate</span>
                       <span className='stat-value'>
-                        {stats.totalPosts > 0 
-                          ? `${Math.round((stats.activePosts / stats.totalPosts) * 100)}%`
+                        {stats.totalUsers > 0 
+                          ? `${Math.round((stats.totalFeedback / stats.totalUsers) * 100)}%`
                           : '0%'
                         }
                       </span>
                     </div>
                     <div className='quick-stat-item'>
-                      <span className='stat-label'>Lost vs Found</span>
+                      <span className='stat-label'>Pending Actions</span>
                       <span className='stat-value'>
-                        {stats.lostPosts}:{stats.foundPosts}
+                        {stats.totalDeletionRequests + stats.totalUnreadNotifications}
                       </span>
                     </div>
                   </div>
