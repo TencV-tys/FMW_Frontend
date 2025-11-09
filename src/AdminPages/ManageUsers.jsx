@@ -60,11 +60,24 @@ export default function ManageUsers() {
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
 
-  // Report thresholds
+  // 🆕 UPDATED: Report thresholds using BOTH monthly and total reports
   const REPORT_THRESHOLDS = {
-    WARNING: 3,        // Send warning email at exactly 3 monthly reports
-    CAN_SUSPEND: 5,    // Allow suspension at 5+ monthly reports  
-    CAN_BAN: 8         // Allow banning at 8+ monthly reports
+    WARNING: {
+      MONTHLY: 3,      // Warning at 3 monthly reports
+      TOTAL: 10        // OR warning at 10 total reports
+    },
+    CAN_SUSPEND: {
+      MONTHLY: 5,      // Can suspend at 5 monthly reports
+      TOTAL: 15        // OR can suspend at 15 total reports
+    },
+    CAN_BAN: {
+      MONTHLY: 8,      // Can ban at 8 monthly reports
+      TOTAL: 20        // OR can ban at 20 total reports
+    },
+    CAN_DELETE: {
+      MONTHLY: 10,     // Can delete at 10 monthly reports
+      TOTAL: 25        // OR can delete at 25 total reports
+    }
   };
 
   // 🆕 ADDED: Save to localStorage whenever warnedUsers changes
@@ -166,13 +179,15 @@ export default function ManageUsers() {
     }
   };
 
-  // 🆕 UPDATED: AUTOMATIC WARNING CHECK - ONLY FOR EXACTLY 3 REPORTS
+  // 🆕 UPDATED: AUTOMATIC WARNING CHECK - BOTH MONTHLY AND TOTAL
   const checkForAutomaticWarnings = async (usersData) => {
     try {
       const usersNeedingWarning = usersData.filter(user => 
         user.status === 'active' && 
         user.role !== 'admin' &&
-        user.monthly_report_count === REPORT_THRESHOLDS.WARNING && // 🆕 CHANGED: Only exactly 3 reports
+        !user.deleted_at &&
+        (user.monthly_report_count === REPORT_THRESHOLDS.WARNING.MONTHLY || 
+         user.total_report_count === REPORT_THRESHOLDS.WARNING.TOTAL) &&
         !warnedUsers.has(user.id)
       );
 
@@ -186,7 +201,7 @@ export default function ManageUsers() {
         if (success) {
           newWarnedUsers.add(user.id);
           warningsSent++;
-          console.log(`✅ Warning sent to user ${user.id} for exactly ${user.monthly_report_count} monthly reports`);
+          console.log(`✅ Warning sent to user ${user.id} for ${user.monthly_report_count} monthly reports OR ${user.total_report_count} total reports`);
         }
       }
       
@@ -232,8 +247,8 @@ export default function ManageUsers() {
       return;
     }
 
-    if (user.monthly_report_count < REPORT_THRESHOLDS.CAN_SUSPEND) {
-      showToast(`User needs at least ${REPORT_THRESHOLDS.CAN_SUSPEND} monthly reports to suspend`, 'error');
+    if (!canSuspendUser(user)) {
+      showToast(`User needs ${REPORT_THRESHOLDS.CAN_SUSPEND.MONTHLY}+ monthly OR ${REPORT_THRESHOLDS.CAN_SUSPEND.TOTAL}+ total reports to suspend`, 'error');
       return;
     }
 
@@ -251,8 +266,8 @@ export default function ManageUsers() {
       return;
     }
 
-    if (user.monthly_report_count < REPORT_THRESHOLDS.CAN_BAN) {
-      showToast(`User needs at least ${REPORT_THRESHOLDS.CAN_BAN} monthly reports to ban`, 'error');
+    if (!canBanUser(user)) {
+      showToast(`User needs ${REPORT_THRESHOLDS.CAN_BAN.MONTHLY}+ monthly OR ${REPORT_THRESHOLDS.CAN_BAN.TOTAL}+ total reports to ban`, 'error');
       return;
     }
 
@@ -265,6 +280,11 @@ export default function ManageUsers() {
     // Prevent deleting admin users
     if (user.role === 'admin') {
       showToast('Cannot delete admin users', 'error');
+      return;
+    }
+
+    if (!canDeleteUser(user)) {
+      showToast(`User needs ${REPORT_THRESHOLDS.CAN_DELETE.MONTHLY}+ monthly OR ${REPORT_THRESHOLDS.CAN_DELETE.TOTAL}+ total reports to delete`, 'error');
       return;
     }
 
@@ -458,9 +478,12 @@ export default function ManageUsers() {
     }
   };
 
-  // 🆕 ADDED: RESTORE USER FUNCTION
+  // 🆕 FIXED: RESTORE USER FUNCTION
   const handleRestore = async (user) => {
-    if (!user) return;
+    if (!user || !user.deleted_at) {
+      showToast('User is not deleted or cannot be restored', 'error');
+      return;
+    }
     
     setIsProcessing(true);
     try {
@@ -472,14 +495,22 @@ export default function ManageUsers() {
         }
       });
       
+      const responseData = await res.json();
+      console.log('Backend response:', responseData);
+      
       if (res.ok) {
+        // Update the user in state - set status to active and clear deleted_at
         setUsers(users.map(u => 
-          u.id === user.id ? { ...u, status: 'active', deleted_at: null } : u
+          u.id === user.id ? { 
+            ...u, 
+            status: 'active', 
+            deleted_at: null 
+          } : u
         ));
         showToast(`User "${getUserName(user)}" restored successfully!`, 'success');
       } else {
-        const errorData = await res.json();
-        showToast(errorData.error || 'Failed to restore user', 'error');
+        console.log('Backend error:', responseData);
+        showToast(responseData.error || 'Failed to restore user', 'error');
       }
     } catch (error) {
       console.log(`Restore error: ${error.message}`);
@@ -487,6 +518,32 @@ export default function ManageUsers() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // 🆕 UPDATED: CHECK IF USER CAN BE SUSPENDED - BOTH MONTHLY AND TOTAL
+  const canSuspendUser = (user) => {
+    return user.role !== 'admin' && 
+           user.status === 'active' && 
+           !user.deleted_at &&
+           (user.monthly_report_count >= REPORT_THRESHOLDS.CAN_SUSPEND.MONTHLY || 
+            user.total_report_count >= REPORT_THRESHOLDS.CAN_SUSPEND.TOTAL);
+  };
+
+  // 🆕 UPDATED: CHECK IF USER CAN BE BANNED - BOTH MONTHLY AND TOTAL
+  const canBanUser = (user) => {
+    return user.role !== 'admin' && 
+           user.status === 'active' && 
+           !user.deleted_at &&
+           (user.monthly_report_count >= REPORT_THRESHOLDS.CAN_BAN.MONTHLY || 
+            user.total_report_count >= REPORT_THRESHOLDS.CAN_BAN.TOTAL);
+  };
+
+  // 🆕 UPDATED: CHECK IF USER CAN BE DELETED - BOTH MONTHLY AND TOTAL
+  const canDeleteUser = (user) => {
+    return user.role !== 'admin' && 
+           !user.deleted_at &&
+           (user.monthly_report_count >= REPORT_THRESHOLDS.CAN_DELETE.MONTHLY || 
+            user.total_report_count >= REPORT_THRESHOLDS.CAN_DELETE.TOTAL);
   };
 
   // Handle stat card click for filtering
@@ -506,7 +563,12 @@ export default function ManageUsers() {
     const matchesSearch = user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'deleted' ? user.deleted_at : 
+                          statusFilter === 'active' ? user.status === 'active' && !user.deleted_at :
+                          statusFilter === 'suspended' ? user.status === 'suspended' && !user.deleted_at :
+                          statusFilter === 'banned' ? user.status === 'banned' && !user.deleted_at :
+                          user.status === statusFilter && !user.deleted_at);
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     
     return matchesSearch && matchesStatus && matchesRole;
@@ -515,9 +577,9 @@ export default function ManageUsers() {
   // Stats calculation
   const userStats = {
     total: users.length,
-    active: users.filter(u => u.status === 'active').length,
-    suspended: users.filter(u => u.status === 'suspended').length,
-    banned: users.filter(u => u.status === 'banned').length,
+    active: users.filter(u => u.status === 'active' && !u.deleted_at).length,
+    suspended: users.filter(u => u.status === 'suspended' && !u.deleted_at).length,
+    banned: users.filter(u => u.status === 'banned' && !u.deleted_at).length,
     deleted: users.filter(u => u.deleted_at).length
   };
 
@@ -588,27 +650,6 @@ export default function ManageUsers() {
     setSearchTerm('');
   };
 
-  // 🆕 CHECK IF USER CAN BE SUSPENDED
-  const canSuspendUser = (user) => {
-    return user.role !== 'admin' && 
-           user.status === 'active' && 
-           !user.deleted_at &&
-           user.monthly_report_count >= REPORT_THRESHOLDS.CAN_SUSPEND;
-  };
-
-  // 🆕 CHECK IF USER CAN BE BANNED
-  const canBanUser = (user) => {
-    return user.role !== 'admin' && 
-           user.status === 'active' && 
-           !user.deleted_at &&
-           user.monthly_report_count >= REPORT_THRESHOLDS.CAN_BAN;
-  };
-
-  // 🆕 CHECK IF USER CAN BE DELETED
-  const canDeleteUser = (user) => {
-    return user.role !== 'admin' && !user.deleted_at;
-  };
-
   // 🆕 UPDATED: GET ACTION BUTTONS WITH RESTORE FUNCTIONALITY
   const getActionButtons = (user) => {
     // 🆕 Check if user is deleted (has deleted_at timestamp)
@@ -642,7 +683,8 @@ export default function ManageUsers() {
             className={`manage-users-action-btn suspend ${!canSuspendUser(user) ? 'disabled' : ''}`}
             onClick={() => canSuspendUser(user) && openSuspendModal(user)}
             title={!canSuspendUser(user) ? 
-              (user.role === 'admin' ? 'Cannot suspend admin users' : `Need ${REPORT_THRESHOLDS.CAN_SUSPEND}+ monthly reports to suspend`) 
+              (user.role === 'admin' ? 'Cannot suspend admin users' : 
+               `Need ${REPORT_THRESHOLDS.CAN_SUSPEND.MONTHLY}+ monthly OR ${REPORT_THRESHOLDS.CAN_SUSPEND.TOTAL}+ total reports to suspend`) 
               : "Suspend User"}
             disabled={!canSuspendUser(user) || isProcessing}
           >
@@ -652,7 +694,8 @@ export default function ManageUsers() {
             className={`manage-users-action-btn ban ${!canBanUser(user) ? 'disabled' : ''}`}
             onClick={() => canBanUser(user) && openBanModal(user)}
             title={!canBanUser(user) ? 
-              (user.role === 'admin' ? 'Cannot ban admin users' : `Need ${REPORT_THRESHOLDS.CAN_BAN}+ monthly reports to ban`) 
+              (user.role === 'admin' ? 'Cannot ban admin users' : 
+               `Need ${REPORT_THRESHOLDS.CAN_BAN.MONTHLY}+ monthly OR ${REPORT_THRESHOLDS.CAN_BAN.TOTAL}+ total reports to ban`) 
               : "Ban User"}
             disabled={!canBanUser(user) || isProcessing}
           >
@@ -661,7 +704,10 @@ export default function ManageUsers() {
           <button
             className={`manage-users-action-btn delete ${!canDeleteUser(user) ? 'disabled' : ''}`}
             onClick={() => canDeleteUser(user) && openDeleteModal(user)}
-            title={!canDeleteUser(user) ? 'Cannot delete admin users' : "Delete User"}
+            title={!canDeleteUser(user) ? 
+              (user.role === 'admin' ? 'Cannot delete admin users' : 
+               `Need ${REPORT_THRESHOLDS.CAN_DELETE.MONTHLY}+ monthly OR ${REPORT_THRESHOLDS.CAN_DELETE.TOTAL}+ total reports to delete`) 
+              : "Delete User"}
             disabled={!canDeleteUser(user) || isProcessing}
           >
             <FontAwesomeIcon icon={faTrash} />
@@ -692,37 +738,56 @@ export default function ManageUsers() {
     }
   };
 
-  // 🆕 UPDATED: Report severity indicator with "No Risk"
+  // 🆕 UPDATED: Report severity indicator with BOTH monthly and total
   const getReportSeverity = (user) => {
     if (user.deleted_at) return 'deleted';
     
     const monthlyReports = user.monthly_report_count || 0;
+    const totalReports = user.total_report_count || 0;
     
-    if (monthlyReports >= REPORT_THRESHOLDS.CAN_BAN) return 'high';
-    if (monthlyReports >= REPORT_THRESHOLDS.CAN_SUSPEND) return 'medium';
-    if (monthlyReports >= REPORT_THRESHOLDS.WARNING) return 'low';
-    return 'none'; // 🆕 No risk for users below warning threshold
+    // Check DELETE threshold
+    if (monthlyReports >= REPORT_THRESHOLDS.CAN_DELETE.MONTHLY || totalReports >= REPORT_THRESHOLDS.CAN_DELETE.TOTAL) 
+      return 'high';
+    
+    // Check BAN threshold
+    if (monthlyReports >= REPORT_THRESHOLDS.CAN_BAN.MONTHLY || totalReports >= REPORT_THRESHOLDS.CAN_BAN.TOTAL) 
+      return 'medium';
+    
+    // Check SUSPEND threshold
+    if (monthlyReports >= REPORT_THRESHOLDS.CAN_SUSPEND.MONTHLY || totalReports >= REPORT_THRESHOLDS.CAN_SUSPEND.TOTAL) 
+      return 'low';
+    
+    // Check WARNING threshold
+    if (monthlyReports >= REPORT_THRESHOLDS.WARNING.MONTHLY || totalReports >= REPORT_THRESHOLDS.WARNING.TOTAL) 
+      return 'warning';
+    
+    return 'none';
   };
 
-  // 🆕 UPDATED: Report severity badge with "No Risk" option
+  // 🆕 UPDATED: Report severity badge with BOTH monthly and total
   const ReportSeverityBadge = ({ user }) => {
     const severity = getReportSeverity(user);
     
     const severityConfig = {
       high: { 
         class: 'manage-users-report-high', 
-        text: 'High Risk - Can Ban', 
+        text: 'High Risk - Can Delete', 
         icon: faExclamationTriangle 
       },
       medium: { 
         class: 'manage-users-report-medium', 
-        text: 'Medium Risk - Can Suspend', 
+        text: 'Medium Risk - Can Ban', 
         icon: faFlag 
       },
       low: { 
         class: 'manage-users-report-low', 
-        text: 'Low Risk - Warning Sent', 
+        text: 'Low Risk - Can Suspend', 
         icon: faFlag 
+      },
+      warning: { 
+        class: 'manage-users-report-warning', 
+        text: 'Warning Level', 
+        icon: faBell 
       },
       none: { 
         class: 'manage-users-report-none', 
@@ -842,7 +907,6 @@ export default function ManageUsers() {
       {/* Header Section */}
       <div className="manage-users-header">
         <div className="manage-users-header-content">
-      
           <p>Admin panel for user management and moderation</p>
         </div>
         <button 
@@ -966,26 +1030,32 @@ export default function ManageUsers() {
         )}
       </div> 
 
-      {/* Report Thresholds Info */}
+      {/* 🆕 UPDATED: Report Thresholds Info */}
       <div className="manage-users-thresholds-info">
-        <h3>Report Thresholds:</h3>
+        <h3>Report Thresholds (Monthly OR Total):</h3>
         <div className="manage-users-thresholds-grid">
           <div className="manage-users-threshold-item">
             <span className="manage-users-threshold-badge manage-users-threshold-warning">⚠️</span>
             <span className="manage-users-threshold-text">
-              <strong>Exactly {REPORT_THRESHOLDS.WARNING} Monthly Reports:</strong> Automatic generic warning sent
+              <strong>{REPORT_THRESHOLDS.WARNING.MONTHLY}+ Monthly OR {REPORT_THRESHOLDS.WARNING.TOTAL}+ Total Reports:</strong> Automatic warning sent
             </span>
           </div>
           <div className="manage-users-threshold-item">
             <span className="manage-users-threshold-badge manage-users-threshold-suspend">⏸️</span>
             <span className="manage-users-threshold-text">
-              <strong>{REPORT_THRESHOLDS.CAN_SUSPEND}+ Monthly Reports:</strong> Can suspend user
+              <strong>{REPORT_THRESHOLDS.CAN_SUSPEND.MONTHLY}+ Monthly OR {REPORT_THRESHOLDS.CAN_SUSPEND.TOTAL}+ Total Reports:</strong> Can suspend user
             </span>
           </div>
           <div className="manage-users-threshold-item">
             <span className="manage-users-threshold-badge manage-users-threshold-ban">🚫</span>
             <span className="manage-users-threshold-text">
-              <strong>{REPORT_THRESHOLDS.CAN_BAN}+ Monthly Reports:</strong> Can ban user
+              <strong>{REPORT_THRESHOLDS.CAN_BAN.MONTHLY}+ Monthly OR {REPORT_THRESHOLDS.CAN_BAN.TOTAL}+ Total Reports:</strong> Can ban user
+            </span>
+          </div>
+          <div className="manage-users-threshold-item">
+            <span className="manage-users-threshold-badge manage-users-threshold-delete">🗑️</span>
+            <span className="manage-users-threshold-text">
+              <strong>{REPORT_THRESHOLDS.CAN_DELETE.MONTHLY}+ Monthly OR {REPORT_THRESHOLDS.CAN_DELETE.TOTAL}+ Total Reports:</strong> Can delete user
             </span>
           </div>
         </div>
