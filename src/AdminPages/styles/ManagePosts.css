@@ -1696,6 +1696,7 @@
   margin-top: 0.25rem;
 }
 /* 🆕 ADDED: Post Highlight Banner */
+/* 🆕 FIXED: Post Highlight Banner */
 .post-highlight-banner {
   background: linear-gradient(135deg, #fff3cd, #ffeaa7);
   border: 1px solid #ffc107;
@@ -1752,31 +1753,44 @@
   box-shadow: 0 4px 12px rgba(224, 168, 0, 0.3);
 }
 
-/* 🆕 ADDED: Highlighted post styling */
-.pm-post-highlighted {
+/* 🆕 FIXED: Highlighted post styling - PROPER ALIGNMENT */
+.pm-table tbody tr.pm-post-highlighted {
+  position: relative;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%) !important;
   animation: post-highlight-pulse 2s ease-in-out infinite;
-  border: 2px solid #ffc107 !important;
+}
+
+/* Remove border from row and apply to first cell only */
+.pm-table tbody tr.pm-post-highlighted td:first-child {
+  border-left: 4px solid #ffc107;
   position: relative;
 }
 
-.pm-post-highlighted::before {
+/* Highlight badge - positioned absolutely without affecting layout */
+.pm-table tbody tr.pm-post-highlighted::before {
   content: "🔍 Highlighted";
   position: absolute;
-  top: -2px;
-  right: -2px;
+  top: 0;
+  right: 0;
   background: #ffc107;
   color: #664d03;
   padding: 0.25rem 0.75rem;
   font-size: 0.7rem;
   font-weight: 700;
   border-radius: 0 8px 0 8px;
-  z-index: 1;
+  z-index: 2;
+}
+
+/* Ensure highlighted rows stand out on hover */
+.pm-table tbody tr.pm-post-highlighted:hover {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
 }
 
 /* Mobile card highlight */
 .pm-mobile-card.pm-post-highlighted {
   border-left: 4px solid #ffc107 !important;
   background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
+  position: relative;
 }
 
 .pm-mobile-card.pm-post-highlighted::before {
@@ -1796,25 +1810,29 @@
 @keyframes post-highlight-pulse {
   0% { 
     background-color: rgba(255, 193, 7, 0.1);
-    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
   }
   50% { 
     background-color: rgba(255, 193, 7, 0.2);
-    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.2);
   }
   100% { 
     background-color: rgba(255, 193, 7, 0.1);
-    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
   }
 }
 
-/* Table row highlight */
-.pm-table tbody tr.pm-post-highlighted {
-  background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%) !important;
-  border-left: 4px solid #ffc107;
+/* Fix for table container to prevent overflow */
+.pm-table-wrapper {
+  position: relative;
+  overflow: hidden;
 }
 
-/* Ensure highlighted rows stand out on hover */
-.pm-table tbody tr.pm-post-highlighted:hover {
-  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+/* Ensure table cells maintain proper alignment */
+.pm-table tbody tr.pm-post-highlighted td {
+  position: relative;
+  z-index: 1;
+}
+
+/* Remove the problematic border from the row class */
+.pm-post-highlighted {
+  animation: post-highlight-pulse 2s ease-in-out infinite;
+  position: relative;
 }

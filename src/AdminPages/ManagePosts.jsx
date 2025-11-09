@@ -1452,7 +1452,7 @@ export default function ManagePosts() {
                 )}
               </button>
             </div>
-          </div>
+          </div> 
         </div>
       )} 
     </>

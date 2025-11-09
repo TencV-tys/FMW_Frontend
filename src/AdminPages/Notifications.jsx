@@ -223,7 +223,7 @@ export default function AdminNotifications() {
       
       default:
         return null;
-    } 
+    }   
   }; 
 
   // 🆕 ENHANCED: Handle notification click with navigation
