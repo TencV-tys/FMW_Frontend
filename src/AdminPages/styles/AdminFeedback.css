@@ -1,4 +1,4 @@
-/* styles/AdminFeedback.css - FIXED WHITE BORDER ISSUE */
+/* styles/AdminFeedback.css - FIXED WHITE BORDER ISSUE WITH MODAL CSS */
 
 .feedback-management-page {
   padding: 2rem;
@@ -622,6 +622,7 @@
   box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
 }
 
+/* 🆕 ADDED: MODAL STYLES */
 /* Modal Styles */
 .feedback-modal-overlay {
   position: fixed;
@@ -710,6 +711,243 @@
   justify-content: flex-end;
   background: #f8f9fa;
   border-radius: 0 0 12px 12px;
+}
+
+/* 🆕 ADDED: Feedback Details Modal Styles */
+.feedback-details-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.feedback-detail-section {
+  background: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.feedback-detail-section h3 {
+  margin: 0 0 1rem 0;
+  color: #8B5A2B;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-bottom: 2px solid #8B5A2B;
+  padding-bottom: 0.5rem;
+}
+
+.feedback-detail-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+}
+
+.feedback-detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.feedback-detail-row.full-width {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.feedback-detail-row label {
+  font-weight: 600;
+  color: #374151;
+  min-width: 120px;
+  font-size: 0.9rem;
+}
+
+.feedback-detail-row span {
+  color: #6b7280;
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.feedback-description-full {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+}
+
+.feedback-admin-notes {
+  background: #fff3cd;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ffeaa7;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  color: #856404;
+}
+
+/* 🆕 ADDED: Confirmation Modal Styles */
+.feedback-confirm-modal {
+  max-width: 500px;
+}
+
+.feedback-confirm-content {
+  text-align: center;
+  padding: 1rem;
+}
+
+.feedback-confirm-icon {
+  font-size: 3rem;
+  color: #f59e0b;
+  margin-bottom: 1rem;
+}
+
+.feedback-confirm-content h3 {
+  margin: 0 0 1rem 0;
+  color: #374151;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.feedback-confirm-content p {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.feedback-confirm-details {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  text-align: left;
+  border: 1px solid #e5e7eb;
+}
+
+.feedback-confirm-details strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.feedback-confirm-details span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.feedback-confirm-details small {
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.feedback-deletion-warning {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  font-weight: 600;
+}
+
+/* 🆕 ADDED: Modal Action Buttons */
+.feedback-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.feedback-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.feedback-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.feedback-btn-primary {
+  background: #8B5A2B;
+  color: white;
+  border: 1px solid #6d451f;
+}
+
+.feedback-btn-primary:hover:not(:disabled) {
+  background: #6d451f;
+  transform: translateY(-2px);
+}
+
+.feedback-btn-secondary {
+  background: #6b7280;
+  color: white;
+  border: 1px solid #4b5563;
+}
+
+.feedback-btn-secondary:hover:not(:disabled) {
+  background: #4b5563;
+  transform: translateY(-2px);
+}
+
+.feedback-btn-success {
+  background: #10b981;
+  color: white;
+  border: 1px solid #059669;
+}
+
+.feedback-btn-success:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+.feedback-btn-warning {
+  background: #f59e0b;
+  color: white;
+  border: 1px solid #d97706;
+}
+
+.feedback-btn-warning:hover:not(:disabled) {
+  background: #d97706;
+  transform: translateY(-2px);
+}
+
+.feedback-btn-danger {
+  background: #dc2626;
+  color: white;
+  border: 1px solid #b91c1c;
+}
+
+.feedback-btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+  transform: translateY(-2px);
+}
+
+.feedback-btn-info {
+  background: #3b82f6;
+  color: white;
+  border: 1px solid #1d4ed8;
+}
+
+.feedback-btn-info:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-2px);
 }
 
 /* Toast Notifications */
@@ -818,6 +1056,26 @@
   
   .feedback-modal-footer button {
     width: 100%;
+  }
+
+  /* 🆕 ADDED: Mobile modal adjustments */
+  .feedback-detail-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .feedback-detail-row label {
+    min-width: auto;
+  }
+
+  .feedback-modal-actions {
+    flex-direction: column;
+  }
+
+  .feedback-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

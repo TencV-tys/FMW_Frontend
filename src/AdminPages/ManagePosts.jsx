@@ -1127,7 +1127,7 @@ const ReportSeverityBadge = ({ post }) => {
           )}
         </div>
       </div>
-
+ 
       {/* View Post Modal */}
       {viewModal.isOpen && viewModal.post && (
         <div className="pm-modal-overlay" onClick={closeModal}>

@@ -767,7 +767,7 @@ export default function AdminFeedback() {
                               >
                                 <FontAwesomeIcon icon={faBan} />
                               </button>
-                            )}
+                            )} 
 
                             {availableActions.includes('delete') && (
                               <button

@@ -28,7 +28,7 @@ export default function AdminDeletionRequests() {
     adminNotes: ''
   });
 
-  // Filter for pending requests - Simplified
+  // Filter for pending requests - Updated to 3 only and 4+
   const [requestFilter, setRequestFilter] = useState('all');
 
   // Loading state for actions to prevent double clicks
@@ -203,17 +203,17 @@ export default function AdminDeletionRequests() {
     setFilterLimit(filterType);
   };
 
-  // Filter pending requests based on deletion count - Simplified
+  // Filter pending requests based on deletion count - Updated to 3 only and 4+
   const filteredPendingRequests = deletionRequests.filter(request => {
     if (request.status !== 'pending') return false;
     
     const currentDeletions = request.current_deletions || 0;
     
     switch (requestFilter) {
-      case 'limit_reached':
-        return currentDeletions >= 3;
-      case 'multiple_requests':
-        return currentDeletions >= 5;
+      case 'exactly_3':
+        return currentDeletions === 3;
+      case 'four_plus':
+        return currentDeletions >= 4;
       default:
         return true; // 'all'
     }
@@ -233,11 +233,11 @@ export default function AdminDeletionRequests() {
 
   const pendingRequests = deletionRequests.filter(request => request.status === 'pending');
 
-  // Stats for request filters - Simplified
+  // Stats for request filters - Updated to 3 only and 4+
   const requestStats = {
     all: pendingRequests.length,
-    limit_reached: pendingRequests.filter(req => (req.current_deletions || 0) >= 3).length,
-    multiple_requests: pendingRequests.filter(req => (req.current_deletions || 0) >= 5).length
+    exactly_3: pendingRequests.filter(req => (req.current_deletions || 0) === 3).length,
+    four_plus: pendingRequests.filter(req => (req.current_deletions || 0) >= 4).length
   };
 
   const stats = {
@@ -272,19 +272,19 @@ export default function AdminDeletionRequests() {
     return 'Within Limit';
   };
 
-  // Get request priority class - Simplified
+  // Get request priority class - Updated to 3 only and 4+
   const getRequestPriorityClass = (request) => {
     const deletions = request.current_deletions || 0;
-    if (deletions >= 5) return 'adr-priority-critical';
-    if (deletions >= 3) return 'adr-priority-high';
+    if (deletions >= 4) return 'adr-priority-critical';
+    if (deletions === 3) return 'adr-priority-high';
     return 'adr-priority-normal';
   };
 
-  // Get request priority text - Simplified
+  // Get request priority text - Updated to 3 only and 4+
   const getRequestPriorityText = (request) => {
     const deletions = request.current_deletions || 0;
-    if (deletions >= 5) return 'Critical (5+ deletions)';
-    if (deletions >= 3) return 'High (Limit Reached)';
+    if (deletions >= 4) return 'Critical (4+ deletions)';
+    if (deletions === 3) return 'High (Exactly 3)';
     return 'Normal';
   };
 
@@ -388,7 +388,7 @@ export default function AdminDeletionRequests() {
       {/* Pending Requests Tab */}
       {activeTab === 'requests' && (
         <>
-          {/* Request Filters - Simplified */}
+          {/* Request Filters - Updated to 3 only and 4+ */}
           <div className="adr-filters">
             <div className="adr-filter-group">
               <FontAwesomeIcon icon={faFilter} />
@@ -397,8 +397,8 @@ export default function AdminDeletionRequests() {
                 onChange={(e) => setRequestFilter(e.target.value)}
               >
                 <option value="all">All Requests ({requestStats.all})</option>
-                <option value="limit_reached">Limit Reached (3-4) ({requestStats.limit_reached})</option>
-                <option value="multiple_requests">Critical 5+ ({requestStats.multiple_requests})</option>
+                <option value="exactly_3">Exactly 3 ({requestStats.exactly_3})</option>
+                <option value="four_plus">4+ Deletions ({requestStats.four_plus})</option>
               </select>
             </div>
 

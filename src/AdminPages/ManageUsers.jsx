@@ -54,14 +54,23 @@ export default function ManageUsers() {
   // 🆕 ADDED: Smart polling refs and warned users tracking
   const pollingIntervalRef = useRef(null);
   const isTabActiveRef = useRef(true);
-  const [warnedUsers, setWarnedUsers] = useState(new Set());
+  const [warnedUsers, setWarnedUsers] = useState(() => {
+    // Load from localStorage on initial render
+    const saved = localStorage.getItem('warnedUsers');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
 
   // Report thresholds
   const REPORT_THRESHOLDS = {
-    WARNING: 3,        // Send warning email at 3+ monthly reports
+    WARNING: 3,        // Send warning email at exactly 3 monthly reports
     CAN_SUSPEND: 5,    // Allow suspension at 5+ monthly reports  
     CAN_BAN: 8         // Allow banning at 8+ monthly reports
   };
+
+  // 🆕 ADDED: Save to localStorage whenever warnedUsers changes
+  useEffect(() => {
+    localStorage.setItem('warnedUsers', JSON.stringify([...warnedUsers]));
+  }, [warnedUsers]);
 
   useEffect(() => {
     fetchUsers();
@@ -126,7 +135,7 @@ export default function ManageUsers() {
         credentials: 'include',
         headers: {
           'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Pragma': 'no-cache' 
         }
       });
       const data = await res.json();
@@ -157,32 +166,40 @@ export default function ManageUsers() {
     }
   };
 
-  // 🆕 UPDATED: AUTOMATIC WARNING CHECK WITH SPAM PREVENTION
+  // 🆕 UPDATED: AUTOMATIC WARNING CHECK - ONLY FOR EXACTLY 3 REPORTS
   const checkForAutomaticWarnings = async (usersData) => {
     try {
       const usersNeedingWarning = usersData.filter(user => 
         user.status === 'active' && 
         user.role !== 'admin' &&
-        user.monthly_report_count >= REPORT_THRESHOLDS.WARNING &&
-        !warnedUsers.has(user.id) // 🆕 Prevent duplicate warnings
+        user.monthly_report_count === REPORT_THRESHOLDS.WARNING && // 🆕 CHANGED: Only exactly 3 reports
+        !warnedUsers.has(user.id)
       );
 
+      if (usersNeedingWarning.length === 0) return;
+
       const newWarnedUsers = new Set(warnedUsers);
+      let warningsSent = 0;
       
       for (const user of usersNeedingWarning) {
         const success = await sendAutomaticWarning(user);
         if (success) {
           newWarnedUsers.add(user.id);
+          warningsSent++;
+          console.log(`✅ Warning sent to user ${user.id} for exactly ${user.monthly_report_count} monthly reports`);
         }
       }
       
-      setWarnedUsers(newWarnedUsers);
+      if (warningsSent > 0) {
+        setWarnedUsers(newWarnedUsers);
+        showToast(`Automatic warnings sent to ${warningsSent} user(s)`, 'success');
+      }
     } catch (error) {
       console.error('Error checking automatic warnings:', error);
     }
   };
 
-  // 🆕 UPDATED: SEND AUTOMATIC WARNING WITH SUCCESS TRACKING
+  // 🆕 UPDATED: SEND AUTOMATIC WARNING - ONLY USER ID (NO REPORT COUNTS)
   const sendAutomaticWarning = async (user) => {
     try {
       const response = await fetch('http://localhost:8000/api/admin/send-user-warning', {
@@ -192,15 +209,13 @@ export default function ManageUsers() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          userId: user.id,
-          monthlyReports: user.monthly_report_count,
-          totalReports: user.total_report_count
+          userId: user.id // 🆕 Only send user ID, no report counts
         })
       });
 
       if (response.ok) {
-        console.log(`Warning sent to user: ${user.first_name} ${user.last_name}`);
-        return true; // 🆕 Return success status
+        console.log(`✅ Generic warning sent to user: ${user.first_name} ${user.last_name}`);
+        return true;
       }
       return false;
     } catch (error) {
@@ -958,7 +973,7 @@ export default function ManageUsers() {
           <div className="manage-users-threshold-item">
             <span className="manage-users-threshold-badge manage-users-threshold-warning">⚠️</span>
             <span className="manage-users-threshold-text">
-              <strong>{REPORT_THRESHOLDS.WARNING}+ Monthly Reports:</strong> Automatic warning email sent
+              <strong>Exactly {REPORT_THRESHOLDS.WARNING} Monthly Reports:</strong> Automatic generic warning sent
             </span>
           </div>
           <div className="manage-users-threshold-item">
@@ -1012,7 +1027,7 @@ export default function ManageUsers() {
                   </button>
                 )}
               </div>
-            ) : (
+            ) : ( 
               <>
                 {/* Desktop Table View */}
                 <div className="manage-users-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
