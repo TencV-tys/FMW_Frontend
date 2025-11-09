@@ -1136,11 +1136,11 @@
   position: relative;
   background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%) !important;
   animation: adr-highlight-pulse 2s ease-in-out infinite;
-  border-left: 4px solid #8B5A2B !important;
 }
 
 .adr-request-highlighted td:first-child {
-  border-left: none !important;
+  position: relative;
+  padding-left: 1rem !important;
 }
 
 .adr-request-highlighted::before {
