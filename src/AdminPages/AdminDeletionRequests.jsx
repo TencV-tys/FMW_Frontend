@@ -8,7 +8,8 @@ import {
   faCheckCircle,
   faClock,
   faCheck,
-  faTimes
+  faTimes,
+  faFire
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/AdminDeletionRequests.css';
 
@@ -27,19 +28,22 @@ export default function AdminDeletionRequests() {
     adminNotes: ''
   });
 
-  // 🆕 ADDED: Loading state for actions to prevent double clicks
+  // Filter for pending requests - Simplified
+  const [requestFilter, setRequestFilter] = useState('all');
+
+  // Loading state for actions to prevent double clicks
   const [actionLoading, setActionLoading] = useState({
     process: false
   });
 
-  // 🆕 ADDED: Toast notifications
+  // Toast notifications
   const [toast, setToast] = useState({
     show: false,
     message: '',
     type: 'success'
   });
 
-  // 🆕 ADDED: Auto-reload reference
+  // Auto-reload reference
   const autoReloadRef = useRef(null);
 
   // Show toast notification
@@ -50,12 +54,17 @@ export default function AdminDeletionRequests() {
     }, 3000);
   };
 
-  // 🆕 ADDED: Check if any filter is active
+  // Check if any filter is active
   const isFilterActive = () => {
     return searchTerm !== '' || filterLimit !== 'all';
   };
 
-  // 🆕 ADDED: Smart polling - auto reload every 1 minute
+  // Check if any request filter is active
+  const isRequestFilterActive = () => {
+    return requestFilter !== 'all';
+  };
+
+  // Smart polling - auto reload every 1 minute
   useEffect(() => {
     // Initial fetch
     fetchUsersDeletionStats();
@@ -77,7 +86,7 @@ export default function AdminDeletionRequests() {
     };
   }, []);
 
-  // 🆕 ADDED: Also reload when tab becomes visible
+  // Also reload when tab becomes visible
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -132,7 +141,7 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  // 🆕 UPDATED: Handle process deletion request with double-click prevention
+  // Handle process deletion request with double-click prevention
   const handleProcessDeletionRequest = async (requestId, action, adminNotes = '') => {
     if (actionLoading.process) return; // Prevent double-click
     
@@ -194,6 +203,22 @@ export default function AdminDeletionRequests() {
     setFilterLimit(filterType);
   };
 
+  // Filter pending requests based on deletion count - Simplified
+  const filteredPendingRequests = deletionRequests.filter(request => {
+    if (request.status !== 'pending') return false;
+    
+    const currentDeletions = request.current_deletions || 0;
+    
+    switch (requestFilter) {
+      case 'limit_reached':
+        return currentDeletions >= 3;
+      case 'multiple_requests':
+        return currentDeletions >= 5;
+      default:
+        return true; // 'all'
+    }
+  });
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -208,18 +233,31 @@ export default function AdminDeletionRequests() {
 
   const pendingRequests = deletionRequests.filter(request => request.status === 'pending');
 
+  // Stats for request filters - Simplified
+  const requestStats = {
+    all: pendingRequests.length,
+    limit_reached: pendingRequests.filter(req => (req.current_deletions || 0) >= 3).length,
+    multiple_requests: pendingRequests.filter(req => (req.current_deletions || 0) >= 5).length
+  };
+
   const stats = {
     totalUsers: users.length,
     limitReached: users.filter(u => u.limit_reached).length,
     approachingLimit: users.filter(u => u.deletion_count >= 2 && !u.limit_reached).length,
     totalDeletions: users.reduce((sum, user) => sum + (user.deletion_count || 0), 0),
     pendingRequests: pendingRequests.length,
-    filteredUsers: filteredUsers.length
+    filteredUsers: filteredUsers.length,
+    filteredPendingRequests: filteredPendingRequests.length
   };
 
   const clearFilters = () => {
     setSearchTerm('');
     setFilterLimit('all');
+  };
+
+  // Clear request filters
+  const clearRequestFilters = () => {
+    setRequestFilter('all');
   };
 
   const getStatusClass = (user) => {
@@ -234,6 +272,22 @@ export default function AdminDeletionRequests() {
     return 'Within Limit';
   };
 
+  // Get request priority class - Simplified
+  const getRequestPriorityClass = (request) => {
+    const deletions = request.current_deletions || 0;
+    if (deletions >= 5) return 'adr-priority-critical';
+    if (deletions >= 3) return 'adr-priority-high';
+    return 'adr-priority-normal';
+  };
+
+  // Get request priority text - Simplified
+  const getRequestPriorityText = (request) => {
+    const deletions = request.current_deletions || 0;
+    if (deletions >= 5) return 'Critical (5+ deletions)';
+    if (deletions >= 3) return 'High (Limit Reached)';
+    return 'Normal';
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -246,7 +300,7 @@ export default function AdminDeletionRequests() {
 
   return (
     <>
-      {/* 🆕 ADDED: Toast Notification */}
+      {/* Toast Notification */}
       {toast.show && (
         <div className={`adr-toast adr-toast-${toast.type}`}>
           <div className="adr-toast-content">
@@ -278,7 +332,7 @@ export default function AdminDeletionRequests() {
         </button>
       </div>
 
-      {/* 🆕 UPDATED: Tabs - ORANGE THEME */}
+      {/* Tabs */}
       <div className="adr-tabs">
         <button 
           className={`adr-tab-button ${activeTab === 'requests' ? 'active' : ''}`}
@@ -333,222 +387,262 @@ export default function AdminDeletionRequests() {
 
       {/* Pending Requests Tab */}
       {activeTab === 'requests' && (
-        <div className='adr-table-darkbrown'>
-          <div className='adr-table-lightbrown'>
-            <div className='adr-table-content'>
-              <div className='adr-table-title'>
-                <h2>Pending Deletion Requests</h2>
-                <div className="adr-header-info">
-                  <span className="adr-users-count">
-                    {pendingRequests.length} pending request{pendingRequests.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
-              </div>
+        <>
+          {/* Request Filters - Simplified */}
+          <div className="adr-filters">
+            <div className="adr-filter-group">
+              <FontAwesomeIcon icon={faFilter} />
+              <select 
+                value={requestFilter}
+                onChange={(e) => setRequestFilter(e.target.value)}
+              >
+                <option value="all">All Requests ({requestStats.all})</option>
+                <option value="limit_reached">Limit Reached (3-4) ({requestStats.limit_reached})</option>
+                <option value="multiple_requests">Critical 5+ ({requestStats.multiple_requests})</option>
+              </select>
+            </div>
 
-              {requestsLoading ? (
-                <div className="adr-loading-state">
-                  <div className="adr-loading-spinner"></div>
-                  <p>Loading deletion requests...</p>
+            {isRequestFilterActive() && (
+              <button className="adr-clear-filters-btn" onClick={clearRequestFilters}>
+                Clear Filters
+              </button> 
+            )}
+          </div>
+
+          <div className='adr-table-darkbrown'>
+            <div className='adr-table-lightbrown'>
+              <div className='adr-table-content'>
+                <div className='adr-table-title'>
+                  <h2>Pending Deletion Requests</h2>
+                  <div className="adr-header-info">
+                    <span className="adr-users-count">
+                      {filteredPendingRequests.length} of {stats.pendingRequests} request{filteredPendingRequests.length !== 1 ? 's' : ''}
+                      {isRequestFilterActive() && ' (Filtered)'}
+                    </span>
+                  </div>
                 </div>
-              ) : pendingRequests.length === 0 ? (
-                <div className="adr-empty-state">
-                  <p>No pending deletion requests found.</p>
-                </div>
-              ) : (
-                <div className="adr-table-wrapper">
-                  <table className='adr-users-table'>
-                    <thead>
-                      <tr>
-                        <th>User Information</th>
-                        <th>Request Details</th>
-                        <th>Date Requested</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pendingRequests.map(request => (
-                        <tr key={request.id}>
-                          <td>
-                            <div className="adr-user-info">
-                              <strong>{request.first_name} {request.last_name}</strong>
-                              <small>{request.email}</small>
-                              <div>
-                                Current Deletions: {request.current_deletions || 0}/3
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div className="adr-request-details">
-                              <strong>Reason:</strong>
-                              <p className="adr-request-reason">{request.reason}</p>
-                              {request.post_title && (
-                                <div className="adr-post-info">
-                                  <strong>Related Post:</strong> {request.post_title}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td>
-                            {formatDate(request.created_at)}
-                          </td>
-                          <td>
-                            <div className="adr-table-actions">
-                              <button
-                                className="adr-action-btn approve"
-                                onClick={() => openRequestModal(request, 'approve')}
-                                title="Approve this deletion request"
-                              >
-                                <FontAwesomeIcon icon={faCheck} />
-                                Approve
-                              </button>
-                              <button
-                                className="adr-action-btn reject"
-                                onClick={() => openRequestModal(request, 'reject')}
-                                title="Reject this deletion request"
-                              >
-                                <FontAwesomeIcon icon={faTimes} />
-                                Reject
-                              </button>
-                            </div>
-                          </td>
+
+                {requestsLoading ? (
+                  <div className="adr-loading-state">
+                    <div className="adr-loading-spinner"></div>
+                    <p>Loading deletion requests...</p>
+                  </div>
+                ) : filteredPendingRequests.length === 0 ? (
+                  <div className="adr-empty-state">
+                    <p>No pending deletion requests found.</p>
+                    {isRequestFilterActive() && (
+                      <button 
+                        className="adr-retry-btn" 
+                        onClick={clearRequestFilters}
+                      >
+                        Clear Filters
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="adr-table-wrapper">
+                    <table className='adr-users-table'>
+                      <thead>
+                        <tr>
+                          <th>User Information</th>
+                          <th>Request Details</th>
+                          <th>Priority Level</th>
+                          <th>Date Requested</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody>
+                        {filteredPendingRequests.map(request => (
+                          <tr key={request.id}>
+                            <td>
+                              <div className="adr-user-info">
+                                <strong>{request.first_name} {request.last_name}</strong>
+                                <small>{request.email}</small>
+                                <div>
+                                  Current Deletions: {request.current_deletions || 0}/3
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="adr-request-details">
+                                <strong>Reason:</strong>
+                                <p className="adr-request-reason">{request.reason}</p>
+                                {request.post_title && (
+                                  <div className="adr-post-info">
+                                    <strong>Related Post:</strong> {request.post_title}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`adr-priority-badge ${getRequestPriorityClass(request)}`}>
+                                <FontAwesomeIcon 
+                                  icon={getRequestPriorityClass(request) === 'adr-priority-critical' ? faFire : faExclamationTriangle} 
+                                />
+                                {getRequestPriorityText(request)}
+                              </span>
+                            </td>
+                            <td>
+                              {formatDate(request.created_at)}
+                            </td>
+                            <td>
+                              <div className="adr-table-actions">
+                                <button
+                                  className="adr-action-btn approve"
+                                  onClick={() => openRequestModal(request, 'approve')}
+                                  title="Approve this deletion request"
+                                >
+                                  <FontAwesomeIcon icon={faCheck} />
+                                  Approve
+                                </button>
+                                <button
+                                  className="adr-action-btn reject"
+                                  onClick={() => openRequestModal(request, 'reject')}
+                                  title="Reject this deletion request"
+                                >
+                                  <FontAwesomeIcon icon={faTimes} />
+                                  Reject
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* User Statistics Tab */}
-     {/* User Statistics Tab */}
-{activeTab === 'users' && (
-  <>
-    {/* Filters */}
-    <div className="adr-filters">
-      <div className="adr-search-box">
-        <FontAwesomeIcon icon={faSearch} />
-        <input
-          type="text"
-          placeholder="Search users by name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-      
-      <div className="adr-filter-group">
-        <FontAwesomeIcon icon={faFilter} />
-        <select 
-          value={filterLimit}
-          onChange={(e) => setFilterLimit(e.target.value)}
-        >
-          <option value="all">All Users</option>
-          <option value="limit_reached">Limit Reached</option>
-          <option value="approaching">Approaching Limit</option>
-        </select>
-      </div>
-
-      {isFilterActive() && (
-        <button className="adr-clear-filters-btn" onClick={clearFilters}>
-          Clear Filters
-        </button> 
-      )}
-    </div>
-
-    {/* Users Table */}
-    <div className='adr-table-darkbrown'>
-      <div className='adr-table-lightbrown'>
-        <div className='adr-table-content'>
-          <div className='adr-table-title'>
-            <h2>Users Deletion Status</h2>
-            <div className="adr-header-info">
-              {/* 🆕 UPDATED: Same filtered count display as ManageUsers */}
-              <span className="adr-users-count">
-                {stats.filteredUsers} of {stats.totalUsers} user{stats.filteredUsers !== 1 ? 's' : ''}
-                {isFilterActive() && ' (Filtered)'}
-              </span>
+      {activeTab === 'users' && (
+        <>
+          {/* Filters */}
+          <div className="adr-filters">
+            <div className="adr-search-box">
+              <FontAwesomeIcon icon={faSearch} />
+              <input
+                type="text"
+                placeholder="Search users by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
+            
+            <div className="adr-filter-group">
+              <FontAwesomeIcon icon={faFilter} />
+              <select 
+                value={filterLimit}
+                onChange={(e) => setFilterLimit(e.target.value)}
+              >
+                <option value="all">All Users</option>
+                <option value="limit_reached">Limit Reached</option>
+                <option value="approaching">Approaching Limit</option>
+              </select>
+            </div>
+
+            {isFilterActive() && (
+              <button className="adr-clear-filters-btn" onClick={clearFilters}>
+                Clear Filters
+              </button> 
+            )}
           </div>
 
-          {loading ? (
-            <div className="adr-loading-state">
-              <div className="adr-loading-spinner"></div>
-              <p>Loading users deletion data...</p>
+          {/* Users Table */}
+          <div className='adr-table-darkbrown'>
+            <div className='adr-table-lightbrown'>
+              <div className='adr-table-content'>
+                <div className='adr-table-title'>
+                  <h2>Users Deletion Status</h2>
+                  <div className="adr-header-info">
+                    <span className="adr-users-count">
+                      {stats.filteredUsers} of {stats.totalUsers} user{stats.filteredUsers !== 1 ? 's' : ''}
+                      {isFilterActive() && ' (Filtered)'}
+                    </span>
+                  </div>
+                </div>
+
+                {loading ? (
+                  <div className="adr-loading-state">
+                    <div className="adr-loading-spinner"></div>
+                    <p>Loading users deletion data...</p>
+                  </div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="adr-empty-state">
+                    <p>No users found matching your criteria.</p>
+                    {isFilterActive() && (
+                      <button 
+                        className="adr-retry-btn" 
+                        onClick={clearFilters}
+                      >
+                        Clear Filters
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="adr-table-wrapper">
+                    <table className='adr-users-table'>
+                      <thead>
+                        <tr>
+                          <th>User Information</th>
+                          <th>Deletion Status</th>
+                          <th>Deletion Count</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.map(user => (
+                          <tr key={user.id}>
+                            <td>
+                              <div className="adr-user-info">
+                                <strong>{user.first_name} {user.last_name}</strong>
+                                <small>{user.email}</small>
+                                <div>
+                                  Status: <span className={`adr-user-status-badge adr-user-status-${user.status}`}>
+                                    {user.status}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`adr-status-badge ${getStatusClass(user)}`}>
+                                {getStatusText(user)}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="adr-progress-container">
+                                <span className="adr-progress-text">
+                                  {user.deletion_count || 0} / 3
+                                </span>
+                                <div className="adr-progress-bar">
+                                  <div 
+                                    className={`adr-progress-fill ${
+                                      user.limit_reached 
+                                        ? 'limit-reached' 
+                                        : user.deletion_count >= 2 
+                                        ? 'approaching' 
+                                        : 'normal'
+                                    }`}
+                                    style={{ width: `${Math.min(((user.deletion_count || 0) / 3) * 100, 100)}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="adr-empty-state">
-              <p>No users found matching your criteria.</p>
-              {isFilterActive() && (
-                <button 
-                  className="adr-retry-btn" 
-                  onClick={clearFilters}
-                >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="adr-table-wrapper">
-              <table className='adr-users-table'>
-                <thead>
-                  <tr>
-                    <th>User Information</th>
-                    <th>Deletion Status</th>
-                    <th>Deletion Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map(user => (
-                    <tr key={user.id}>
-                      <td>
-                        <div className="adr-user-info">
-                          <strong>{user.first_name} {user.last_name}</strong>
-                          <small>{user.email}</small>
-                          <div>
-                            Status: <span className={`adr-user-status-badge adr-user-status-${user.status}`}>
-                              {user.status}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`adr-status-badge ${getStatusClass(user)}`}>
-                          {getStatusText(user)}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="adr-progress-container">
-                          <span className="adr-progress-text">
-                            {user.deletion_count || 0} / 3
-                          </span>
-                          <div className="adr-progress-bar">
-                            <div 
-                              className={`adr-progress-fill ${
-                                user.limit_reached 
-                                  ? 'limit-reached' 
-                                  : user.deletion_count >= 2 
-                                  ? 'approaching' 
-                                  : 'normal'
-                              }`}
-                              style={{ width: `${Math.min(((user.deletion_count || 0) / 3) * 100, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  </>
-)}
-      {/* 🆕 UPDATED: Request Processing Modal with double-click prevention */}
+          </div>
+        </>
+      )}
+
+      {/* Request Processing Modal with double-click prevention */}
       {requestModal.isOpen && requestModal.request && (
         <div className="adr-modal-overlay" onClick={closeModal}>
           <div className="adr-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -571,6 +665,11 @@ export default function AdminDeletionRequests() {
                 <p><strong>User:</strong> {requestModal.request.first_name} {requestModal.request.last_name} ({requestModal.request.email})</p>
                 <p><strong>Request Date:</strong> {formatDate(requestModal.request.created_at)}</p>
                 <p><strong>Current Deletions:</strong> {requestModal.request.current_deletions || 0}/3</p>
+                <p><strong>Priority:</strong> 
+                  <span className={`adr-priority-badge ${getRequestPriorityClass(requestModal.request)}`}>
+                    {getRequestPriorityText(requestModal.request)}
+                  </span>
+                </p>
                 <div className="adr-reason-section">
                   <strong>Reason:</strong>
                   <div className="adr-reason-text">{requestModal.request.reason}</div>
