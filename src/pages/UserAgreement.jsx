@@ -119,11 +119,7 @@ export default function UserAgreement() {
                   <p>You must provide accurate and complete information during registration.</p>
                 </div>
               
-                <div className="term-card-fmwcp">
-                  <FontAwesomeIcon icon={faClock} className="term-card-icon-fmwcp" />
-                  <h4>Active Usage</h4>
-                  <p>Accounts must be used regularly. Inactive accounts may be subject to removal.</p>
-                </div>
+            
               </div>
             </section>
 

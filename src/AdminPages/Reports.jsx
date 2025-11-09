@@ -18,7 +18,8 @@ import {
   faTimes,
   faFlag,
   faCheckDouble,
-  faExternalLinkAlt
+  faExternalLinkAlt,
+  faList
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Reports.css';
 
@@ -29,6 +30,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('table');
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -62,7 +64,6 @@ export default function Reports() {
 
   // Highlight state
   const [highlightedReport, setHighlightedReport] = useState(null);
-  const highlightedRef = useRef(null);
 
   // Smart polling refs
   const pollingIntervalRef = useRef(null);
@@ -84,21 +85,21 @@ export default function Reports() {
     if (highlightReport) {
       const reportId = parseInt(highlightReport);
       setHighlightedReport(reportId);
+      
+      // Wait for reports to load, then check status
+      if (reports.length > 0) {
+        const report = reports.find(r => r.id === reportId);
+        
+        if (!report) {
+          showToast('This report has been deleted or does not exist', 'error');
+        }
+      }
+      
       // Remove from URL without page reload
       const newUrl = window.location.pathname + window.location.search.replace(`?highlightReport=${highlightReport}`, '').replace(`&highlightReport=${highlightReport}`, '');
       window.history.replaceState({}, '', newUrl);
     }
-  }, [location.search]);
-
-  // Scroll to highlighted report when it's available
-  useEffect(() => {
-    if (highlightedReport && highlightedRef.current) {
-      highlightedRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
-  }, [highlightedReport, reports]);
+  }, [location.search, reports]);
 
   // Smart polling setup 
   useEffect(() => {
@@ -294,10 +295,6 @@ export default function Reports() {
   // Modal Functions
   const openViewModal = (report) => {
     setViewModal({ isOpen: true, report });
-    // Clear highlight when viewing report details
-    if (highlightedReport === report.id) {
-      setHighlightedReport(null);
-    }
   };
 
   const openStatusChangeConfirmation = (report, newStatus) => {
@@ -366,11 +363,6 @@ export default function Reports() {
     }
   };
 
-  // Clear highlighted report
-  const clearHighlightedReport = () => {
-    setHighlightedReport(null);
-  };
-
   const filteredReports = reports.filter(report => {
     const matchesSearch = report.reason?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          report.additional_info?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -411,19 +403,180 @@ export default function Reports() {
 
   // Check if any filter is active
   const isFilterActive = () => {
-    return statusFilter !== 'all' || searchTerm !== '' || highlightedReport !== null;
+    return statusFilter !== 'all' || searchTerm !== '';
   };
 
   // Clear all filters
   const clearAllFilters = () => {
     setStatusFilter('all');
     setSearchTerm('');
-    setHighlightedReport(null);
   };
 
   // Check if report can be deleted (only dismissed or resolved)
   const canDeleteReport = (report) => {
     return report.status === 'dismissed' || report.status === 'resolved';
+  };
+
+  // Get available actions based on current status
+  const getAvailableActions = (report) => {
+    const actions = ['view']; // Always show view button
+    
+    switch (report.status) {
+      case 'pending':
+        actions.push('under_review', 'resolved', 'dismissed');
+        break;
+      case 'under_review':
+        actions.push('resolved', 'dismissed');
+        break;
+      case 'resolved':
+      case 'dismissed':
+        actions.push('pending'); // Only show reopen
+        break;
+    }
+    
+    // Only show delete button for resolved or dismissed
+    if (canDeleteReport(report)) {
+      actions.push('delete');
+    }
+    
+    return actions;
+  };
+
+  // Mobile Report Card Component
+  const MobileReportCard = ({ report }) => {
+    const availableActions = getAvailableActions(report);
+    
+    return (
+      <div 
+        className={`rm-mobile-card ${highlightedReport === report.id ? 'rm-highlighted' : ''}`}
+        data-report-id={report.id}
+      >
+        <div className="rm-mobile-header">
+          <div className="rm-mobile-title">
+            <h3>
+              {report.reason}
+              <FontAwesomeIcon 
+                icon={faExternalLinkAlt} 
+                className="rm-external-link-icon"
+                title="Click to view report details"
+              />
+            </h3>
+            <div className="rm-mobile-id">ID: #{report.id}</div>
+          </div>
+          <div className="rm-mobile-badges">
+            <span className={`rm-mobile-status ${getStatusClass(report.status)}`}>
+              <FontAwesomeIcon icon={getStatusIcon(report.status)} />
+              {report.status.replace('_', ' ')}
+            </span>
+          </div>
+        </div>
+        
+        <div className="rm-mobile-details">
+          <div className="rm-mobile-detail">
+            <FontAwesomeIcon icon={faUser} />
+            <span 
+              className="rm-clickable"
+              onClick={() => navigateToUser(report.reporter_id, report.reporter_name)}
+              title="Click to view user in Manage Users"
+            >
+              {report.reporter_name}
+            </span>
+          </div>
+          <div className="rm-mobile-detail">
+            <FontAwesomeIcon icon={faNewspaper} />
+            <span 
+              className="rm-clickable"
+              onClick={() => navigateToPost(report.post_id, report.post_title)}
+              title="Click to view post in Manage Posts"
+            >
+              {report.post_title}
+            </span>
+          </div>
+          <div className="rm-mobile-detail">
+            <FontAwesomeIcon icon={faCalendar} />
+            <span>{formatDate(report.created_at)}</span>
+          </div>
+          
+          {report.additional_info && (
+            <div className="rm-mobile-description">
+              <strong>Additional Info:</strong>
+              <p>{report.additional_info?.length > 150 
+                ? `${report.additional_info.substring(0, 150)}...`
+                : report.additional_info
+              }</p>
+            </div>
+          )}
+        </div>
+        
+        <div className="rm-mobile-actions">
+          {availableActions.includes('view') && (
+            <button
+              className="rm-action-btn view"
+              onClick={() => openViewModal(report)}
+              title="View details"
+              disabled={confirmationModal.isProcessing}
+            >
+              <FontAwesomeIcon icon={faEye} />
+            </button>
+          )}
+          
+          {availableActions.includes('under_review') && (
+            <button
+              className="rm-action-btn review"
+              onClick={() => openStatusChangeConfirmation(report, 'under_review')}
+              title="Mark as Under Review"
+              disabled={confirmationModal.isProcessing}
+            >
+              <FontAwesomeIcon icon={faExclamationTriangle} />
+            </button>
+          )}
+          
+          {availableActions.includes('resolved') && (
+            <button
+              className="rm-action-btn resolve"
+              onClick={() => openStatusChangeConfirmation(report, 'resolved')}
+              title="Mark as Resolved"
+              disabled={confirmationModal.isProcessing}
+            >
+              <FontAwesomeIcon icon={faCheckCircle} />
+            </button>
+          )}
+          
+          {availableActions.includes('dismissed') && (
+            <button
+              className="rm-action-btn dismiss"
+              onClick={() => openStatusChangeConfirmation(report, 'dismissed')}
+              title="Dismiss Report"
+              disabled={confirmationModal.isProcessing}
+            >
+              <FontAwesomeIcon icon={faTimesCircle} />
+            </button>
+          )}
+          
+          {availableActions.includes('pending') && (
+            <button
+              className="rm-action-btn pending"
+              onClick={() => openStatusChangeConfirmation(report, 'pending')}
+              title="Reopen Report"
+              disabled={confirmationModal.isProcessing}
+            >
+              <FontAwesomeIcon icon={faRefresh} />
+            </button>
+          )}
+
+          {availableActions.includes('delete') && (
+            <button
+              className="rm-action-btn delete"
+              onClick={() => openDeleteConfirmation(report)}
+              title="Delete Report"
+              disabled={confirmationModal.isProcessing}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -458,24 +611,6 @@ export default function Reports() {
         </div>
       </header>
 
-      {/* Highlighted Report Banner */}
-      {highlightedReport && (
-        <div className="rm-highlight-banner">
-          <div className="rm-highlight-content">
-            <FontAwesomeIcon icon={faFlag} />
-            <span>Highlighted Report: <strong>#{highlightedReport}</strong></span>
-            <button 
-              className="rm-highlight-clear"
-              onClick={clearHighlightedReport}
-              title="Clear highlight"
-            >
-              <FontAwesomeIcon icon={faTimes} />
-              Clear Highlight
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Stats Summary */}
       <section className="rm-stats">
         <div 
@@ -485,8 +620,8 @@ export default function Reports() {
           title="Show all reports"
         >
           <div className="rm-stat-info">
-            <h3>{stats.total}</h3>
-            <p>Total Reports</p>
+            <span className="rm-stat-number">{stats.total}</span>
+            <span className="rm-stat-label">Total Reports</span>
           </div>
         </div>
         <div 
@@ -496,8 +631,8 @@ export default function Reports() {
           title="Show pending reports"
         >
           <div className="rm-stat-info">
-            <h3>{stats.pending}</h3>
-            <p>Pending</p>
+            <span className="rm-stat-number">{stats.pending}</span>
+            <span className="rm-stat-label">Pending</span>
           </div>
         </div>
         <div 
@@ -507,8 +642,8 @@ export default function Reports() {
           title="Show reports under review"
         >
           <div className="rm-stat-info">
-            <h3>{stats.under_review}</h3>
-            <p>Under Review</p>
+            <span className="rm-stat-number">{stats.under_review}</span>
+            <span className="rm-stat-label">Under Review</span>
           </div>
         </div>
         <div 
@@ -518,8 +653,8 @@ export default function Reports() {
           title="Show resolved reports"
         >
           <div className="rm-stat-info">
-            <h3>{stats.resolved}</h3>
-            <p>Resolved</p>
+            <span className="rm-stat-number">{stats.resolved}</span>
+            <span className="rm-stat-label">Resolved</span>
           </div>
         </div>
         <div 
@@ -529,8 +664,8 @@ export default function Reports() {
           title="Show dismissed reports"
         >
           <div className="rm-stat-info">
-            <h3>{stats.dismissed}</h3>
-            <p>Dismissed</p>
+            <span className="rm-stat-number">{stats.dismissed}</span>
+            <span className="rm-stat-label">Dismissed</span>
           </div>
         </div>
       </section>
@@ -563,6 +698,18 @@ export default function Reports() {
           </select>
         </div>
 
+        {/* View Toggle */}
+        <div className="rm-filter-group">
+          <FontAwesomeIcon icon={faList} />
+          <select 
+            value={viewMode}
+            onChange={(e) => setViewMode(e.target.value)}
+          >
+            <option value="table">Table View</option>
+            <option value="card">Card View</option>
+          </select>
+        </div>
+
         {/* Clear Filters Button */}
         {isFilterActive() && (
           <button 
@@ -575,30 +722,6 @@ export default function Reports() {
           </button>
         )}
       </section>
-
-      {/* Active Filters Display */}
-      {isFilterActive() && (
-        <div className="rm-active-filters-section">
-          <span className="rm-active-filters-label">Active filters:</span>
-          <div className="rm-filter-tags">
-            {statusFilter !== 'all' && (
-              <span className="rm-filter-tag">
-                Status: {statusFilter.replace('_', ' ')}
-              </span>
-            )}
-            {searchTerm && (
-              <span className="rm-filter-tag">
-                Search: "{searchTerm}"
-              </span>
-            )}
-            {highlightedReport && (
-              <span className="rm-filter-tag">
-                Highlighted: #{highlightedReport}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Reports Table */}
       <section className="rm-table-container">
@@ -639,95 +762,99 @@ export default function Reports() {
               )}
             </div>
           ) : (
-            <div className="rm-table-wrapper">
-              <table className="rm-table">
-                <thead>
-                  <tr>
-                    <th>Report Details</th>
-                    <th>Reporter</th>
-                    <th>Reported Post</th>
-                    <th>Date Reported</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredReports.map(report => {
-                    const isHighlighted = highlightedReport === report.id;
-                    
-                    return (
-                      <tr 
-                        key={report.id} 
-                        ref={isHighlighted ? highlightedRef : null}
-                        className={isHighlighted ? 'rm-highlighted-row' : ''}
-                      >
-                        <td>
-                          <div className="rm-details">
-                            <strong className="rm-reason">{report.reason}</strong>
-                            {report.additional_info && (
-                              <small className="rm-additional">
-                                {report.additional_info}
-                              </small>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <div 
-                            className="rm-user-info rm-clickable"
-                            onClick={() => navigateToUser(report.reporter_id, report.reporter_name)}
-                            title="Click to view user in Manage Users"
-                          >
-                            <FontAwesomeIcon icon={faUser} />
-                            <div>
-                              <span>{report.reporter_name}</span>
-                              <FontAwesomeIcon 
-                                icon={faExternalLinkAlt} 
-                                className="rm-external-link-icon"
-                              />
+            <>
+              {/* Desktop Table View */}
+              <div className="rm-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
+                <table className="rm-table">
+                  <thead>
+                    <tr>
+                      <th>Report Details</th>
+                      <th>Reporter</th>
+                      <th>Reported Post</th>
+                      <th>Date Reported</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredReports.map(report => {
+                      const availableActions = getAvailableActions(report);
+                      const isHighlighted = highlightedReport === report.id;
+                      
+                      return (
+                        <tr 
+                          key={report.id} 
+                          className={isHighlighted ? 'rm-highlighted-row' : ''}
+                          data-report-id={report.id}
+                        >
+                          <td>
+                            <div className="rm-details">
+                              <strong className="rm-reason">{report.reason}</strong>
+                              {report.additional_info && (
+                                <small className="rm-additional">
+                                  {report.additional_info}
+                                </small>
+                              )}
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div 
-                            className="rm-post-info rm-clickable"
-                            onClick={() => navigateToPost(report.post_id, report.post_title)}
-                            title="Click to view post in Manage Posts"
-                          >
-                            <FontAwesomeIcon icon={faNewspaper} />
-                            <div>
-                              <span className="rm-post-title">{report.post_title}</span>
-                              <FontAwesomeIcon 
-                                icon={faExternalLinkAlt} 
-                                className="rm-external-link-icon"
-                              />
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="rm-date-info">
-                            <FontAwesomeIcon icon={faCalendar} />
-                            <span>{formatDate(report.created_at)}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`rm-status-badge ${getStatusClass(report.status)}`}>
-                            <FontAwesomeIcon icon={getStatusIcon(report.status)} />
-                            {report.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="rm-actions">
-                            <button
-                              className="rm-action-btn view"
-                              onClick={() => openViewModal(report)}
-                              title="View Report Details"
-                              disabled={confirmationModal.isProcessing}
+                          </td>
+                          <td>
+                            <div 
+                              className="rm-user-info rm-clickable"
+                              onClick={() => navigateToUser(report.reporter_id, report.reporter_name)}
+                              title="Click to view user in Manage Users"
                             >
-                              <FontAwesomeIcon icon={faEye} />
-                            </button>
-                            
-                            {report.status === 'pending' && (
-                              <>
+                              <FontAwesomeIcon icon={faUser} />
+                              <div>
+                                <span>{report.reporter_name}</span>
+                                <FontAwesomeIcon 
+                                  icon={faExternalLinkAlt} 
+                                  className="rm-external-link-icon"
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div 
+                              className="rm-post-info rm-clickable"
+                              onClick={() => navigateToPost(report.post_id, report.post_title)}
+                              title="Click to view post in Manage Posts"
+                            >
+                              <FontAwesomeIcon icon={faNewspaper} />
+                              <div>
+                                <span className="rm-post-title">{report.post_title}</span>
+                                <FontAwesomeIcon 
+                                  icon={faExternalLinkAlt} 
+                                  className="rm-external-link-icon"
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="rm-date-info">
+                              <FontAwesomeIcon icon={faCalendar} />
+                              <span>{formatDate(report.created_at)}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`rm-status-badge ${getStatusClass(report.status)}`}>
+                              <FontAwesomeIcon icon={getStatusIcon(report.status)} />
+                              {report.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="rm-actions">
+                              {availableActions.includes('view') && (
+                                <button
+                                  className="rm-action-btn view"
+                                  onClick={() => openViewModal(report)}
+                                  title="View Report Details"
+                                  disabled={confirmationModal.isProcessing}
+                                >
+                                  <FontAwesomeIcon icon={faEye} />
+                                </button>
+                              )}
+                              
+                              {availableActions.includes('under_review') && (
                                 <button
                                   className="rm-action-btn review"
                                   onClick={() => openStatusChangeConfirmation(report, 'under_review')}
@@ -736,6 +863,9 @@ export default function Reports() {
                                 >
                                   <FontAwesomeIcon icon={faExclamationTriangle} />
                                 </button>
+                              )}
+                              
+                              {availableActions.includes('resolved') && (
                                 <button
                                   className="rm-action-btn resolve"
                                   onClick={() => openStatusChangeConfirmation(report, 'resolved')}
@@ -744,6 +874,9 @@ export default function Reports() {
                                 >
                                   <FontAwesomeIcon icon={faCheckCircle} />
                                 </button>
+                              )}
+                              
+                              {availableActions.includes('dismissed') && (
                                 <button
                                   className="rm-action-btn dismiss"
                                   onClick={() => openStatusChangeConfirmation(report, 'dismissed')}
@@ -752,60 +885,45 @@ export default function Reports() {
                                 >
                                   <FontAwesomeIcon icon={faTimesCircle} />
                                 </button>
-                              </>
-                            )}
-                            
-                            {report.status === 'under_review' && (
-                              <>
+                              )}
+                              
+                              {availableActions.includes('pending') && (
                                 <button
-                                  className="rm-action-btn resolve"
-                                  onClick={() => openStatusChangeConfirmation(report, 'resolved')}
-                                  title="Mark as Resolved"
+                                  className="rm-action-btn pending"
+                                  onClick={() => openStatusChangeConfirmation(report, 'pending')}
+                                  title="Reopen Report"
                                   disabled={confirmationModal.isProcessing}
                                 >
-                                  <FontAwesomeIcon icon={faCheckCircle} />
+                                  <FontAwesomeIcon icon={faRefresh} />
                                 </button>
-                                <button
-                                  className="rm-action-btn dismiss"
-                                  onClick={() => openStatusChangeConfirmation(report, 'dismissed')}
-                                  title="Dismiss Report"
-                                  disabled={confirmationModal.isProcessing}
-                                >
-                                  <FontAwesomeIcon icon={faTimesCircle} />
-                                </button>
-                              </>
-                            )}
-                            
-                            {(report.status === 'resolved' || report.status === 'dismissed') && (
-                              <button
-                                className="rm-action-btn pending"
-                                onClick={() => openStatusChangeConfirmation(report, 'pending')}
-                                title="Reopen Report"
-                                disabled={confirmationModal.isProcessing}
-                              >
-                                <FontAwesomeIcon icon={faRefresh} />
-                              </button>
-                            )}
+                              )}
 
-                            {/* DELETE BUTTON - Only show for dismissed or resolved reports */}
-                            {canDeleteReport(report) && (
-                              <button
-                                className="rm-action-btn delete"
-                                onClick={() => openDeleteConfirmation(report)}
-                                title="Delete Report"
-                                disabled={confirmationModal.isProcessing}
-                              >
-                                <FontAwesomeIcon icon={faTrash} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                              {availableActions.includes('delete') && (
+                                <button
+                                  className="rm-action-btn delete"
+                                  onClick={() => openDeleteConfirmation(report)}
+                                  title="Delete Report"
+                                  disabled={confirmationModal.isProcessing}
+                                >
+                                  <FontAwesomeIcon icon={faTrash} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="rm-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
+                {filteredReports.map(report => (
+                  <MobileReportCard key={report.id} report={report} />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </section>
@@ -905,11 +1023,89 @@ export default function Reports() {
                     <span>{viewModal.report.post_author_name || 'Unknown Author'}</span>
                   </div>
                 </div>
+
+                {/* Action Buttons in Modal */}
+                <div className="rm-detail-section">
+                  <h3>Quick Actions</h3>
+                  <div className="rm-modal-actions">
+                    {viewModal.report.status === 'pending' && (
+                      <>
+                        <button
+                          className="rm-btn rm-btn-primary"
+                          onClick={() => openStatusChangeConfirmation(viewModal.report, 'under_review')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faExclamationTriangle} />
+                          Mark as Under Review
+                        </button>
+                        <button
+                          className="rm-btn rm-btn-success"
+                          onClick={() => openStatusChangeConfirmation(viewModal.report, 'resolved')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faCheckCircle} />
+                          Mark as Resolved
+                        </button>
+                        <button
+                          className="rm-btn rm-btn-warning"
+                          onClick={() => openStatusChangeConfirmation(viewModal.report, 'dismissed')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faTimesCircle} />
+                          Dismiss Report
+                        </button>
+                      </>
+                    )}
+                    
+                    {viewModal.report.status === 'under_review' && (
+                      <>
+                        <button
+                          className="rm-btn rm-btn-success"
+                          onClick={() => openStatusChangeConfirmation(viewModal.report, 'resolved')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faCheckCircle} />
+                          Mark as Resolved
+                        </button>
+                        <button
+                          className="rm-btn rm-btn-warning"
+                          onClick={() => openStatusChangeConfirmation(viewModal.report, 'dismissed')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faTimesCircle} />
+                          Dismiss Report
+                        </button>
+                      </>
+                    )}
+                    
+                    {(viewModal.report.status === 'resolved' || viewModal.report.status === 'dismissed') && (
+                      <button
+                        className="rm-btn rm-btn-primary"
+                        onClick={() => openStatusChangeConfirmation(viewModal.report, 'pending')}
+                        disabled={confirmationModal.isProcessing}
+                      >
+                        <FontAwesomeIcon icon={faRefresh} />
+                        Reopen Report
+                      </button>
+                    )}
+
+                    {canDeleteReport(viewModal.report) && (
+                      <button
+                        className="rm-btn rm-btn-danger"
+                        onClick={() => openDeleteConfirmation(viewModal.report)}
+                        disabled={confirmationModal.isProcessing}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                        Delete Report
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             <div className="rm-modal-footer">
               <button 
-                className="rm-btn rm-btn-primary"
+                className="rm-btn rm-btn-secondary"
                 onClick={closeViewModal}
               >
                 Close
