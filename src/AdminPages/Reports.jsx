@@ -14,10 +14,6 @@ import {
   faNewspaper,
   faCalendar,
   faTrash,
-  faWarning,
-  faTimes,
-  faFlag,
-  faCheckDouble,
   faExternalLinkAlt,
   faList
 } from '@fortawesome/free-solid-svg-icons';

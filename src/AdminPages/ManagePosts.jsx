@@ -1456,5 +1456,5 @@ export default function ManagePosts() {
         </div>
       )} 
     </>
-  );
+  ); 
 }

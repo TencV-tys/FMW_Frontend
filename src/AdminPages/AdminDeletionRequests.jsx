@@ -9,7 +9,11 @@ import {
   faClock,
   faCheck,
   faTimes,
-  faFire
+  faFire,
+  faList,
+  faThLarge,
+  faEye,
+  faUser
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/AdminDeletionRequests.css';
 
@@ -28,6 +32,10 @@ export default function AdminDeletionRequests() {
     adminNotes: ''
   });
 
+  // 🆕 ADDED: View mode and highlight state
+  const [viewMode, setViewMode] = useState('table');
+  const [highlightedRequest, setHighlightedRequest] = useState(null);
+
   // Filter for pending requests - Updated to 3 only and 4+
   const [requestFilter, setRequestFilter] = useState('all');
 
@@ -45,6 +53,8 @@ export default function AdminDeletionRequests() {
 
   // Auto-reload reference
   const autoReloadRef = useRef(null);
+  // 🆕 ADDED: Ref for table container to enable scrolling
+  const tableContainerRef = useRef(null);
 
   // Show toast notification
   const showToast = (message, type = 'success') => {
@@ -63,6 +73,21 @@ export default function AdminDeletionRequests() {
   const isRequestFilterActive = () => {
     return requestFilter !== 'all';
   };
+
+  // 🆕 ADDED: Check for highlighted requests in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightRequest = urlParams.get('highlightRequest');
+    
+    if (highlightRequest) {
+      const requestId = parseInt(highlightRequest);
+      setHighlightedRequest(requestId);
+      
+      // Clear the URL parameter after reading it
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   // Smart polling - auto reload every 1 minute
   useEffect(() => {
@@ -169,6 +194,11 @@ export default function AdminDeletionRequests() {
           prevRequests.filter(request => request.id !== requestId)
         );
         
+        // Clear highlight if the highlighted request was processed
+        if (highlightedRequest === requestId) {
+          setHighlightedRequest(null);
+        }
+        
         // Refresh user stats to get updated deletion counts
         fetchUsersDeletionStats();
         
@@ -204,20 +234,22 @@ export default function AdminDeletionRequests() {
   };
 
   // Filter pending requests based on deletion count - Updated to 3 only and 4+
-  const filteredPendingRequests = deletionRequests.filter(request => {
-    if (request.status !== 'pending') return false;
+  const getFilteredPendingRequests = () => {
+    const pendingRequests = deletionRequests.filter(request => request.status === 'pending');
     
-    const currentDeletions = request.current_deletions || 0;
-    
-    switch (requestFilter) {
-      case 'exactly_3':
-        return currentDeletions === 3;
-      case 'four_plus':
-        return currentDeletions >= 4;
-      default:
-        return true; // 'all'
-    }
-  });
+    return pendingRequests.filter(request => {
+      const currentDeletions = request.current_deletions || 0;
+      
+      switch (requestFilter) {
+        case 'exactly_3':
+          return currentDeletions === 3;
+        case 'four_plus':
+          return currentDeletions >= 4;
+        default:
+          return true; // 'all'
+      }
+    });
+  };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -246,8 +278,7 @@ export default function AdminDeletionRequests() {
     approachingLimit: users.filter(u => u.deletion_count >= 2 && !u.limit_reached).length,
     totalDeletions: users.reduce((sum, user) => sum + (user.deletion_count || 0), 0),
     pendingRequests: pendingRequests.length,
-    filteredUsers: filteredUsers.length,
-    filteredPendingRequests: filteredPendingRequests.length
+    filteredUsers: filteredUsers.length
   };
 
   const clearFilters = () => {
@@ -277,7 +308,7 @@ export default function AdminDeletionRequests() {
     const deletions = request.current_deletions || 0;
     if (deletions >= 4) return 'adr-priority-critical';
     if (deletions === 3) return 'adr-priority-high';
-    return 'adr-priority-normal';
+    return 'adr-priority-medium';
   };
 
   // Get request priority text - Updated to 3 only and 4+
@@ -285,7 +316,7 @@ export default function AdminDeletionRequests() {
     const deletions = request.current_deletions || 0;
     if (deletions >= 4) return 'Critical (4+ deletions)';
     if (deletions === 3) return 'High (Exactly 3)';
-    return 'Normal';
+    return 'Medium';
   };
 
   const formatDate = (dateString) => {
@@ -297,6 +328,110 @@ export default function AdminDeletionRequests() {
       minute: '2-digit'
     });
   };
+
+  // 🆕 ADDED: Auto-scroll to highlighted request when data loads
+  useEffect(() => {
+    const filteredPendingRequests = getFilteredPendingRequests();
+    if (highlightedRequest && filteredPendingRequests.length > 0 && tableContainerRef.current) {
+      // Wait for DOM to update
+      setTimeout(() => {
+        const highlightedElement = document.querySelector(`[data-request-id="${highlightedRequest}"]`);
+        if (highlightedElement) {
+          // Scroll the table container to the highlighted element
+          highlightedElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+        }
+      }, 300);
+    }
+  }, [deletionRequests, highlightedRequest, viewMode, requestFilter]);
+
+  // 🆕 ADDED: Handle request highlighting when requests are loaded
+  useEffect(() => {
+    if (highlightedRequest && deletionRequests.length > 0) {
+      const request = deletionRequests.find(r => r.id === highlightedRequest);
+      
+      if (!request) {
+        showToast('This deletion request has been processed or does not exist', 'error');
+        setHighlightedRequest(null);
+      } else if (request.status !== 'pending') {
+        showToast('This deletion request has already been processed', 'warning');
+      }
+    }
+  }, [deletionRequests, highlightedRequest]);
+
+  // 🆕 ADDED: Mobile Request Card Component
+  const MobileRequestCard = ({ request }) => (
+    <div 
+      className={`adr-mobile-card ${highlightedRequest === request.id ? 'adr-request-highlighted' : ''}`}
+      data-request-id={request.id}
+    >
+      <div className="adr-mobile-header">
+        <div className="adr-mobile-title">
+          <h3>
+            {request.first_name} {request.last_name}
+            {highlightedRequest === request.id && (
+              <span className="adr-highlight-badge">🔍 Highlighted</span>
+            )}
+          </h3>
+          <div className="adr-mobile-email">{request.email}</div>
+        </div>
+        <div className="adr-mobile-badges">
+          <span className={`adr-mobile-priority ${getRequestPriorityClass(request)}`}>
+            <FontAwesomeIcon icon={getRequestPriorityClass(request) === 'adr-priority-critical' ? faFire : faExclamationTriangle} />
+            {getRequestPriorityText(request)}
+          </span>
+        </div>
+      </div>
+      
+      <div className="adr-mobile-details">
+        <div className="adr-mobile-detail">
+          <span className="adr-detail-label">Current Deletions</span>
+          <span className="adr-detail-value">{request.current_deletions || 0}/3</span>
+        </div>
+        <div className="adr-mobile-detail">
+          <span className="adr-detail-label">Request Date</span>
+          <span className="adr-detail-value">{formatDate(request.created_at)}</span>
+        </div>
+        {request.post_title && (
+          <div className="adr-mobile-detail">
+            <span className="adr-detail-label">Related Post</span>
+            <span className="adr-detail-value">{request.post_title}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="adr-mobile-reason">
+        <strong>Reason:</strong>
+        <p>{request.reason}</p>
+      </div>
+      
+      <div className="adr-mobile-actions">
+        <button
+          className="adr-mobile-btn adr-mobile-approve"
+          onClick={() => openRequestModal(request, 'approve')}
+          title="Approve this deletion request"
+        >
+          <FontAwesomeIcon icon={faCheck} />
+          Approve
+        </button>
+        <button
+          className="adr-mobile-btn adr-mobile-reject"
+          onClick={() => openRequestModal(request, 'reject')}
+          title="Reject this deletion request"
+        >
+          <FontAwesomeIcon icon={faTimes} />
+          Reject
+        </button>
+      </div>
+    </div>
+  );
+
+  // Get filtered pending requests for rendering
+  const filteredPendingRequests = getFilteredPendingRequests();
+  stats.filteredPendingRequests = filteredPendingRequests.length;
 
   return (
     <>
@@ -402,6 +537,18 @@ export default function AdminDeletionRequests() {
               </select>
             </div>
 
+            {/* 🆕 ADDED: View Mode Toggle */}
+            <div className="adr-filter-group">
+              <FontAwesomeIcon icon={faList} />
+              <select 
+                value={viewMode}
+                onChange={(e) => setViewMode(e.target.value)}
+              >
+                <option value="table">Table View</option>
+                <option value="card">Card View</option>
+              </select>
+            </div>
+
             {isRequestFilterActive() && (
               <button className="adr-clear-filters-btn" onClick={clearRequestFilters}>
                 Clear Filters
@@ -418,6 +565,7 @@ export default function AdminDeletionRequests() {
                     <span className="adr-users-count">
                       {filteredPendingRequests.length} of {stats.pendingRequests} request{filteredPendingRequests.length !== 1 ? 's' : ''}
                       {isRequestFilterActive() && ' (Filtered)'}
+                      {highlightedRequest && ` • Highlighted: #${highlightedRequest}`}
                     </span>
                   </div>
                 </div>
@@ -440,76 +588,102 @@ export default function AdminDeletionRequests() {
                     )}
                   </div>
                 ) : (
-                  <div className="adr-table-wrapper">
-                    <table className='adr-users-table'>
-                      <thead>
-                        <tr>
-                          <th>User Information</th>
-                          <th>Request Details</th>
-                          <th>Priority Level</th>
-                          <th>Date Requested</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredPendingRequests.map(request => (
-                          <tr key={request.id}>
-                            <td>
-                              <div className="adr-user-info">
-                                <strong>{request.first_name} {request.last_name}</strong>
-                                <small>{request.email}</small>
-                                <div>
-                                  Current Deletions: {request.current_deletions || 0}/3
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="adr-request-details">
-                                <strong>Reason:</strong>
-                                <p className="adr-request-reason">{request.reason}</p>
-                                {request.post_title && (
-                                  <div className="adr-post-info">
-                                    <strong>Related Post:</strong> {request.post_title}
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                            <td>
-                              <span className={`adr-priority-badge ${getRequestPriorityClass(request)}`}>
-                                <FontAwesomeIcon 
-                                  icon={getRequestPriorityClass(request) === 'adr-priority-critical' ? faFire : faExclamationTriangle} 
-                                />
-                                {getRequestPriorityText(request)}
-                              </span>
-                            </td>
-                            <td>
-                              {formatDate(request.created_at)}
-                            </td>
-                            <td>
-                              <div className="adr-table-actions">
-                                <button
-                                  className="adr-action-btn approve"
-                                  onClick={() => openRequestModal(request, 'approve')}
-                                  title="Approve this deletion request"
-                                >
-                                  <FontAwesomeIcon icon={faCheck} />
-                                  Approve
-                                </button>
-                                <button
-                                  className="adr-action-btn reject"
-                                  onClick={() => openRequestModal(request, 'reject')}
-                                  title="Reject this deletion request"
-                                >
-                                  <FontAwesomeIcon icon={faTimes} />
-                                  Reject
-                                </button>
-                              </div>
-                            </td>
+                  <>
+                    {/* 🆕 ADDED: Desktop Table View */}
+                    <div 
+                      className="adr-table-wrapper" 
+                      ref={tableContainerRef}
+                      style={{ display: viewMode === 'table' ? 'block' : 'none' }}
+                    >
+                      <table className='adr-users-table'>
+                        <thead>
+                          <tr>
+                            <th>User Information</th>
+                            <th>Request Details</th>
+                            <th>Priority Level</th>
+                            <th>Date Requested</th>
+                            <th>Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {filteredPendingRequests.map(request => (
+                            <tr 
+                              key={request.id} 
+                              data-request-id={request.id}
+                              className={highlightedRequest === request.id ? 'adr-request-highlighted' : ''}
+                            >
+                              <td>
+                                <div className="adr-user-info">
+                                  <strong>
+                                    {request.first_name} {request.last_name}
+                                    {highlightedRequest === request.id && (
+                                      <span className="adr-highlight-indicator"> 🔍</span>
+                                    )}
+                                  </strong>
+                                  <small>{request.email}</small>
+                                  <div>
+                                    Current Deletions: {request.current_deletions || 0}/3
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <div className="adr-request-details">
+                                  <strong>Reason:</strong>
+                                  <p className="adr-request-reason">{request.reason}</p>
+                                  {request.post_title && (
+                                    <div className="adr-post-info">
+                                      <strong>Related Post:</strong> {request.post_title}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td>
+                                <span className={`adr-priority-badge ${getRequestPriorityClass(request)}`}>
+                                  <FontAwesomeIcon 
+                                    icon={getRequestPriorityClass(request) === 'adr-priority-critical' ? faFire : faExclamationTriangle} 
+                                  />
+                                  {getRequestPriorityText(request)}
+                                </span>
+                              </td>
+                              <td>
+                                {formatDate(request.created_at)}
+                              </td>
+                              <td>
+                                <div className="adr-table-actions">
+                                  <button
+                                    className="adr-action-btn approve"
+                                    onClick={() => openRequestModal(request, 'approve')}
+                                    title="Approve this deletion request"
+                                  >
+                                    <FontAwesomeIcon icon={faCheck} />
+                                    Approve
+                                  </button>
+                                  <button
+                                    className="adr-action-btn reject"
+                                    onClick={() => openRequestModal(request, 'reject')}
+                                    title="Reject this deletion request"
+                                  >
+                                    <FontAwesomeIcon icon={faTimes} />
+                                    Reject
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* 🆕 ADDED: Mobile Card View */}
+                    <div 
+                      className="adr-mobile-cards" 
+                      style={{ display: viewMode === 'card' ? 'flex' : 'none' }}
+                    >
+                      {filteredPendingRequests.map(request => (
+                        <MobileRequestCard key={request.id} request={request} />
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             </div>

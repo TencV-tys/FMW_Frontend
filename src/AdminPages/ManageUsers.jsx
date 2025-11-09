@@ -101,7 +101,7 @@ export default function ManageUsers() {
           element.style.animation = 'pulse-highlight 2s ease-in-out';
         }
       }, 1000);
-    }
+    } 
   }, []);
 
   // 🆕 ADDED: Save to localStorage whenever warnedUsers changes
