@@ -288,7 +288,7 @@ export default function Login() {
             type="submit"
             className={`login-auth-submit-btn ${isLoading ? 'login-auth-loading' : ''}`}
             disabled={isLoading}
-          >
+          > 
             {isLoading ? (
               <>
                 <FontAwesomeIcon icon={faSpinner} className="login-auth-spinner" spin />

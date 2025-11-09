@@ -22,6 +22,9 @@ export default function NavAuth({ disabled }) {
   const location = useLocation();
   const dropdownRef = useRef(null);
 
+  // Check if current page is login or registration
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/registration';
+
   // Prevent body scroll when menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -234,17 +237,19 @@ export default function NavAuth({ disabled }) {
             </Link>
           </div>
 
-          {/* AUTH BUTTONS (SEPARATE - NOT IN DROPDOWN) */}
-          <div className={`auth-buttons-fmw ${disabled}`}>
-            <Link to="/registration" className='auth-button-fmw signup-btn-fmw' onClick={closeMobileMenu}>
-              <span>Sign Up</span>
-              <FontAwesomeIcon icon={faSignIn} />
-            </Link>
-            <Link to="/login" className='auth-button-fmw login-btn-fmw' onClick={closeMobileMenu}>
-              <span>Login</span>
-              <FontAwesomeIcon icon={faDoorOpen} />
-            </Link>
-          </div>
+          {/* AUTH BUTTONS - HIDE ON LOGIN/REGISTRATION PAGES */}
+          {!isAuthPage && (
+            <div className={`auth-buttons-fmw ${disabled}`}>
+              <Link to="/registration" className='auth-button-fmw signup-btn-fmw' onClick={closeMobileMenu}>
+                <span>Sign Up</span>
+                <FontAwesomeIcon icon={faSignIn} />
+              </Link>
+              <Link to="/login" className='auth-button-fmw login-btn-fmw' onClick={closeMobileMenu}>
+                <span>Login</span>
+                <FontAwesomeIcon icon={faDoorOpen} />
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu Overlay */}
