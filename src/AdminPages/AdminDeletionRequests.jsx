@@ -296,7 +296,7 @@ export default function AdminDeletionRequests() {
         </button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards */} 
       <div className="adr-stats">
         <div 
           className={`adr-stat-card ${filterLimit === 'all' && activeTab === 'users' ? 'active' : ''}`}

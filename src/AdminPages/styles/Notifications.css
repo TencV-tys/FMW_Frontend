@@ -1,4 +1,4 @@
-/* styles/AdminNotifications.css - IMPROVED READABILITY */
+/* styles/AdminNotifications.css - DARK BROWN GRADIENT THEME */
 .admin-notif-page {
   padding: 2rem;
   max-width: 1200px;
@@ -7,6 +7,7 @@
   min-height: 100vh;
 } 
 
+/* Header - DARK BROWN GRADIENT */
 .admin-notif-header {
   display: flex;
   justify-content: space-between;
@@ -14,24 +15,26 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
-  background: white;
+  background: linear-gradient(135deg, #8B5A2B, #654321);
+  color: white;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .admin-notif-header-content h1 {
-  color: #FF8904;
+  color: white;
   margin: 0 0 0.5rem 0;
   font-size: 1.75rem;
   font-weight: 700;
 }
 
 .admin-notif-header-content p {
-  color: #666;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.4;
+  font-weight: 500;
 }
 
 .admin-notif-header-actions {
@@ -54,51 +57,56 @@
   transition: all 0.3s ease;
   font-size: 0.9rem;
   white-space: nowrap;
+  border: 1px solid;
 }
 
 .admin-notif-refresh-btn {
-  background: #3b82f6;
+  background: #8B5A2B;
   color: white;
+  border-color: #654321;
 }
 
 .admin-notif-refresh-btn:hover:not(:disabled) {
-  background: #2563eb;
+  background: #654321;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
 }
 
 .admin-notif-btn-mark-all-read {
-  background: #FF8904;
+  background: #8B5A2B;
   color: white;
+  border-color: #654321;
 }
 
 .admin-notif-btn-mark-all-read:hover:not(:disabled) {
-  background: #e67a00;
+  background: #654321;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 137, 4, 0.3);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
 }
 
 .admin-notif-btn-clear-all {
-  background: #ef4444;
+  background: #dc3545;
   color: white;
+  border-color: #c82333;
 }
 
 .admin-notif-btn-clear-all:hover:not(:disabled) {
-  background: #dc2626;
+  background: #c82333;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 .admin-notif-btn-mark-all-read:disabled,
 .admin-notif-btn-clear-all:disabled,
 .admin-notif-refresh-btn:disabled {
   background: #d1d5db;
+  border-color: #9ca3af;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-/* Stats Cards - IMPROVED READABILITY */
+/* Stats Cards - DARK BROWN THEME */
 .admin-notif-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -112,7 +120,7 @@
   border-radius: 12px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-left: 4px solid #FF8904;
+  border-left: 4px solid #8B5A2B;
   transition: all 0.3s ease;
   cursor: pointer;
   border: 1px solid #e5e7eb;
@@ -124,18 +132,18 @@
 }
 
 .admin-notif-stat-card.admin-notif-active {
-  border-left: 4px solid #FF6B00;
+  border-left: 4px solid #654321;
   background: linear-gradient(135deg, #fff9e6 0%, #fff5e6 100%);
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(255, 137, 4, 0.2);
-  border: 1px solid #FF8904;
+  box-shadow: 0 8px 20px rgba(139, 90, 43, 0.2);
+  border: 1px solid #8B5A2B;
 }
 
 .admin-notif-stat-info h3 {
   margin: 0;
   font-size: 2rem;
   font-weight: 800;
-  color: #FF8904;
+  color: #8B5A2B;
   line-height: 1.2;
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -149,7 +157,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Filters Section - IMPROVED READABILITY */
+/* Filters Section - DARK BROWN THEME */
 .admin-notif-filters {
   display: flex;
   gap: 1rem;
@@ -175,7 +183,7 @@
 }
 
 .admin-notif-filter-group svg {
-  color: #FF8904;
+  color: #8B5A2B;
   font-size: 1rem;
 }
 
@@ -190,10 +198,10 @@
   width: 100%;
 }
 
-/* Clear Filters Button */
+/* Clear Filters Button - DARK BROWN */
 .admin-notif-clear-filters-btn {
   padding: 0.75rem 1.5rem;
-  background: #FF8904;
+  background: #8B5A2B;
   color: white;
   border: none;
   border-radius: 8px;
@@ -202,12 +210,13 @@
   transition: all 0.2s ease;
   white-space: nowrap;
   font-size: 0.9rem;
+  border: 1px solid #654321;
 }
 
 .admin-notif-clear-filters-btn:hover {
-  background: #FF8904;
+  background: #654321;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
 }
 
 /* Active Filters Section */
@@ -225,7 +234,7 @@
 
 .admin-notif-active-filters-label {
   font-weight: 700;
-  color: #FF8904;
+  color: #8B5A2B;
   font-size: 0.95rem;
 }
 
@@ -236,17 +245,17 @@
 }
 
 .admin-notif-filter-tag {
-  background: linear-gradient(135deg, #FF8904, #FF6B00);
+  background: linear-gradient(135deg, #8B5A2B, #654321);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
   border: none;
-  box-shadow: 0 2px 8px rgba(255, 137, 4, 0.3);
+  box-shadow: 0 2px 8px rgba(139, 90, 43, 0.3);
 }
 
-/* Notifications List - IMPROVED READABILITY */
+/* Notifications List */
 .admin-notif-list {
   background: white;
   border-radius: 12px;
@@ -271,7 +280,7 @@
   font-weight: 600;
 }
 
-/* Notification Items - IMPROVED READABILITY */
+/* Notification Items */
 .admin-notif-item {
   display: flex;
   align-items: flex-start;
@@ -288,7 +297,7 @@
 
 .admin-notif-item.admin-notif-unread {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid #8B5A2B;
 }
 
 .admin-notif-item.admin-notif-read {
@@ -308,12 +317,12 @@
 
 .admin-notif-item.admin-notif-clickable:hover {
   background: #e3f2fd;
-  border-left-color: #1976d2;
+  border-left-color: #8B5A2B;
   transform: translateX(8px);
 }
 
 .admin-notif-item.admin-notif-clickable .admin-notif-content h4 {
-  color: #1976d2;
+  color: #8B5A2B;
 }
 
 .admin-notif-external-link-icon {
@@ -325,7 +334,7 @@
 }
 
 .admin-notif-item.admin-notif-clickable:hover .admin-notif-external-link-icon {
-  color: #1976d2;
+  color: #8B5A2B;
   opacity: 1;
   transform: translateX(2px);
 }
@@ -347,13 +356,13 @@
 
 .admin-notif-item:hover .admin-notif-icon {
   transform: scale(1.1);
-  border-color: #FF8904;
+  border-color: #8B5A2B;
 }
 
-/* Notification Content - IMPROVED READABILITY */
+/* Notification Content */
 .admin-notif-content {
   flex: 1;
-  min-width: 0; /* Prevent overflow */
+  min-width: 0;
 }
 
 .admin-notif-content h4 {
@@ -422,11 +431,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid;
 }
 
 .admin-notif-btn-mark-read {
   color: #10b981;
-  border: 1px solid #10b981;
+  border-color: #10b981;
 }
 
 .admin-notif-btn-mark-read:hover {
@@ -437,7 +447,7 @@
 
 .admin-notif-btn-delete {
   color: #ef4444;
-  border: 1px solid #ef4444;
+  border-color: #ef4444;
 }
 
 .admin-notif-btn-delete:hover {
@@ -535,6 +545,7 @@
   margin-top: 1.5rem;
   transition: all 0.3s ease;
   font-size: 1rem;
+  border: 1px solid #654321;
 }
 
 .admin-notif-retry-btn:hover {
@@ -554,16 +565,16 @@
 }
 
 .admin-notif-link:hover {
-  color: #1976d2;
+  color: #8B5A2B;
   text-decoration: none;
 }
 
 .admin-notif-item.admin-notif-clickable .admin-notif-content h4 .admin-notif-link:hover {
-  color: #1976d2;
+  color: #8B5A2B;
 }
 
 .admin-notif-link:hover .admin-notif-external-link-icon {
-  color: #1976d2;
+  color: #8B5A2B;
   opacity: 1;
   transform: translateX(3px);
 }
@@ -613,13 +624,14 @@
   align-items: center;
   padding: 1.75rem;
   border-bottom: 1px solid #e5e5e5;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #8B5A2B, #654321);
+  color: white;
   border-radius: 16px 16px 0 0;
 }
 
 .admin-notif-modal-header h3 {
   margin: 0;
-  color: #8B5A2B;
+  color: white;
   font-size: 1.4rem;
   font-weight: 700;
 }
@@ -628,7 +640,7 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #666;
+  color: white;
   cursor: pointer;
   padding: 0.5rem;
   width: 40px;
@@ -641,8 +653,7 @@
 }
 
 .admin-notif-modal-close:hover {
-  background: #e9ecef;
-  color: #333;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .admin-notif-modal-body {
@@ -683,6 +694,7 @@
   font-weight: 600;
   transition: all 0.3s ease;
   font-size: 1rem;
+  border: 1px solid #545b62;
 }
 
 .admin-notif-btn-secondary:hover {
@@ -701,6 +713,7 @@
   font-weight: 600;
   transition: all 0.3s ease;
   font-size: 1rem;
+  border: 1px solid #654321;
 }
 
 .admin-notif-btn-primary:hover:not(:disabled) {
@@ -711,6 +724,7 @@
 
 .admin-notif-btn-primary.admin-notif-warning {
   background: #dc3545;
+  border-color: #c82333;
 }
 
 .admin-notif-btn-primary.admin-notif-warning:hover {

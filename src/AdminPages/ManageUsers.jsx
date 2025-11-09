@@ -838,7 +838,7 @@ export default function ManageUsers() {
           <FontAwesomeIcon icon={faRefresh} spin={loading} />
           Refresh
         </button>
-      </div>
+      </div> 
 
       {/* Stats Summary */}
       <div className="manage-users-stats">

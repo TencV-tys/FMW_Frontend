@@ -100,61 +100,115 @@ export default function Dashboard() {
     try {
       setLoading(true);
       
-      const usersResponse = await fetch('http://localhost:8000/api/admin/users/stats', {
-        credentials: 'include',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-      
-      const postsResponse = await fetch('http://localhost:8000/api/admin/posts', {
-        credentials: 'include',
-        headers: {
-          'Cache-Control': 'no-cache', 
-          'Pragma': 'no-cache'
-        }
-      });
+      // Fetch all stats in parallel for better performance
+      const [
+        usersResponse,
+        postsResponse,
+        reportsResponse,
+        feedbackResponse,
+        deletionRequestsResponse,
+        notificationsResponse
+      ] = await Promise.all([
+        fetch('http://localhost:8000/api/admin/users/stats', {
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch('http://localhost:8000/api/admin/posts', {
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache', 
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch('http://localhost:8000/api/admin/reports', {
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch('http://localhost:8000/api/admin/feedback/stats', {
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch('http://localhost:8000/api/admin/deletion-requests', {
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch('http://localhost:8000/api/admin/notifications/stats', {
+          credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
+      ]);
 
-      // NEW: Fetch additional stats
-      const reportsResponse = await fetch('http://localhost:8000/api/admin/reports', {
-        credentials: 'include'
-      });
+      // Process responses
+      let totalUsers = 0;
+      let totalPosts = 0;
+      let totalReports = 0;
+      let totalFeedback = 0;
+      let totalDeletionRequests = 0;
+      let totalUnreadNotifications = 0;
+      let recentActivities = [];
 
-      const feedbackResponse = await fetch('http://localhost:8000/api/admin/feedback/stats', {
-        credentials: 'include'
-      });
-
-      const deletionRequestsResponse = await fetch('http://localhost:8000/api/admin/users-deletion-stats', {
-        credentials: 'include'
-      });
-
-      const unreadNotificationsResponse = await fetch('http://localhost:8000/api/admin/notifications/unread', {
-        credentials: 'include'
-      });
-
-      if (usersResponse.ok && postsResponse.ok) { 
+      // Users
+      if (usersResponse.ok) {
         const usersData = await usersResponse.json();
-        const postsData = await postsResponse.json();
-        
-        const posts = postsData.posts || [];
-        
-        // Calculate new stats
-        const totalReports = reportsResponse.ok ? (await reportsResponse.json()).length || 0 : 0;
-        const totalFeedback = feedbackResponse.ok ? (await feedbackResponse.json()).totalFeedback || 0 : 0;
-        const totalDeletionRequests = deletionRequestsResponse.ok ? (await deletionRequestsResponse.json()).pendingRequests || 0 : 0;
-        const totalUnreadNotifications = unreadNotificationsResponse.ok ? (await unreadNotificationsResponse.json()).length || 0 : 0;
-
-        setStats({
-          totalUsers: usersData.stats?.totalUsers || 0,
-          totalPosts: posts.length,
-          totalReports,
-          totalFeedback,
-          totalDeletionRequests,
-          totalUnreadNotifications,
-          recentActivities: generateRecentActivities(posts)
-        });
+        totalUsers = usersData.stats?.totalUsers || usersData.totalUsers || 0;
       }
+
+      // Posts
+      if (postsResponse.ok) {
+        const postsData = await postsResponse.json();
+        totalPosts = postsData.posts?.length || postsData.totalPosts || 0;
+        recentActivities = generateRecentActivities(postsData.posts || []);
+      }
+
+      // Reports - FIXED: Properly extract reports count
+      if (reportsResponse.ok) {
+        const reportsData = await reportsResponse.json();
+        totalReports = reportsData.reports?.length || reportsData.total || 0;
+      }
+
+      // Feedback - FIXED: Properly extract feedback count
+      if (feedbackResponse.ok) {
+        const feedbackData = await feedbackResponse.json();
+        totalFeedback = feedbackData.stats?.total || feedbackData.total || 0;
+      }
+
+      // Deletion Requests - FIXED: Properly extract pending requests
+      if (deletionRequestsResponse.ok) {
+        const deletionData = await deletionRequestsResponse.json();
+        totalDeletionRequests = deletionData.requests?.length || deletionData.pendingRequests || 0;
+      }
+
+      // Notifications - FIXED: Properly extract unread count
+      if (notificationsResponse.ok) {
+        const notificationsData = await notificationsResponse.json();
+        totalUnreadNotifications = notificationsData.stats?.unread || notificationsData.unread || 0;
+      }
+
+      setStats({
+        totalUsers,
+        totalPosts,
+        totalReports,
+        totalFeedback,
+        totalDeletionRequests,
+        totalUnreadNotifications,
+        recentActivities
+      });
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       showToast('Error loading dashboard data', 'error');
@@ -164,6 +218,8 @@ export default function Dashboard() {
   };
 
   const generateRecentActivities = (posts) => {
+    if (!posts || posts.length === 0) return [];
+    
     const recentPosts = posts.slice(0, 5);
     return recentPosts.map(post => ({
       id: post.id,

@@ -160,7 +160,7 @@ export default function AdminNotifications() {
     } catch (error) {
       console.error('Error fetching notification stats:', error);
     }
-  };
+  }; 
 
   // Manual refresh
   const handleManualRefresh = async () => {

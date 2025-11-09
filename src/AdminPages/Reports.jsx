@@ -157,7 +157,7 @@ export default function Reports() {
           'Pragma': 'no-cache'
         }
       });
-
+ 
       if (response.ok) {
         const data = await response.json();
         const allReports = data.reports || [];
@@ -169,7 +169,7 @@ export default function Reports() {
           resolved: allReports.filter(r => r.status === 'resolved').length,
           dismissed: allReports.filter(r => r.status === 'dismissed').length
         };
-        
+         
         setStats(stats);
       }
     } catch (error) {

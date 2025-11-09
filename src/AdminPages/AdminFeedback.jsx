@@ -11,11 +11,11 @@ import {
   faExclamationTriangle,
   faUser,
   faBug,
-  faLightbulb,
+  faLightbulb, 
   faStar,
   faCommentDots,
   faRefresh,
-  faUserShield,
+  faUserShield, 
   faTrash,
   faBan,
   faTimes
