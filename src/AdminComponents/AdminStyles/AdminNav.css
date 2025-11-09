@@ -79,7 +79,6 @@
     font-size: 1rem;
 }
 
-/* REST OF YOUR ORIGINAL CSS REMAINS EXACTLY THE SAME */
 /* Profile Section */
 .admin-profile-main {
     display: flex;
@@ -155,12 +154,32 @@
     transition: all 0.3s ease;
     margin: 0 0.5rem;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+    border-left: 3px solid transparent;
 }
 
 .admin-nav-link-item:hover {
     background-color: rgba(255, 255, 255, 0.2);
     transform: translateX(4px);
+}
+
+/* NEW: Active Link State - Enhanced styling */
+.admin-nav-link-item.admin-nav-active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15));
+    border-left: 3px solid #FFD700; /* Gold border for active state */
+    box-shadow: 0 4px 12px rgba(139, 90, 43, 0.4);
+    transform: translateX(4px);
+}
+
+.admin-nav-link-item.admin-nav-active .admin-nav-icon {
+    color: #FFD700; /* Gold icon for active state */
+    transform: scale(1.1);
+}
+
+.admin-nav-link-item.admin-nav-active .admin-nav-text {
+    font-weight: 700;
+    color: #FFD700; /* Gold text for active state */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .admin-nav-link-content {
@@ -170,7 +189,7 @@
     font-size: 0.9rem;
     width: 100%;
     white-space: nowrap;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
 }
 
@@ -180,6 +199,7 @@
     width: 20px;
     text-align: center;
     flex-shrink: 0;
+    transition: all 0.3s ease;
 }
 
 .admin-nav-text {
@@ -187,6 +207,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: all 0.3s ease;
 }
 
 /* FIXED: Specific styling for Deletion Requests link */
@@ -229,13 +250,19 @@
     width: 24px;
 }
 
-/* Active Link State */
-.admin-nav-link-item.active {
-    background-color: rgba(255, 255, 255, 0.25);
-    border-left: 3px solid white;
+/* NEW: Active state for closed sidebar */
+.admin-nav-main.admin-nav-closed .admin-nav-link-item.admin-nav-active {
+    background: rgba(255, 255, 255, 0.25);
+    border-left: 3px solid #FFD700;
+    box-shadow: 0 2px 8px rgba(139, 90, 43, 0.3);
 }
 
-/* FIXED: Notification Navigation Item */
+.admin-nav-main.admin-nav-closed .admin-nav-link-item.admin-nav-active .admin-nav-icon {
+    color: #FFD700;
+    transform: scale(1.15);
+}
+
+/* FIXED: Notification Badge Styles - Improved positioning and colors */
 .admin-notification-item {
     position: relative;
     display: flex;
@@ -245,21 +272,39 @@
 
 .admin-nav-badge {
     position: absolute;
-    background: #ef4444;
-    color: white;
-    border-radius: 50%;
-    min-width: 20px;
-    height: 20px;
-    font-size: 0.7rem;
+    color: black;
+    border-radius: 10px;
+    min-width: 22px;
+    height: 18px;
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    padding: 0 4px;
-    border: 2px solid #8B5A2B; /* Changed to brown border */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-weight: 800;
+    padding: 0 7px;
+    border: 2px solid #8B5A2B;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     animation: adminNavPulse 2s infinite;
-    z-index: 10;
+    z-index: 100;
+    line-height: 1;
+    font-weight: 800;
+}
+
+/* Better colors for badges - More vibrant and consistent */
+.admin-nav-badge-reports {
+    background: #FF4444; /* Bright Red for reports */
+}
+
+.admin-nav-badge-feedback {
+    background: #22C55E; /* Bright Green for feedback */
+}
+
+.admin-nav-badge-deletion {
+    background: #F59E0B; /* Bright Amber for deletion requests */
+}
+
+.admin-nav-badge-notifications {
+    background: #3B82F6; /* Bright Blue for notifications */
 }
 
 @keyframes adminNavPulse {
@@ -267,103 +312,58 @@
         transform: scale(1);
     }
     50% {
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
     100% {
         transform: scale(1);
     }
 }
 
-/* Smart polling animation */
-.admin-nav-badge.pulsing {
-    animation: smartPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes smartPulse {
-    0%, 100% { 
-        transform: scale(1);
-    }
-    50% { 
-        transform: scale(1.15);
-    }
-}
-
-/* FIXED: Open state - Notification badge positioned at top-right corner */
-.admin-nav-main.admin-nav-open .admin-notification-item {
-    position: relative;
-}
-
+/* FIXED: Open state - Badge positioned at top-right corner */
 .admin-nav-main.admin-nav-open .admin-nav-badge {
-    top: -8px;
-    right: 8px;
+    top: -20px;
+    right: -20px;
     left: auto;
-    min-width: 20px;
     height: 20px;
-    font-size: 0.7rem;
 }
 
-/* FIXED: Closed state - Notification badge positioned at top-right corner of icon */
-.admin-nav-main.admin-nav-closed .admin-notification-item {
-    justify-content: center;
-    position: relative;
-    width: 100%;
-}
-
+/* FIXED: Closed state - Badge positioned at top-right corner of icon */
 .admin-nav-main.admin-nav-closed .admin-nav-badge {
-    top: -6px;
-    right: 6px;
+    top: -20px;
+    right: -10px;
     left: auto;
-    min-width: 16px;
-    height: 16px;
+    min-width: 18px;
+    height: 20px;
     font-size: 0.6rem;
     border-width: 1px;
 }
 
-/* Ensure notification badge stays visible */
+/* Ensure ALL badges stay visible */
 .admin-nav-link-item .admin-nav-badge {
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
 }
 
-/* Hover effects for notification item */
+/* Hover effects for ALL items with badges */
 .admin-nav-link-item:hover .admin-nav-badge {
-    background: #dc2626;
     transform: scale(1.1);
     transition: all 0.3s ease;
 }
 
-/* Make sure the notification link has proper positioning */
-.admin-nav-link-item[href*="notifications"] {
-    position: relative;
+/* Active state enhancements for ALL items with badges */
+.admin-nav-link-item.admin-nav-active .admin-nav-badge {
+    border-color: #FFD700;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
 }
 
-/* FIXED: Better text handling for longer menu items */
-.admin-nav-main.admin-nav-open .admin-nav-link-content {
-    min-width: 0;
-}
-
-.admin-nav-main.admin-nav-open .admin-nav-text {
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* FIXED: Specific hover state improvements */
-.admin-nav-link-item:hover .admin-nav-text {
-    transform: translateX(0);
-}
-
-/* FIXED: Background overflow prevention */
+/* Make sure ALL navigation items with badges have proper positioning */
 .admin-nav-link-item {
-    background-clip: padding-box;
+    overflow: visible !important;
 }
 
-/* FIXED: Ensure icons have enough space in closed state */
-.admin-nav-main.admin-nav-closed .admin-nav-link-content {
-    justify-content: center;
-    width: 100%;
-    position: relative;
+.admin-nav-link-item .admin-nav-link-content {
+    overflow: visible !important;
 }
 
 /* Responsive Design */
@@ -417,19 +417,19 @@
         letter-spacing: -0.3px;
     }
 
-    /* FIXED: Mobile notification badge positioning */
+    /* FIXED: Mobile badge positioning */
     .admin-nav-main.admin-nav-open .admin-nav-badge {
-        top: -6px;
-        right: 6px;
-        min-width: 18px;
-        height: 18px;
-        font-size: 0.65rem;
+        top: 1px;
+        right: 1px;
+        min-width: 20px;
+        height: 16px;
+        font-size: 0.6rem;
     }
 
     .admin-nav-main.admin-nav-closed .admin-nav-badge {
-        top: -4px;
-        right: 4px;
-        min-width: 14px;
+        top: 1px;
+        right: 1px;
+        min-width: 16px;
         height: 14px;
         font-size: 0.55rem;
     }
@@ -468,19 +468,19 @@
         max-width: 130px;
     }
 
-    /* FIXED: Extra small notification badge */
+    /* FIXED: Extra small badge */
     .admin-nav-main.admin-nav-open .admin-nav-badge {
-        top: -5px;
-        right: 4px;
-        min-width: 16px;
-        height: 16px;
-        font-size: 0.6rem;
+        top: 0px;
+        right: 0px;
+        min-width: 18px;
+        height: 15px;
+        font-size: 0.55rem;
     }
 
     .admin-nav-main.admin-nav-closed .admin-nav-badge {
-        top: -3px;
-        right: 3px;
-        min-width: 12px;
+        top: 0px;
+        right: 0px;
+        min-width: 14px;
         height: 12px;
         font-size: 0.5rem;
     }
@@ -536,21 +536,6 @@
 /* FIXED: Ensure icons are not compressed and have proper spacing */
 .admin-nav-icon {
     flex-shrink: 0;
-}
-
-/* FIXED: Explicit notification styling to prevent any hiding */
-.admin-nav-link-item[href*="notifications"] {
-    overflow: visible;
-}
-
-.admin-nav-link-item[href*="notifications"] .admin-nav-link-content {
-    overflow: visible;
-}
-
-.admin-nav-link-item[href*="notifications"] .admin-nav-badge {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
 }
 
 /* FIXED: Ensure closed state has proper icon spacing */
