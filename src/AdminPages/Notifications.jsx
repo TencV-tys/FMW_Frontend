@@ -147,7 +147,7 @@ export default function AdminNotifications() {
  
       if (response.ok) {
         const data = await response.json();
-        setStats({
+        setStats({ 
           total: data.stats?.total || 0,
           unread: data.stats?.unread || 0,
           reports: data.stats?.reports || 0,

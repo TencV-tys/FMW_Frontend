@@ -1,9 +1,9 @@
-/* AdminHeader.css - Only added smart polling animation */
+/* AdminHeader.css - Brown Theme to match Login */
 .admin-header {
     background: white;
     border-bottom: 1px solid #e0e0e0;
     padding: 1.2rem 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(139, 90, 43, 0.1); /* Brown shadow */
     position: sticky;
     top: 0;
     z-index: 100;
@@ -17,7 +17,7 @@
 }
 
 .admin-title {
-    color: #FF8904;
+    color: #8B5A2B; /* Brown color */
     margin: 0;
     font-size: 1.5rem;
     font-weight: 700;
@@ -37,7 +37,7 @@
     border-radius: 50%;
     cursor: pointer;
     position: relative;
-    color: #FF8904;
+    color: #8B5A2B; /* Brown color */
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -46,8 +46,8 @@
 }
 
 .header-icon-btn:hover {
-    background: #fff5e6;
-    color: #e67e22;
+    background: #fef8f4; /* Light brown background */
+    color: #654321; /* Darker brown */
     transform: scale(1.1);
 }
 
@@ -113,9 +113,9 @@
 }
 
 .user-menu-btn:hover {
-    background: #f8f9fa;
-    border-color: #FF8904;
-    color: #FF8904;
+    background: #fef8f4; /* Light brown background */
+    border-color: #8B5A2B; /* Brown border */
+    color: #8B5A2B; /* Brown color */
 }
 
 .dropdown-menu {
@@ -125,7 +125,7 @@
     background: white;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(139, 90, 43, 0.15); /* Brown shadow */
     min-width: 220px;
     z-index: 1001;
     margin-top: 0.5rem;
@@ -146,12 +146,12 @@
 }
 
 .dropdown-item:hover {
-    background: #f8f9fa;
-    color: #FF8904;
+    background: #fef8f4; /* Light brown background */
+    color: #8B5A2B; /* Brown color */
 }
 
 .user-info {
-    background: #f8f9fa;
+    background: #fef8f4; /* Light brown background */
     cursor: default;
     padding: 1rem;
 }

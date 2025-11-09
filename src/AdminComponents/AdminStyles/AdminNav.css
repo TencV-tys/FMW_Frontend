@@ -1,13 +1,13 @@
-/* AdminNav.css - Only improved toggle container sizing */
+/* AdminNav.css - Brown Theme to match Login */
 .admin-nav-main {
-    background-color: #FF8904;
+    background: linear-gradient(135deg, #8B5A2B, #654321); /* Brown gradient to match login */
     height: 100dvh;
     position: fixed;
     top: 0;
     left: 0;
     z-index: 1000;
-    border-right: 1px solid #FF8904;
-    box-shadow: 6px 0px 6px 5px rgba(207, 207, 207, 0.3);
+    border-right: 1px solid #654321; /* Darker brown border */
+    box-shadow: 6px 0px 6px 5px rgba(139, 90, 43, 0.3); /* Brown shadow */
     transition: all 0.4s ease;
     overflow-x: hidden;
 }
@@ -256,7 +256,7 @@
     justify-content: center;
     font-weight: 700;
     padding: 0 4px;
-    border: 2px solid #FF8904;
+    border: 2px solid #8B5A2B; /* Changed to brown border */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     animation: adminNavPulse 2s infinite;
     z-index: 10;

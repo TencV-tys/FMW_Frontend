@@ -31,10 +31,11 @@ export default function AdminNav({ isOpen, setIsOpen }) {
                 clearInterval(pollingIntervalRef.current);
             }
         };
-    }, []);
+    }, []); 
 
     const fetchNotificationCount = async () => {
         try {
+           
             const response = await fetch('http://localhost:8000/api/admin/notifications/stats', {
                 credentials: 'include'
             });

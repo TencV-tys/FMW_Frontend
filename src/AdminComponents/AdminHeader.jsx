@@ -33,7 +33,23 @@ export default function AdminHeader() {
             
             if (response.ok) {
                 const data = await response.json();
-                setNotificationCount(data.stats?.unread || 0);
+                if (data.success && data.stats) {
+                    setNotificationCount(data.stats.unread || 0);
+                }
+            } else {
+                // Fallback: try to get unread count from regular notifications endpoint
+                const fallbackResponse = await fetch('http://localhost:8000/api/admin/notifications', {
+                    credentials: 'include'
+                });
+                if (fallbackResponse.ok) {
+                    const fallbackData = await fallbackResponse.json();
+                    if (fallbackData.success && fallbackData.notifications) {
+                        const unreadCount = fallbackData.notifications.filter(
+                            notification => !notification.is_read
+                        ).length;
+                        setNotificationCount(unreadCount);
+                    }
+                }
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -119,7 +135,7 @@ export default function AdminHeader() {
                         )}
                     </div>
                 </div>
-            </div>
+            </div> 
         </header>
     );
 }

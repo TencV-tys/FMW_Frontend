@@ -8,7 +8,6 @@ import {
   faClock,
   faUser,
   faPaperPlane,
-  faArrowLeft,
   faCheckCircle,
   faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
@@ -28,7 +27,6 @@ export default function ContactUs() {
   const [submitStatus, setSubmitStatus] = useState(null);
   const [error, setError] = useState('');
   const wifi = useWifiUrl();
-
 
   const handleChange = (e) => {
     setFormData({
@@ -81,61 +79,59 @@ export default function ContactUs() {
   };
 
   return (
-    <div className="contact-us-page">
-      <NavAuth disabled="Show" />
+    <div className="contact-us-page-fmwcp">
+      <NavAuth />
       
-      <div className="contact-us-container">
+      <div className="contact-us-container-fmwcp">
         {/* Header */}
-        <header className="contact-us-header">
-          <Link to="/" className="back-button">
-            <FontAwesomeIcon icon={faArrowLeft} />
-            Back to Home
-          </Link>
-          <div className="header-content">
-            <FontAwesomeIcon icon={faEnvelope} className="header-icon" />
-            <h1>Contact Us</h1>
+        <header className="contact-us-header-fmwcp">
+          <div className="header-content-fmwcp">
+            <div className="header-icon-container-fmwcp">
+              <FontAwesomeIcon icon={faEnvelope} className="header-icon-fmwcp" />
+            </div>
+            <h1>Contact FindMyWay Community Portal</h1>
             <p>We're here to help! Get in touch with our support team</p>
           </div>
         </header>
 
-        <div className="contact-us-content">
+        <div className="contact-us-content-fmwcp">
           {/* Contact Information */}
-          <div className="contact-info-section">
-            <div className="contact-info-card">
+          <div className="contact-info-section-fmwcp">
+            <div className="contact-info-card-fmwcp">
               <h2>Get in Touch</h2>
               <p>Have questions or need assistance? We're here to help you.</p>
               
-              <div className="contact-methods">
-                <div className="contact-method">
-                  <FontAwesomeIcon icon={faEnvelope} className="method-icon" />
-                  <div className="method-info">
+              <div className="contact-methods-fmwcp">
+                <div className="contact-method-fmwcp">
+                  <FontAwesomeIcon icon={faEnvelope} className="method-icon-fmwcp" />
+                  <div className="method-info-fmwcp">
                     <h4>Email Us</h4>
                     <p>afmw203@gmail.com</p>
                     <span>We'll respond within 24 hours</span>
                   </div>
                 </div>
                 
-                <div className="contact-method">
-                  <FontAwesomeIcon icon={faPhone} className="method-icon" />
-                  <div className="method-info">
+                <div className="contact-method-fmwcp">
+                  <FontAwesomeIcon icon={faPhone} className="method-icon-fmwcp" />
+                  <div className="method-info-fmwcp">
                     <h4>Call Us</h4>
                     <p>+1 (555) 123-4567</p>
                     <span>Mon-Fri, 9AM-6PM</span>
                   </div>
                 </div>
                 
-                <div className="contact-method">
-                  <FontAwesomeIcon icon={faMapMarkerAlt} className="method-icon" />
-                  <div className="method-info">
+                <div className="contact-method-fmwcp">
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className="method-icon-fmwcp" />
+                  <div className="method-info-fmwcp">
                     <h4>Visit Us</h4>
                     <p>San Antonio Poruk 1</p>
                     <span>Trinidad, Panab-an</span>
                   </div>
                 </div>
                 
-                <div className="contact-method">
-                  <FontAwesomeIcon icon={faClock} className="method-icon" />
-                  <div className="method-info">
+                <div className="contact-method-fmwcp">
+                  <FontAwesomeIcon icon={faClock} className="method-icon-fmwcp" />
+                  <div className="method-info-fmwcp">
                     <h4>Response Time</h4>
                     <p>24-48 Hours</p>
                     <span>For all inquiries</span>
@@ -146,12 +142,12 @@ export default function ContactUs() {
           </div>
 
           {/* Contact Form */}
-          <div className="contact-form-section">
-            <div className="contact-form-card">
+          <div className="contact-form-section-fmwcp">
+            <div className="contact-form-card-fmwcp">
               <h2>Send us a Message</h2>
               
               {submitStatus === 'success' && (
-                <div className="success-message">
+                <div className="success-message-fmwcp">
                   <FontAwesomeIcon icon={faCheckCircle} />
                   <div>
                     <h4>Message Sent Successfully!</h4>
@@ -161,7 +157,7 @@ export default function ContactUs() {
               )}
 
               {submitStatus === 'error' && (
-                <div className="error-message">
+                <div className="error-message-fmwcp">
                   <FontAwesomeIcon icon={faExclamationTriangle} />
                   <div>
                     <h4>Failed to Send Message</h4>
@@ -170,9 +166,9 @@ export default function ContactUs() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="contact-form">
-                <div className="form-row">
-                  <div className="form-group">
+              <form onSubmit={handleSubmit} className="contact-form-fmwcp">
+                <div className="form-row-fmwcp">
+                  <div className="form-group-fmwcp">
                     <label htmlFor="name">
                       <FontAwesomeIcon icon={faUser} />
                       Full Name *
@@ -189,7 +185,7 @@ export default function ContactUs() {
                     />
                   </div>
                   
-                  <div className="form-group">
+                  <div className="form-group-fmwcp">
                     <label htmlFor="email">
                       <FontAwesomeIcon icon={faEnvelope} />
                       Email Address *
@@ -207,7 +203,7 @@ export default function ContactUs() {
                   </div>
                 </div>
 
-                <div className="form-group">
+                <div className="form-group-fmwcp">
                   <label htmlFor="category">Inquiry Category *</label>
                   <select
                     id="category"
@@ -226,7 +222,7 @@ export default function ContactUs() {
                   </select>
                 </div>
 
-                <div className="form-group">
+                <div className="form-group-fmwcp">
                   <label htmlFor="subject">Subject *</label>
                   <input
                     type="text"
@@ -240,7 +236,7 @@ export default function ContactUs() {
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="form-group-fmwcp">
                   <label htmlFor="message">Message *</label>
                   <textarea
                     id="message"
@@ -256,7 +252,7 @@ export default function ContactUs() {
 
                 <button 
                   type="submit" 
-                  className="submit-button"
+                  className="submit-button-fmwcp"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -277,42 +273,42 @@ export default function ContactUs() {
         </div>
 
         {/* FAQ Section */}
-        <section className="faq-section">
-          <div className="faq-container">
+        <section className="faq-section-fmwcp">
+          <div className="faq-container-fmwcp">
             <h2>Frequently Asked Questions</h2>
-            <div className="faq-grid">
-              <div className="faq-item">
+            <div className="faq-grid-fmwcp">
+              <div className="faq-item-fmwcp">
                 <h4>How do I report a lost item?</h4>
                 <p>Create an account, go to the bulletin board, and click "Create Post" to report a lost item with details and photos.</p>
               </div>
               
-              <div className="faq-item">
+              <div className="faq-item-fmwcp">
                 <h4>Is my personal information safe?</h4>
                 <p>Yes, we take privacy seriously. Your contact information is only shared when necessary for item recovery.</p>
               </div>
               
-              <div className="faq-item">
-                <h4>How long are posts kept active?</h4>
-                <p>Posts remain active for 30 days. You can renew them if the item hasn't been found yet.</p>
+              <div className="faq-item-fmwcp">
+                <h4>Can I edit or remove my posts?</h4>
+                <p>Yes, you can edit or delete your posts at any time from your dashboard. Posts remain active until you remove them.</p>
               </div>
-              
-             
             </div>
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="contact-us-footer">
-          <div className="footer-content">
-            <p>Need immediate assistance? Check our <Link to="/user-agreement">Help Center</Link> for quick answers.</p>
-            <div className="footer-links">
-              <Link to="/user-agreement">Terms of Service</Link>
-              <Link to="/privacy-policy">Privacy Policy</Link>
-              <Link to="/">Back to Home</Link>
+        {/* UNIQUE FOOTER - Centered for desktop */}
+        <footer className="contact-us-footer-fmwcp-unique">
+          <div className="contact-footer-content-fmwcp">
+            <p className="contact-footer-notice-fmwcp">
+              Need immediate assistance? Check our <Link to="/user-agreement">Help Center</Link> for quick answers.
+            </p>
+            <div className="contact-footer-links-fmwcp">
+              <Link to="/user-agreement" className="contact-footer-link-fmwcp">Terms of Service</Link>
+              <Link to="/privacy-policy" className="contact-footer-link-fmwcp">Privacy Policy</Link>
+              <Link to="/" className="contact-footer-link-fmwcp">Back to Home</Link>
             </div>
           </div> 
         </footer>
       </div>
     </div>
   );
-} 
+}

@@ -1,14 +1,17 @@
-.contact-us-page {
+/* ContactUs.css - Unique Styling */
+.contact-us-page-fmwcp {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding-top: 80px; /* Space for fixed NavAuth header */
 }
 
-.contact-us-container {
+.contact-us-container-fmwcp {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
-.error-message {
+
+.error-message-fmwcp {
   background: #f8d7da;
   color: #721c24;
   padding: 1rem;
@@ -20,67 +23,67 @@
   gap: 0.75rem;
 }
 
-.error-message svg {
+.error-message-fmwcp svg {
   font-size: 1.25rem;
   margin-top: 0.1rem;
 }
 
-.error-message h4 {
+.error-message-fmwcp h4 {
   margin: 0 0 0.25rem 0;
   color: #721c24;
 }
 
-.error-message p {
+.error-message-fmwcp p {
   margin: 0;
   font-size: 0.9rem;
 }
+
 /* Header */
-.contact-us-header {
+.contact-us-header-fmwcp {
   text-align: center;
   margin-bottom: 3rem;
   position: relative;
 }
 
-.back-button {
-  position: absolute;
-  left: 0;
-  top: 0;
-  background: #FF8904;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  text-decoration: none;
+.header-content-fmwcp {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  justify-content: center;
+  gap: 1rem;
 }
 
-.back-button:hover {
-  background: #e67a00;
-  transform: translateX(-2px);
+.header-icon-container-fmwcp {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
-.header-icon {
-  font-size: 3rem;
-  color: #FF8904;
-  margin-bottom: 1rem;
+.header-icon-fmwcp {
+  font-size: 3.5rem;
+  color: #8B5A2B;
+  margin-bottom: 0.5rem;
 }
 
-.contact-us-header h1 {
+.contact-us-header-fmwcp h1 {
   color: #2c3e50;
   margin-bottom: 0.5rem;
   font-size: 2.5rem;
+  text-align: center;
+  line-height: 1.2;
 }
 
-.contact-us-header p {
+.contact-us-header-fmwcp p {
   color: #666;
   font-size: 1.1rem;
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 /* Main Content */
-.contact-us-content {
+.contact-us-content-fmwcp {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
@@ -88,7 +91,7 @@
 }
 
 /* Contact Info Section */
-.contact-info-card {
+.contact-info-card-fmwcp {
   background: white;
   padding: 2rem;
   border-radius: 12px;
@@ -96,24 +99,26 @@
   height: fit-content;
 }
 
-.contact-info-card h2 {
+.contact-info-card-fmwcp h2 {
   color: #2c3e50;
   margin-bottom: 1rem;
+  text-align: center;
 }
 
-.contact-info-card > p {
+.contact-info-card-fmwcp > p {
   color: #666;
   margin-bottom: 2rem;
   line-height: 1.6;
+  text-align: center;
 }
 
-.contact-methods {
+.contact-methods-fmwcp {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.contact-method {
+.contact-method-fmwcp {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
@@ -123,46 +128,48 @@
   transition: transform 0.3s ease;
 }
 
-.contact-method:hover {
+.contact-method-fmwcp:hover {
   transform: translateX(5px);
 }
 
-.method-icon {
+.method-icon-fmwcp {
   font-size: 1.5rem;
-  color: #FF8904;
+  color: #8B5A2B;
   margin-top: 0.25rem;
+  flex-shrink: 0;
 }
 
-.method-info h4 {
+.method-info-fmwcp h4 {
   color: #2c3e50;
   margin-bottom: 0.25rem;
 }
 
-.method-info p {
+.method-info-fmwcp p {
   color: #555;
   font-weight: 600;
   margin-bottom: 0.25rem;
 }
 
-.method-info span {
+.method-info-fmwcp span {
   color: #666;
   font-size: 0.9rem;
 }
 
 /* Contact Form Section */
-.contact-form-card {
+.contact-form-card-fmwcp {
   background: white;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-.contact-form-card h2 {
+.contact-form-card-fmwcp h2 {
   color: #2c3e50;
   margin-bottom: 1.5rem;
+  text-align: center;
 }
 
-.success-message {
+.success-message-fmwcp {
   background: #d4edda;
   color: #155724;
   padding: 1rem;
@@ -174,40 +181,40 @@
   gap: 0.75rem;
 }
 
-.success-message svg {
+.success-message-fmwcp svg {
   font-size: 1.25rem;
   margin-top: 0.1rem;
 }
 
-.success-message h4 {
+.success-message-fmwcp h4 {
   margin: 0 0 0.25rem 0;
   color: #155724;
 }
 
-.success-message p {
+.success-message-fmwcp p {
   margin: 0;
   font-size: 0.9rem;
 }
 
 /* Form Styles */
-.contact-form {
+.contact-form-fmwcp {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.form-row {
+.form-row-fmwcp {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.form-group {
+.form-group-fmwcp {
   display: flex;
   flex-direction: column;
 }
 
-.form-group label {
+.form-group-fmwcp label {
   font-weight: 600;
   color: #2c3e50;
   margin-bottom: 0.5rem;
@@ -216,9 +223,9 @@
   gap: 0.5rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.form-group-fmwcp input,
+.form-group-fmwcp select,
+.form-group-fmwcp textarea {
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -226,21 +233,21 @@
   transition: border-color 0.3s ease;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.form-group-fmwcp input:focus,
+.form-group-fmwcp select:focus,
+.form-group-fmwcp textarea:focus {
   outline: none;
-  border-color: #FF8904;
-  box-shadow: 0 0 0 2px rgba(255, 137, 4, 0.1);
+  border-color: #8B5A2B;
+  box-shadow: 0 0 0 2px rgba(139, 90, 43, 0.1);
 }
 
-.form-group textarea {
+.form-group-fmwcp textarea {
   resize: vertical;
   min-height: 120px;
 }
 
-.submit-button {
-  background: #FF8904;
+.submit-button-fmwcp {
+  background: #8B5A2B;
   color: white;
   border: none;
   padding: 1rem 2rem;
@@ -254,21 +261,25 @@
   gap: 0.5rem;
   transition: all 0.3s ease;
   margin-top: 1rem;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.submit-button:hover:not(:disabled) {
-  background: #e67a00;
+.submit-button-fmwcp:hover:not(:disabled) {
+  background: #654321;
   transform: translateY(-1px);
 }
 
-.submit-button:disabled {
+.submit-button-fmwcp:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
 /* FAQ Section */
-.faq-section {
+.faq-section-fmwcp {
   background: white;
   padding: 3rem;
   border-radius: 12px;
@@ -276,117 +287,197 @@
   margin-bottom: 3rem;
 }
 
-.faq-container h2 {
+.faq-container-fmwcp h2 {
   color: #2c3e50;
   text-align: center;
   margin-bottom: 2rem;
   font-size: 2rem;
 }
 
-.faq-grid {
+.faq-grid-fmwcp {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
 }
 
-.faq-item {
+.faq-item-fmwcp {
   background: #f8f9fa;
   padding: 1.5rem;
   border-radius: 8px;
-  border-left: 4px solid #FF8904;
+  border-left: 4px solid #8B5A2B;
+  text-align: center;
 }
 
-.faq-item h4 {
+.faq-item-fmwcp h4 {
   color: #2c3e50;
   margin-bottom: 1rem;
   font-size: 1.1rem;
 }
 
-.faq-item p {
+.faq-item-fmwcp p {
   color: #666;
   line-height: 1.6;
   margin: 0;
 }
 
-/* Footer */
-.contact-us-footer {
+/* UNIQUE FOOTER FOR CONTACT PAGE - BLACK BACKGROUND */
+.contact-us-footer-fmwcp-unique {
+  background: #000000; /* BLACK BACKGROUND */
+  color: white;
+  padding: 2.5rem 2rem;
   text-align: center;
-  padding: 2rem;
-  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.contact-us-footer p {
-  color: #666;
-  margin-bottom: 1.5rem;
+.contact-footer-content-fmwcp {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-.contact-us-footer a {
-  color: #FF8904;
+.contact-footer-notice-fmwcp {
+  margin: 0;
+  line-height: 1.7;
+  opacity: 0.95;
+  color: #f8f9fa;
+  font-size: 1.05rem;
+  max-width: 700px;
+}
+
+.contact-footer-notice-fmwcp a {
+  color: #8B5A2B;
   text-decoration: none;
   font-weight: 600;
 }
 
-.contact-us-footer a:hover {
-  color: #e67a00;
+.contact-footer-notice-fmwcp a:hover {
+  color: #654321;
   text-decoration: underline;
 }
 
-.footer-links {
+.contact-footer-links-fmwcp {
   display: flex;
   justify-content: center;
-  gap: 2rem;
+  gap: 2.5rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.footer-links a {
-  color: #FF8904;
+.contact-footer-link-fmwcp {
+  color: #8B5A2B;
   text-decoration: none;
   font-weight: 600;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  font-size: 0.95rem;
+  min-width: 140px;
+  text-align: center;
 }
 
-.footer-links a:hover {
-  color: #e67a00;
-  text-decoration: underline;
+.contact-footer-link-fmwcp:hover {
+  color: #654321;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(139, 90, 43, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.2);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .contact-us-container {
+  .contact-us-page-fmwcp {
+    padding-top: 70px; /* Less padding for mobile */
+  }
+
+  .contact-us-container-fmwcp {
     padding: 1rem;
   }
 
-  .contact-us-content {
+  .contact-us-content-fmwcp {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
 
-  .back-button {
-    position: relative;
-    margin-bottom: 1rem;
-    align-self: flex-start;
+  .contact-us-header-fmwcp {
+    text-align: center;
   }
 
-  .contact-us-header {
-    text-align: left;
+  .header-content-fmwcp {
+    gap: 0.5rem;
   }
 
-  .form-row {
+  .header-icon-fmwcp {
+    font-size: 3rem;
+  }
+
+  .contact-us-header-fmwcp h1 {
+    font-size: 2rem;
+  }
+
+  .form-row-fmwcp {
     grid-template-columns: 1fr;
   }
 
-  .faq-grid {
+  .faq-grid-fmwcp {
     grid-template-columns: 1fr;
   }
 
-  .faq-section {
+  .faq-section-fmwcp {
     padding: 1.5rem;
   }
 
-  .footer-links {
+  .contact-us-footer-fmwcp-unique {
+    padding: 1.5rem 1rem;
+  }
+
+  .contact-footer-links-fmwcp {
     flex-direction: column;
     gap: 1rem;
+    width: 100%;
+  }
+
+  .contact-footer-link-fmwcp {
+    padding: 0.75rem 1rem;
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .submit-button-fmwcp {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-us-page-fmwcp {
+    padding-top: 60px; /* Even less padding for very small screens */
+  }
+
+  .contact-us-header-fmwcp h1 {
+    font-size: 1.8rem;
+  }
+  
+  .header-icon-fmwcp {
+    font-size: 2.5rem;
+  }
+  
+  .contact-info-card-fmwcp,
+  .contact-form-card-fmwcp {
+    padding: 1.5rem;
+  }
+  
+  .faq-section-fmwcp {
+    padding: 1rem;
+  }
+  
+  .contact-footer-notice-fmwcp {
+    font-size: 0.95rem;
+    line-height: 1.6;
   }
 }
