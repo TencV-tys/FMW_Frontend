@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'; // 🆕 ADD THIS
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -20,11 +21,13 @@ import {
   faExclamationTriangle,
   faTimes,
   faBell,
-  faUndo
+  faUndo,
+  faExternalLinkAlt // 🆕 ADD THIS
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
 export default function ManageUsers() {
+  const navigate = useNavigate(); // 🆕 ADD THIS HOOK
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +53,9 @@ export default function ManageUsers() {
     message: '',
     type: 'success'
   });
+
+  // 🆕 ADDED: Highlight state for navigation
+  const [highlightedUser, setHighlightedUser] = useState(null);
 
   // 🆕 ADDED: Smart polling refs and warned users tracking
   const pollingIntervalRef = useRef(null);
@@ -80,10 +86,53 @@ export default function ManageUsers() {
     }
   };
 
+  // 🆕 ADDED: Check for URL parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightUser = urlParams.get('highlightUser');
+    
+    if (highlightUser) {
+      setHighlightedUser(parseInt(highlightUser));
+      // Scroll to highlighted user after data loads
+      setTimeout(() => {
+        const element = document.querySelector(`[data-user-id="${highlightUser}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.style.animation = 'pulse-highlight 2s ease-in-out';
+        }
+      }, 1000);
+    }
+  }, []);
+
   // 🆕 ADDED: Save to localStorage whenever warnedUsers changes
   useEffect(() => {
     localStorage.setItem('warnedUsers', JSON.stringify([...warnedUsers]));
   }, [warnedUsers]);
+
+  // 🆕 FIXED: Check for deleted users when navigating from notifications
+useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const highlightUser = urlParams.get('highlightUser');
+  
+  if (highlightUser) {
+    const userId = parseInt(highlightUser);
+    setHighlightedUser(userId);
+    
+    // Wait for users to load, then check status
+    if (users.length > 0) {
+      const user = users.find(u => u.id === userId);
+      
+      if (!user) {
+        // User doesn't exist in the fetched data
+        showToast('This user has been deleted or does not exist', 'error');
+      } else if (user.deleted_at) {
+        // User exists but is deleted
+        showToast('This user has been deleted', 'warning');
+      }
+      // If user exists and is not deleted, no toast - just highlight
+    }
+  }
+}, [users]); // Run when users data changes
 
   useEffect(() => {
     fetchUsers();
@@ -237,6 +286,12 @@ export default function ManageUsers() {
       console.error('Error sending automatic warning:', error);
       return false;
     }
+  };
+
+  // 🆕 ADDED: Handle user row click to navigate to user details or related content
+  const handleUserClick = (user) => {
+    // Navigate to user details or posts with user filter
+    navigate(`/admin/manage-posts?userId=${user.id}&userName=${encodeURIComponent(getUserName(user))}`);
   };
 
   // 🎯 OPEN MODAL FUNCTIONS WITH VALIDATION
@@ -813,10 +868,20 @@ export default function ManageUsers() {
 
   // Mobile User Card Component
   const MobileUserCard = ({ user }) => (
-    <div className="manage-users-mobile-card">
+    <div 
+      className={`manage-users-mobile-card ${highlightedUser === user.id ? 'manage-users-highlighted' : ''}`}
+      data-user-id={user.id}
+    >
       <div className="manage-users-mobile-header">
         <div className="manage-users-mobile-title">
-          <h3>{user.first_name} {user.last_name}</h3>
+          <h3>
+            {user.first_name} {user.last_name}
+            <FontAwesomeIcon 
+              icon={faExternalLinkAlt} 
+              className="manage-users-external-link-icon"
+              title="Click to view user posts"
+            />
+          </h3>
           <div className="manage-users-mobile-id">ID: #{user.id}</div>
         </div>
         <div className="manage-users-mobile-badges">
@@ -1119,10 +1184,22 @@ export default function ManageUsers() {
                     </thead>
                     <tbody>
                       {filteredUsers.map((user) => (
-                        <tr key={user.id}>
+                        <tr 
+                          key={user.id} 
+                          className={`${highlightedUser === user.id ? 'manage-users-highlighted' : ''} manage-users-clickable-row`}
+                          data-user-id={user.id}
+                          onClick={() => handleUserClick(user)}
+                        >
                           <td>
                             <div className="manage-users-user-info">
-                              <strong>{user.first_name} {user.last_name}</strong>
+                              <strong>
+                                {user.first_name} {user.last_name}
+                                <FontAwesomeIcon 
+                                  icon={faExternalLinkAlt} 
+                                  className="manage-users-external-link-icon"
+                                  title="Click to view user posts"
+                                />
+                              </strong>
                               <small>ID: #{user.id}</small>
                             </div>
                           </td>
@@ -1166,7 +1243,7 @@ export default function ManageUsers() {
                             })}
                           </td>
                           <td>
-                            <div className='manage-users-actions'>
+                            <div className='manage-users-actions' onClick={(e) => e.stopPropagation()}>
                               {getActionButtons(user)}
                             </div>
                           </td>
@@ -1493,8 +1570,42 @@ export default function ManageUsers() {
               </button>
             </div>
           </div>
-        </div>
+        </div> 
       )}
+
+      <style jsx>{`
+        @keyframes pulse-highlight {
+          0% { background-color: rgba(139, 90, 43, 0.1); }
+          50% { background-color: rgba(139, 90, 43, 0.3); }
+          100% { background-color: rgba(139, 90, 43, 0.1); }
+        }
+        
+        .manage-users-highlighted {
+          animation: pulse-highlight 2s ease-in-out;
+          border: 2px solid #8B5A2B !important;
+        }
+        
+        .manage-users-clickable-row {
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+        
+        .manage-users-clickable-row:hover {
+          background-color: #f8f9fa !important;
+        }
+        
+        .manage-users-external-link-icon {
+          margin-left: 0.5rem;
+          font-size: 0.8rem;
+          color: #8B5A2B;
+          opacity: 0.7;
+        }
+        
+        .manage-users-mobile-card.manage-users-highlighted {
+          animation: pulse-highlight 2s ease-in-out;
+          border: 2px solid #8B5A2B !important;
+        }
+      `}</style>
     </>
   );
 }

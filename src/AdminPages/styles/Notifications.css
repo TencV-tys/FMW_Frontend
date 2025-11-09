@@ -823,3 +823,16 @@
     font-size: 0.95rem;
   }
 }
+/* Add this small CSS for the description text */
+.admin-notif-description {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #8B5A2B;
+}
+
+.admin-notif-description small {
+  color: #666; 
+  font-weight: 500;
+}

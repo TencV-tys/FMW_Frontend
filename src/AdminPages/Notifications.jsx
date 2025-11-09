@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // 🆕 ADD THIS
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBell,
@@ -23,6 +23,7 @@ import {
 import './styles/Notifications.css'; 
 
 export default function AdminNotifications() {
+  const navigate = useNavigate(); // 🆕 ADD THIS HOOK
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -160,7 +161,7 @@ export default function AdminNotifications() {
     } catch (error) {
       console.error('Error fetching notification stats:', error);
     }
-  };  
+  }; 
 
   // Manual refresh
   const handleManualRefresh = async () => {
@@ -174,11 +175,70 @@ export default function AdminNotifications() {
     setFilter(filterType);
   };
 
-  // Handle notification click - Navigate to relevant page using Link
+  // 🆕 ENHANCED: Parse metadata from notification
+  const parseNotificationMetadata = (notification) => {
+    try {
+      return notification.metadata ? JSON.parse(notification.metadata) : {};
+    } catch (error) {
+      console.error('Error parsing notification metadata:', error);
+      return {};
+    }
+  };
+
+  // 🆕 ENHANCED: Get navigation link with specific data parameters
+  const getNotificationLink = (notification) => {
+    const metadata = parseNotificationMetadata(notification);
+
+    switch (notification.type) {
+      case 'report_submitted':
+        // Navigate to reports page with specific report ID
+        return metadata.report_id ? `/admin/reports?highlightReport=${metadata.report_id}` : '/admin/reports';
+      
+      case 'post_resolved':
+      case 'post_restored':
+      case 'post_removed':
+      case 'post_deleted':
+      case 'post_resolved_by_user':
+        // Navigate to manage posts with post ID filter
+        return metadata.post_id ? `/admin/manage-posts?highlightPost=${metadata.post_id}` : '/admin/manage-posts';
+      
+      case 'user_suspended':
+      case 'user_banned':
+      case 'user_activated':
+      case 'user_deleted':
+        // Navigate to manage users with user ID filter
+        return metadata.target_user_id ? `/admin/manage-users?highlightUser=${metadata.target_user_id}` : '/admin/manage-users';
+      
+      case 'feedback_submitted':
+      case 'feedback_updated':
+      case 'feedback_deleted':
+        // Navigate to feedback with specific feedback ID
+        return metadata.feedback_id ? `/admin/feedback?highlightFeedback=${metadata.feedback_id}` : '/admin/feedback';
+      
+      case 'deletion_request':
+      case 'deletion_request_approved':
+      case 'deletion_request_rejected':
+        // Navigate to deletion requests with specific request ID
+        return metadata.request_id ? `/admin/deletion-requests?highlightRequest=${metadata.request_id}` : '/admin/deletion-requests';
+      
+      default:
+        return null;
+    } 
+  }; 
+
+  // 🆕 ENHANCED: Handle notification click with navigation
   const handleNotificationClick = (notification) => {
     // Mark as read when clicked
     if (!notification.is_read) {
       markAsRead(notification.id);
+    }
+
+    // Get the navigation link
+    const link = getNotificationLink(notification);
+    
+    // Navigate to the specific page
+    if (link) {
+      navigate(link);
     }
   };
 
@@ -367,7 +427,7 @@ export default function AdminNotifications() {
       case 'user_suspended':
         return '#f59e0b';
       case 'user_banned':
-        return '#ef4444';
+        return '#ef4444'; 
       case 'user_activated':
         return '#10b981';
       case 'user_deleted':
@@ -389,37 +449,24 @@ export default function AdminNotifications() {
     }
   };
 
-  // Get navigation link based on notification type
-  const getNotificationLink = (notification) => {
+  // 🆕 ENHANCED: Get description text based on metadata
+  const getNotificationDescription = (notification) => {
+    const metadata = parseNotificationMetadata(notification);
+    
     switch (notification.type) {
       case 'report_submitted':
-        return '/admin/reports';
+        return `Report #${metadata.report_id} for Post #${metadata.post_id}`;
       
-      case 'post_removed':
-      case 'post_deleted':
-      case 'post_restored':
       case 'post_resolved':
-      case 'post_resolved_by_user':
-        return '/admin/manage-posts';
+      case 'post_restored':
+        return `Post #${metadata.post_id} - ${metadata.post_title || ''}`;
       
       case 'user_suspended':
       case 'user_banned':
-      case 'user_activated':
-      case 'user_deleted':
-        return '/admin/manage-users';
-      
-      case 'feedback_submitted':
-      case 'feedback_updated':
-      case 'feedback_deleted':
-        return '/admin/feedback';
-      
-      case 'deletion_request':
-      case 'deletion_request_approved':
-      case 'deletion_request_rejected':
-        return '/admin/deletion-requests';
+        return `User #${metadata.target_user_id} - ${metadata.target_user_name || ''}`;
       
       default:
-        return '/admin/manage-posts';
+        return '';
     }
   };
 
@@ -465,7 +512,6 @@ export default function AdminNotifications() {
       {/* Header */}
       <header className="admin-notif-header">
         <div className="admin-notif-header-content">
-        
           <p>Manage and view system notifications</p>
         </div>
         <div className="admin-notif-header-actions">
@@ -670,8 +716,8 @@ export default function AdminNotifications() {
               </span>
             </div>
             {notifications.map(notification => {
-              const notificationLink = getNotificationLink(notification);
-              const isClickable = notificationLink !== null;
+              const isClickable = getNotificationLink(notification) !== null;
+              const description = getNotificationDescription(notification);
               
               return (
                 <div 
@@ -679,6 +725,7 @@ export default function AdminNotifications() {
                   className={`admin-notif-item ${notification.is_read ? 'admin-notif-read' : 'admin-notif-unread'} ${
                     isClickable ? 'admin-notif-clickable' : ''
                   }`}
+                  onClick={() => isClickable && handleNotificationClick(notification)}
                 >
                   <div className="admin-notif-icon">
                     <FontAwesomeIcon 
@@ -688,26 +735,21 @@ export default function AdminNotifications() {
                   </div>
                   <div className="admin-notif-content">
                     <h4>
-                      {isClickable ? (
-                        <Link 
-                          to={notificationLink} 
-                          className="admin-notif-link"
-                          onClick={() => handleNotificationClick(notification)}
-                        >
-                          {notification.title}
-                          <FontAwesomeIcon 
-                            icon={faExternalLinkAlt} 
-                            className="admin-notif-external-link-icon"
-                            title="Click to view related content"
-                          />
-                        </Link>
-                      ) : (
-                        <>
-                          {notification.title}
-                        </>
+                      {notification.title}
+                      {isClickable && (
+                        <FontAwesomeIcon 
+                          icon={faExternalLinkAlt} 
+                          className="admin-notif-external-link-icon"
+                          title="Click to view related content"
+                        />
                       )}
                     </h4>
                     <p>{notification.message}</p>
+                    {description && (
+                      <div className="admin-notif-description">
+                        <small>{description}</small>
+                      </div>
+                    )}
                     <div className="admin-notif-meta">
                       <span className="admin-notif-user">
                         {notification.first_name} {notification.last_name}

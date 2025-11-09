@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -16,11 +17,13 @@ import {
   faExclamationTriangle,
   faFlag,
   faHistory,
-  faTag
+  faTag,
+  faUser
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManagePosts.css';
 
 export default function ManagePosts() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,7 +46,14 @@ export default function ManagePosts() {
     type: 'success'
   });
 
-  // 🎯 POST REPORT THRESHOLDS (Same pattern as ManageUsers)
+  // 🆕 ADDED: User filter state for navigation from ManageUsers
+  const [userFilter, setUserFilter] = useState(null);
+  const [userName, setUserName] = useState('');
+
+  // 🆕 ADDED: Highlight state for posts from notifications
+  const [highlightedPost, setHighlightedPost] = useState(null);
+
+  // 🎯 POST REPORT THRESHOLDS
   const REPORT_THRESHOLDS = {
     CAN_REMOVE: 3,    // Allow removal at 3+ reports
     CAN_DELETE: 5     // Allow permanent deletion at 5+ reports
@@ -52,6 +62,48 @@ export default function ManagePosts() {
   // 🆕 ADDED: Smart polling refs
   const pollingIntervalRef = useRef(null);
   const isTabActiveRef = useRef(true);
+
+  // 🆕 UPDATED: Check for URL parameters on component mount and posts load
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    const userNameParam = urlParams.get('userName');
+    const highlightPost = urlParams.get('highlightPost');
+    
+    if (userId) {
+      setUserFilter(parseInt(userId));
+      setUserName(userNameParam || '');
+      // Clear the URL parameters after reading them
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+    
+    if (highlightPost) {
+      const postId = parseInt(highlightPost);
+      setHighlightedPost(postId);
+      // Clear the URL parameter after reading it
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
+
+  // 🆕 ADDED: Handle post highlighting when posts are loaded
+  useEffect(() => {
+    if (highlightedPost && posts.length > 0) {
+      const post = posts.find(p => p.id === highlightedPost);
+      
+      if (!post) {
+        // Post doesn't exist in the fetched data
+        showToast('This post has been deleted or does not exist', 'error');
+        setHighlightedPost(null);
+      } else if (post.status === 'Deleted' || post.status === 'Removed') {
+        // Post exists but is deleted/removed
+        showToast('This post has been deleted or removed', 'warning');
+        // Keep it highlighted but show warning
+      }
+      // If post exists and is active, it will remain highlighted
+    }
+  }, [posts, highlightedPost]);
 
   // Fetch posts data
   useEffect(() => {
@@ -136,9 +188,29 @@ export default function ManagePosts() {
     }
   };
 
+  // 🆕 ADDED: Clear user filter
+  const clearUserFilter = () => {
+    setUserFilter(null);
+    setUserName('');
+  };
+
+  // 🆕 ADDED: Navigate to user in ManageUsers
+  const navigateToUser = (userId, userName) => {
+    navigate(`/admin/manage-users?highlightUser=${userId}`);
+  };
+
+  // 🆕 ADDED: Clear highlighted post
+  const clearHighlightedPost = () => {
+    setHighlightedPost(null);
+  };
+
   // Open View Modal
   const openViewModal = (post) => {
     setViewModal({ isOpen: true, post });
+    // Clear highlight when viewing post details
+    if (highlightedPost === post.id) {
+      setHighlightedPost(null);
+    }
   };
 
   // Close Modals
@@ -325,9 +397,14 @@ export default function ManagePosts() {
       newSelected.delete(postId);
       return newSelected;
     });
+
+    // Clear highlight if the highlighted post was affected
+    if (highlightedPost === postId) {
+      setHighlightedPost(null);
+    }
   };
 
-  // Filter posts based on search, status, and type
+  // 🆕 UPDATED: Filter posts based on search, status, type, AND user filter
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          post.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -337,19 +414,24 @@ export default function ManagePosts() {
                          post.type?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || post.status === statusFilter;
     const matchesType = typeFilter === 'all' || post.type === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
+    const matchesUser = userFilter ? post.user_id === userFilter : true;
+    
+    return matchesSearch && matchesStatus && matchesType && matchesUser;
   });
 
-  // Check if any filter is active
+  // 🆕 UPDATED: Check if any filter is active (including user filter and highlight)
   const isFilterActive = () => {
-    return statusFilter !== 'all' || typeFilter !== 'all' || searchTerm !== '';
+    return statusFilter !== 'all' || typeFilter !== 'all' || searchTerm !== '' || userFilter !== null || highlightedPost !== null;
   };
 
-  // Clear all filters
+  // 🆕 UPDATED: Clear all filters (including user filter and highlight)
   const clearAllFilters = () => {
     setStatusFilter('all');
     setTypeFilter('all');
     setSearchTerm('');
+    setUserFilter(null);
+    setUserName('');
+    setHighlightedPost(null);
   };
 
   // Get unique types for filter dropdown
@@ -511,46 +593,45 @@ export default function ManagePosts() {
   };
 
   // 🎯 UPDATED: Get report severity for posts - ADD "No Risk" like ManageUsers
-const getReportSeverity = (post) => {
-  const reportCount = post.total_report_count || 0;
-  
-  if (reportCount >= REPORT_THRESHOLDS.CAN_DELETE) return 'high';
-  if (reportCount >= REPORT_THRESHOLDS.CAN_REMOVE) return 'medium';
-  return 'none'; // 🆕 No risk for posts below remove threshold
-};
-
-// 🎯 UPDATED: Report severity badge component - ADD "No Risk" badge
-const ReportSeverityBadge = ({ post }) => {
-  const severity = getReportSeverity(post);
-  
-  const severityConfig = {
-    high: { 
-      class: 'report-high', 
-      text: 'High Risk - Can Delete', 
-      icon: faExclamationTriangle 
-    },
-    medium: { 
-      class: 'report-medium', 
-      text: 'Medium Risk - Can Remove', 
-      icon: faFlag 
-    },
-    none: { 
-      class: 'report-none', 
-      text: 'No Risk', 
-      icon: faCheckCircle 
-    }
+  const getReportSeverity = (post) => {
+    const reportCount = post.total_report_count || 0;
+    
+    if (reportCount >= REPORT_THRESHOLDS.CAN_DELETE) return 'high';
+    if (reportCount >= REPORT_THRESHOLDS.CAN_REMOVE) return 'medium';
+    return 'none'; // 🆕 No risk for posts below remove threshold
   };
 
-  const config = severityConfig[severity];
+  // 🎯 UPDATED: Report severity badge component - ADD "No Risk" badge
+  const ReportSeverityBadge = ({ post }) => {
+    const severity = getReportSeverity(post);
+    
+    const severityConfig = {
+      high: { 
+        class: 'report-high', 
+        text: 'High Risk - Can Delete', 
+        icon: faExclamationTriangle 
+      },
+      medium: { 
+        class: 'report-medium', 
+        text: 'Medium Risk - Can Remove', 
+        icon: faFlag 
+      },
+      none: { 
+        class: 'report-none', 
+        text: 'No Risk', 
+        icon: faCheckCircle 
+      }
+    };
 
-  return (
-    <span className={`report-severity-badge ${config.class}`}>
-      <FontAwesomeIcon icon={config.icon} />
-      {config.text}
-    </span>
-  );
-};
+    const config = severityConfig[severity];
 
+    return (
+      <span className={`report-severity-badge ${config.class}`}>
+        <FontAwesomeIcon icon={config.icon} />
+        {config.text}
+      </span>
+    );
+  };
 
   // 🎯 UPDATED: Get action buttons with threshold validation (same pattern as users)
   const getActionButtons = (post) => {
@@ -746,13 +827,18 @@ const ReportSeverityBadge = ({ post }) => {
     }
   };
 
-  // Mobile card view with type
+  // 🆕 UPDATED: Mobile card view with user navigation and highlighting
   const MobilePostCard = ({ post }) => (
-    <div className="pm-mobile-card">
+    <div className={`pm-mobile-card ${highlightedPost === post.id ? 'pm-post-highlighted' : ''}`}>
       <div className="pm-mobile-header">
         <div className="pm-mobile-title">
           <h3>{post.title}</h3>
-          <div className="pm-mobile-author">
+          <div 
+            className="pm-mobile-author clickable-user"
+            onClick={() => navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`)}
+            title="Click to view user in Manage Users"
+          >
+            <FontAwesomeIcon icon={faUser} />
             by {post.first_name} {post.last_name}
           </div>
         </div>
@@ -837,10 +923,46 @@ const ReportSeverityBadge = ({ post }) => {
         </button>
       </div>
 
+      {/* 🆕 ADDED: User Filter Banner */}
+      {userFilter && (
+        <div className="user-filter-banner">
+          <div className="user-filter-content">
+            <FontAwesomeIcon icon={faUser} />
+            <span>Showing posts by: <strong>{userName}</strong></span>
+            <button 
+              className="user-filter-clear"
+              onClick={clearUserFilter}
+              title="Clear user filter"
+            >
+              <FontAwesomeIcon icon={faTimes} />
+              Clear Filter
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 🆕 ADDED: Highlighted Post Banner */}
+      {highlightedPost && (
+        <div className="post-highlight-banner">
+          <div className="post-highlight-content">
+            <FontAwesomeIcon icon={faFlag} />
+            <span>Highlighted Post: <strong>#{highlightedPost}</strong></span>
+            <button 
+              className="post-highlight-clear"
+              onClick={clearHighlightedPost}
+              title="Clear highlight"
+            >
+              <FontAwesomeIcon icon={faTimes} />
+              Clear Highlight
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Stats Summary */}
       <div className="pm-stats">
         <div 
-          className={`pm-stat-card ${statusFilter === 'all' && typeFilter === 'all' ? 'pm-stat-active' : ''}`}
+          className={`pm-stat-card ${statusFilter === 'all' && typeFilter === 'all' && !userFilter && !highlightedPost ? 'pm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('all', 'all')}
           style={{ cursor: 'pointer' }}
         >
@@ -1002,6 +1124,8 @@ const ReportSeverityBadge = ({ post }) => {
               <span className="pm-count">
                 {filteredPosts.length} of {posts.length} post{filteredPosts.length !== 1 ? 's' : ''}
                 {isFilterActive() && ' (Filtered)'}
+                {userFilter && ` - User: ${userName}`}
+                {highlightedPost && ` - Highlighted: #${highlightedPost}`}
               </span>
             </div>
           </div>
@@ -1056,7 +1180,12 @@ const ReportSeverityBadge = ({ post }) => {
                   </thead>
                   <tbody>
                     {filteredPosts.map(post => (
-                      <tr key={post.id} className={selectedPosts.has(post.id) ? 'pm-row-selected' : ''}>
+                      <tr 
+                        key={post.id} 
+                        className={`${selectedPosts.has(post.id) ? 'pm-row-selected' : ''} ${
+                          highlightedPost === post.id ? 'pm-post-highlighted' : ''
+                        }`}
+                      >
                         <td>
                           <input
                             type="checkbox"
@@ -1068,9 +1197,14 @@ const ReportSeverityBadge = ({ post }) => {
                         <td>
                           <div className="pm-title-author">
                             <strong className="pm-title">{post.title}</strong>
-                            <span className="pm-author">
+                            <div 
+                              className="pm-author clickable-user"
+                              onClick={() => navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`)}
+                              title="Click to view user in Manage Users"
+                            >
+                              <FontAwesomeIcon icon={faUser} />
                               by {post.first_name} {post.last_name}
-                            </span>
+                            </div>
                           </div>
                         </td>
                         <td>
@@ -1184,7 +1318,14 @@ const ReportSeverityBadge = ({ post }) => {
                 </div>
                 <div className="pm-detail-row">
                   <label>Author:</label>
-                  <span>{viewModal.post.first_name} {viewModal.post.last_name}</span>
+                  <div 
+                    className="clickable-user"
+                    onClick={() => navigateToUser(viewModal.post.user_id, `${viewModal.post.first_name} ${viewModal.post.last_name}`)}
+                    title="Click to view user in Manage Users"
+                  >
+                    <FontAwesomeIcon icon={faUser} />
+                    {viewModal.post.first_name} {viewModal.post.last_name}
+                  </div>
                 </div>
                 <div className="pm-detail-row">
                   <label>Type:</label>

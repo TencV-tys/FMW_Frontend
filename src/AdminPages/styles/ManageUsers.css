@@ -231,6 +231,22 @@
   gap: 1rem;
 }
 
+/* For table rows specifically */
+.manage-users-table tbody tr.manage-users-highlighted {
+  background-color: rgba(139, 90, 43, 0.3) !important;
+  border: 3px solid #8B5A2B !important;
+}
+
+.manage-users-mobile-card.manage-users-highlighted {
+  animation: pulse-highlight 2s ease-in-out infinite, highlight-glow 1.5s ease-in-out infinite;
+  border: 3px solid #8B5A2B !important; /* Changed from 2px to 3px */
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 .manage-users-threshold-item {
   display: flex;
   align-items: center;
@@ -303,7 +319,7 @@
   margin: 0;
   color: #8B5A2B;
   font-size: 1.3rem;
-  font-weight: 700;
+  font-weight: 700; 
 }
 
 .manage-users-header-info {
@@ -312,7 +328,7 @@
   align-items: flex-end;
   gap: 0.5rem;
 }
-
+ 
 .manage-users-count {
   color: #666;
   font-size: 0.95rem;
@@ -369,6 +385,94 @@
   border-bottom: none;
 }
 
+/* 🆕 IMPROVED: Clickable row styles */
+.manage-users-clickable-row {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.manage-users-clickable-row:hover {
+  background-color: #f8f9fa !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(139, 90, 43, 0.1);
+}
+
+/* 🆕 IMPROVED: Highlight animation with strong background color */
+@keyframes pulse-highlight {
+  0% { 
+    background-color: rgba(139, 90, 43, 0.3); /* Stronger background */
+    box-shadow: 0 0 0 0 rgba(139, 90, 43, 0.6);
+  }
+  50% { 
+    background-color: rgba(139, 90, 43, 0.5); /* Even stronger */
+    box-shadow: 0 0 0 6px rgba(139, 90, 43, 0.3);
+  }
+  100% { 
+    background-color: rgba(139, 90, 43, 0.3); /* Stronger background */
+    box-shadow: 0 0 0 0 rgba(139, 90, 43, 0.6);
+  }
+}
+
+@keyframes highlight-glow {
+  0% { 
+    box-shadow: 0 0 8px rgba(139, 90, 43, 0.7),
+                inset 0 0 0 3px rgba(139, 90, 43, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(139, 90, 43, 0.9),
+                inset 0 0 0 3px rgba(139, 90, 43, 0.6);
+  }
+  100% { 
+    box-shadow: 0 0 8px rgba(139, 90, 43, 0.7),
+                inset 0 0 0 3px rgba(139, 90, 43, 0.4);
+  }
+}
+
+.manage-users-highlighted {
+  animation: pulse-highlight 1.5s ease-in-out infinite, highlight-glow 2s ease-in-out infinite;
+  border: 3px solid #8B5A2B !important;
+  position: relative;
+  z-index: 1;
+}
+
+.manage-users-highlighted::before {
+  content: "🔍 Highlighted";
+  position: absolute;
+  top: -12px;
+  right: 10px;
+  background: #8B5A2B;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  z-index: 2;
+  animation: bounce 2s ease-in-out infinite;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+
+
+
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.manage-users-external-link-icon {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: #8B5A2B;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.manage-users-clickable-row:hover .manage-users-external-link-icon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 /* User Info */
 .manage-users-user-info {
   display: flex;
@@ -380,6 +484,8 @@
   color: #1f2937;
   font-weight: 700;
   font-size: 1rem;
+  display: flex;
+  align-items: center;
 }
 
 .manage-users-user-info small {
@@ -685,11 +791,33 @@
   border-left: 4px solid #8B5A2B;
   transition: all 0.3s ease;
   border: 1px solid #e5e7eb;
+  cursor: pointer;
+  position: relative;
 }
 
 .manage-users-mobile-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.manage-users-mobile-card.manage-users-highlighted {
+  animation: pulse-highlight 2s ease-in-out infinite, highlight-glow 1.5s ease-in-out infinite;
+  border: 2px solid #8B5A2B !important;
+}
+
+.manage-users-mobile-card.manage-users-highlighted::before {
+  content: "🔍 Highlighted";
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  background: #8B5A2B;
+  color: white;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: bold;
+  z-index: 2;
+  animation: bounce 2s ease-in-out infinite;
 }
 
 .manage-users-mobile-header {
@@ -710,6 +838,8 @@
   font-size: 1.1rem;
   line-height: 1.4;
   font-weight: 700;
+  display: flex;
+  align-items: center;
 }
 
 .manage-users-mobile-id {
