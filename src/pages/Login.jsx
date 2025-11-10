@@ -114,12 +114,7 @@ export default function Login() {
   };
 
   useEffect(() => {
-    const registered = searchParams.get('registered');
     const reset = searchParams.get('reset');
-    
-    if (registered === 'success') {
-      toast.success('Account created successfully! Please login.', 5000);
-    }
     
     if (reset === 'success') {
       toast.success('Password reset successfully! Please login.', 5000);
