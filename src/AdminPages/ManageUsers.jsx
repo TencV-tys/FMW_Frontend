@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // 🆕 ADD THIS
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faSearch, 
@@ -22,12 +22,12 @@ import {
   faTimes,
   faBell,
   faUndo,
-  faExternalLinkAlt // 🆕 ADD THIS
+  faExternalLinkAlt
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
 export default function ManageUsers() {
-  const navigate = useNavigate(); // 🆕 ADD THIS HOOK
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,98 +54,130 @@ export default function ManageUsers() {
     type: 'success'
   });
 
-  // 🆕 ADDED: Highlight state for navigation
+  // 🆕 FIXED: Single ref declarations
   const [highlightedUser, setHighlightedUser] = useState(null);
+  const tableContainerRef = useRef(null);
+  const highlightedRowRef = useRef(null);
 
-  // 🆕 ADDED: Smart polling refs and warned users tracking
+  // Smart polling refs and warned users tracking
   const pollingIntervalRef = useRef(null);
   const isTabActiveRef = useRef(true);
   const [warnedUsers, setWarnedUsers] = useState(() => {
-    // Load from localStorage on initial render
     const saved = localStorage.getItem('warnedUsers');
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
 
-  // 🆕 UPDATED: Report thresholds using BOTH monthly and total reports
+  // Report thresholds using BOTH monthly and total reports
   const REPORT_THRESHOLDS = {
     WARNING: {
-      MONTHLY: 3,      // Warning at 3 monthly reports
-      TOTAL: 10        // OR warning at 10 total reports
+      MONTHLY: 3,
+      TOTAL: 10
     },
     CAN_SUSPEND: {
-      MONTHLY: 5,      // Can suspend at 5 monthly reports
-      TOTAL: 15        // OR can suspend at 15 total reports
+      MONTHLY: 5,
+      TOTAL: 15
     },
     CAN_BAN: {
-      MONTHLY: 8,      // Can ban at 8 monthly reports
-      TOTAL: 20        // OR can ban at 20 total reports
+      MONTHLY: 8,
+      TOTAL: 20
     },
     CAN_DELETE: {
-      MONTHLY: 10,     // Can delete at 10 monthly reports
-      TOTAL: 25        // OR can delete at 25 total reports
+      MONTHLY: 10,
+      TOTAL: 25
     }
   };
 
-  // 🆕 ADDED: Check for URL parameters on component mount
+  // 🆕 IMPROVED: Enhanced highlight scrolling with better positioning
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const highlightUser = urlParams.get('highlightUser');
     
     if (highlightUser) {
-      setHighlightedUser(parseInt(highlightUser));
-      // Scroll to highlighted user after data loads
+      const userId = parseInt(highlightUser);
+      setHighlightedUser(userId);
+      
+      // Use setTimeout to ensure DOM is ready
       setTimeout(() => {
-        const element = document.querySelector(`[data-user-id="${highlightUser}"]`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          element.style.animation = 'pulse-highlight 2s ease-in-out';
-        }
-      }, 1000);
-    } 
+        scrollToHighlightedUser(userId);
+      }, 800);
+    }
   }, []);
 
-  // 🆕 ADDED: Save to localStorage whenever warnedUsers changes
+  // 🆕 IMPROVED: Scroll to highlighted user with proper centering
+  const scrollToHighlightedUser = (userId) => {
+    const element = document.querySelector(`[data-user-id="${userId}"]`);
+    if (element && tableContainerRef.current) {
+      const container = tableContainerRef.current;
+      const elementTop = element.offsetTop;
+      const elementHeight = element.offsetHeight;
+      const containerHeight = container.clientHeight;
+      
+      // Calculate scroll position to center the element
+      const scrollTop = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      
+      container.scrollTo({
+        top: Math.max(0, scrollTop), // Ensure we don't scroll to negative values
+        behavior: 'smooth'
+      });
+      
+      // Store ref for potential re-scrolling
+      highlightedRowRef.current = element;
+    }
+  };
+
+  // 🆕 IMPROVED: Re-scroll when users data loads and highlighted user exists
+  useEffect(() => {
+    if (highlightedUser && users.length > 0 && !loading) {
+      setTimeout(() => {
+        scrollToHighlightedUser(highlightedUser);
+      }, 500);
+    }
+  }, [users, loading, highlightedUser]);
+
+  // 🆕 ADDED: Auto-scroll when highlighted user changes
+  useEffect(() => {
+    if (highlightedUser) {
+      setTimeout(() => {
+        scrollToHighlightedUser(highlightedUser);
+      }, 300);
+    }
+  }, [highlightedUser]);
+
+  // 🆕 FIXED: Check for deleted users when navigating from notifications
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightUser = urlParams.get('highlightUser');
+    
+    if (highlightUser) {
+      const userId = parseInt(highlightUser);
+      setHighlightedUser(userId);
+      
+      if (users.length > 0) {
+        const user = users.find(u => u.id === userId);
+        
+        if (!user) {
+          showToast('This user has been deleted or does not exist', 'error');
+        } else if (user.deleted_at) {
+          showToast('This user has been deleted', 'warning');
+        }
+      }
+    }
+  }, [users]);
+
+  // Save to localStorage whenever warnedUsers changes
   useEffect(() => {
     localStorage.setItem('warnedUsers', JSON.stringify([...warnedUsers]));
   }, [warnedUsers]);
 
-  // 🆕 FIXED: Check for deleted users when navigating from notifications
-useEffect(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const highlightUser = urlParams.get('highlightUser');
-  
-  if (highlightUser) {
-    const userId = parseInt(highlightUser);
-    setHighlightedUser(userId);
-    
-    // Wait for users to load, then check status
-    if (users.length > 0) {
-      const user = users.find(u => u.id === userId);
-      
-      if (!user) {
-        // User doesn't exist in the fetched data
-        showToast('This user has been deleted or does not exist', 'error');
-      } else if (user.deleted_at) {
-        // User exists but is deleted
-        showToast('This user has been deleted', 'warning');
-      }
-      // If user exists and is not deleted, no toast - just highlight
-    }
-  }
-}, [users]); // Run when users data changes
-
   useEffect(() => {
     fetchUsers();
 
-    // 🆕 ADDED: Smart polling setup
     const handleVisibilityChange = () => {
       isTabActiveRef.current = !document.hidden;
       if (isTabActiveRef.current) {
-        // Tab became active, fetch immediately
         fetchUsers();
         startPolling();
       } else {
-        // Tab hidden, stop polling
         stopPolling();
       }
     };
@@ -159,14 +191,14 @@ useEffect(() => {
     };
   }, []);
 
-  // 🆕 ADDED: Smart polling functions (60 seconds)
+  // Smart polling functions (60 seconds)
   const startPolling = () => {
-    stopPolling(); // Clear any existing interval
+    stopPolling();
     pollingIntervalRef.current = setInterval(() => {
       if (isTabActiveRef.current) {
         fetchUsers();
       }
-    }, 60000); // 60 seconds
+    }, 60000);
   };
 
   const stopPolling = () => {
@@ -176,7 +208,7 @@ useEffect(() => {
     }
   };
 
-  // 🆕 ADDED: Manual refresh
+  // Manual refresh
   const handleManualRefresh = async () => {
     showToast('Refreshing users...', 'success');
     await fetchUsers();
@@ -228,7 +260,7 @@ useEffect(() => {
     }
   };
 
-  // 🆕 UPDATED: AUTOMATIC WARNING CHECK - BOTH MONTHLY AND TOTAL
+  // AUTOMATIC WARNING CHECK - BOTH MONTHLY AND TOTAL
   const checkForAutomaticWarnings = async (usersData) => {
     try {
       const usersNeedingWarning = usersData.filter(user => 
@@ -263,7 +295,7 @@ useEffect(() => {
     }
   };
 
-  // 🆕 UPDATED: SEND AUTOMATIC WARNING - ONLY USER ID (NO REPORT COUNTS)
+  // SEND AUTOMATIC WARNING - ONLY USER ID (NO REPORT COUNTS)
   const sendAutomaticWarning = async (user) => {
     try {
       const response = await fetch('http://localhost:8000/api/admin/send-user-warning', {
@@ -273,7 +305,7 @@ useEffect(() => {
         },
         credentials: 'include',
         body: JSON.stringify({
-          userId: user.id // 🆕 Only send user ID, no report counts
+          userId: user.id
         })
       });
 
@@ -288,15 +320,13 @@ useEffect(() => {
     }
   };
 
-  // 🆕 ADDED: Handle user row click to navigate to user details or related content
+  // Handle user row click to navigate to user details or related content
   const handleUserClick = (user) => {
-    // Navigate to user details or posts with user filter
     navigate(`/admin/manage-posts?userId=${user.id}&userName=${encodeURIComponent(getUserName(user))}`);
   };
 
-  // 🎯 OPEN MODAL FUNCTIONS WITH VALIDATION
+  // OPEN MODAL FUNCTIONS WITH VALIDATION
   const openSuspendModal = (user) => {
-    // Check if user meets suspension conditions
     if (user.role === 'admin') {
       showToast('Cannot suspend admin users', 'error');
       return;
@@ -315,7 +345,6 @@ useEffect(() => {
   };
 
   const openBanModal = (user) => {
-    // Check if user meets ban conditions
     if (user.role === 'admin') {
       showToast('Cannot ban admin users', 'error');
       return;
@@ -332,7 +361,6 @@ useEffect(() => {
   };
 
   const openDeleteModal = (user) => {
-    // Prevent deleting admin users
     if (user.role === 'admin') {
       showToast('Cannot delete admin users', 'error');
       return;
@@ -352,7 +380,7 @@ useEffect(() => {
     setShowActivateModal(true);
   };
 
-  // 🎯 CLOSE ALL MODALS
+  // CLOSE ALL MODALS
   const closeAllModals = () => {
     setShowSuspendModal(false);
     setShowBanModal(false);
@@ -362,11 +390,10 @@ useEffect(() => {
     setIsProcessing(false);
   };
 
-  // 🎯 DELETE USER
+  // DELETE USER
   const handleDelete = async () => {
     if (!selectedUser) return;
     
-    // Double-check admin protection
     if (selectedUser.role === 'admin') {
       showToast('Cannot delete admin users', 'error');
       closeAllModals();
@@ -396,7 +423,7 @@ useEffect(() => {
     }
   };
 
-  // 🎯 SUSPEND USER
+  // SUSPEND USER
   const handleSuspend = async () => {
     if (!selectedUser) return;
     
@@ -455,7 +482,7 @@ useEffect(() => {
     }
   };
 
-  // 🎯 BAN USER
+  // BAN USER
   const handleBan = async () => {
     if (!selectedUser) return;
     
@@ -497,7 +524,7 @@ useEffect(() => {
     }
   };
 
-  // 🎯 ACTIVATE USER
+  // ACTIVATE USER
   const handleActivate = async () => {
     if (!selectedUser) return;
     
@@ -533,7 +560,7 @@ useEffect(() => {
     }
   };
 
-  // 🆕 FIXED: RESTORE USER FUNCTION
+  // RESTORE USER FUNCTION
   const handleRestore = async (user) => {
     if (!user || !user.deleted_at) {
       showToast('User is not deleted or cannot be restored', 'error');
@@ -554,7 +581,6 @@ useEffect(() => {
       console.log('Backend response:', responseData);
       
       if (res.ok) {
-        // Update the user in state - set status to active and clear deleted_at
         setUsers(users.map(u => 
           u.id === user.id ? { 
             ...u, 
@@ -575,7 +601,7 @@ useEffect(() => {
     }
   };
 
-  // 🆕 UPDATED: CHECK IF USER CAN BE SUSPENDED - BOTH MONTHLY AND TOTAL
+  // CHECK IF USER CAN BE SUSPENDED - BOTH MONTHLY AND TOTAL
   const canSuspendUser = (user) => {
     return user.role !== 'admin' && 
            user.status === 'active' && 
@@ -584,7 +610,7 @@ useEffect(() => {
             user.total_report_count >= REPORT_THRESHOLDS.CAN_SUSPEND.TOTAL);
   };
 
-  // 🆕 UPDATED: CHECK IF USER CAN BE BANNED - BOTH MONTHLY AND TOTAL
+  // CHECK IF USER CAN BE BANNED - BOTH MONTHLY AND TOTAL
   const canBanUser = (user) => {
     return user.role !== 'admin' && 
            user.status === 'active' && 
@@ -593,7 +619,7 @@ useEffect(() => {
             user.total_report_count >= REPORT_THRESHOLDS.CAN_BAN.TOTAL);
   };
 
-  // 🆕 UPDATED: CHECK IF USER CAN BE DELETED - BOTH MONTHLY AND TOTAL
+  // CHECK IF USER CAN BE DELETED - BOTH MONTHLY AND TOTAL
   const canDeleteUser = (user) => {
     return user.role !== 'admin' && 
            !user.deleted_at &&
@@ -705,9 +731,8 @@ useEffect(() => {
     setSearchTerm('');
   };
 
-  // 🆕 UPDATED: GET ACTION BUTTONS WITH RESTORE FUNCTIONALITY
+  // GET ACTION BUTTONS WITH RESTORE FUNCTIONALITY
   const getActionButtons = (user) => {
-    // 🆕 Check if user is deleted (has deleted_at timestamp)
     if (user.deleted_at) {
       return (
         <>
@@ -793,7 +818,7 @@ useEffect(() => {
     }
   };
 
-  // 🆕 UPDATED: Report severity indicator with BOTH monthly and total
+  // Report severity indicator with BOTH monthly and total
   const getReportSeverity = (user) => {
     if (user.deleted_at) return 'deleted';
     
@@ -819,7 +844,7 @@ useEffect(() => {
     return 'none';
   };
 
-  // 🆕 UPDATED: Report severity badge with BOTH monthly and total
+  // Report severity badge with BOTH monthly and total
   const ReportSeverityBadge = ({ user }) => {
     const severity = getReportSeverity(user);
     
@@ -1095,7 +1120,7 @@ useEffect(() => {
         )}
       </div> 
 
-      {/* 🆕 UPDATED: Report Thresholds Info */}
+      {/* Report Thresholds Info */}
       <div className="manage-users-thresholds-info">
         <h3>Report Thresholds (Monthly OR Total):</h3>
         <div className="manage-users-thresholds-grid">
@@ -1127,7 +1152,7 @@ useEffect(() => {
       </div>
 
       {/* Users Table */}
-      <div className='manage-users-table-container'>
+      <div className='manage-users-table-container' ref={tableContainerRef}>
         <div className='manage-users-table-inner'>
           <div className='manage-users-table-content'>
             <div className='manage-users-table-header'>
@@ -1572,40 +1597,6 @@ useEffect(() => {
           </div>
         </div> 
       )}
-
-      <style jsx>{`
-        @keyframes pulse-highlight {
-          0% { background-color: rgba(139, 90, 43, 0.1); }
-          50% { background-color: rgba(139, 90, 43, 0.3); }
-          100% { background-color: rgba(139, 90, 43, 0.1); }
-        }
-        
-        .manage-users-highlighted {
-          animation: pulse-highlight 2s ease-in-out;
-          border: 2px solid #8B5A2B !important;
-        }
-        
-        .manage-users-clickable-row {
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
-        
-        .manage-users-clickable-row:hover {
-          background-color: #f8f9fa !important;
-        }
-        
-        .manage-users-external-link-icon {
-          margin-left: 0.5rem;
-          font-size: 0.8rem;
-          color: #8B5A2B;
-          opacity: 0.7;
-        }
-        
-        .manage-users-mobile-card.manage-users-highlighted {
-          animation: pulse-highlight 2s ease-in-out;
-          border: 2px solid #8B5A2B !important;
-        }
-      `}</style>
-    </>
+    </> 
   );
 }
