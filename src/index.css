@@ -5,25 +5,15 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* 🎯 Or if you prefer, add this to each page */
-.bulletin-page-container,
-.myposts-container,
-.create-container,
-.profile-page,
-.edit-profile-page,
-.my-reports-page,
-.user-notification-page{
-  min-height: 100dvh;
-}
 
-
+ 
 
 /* ===== TOAST STYLES - GLOBAL ===== */
 .custom-toast-container {
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 9999;
+  z-index: 9999; 
   display: flex;
   flex-direction: column;
   gap: 20px;

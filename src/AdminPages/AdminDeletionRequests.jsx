@@ -11,15 +11,15 @@ import {
   faTimes,
   faFire,
   faList,
-  faThLarge,
+  
   faEye,
   faUser,
   faEnvelope,
   faBan,
-  faTrash,
+ 
   faTimesCircle,
   faExternalLinkAlt,
-  faEdit,
+ 
   faUsers,
   faWarning,
   faChartBar

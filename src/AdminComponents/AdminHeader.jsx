@@ -125,7 +125,7 @@ export default function AdminHeader() {
                             <div className="dropdown-menu">
                                 <div className="dropdown-item user-info">
                                     <strong>Administrator</strong>
-                                    <small>admin@system.com</small>
+                                    <small>afmw203@gmail.com</small>
                                 </div>
                                 <div className="dropdown-divider"></div>
                                 <div className="dropdown-item">
