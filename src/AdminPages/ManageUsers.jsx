@@ -54,10 +54,12 @@ export default function ManageUsers() {
     type: 'success'
   });
 
-  // 🆕 FIXED: Single ref declarations
+  // 🆕 ENHANCED: Highlight and scroll refs
   const [highlightedUser, setHighlightedUser] = useState(null);
   const tableContainerRef = useRef(null);
+  const tableWrapperRef = useRef(null);
   const highlightedRowRef = useRef(null);
+  const highlightedCellRef = useRef(null);
 
   // Smart polling refs and warned users tracking
   const pollingIntervalRef = useRef(null);
@@ -87,7 +89,7 @@ export default function ManageUsers() {
     }
   };
 
-  // 🆕 IMPROVED: Enhanced highlight scrolling with better positioning
+  // 🆕 ENHANCED: Highlight scrolling with horizontal support
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const highlightUser = urlParams.get('highlightUser');
@@ -103,29 +105,58 @@ export default function ManageUsers() {
     }
   }, []);
 
-  // 🆕 IMPROVED: Scroll to highlighted user with proper centering
+  // 🆕 ENHANCED: Scroll to highlighted user with VERTICAL and HORIZONTAL support
   const scrollToHighlightedUser = (userId) => {
-    const element = document.querySelector(`[data-user-id="${userId}"]`);
+    // Try table view first
+    const tableElement = document.querySelector(`tr[data-user-id="${userId}"]`);
+    // Try mobile card view
+    const mobileElement = document.querySelector(`.manage-users-mobile-card[data-user-id="${userId}"]`);
+    
+    const element = tableElement || mobileElement;
+    
     if (element && tableContainerRef.current) {
       const container = tableContainerRef.current;
       const elementTop = element.offsetTop;
       const elementHeight = element.offsetHeight;
       const containerHeight = container.clientHeight;
       
-      // Calculate scroll position to center the element
+      // Calculate VERTICAL scroll position to center the element
       const scrollTop = elementTop - (containerHeight / 2) + (elementHeight / 2);
       
       container.scrollTo({
-        top: Math.max(0, scrollTop), // Ensure we don't scroll to negative values
+        top: Math.max(0, scrollTop),
         behavior: 'smooth'
       });
+
+      // 🆕 ADDED: HORIZONTAL scrolling for table view
+      if (tableElement && tableWrapperRef.current) {
+        const tableWrapper = tableWrapperRef.current;
+        const actionsCell = tableElement.querySelector('td:last-child');
+        
+        if (actionsCell) {
+          const cellLeft = actionsCell.offsetLeft;
+          const cellWidth = actionsCell.offsetWidth;
+          const wrapperWidth = tableWrapper.clientWidth;
+          
+          // Calculate HORIZONTAL scroll position to show actions column
+          const scrollLeft = cellLeft - (wrapperWidth / 2) + (cellWidth / 2);
+          
+          tableWrapper.scrollTo({
+            left: Math.max(0, scrollLeft),
+            behavior: 'smooth'
+          });
+
+          // Store ref for the highlighted cell
+          highlightedCellRef.current = actionsCell;
+        }
+      }
       
       // Store ref for potential re-scrolling
       highlightedRowRef.current = element;
     }
   };
 
-  // 🆕 IMPROVED: Re-scroll when users data loads and highlighted user exists
+  // 🆕 ENHANCED: Re-scroll when users data loads and highlighted user exists
   useEffect(() => {
     if (highlightedUser && users.length > 0 && !loading) {
       setTimeout(() => {
@@ -134,7 +165,7 @@ export default function ManageUsers() {
     }
   }, [users, loading, highlightedUser]);
 
-  // 🆕 ADDED: Auto-scroll when highlighted user changes
+  // 🆕 ENHANCED: Auto-scroll when highlighted user changes
   useEffect(() => {
     if (highlightedUser) {
       setTimeout(() => {
@@ -1190,7 +1221,11 @@ export default function ManageUsers() {
             ) : ( 
               <>
                 {/* Desktop Table View */}
-                <div className="manage-users-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
+                <div 
+                  className="manage-users-table-wrapper" 
+                  style={{ display: viewMode === 'table' ? 'block' : 'none' }}
+                  ref={tableWrapperRef} // 🆕 ADDED: Horizontal scroll container ref
+                >
                   <table className='manage-users-table'>
                     <thead>
                       <tr>
@@ -1597,6 +1632,6 @@ export default function ManageUsers() {
           </div>
         </div> 
       )}
-    </> 
+    </>
   );
 }

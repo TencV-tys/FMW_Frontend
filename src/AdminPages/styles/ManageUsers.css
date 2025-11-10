@@ -1,4 +1,4 @@
-/* ManageUsers.css - Enhanced Dark Brown Gradient Theme */
+/* ManageUsers.css - Enhanced Dark Brown Gradient Theme with Horizontal Scroll */
 .manage-users-page {
   padding: 2rem;
   max-width: 1400px;
@@ -321,6 +321,7 @@
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  scroll-behavior: smooth;
 }
 
 .manage-users-table-inner {
@@ -373,7 +374,7 @@
   border: 1px solid #e5e7eb;
 }
 
-/* Table Styles - Enhanced */
+/* 🆕 ENHANCED: Table Wrapper with Horizontal Scrolling */
 .manage-users-table-wrapper {
   background: #FBFCF8;
   border-radius: 16px;
@@ -381,12 +382,42 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   overflow-x: auto;
   border: 1px solid rgba(139, 90, 43, 0.1);
+  scroll-behavior: smooth;
+  position: relative;
 }
 
+/* 🆕 ENHANCED: Custom horizontal scrollbar */
+.manage-users-table-wrapper::-webkit-scrollbar {
+  height: 14px;
+}
+
+.manage-users-table-wrapper::-webkit-scrollbar-track {
+  background: rgba(139, 90, 43, 0.1);
+  border-radius: 8px;
+  margin: 0 15px;
+}
+
+.manage-users-table-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #8B5A2B, #654321);
+  border-radius: 8px;
+  border: 3px solid #FBFCF8;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.manage-users-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #A0522D, #8B5A2B);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.manage-users-table-wrapper::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Table Styles - Enhanced */
 .manage-users-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1000px;
+  min-width: 1200px;
   font-size: 0.95rem;
 }
 
@@ -414,6 +445,7 @@
   vertical-align: middle;
   line-height: 1.5;
   font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .manage-users-table tbody tr {
@@ -454,7 +486,7 @@
   }
 }
 
-/* Table row highlight */
+/* 🆕 ENHANCED: Table row highlight with horizontal scroll target */
 .manage-users-table tbody tr.manage-users-highlighted {
   background: linear-gradient(135deg, #fff9e6, #ffe6cc) !important;
   border: 3px solid #8B5A2B !important;
@@ -464,12 +496,60 @@
   z-index: 5;
 }
 
-/* Mobile card highlight */
-.manage-users-mobile-card.manage-users-highlighted {
-  animation: manage-users-pulse 2s ease-in-out;
-  border: 3px solid #8B5A2B !important;
-  background: linear-gradient(135deg, #fff9e6, #ffe6cc) !important;
-  box-shadow: 0 8px 30px rgba(139, 90, 43, 0.4) !important;
+/* 🆕 ENHANCED: Highlight specific cell in highlighted row - Actions column */
+.manage-users-table tbody tr.manage-users-highlighted td:last-child {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7) !important;
+  border: 3px solid #f59e0b !important;
+  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.3) !important;
+  position: relative;
+  animation: manage-users-cell-pulse 2s infinite;
+}
+
+@keyframes manage-users-cell-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.3), 0 0 0 0 rgba(245, 158, 11, 0.5);
+  }
+  50% {
+    box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.4), 0 0 0 10px rgba(245, 158, 11, 0);
+  }
+}
+
+/* 🆕 ENHANCED: Tooltip for highlighted actions cell */
+.manage-users-table tbody tr.manage-users-highlighted td:last-child::after {
+  content: '👁️ Scroll to see Actions →';
+  position: absolute;
+  top: -35px;
+  right: 10px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  animation: manage-users-bounce 2s infinite;
+}
+
+@keyframes manage-users-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
+  }
+}
+
+/* 🆕 ENHANCED: Highlight for important columns when scrolled */
+.manage-users-table tbody tr.manage-users-highlighted td:nth-last-child(2),
+.manage-users-table tbody tr.manage-users-highlighted td:nth-last-child(3) {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb) !important;
+  border-left: 2px solid #1976d2 !important;
+  border-right: 2px solid #1976d2 !important;
 }
 
 .manage-users-external-link-icon {
@@ -877,6 +957,14 @@
 .manage-users-mobile-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile card highlight */
+.manage-users-mobile-card.manage-users-highlighted {
+  animation: manage-users-pulse 2s ease-in-out;
+  border: 3px solid #8B5A2B !important;
+  background: linear-gradient(135deg, #fff9e6, #ffe6cc) !important;
+  box-shadow: 0 8px 30px rgba(139, 90, 43, 0.4) !important;
 }
 
 .manage-users-mobile-header {
@@ -1543,12 +1631,7 @@
   background: transparent !important;
 }
 
-/* Smooth scrolling */
-.manage-users-table-container {
-  scroll-behavior: smooth;
-}
-
-/* Custom scrollbar */
+/* Custom scrollbar for main container */
 .manage-users-table-container::-webkit-scrollbar {
   width: 8px;
 }
