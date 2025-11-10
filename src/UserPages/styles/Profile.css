@@ -159,10 +159,10 @@
   bottom: -4px;
   background: #22c55e;
   border-radius: 50%;
-  animation: pulse-dot-animation 2s infinite;
+  animation: pulses-dot-animation 2s infinite;
 }
 
-@keyframes pulse-dot-animation {
+@keyframes pulses-dot-animation {
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.5); opacity: 0.5; }
   100% { transform: scale(1); opacity: 1; }

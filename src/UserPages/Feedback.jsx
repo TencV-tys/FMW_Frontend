@@ -603,7 +603,7 @@ const canDeleteFeedback = (feedback) => {
   }
 
   return (
-    <div className="feedback-page-fmw">
+    <div className="feedback-page-fmw"> 
       <UserNav />
       <main className="feedback-container-fmw">
         <div className='feedback-container-darkbrown-fmw'>

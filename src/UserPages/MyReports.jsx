@@ -205,7 +205,7 @@ export default function MyReports() {
   return (
     <div className="my-reports-page-fmw">
       <UserNav />
-      <main className="my-reports-container-fmw">
+      <main className="my-reports-container-fmw"> 
         <div className='reports-container-darkbrown-fmw'>
           <div className='reports-container-lightbrown-fmw'>
             <div className='reports-content-fmw'>
@@ -392,7 +392,7 @@ export default function MyReports() {
                             <p>Are you sure you want to delete this report?</p>
                             <p><strong>"{deleteConfirm.post_title}"</strong></p>
                             <p className="warning-text-fmw">
-                              This action cannot be undone. The report will be permanently removed.
+                               This action cannot be undone. The report will be permanently removed.
                             </p>
                             <div className="delete-confirmation-actions-fmw">
                               <button

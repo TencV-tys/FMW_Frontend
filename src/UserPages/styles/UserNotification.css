@@ -1,7 +1,7 @@
 /* UserNotification.css - BROWN THEME TO MATCH NAVBAR */
 .user-notif-page {
   padding: 2rem;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   animation: userNotifSlideIn 0.6s ease-out;
   min-height: 100dvh;
