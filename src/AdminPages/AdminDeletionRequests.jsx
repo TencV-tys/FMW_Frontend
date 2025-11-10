@@ -13,7 +13,16 @@ import {
   faList,
   faThLarge,
   faEye,
-  faUser
+  faUser,
+  faEnvelope,
+  faBan,
+  faTrash,
+  faTimesCircle,
+  faExternalLinkAlt,
+  faEdit,
+  faUsers,
+  faWarning,
+  faChartBar
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/AdminDeletionRequests.css';
 
@@ -23,38 +32,60 @@ export default function AdminDeletionRequests() {
   const [loading, setLoading] = useState(true);
   const [requestsLoading, setRequestsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterLimit, setFilterLimit] = useState('all');
+  
+  // 🆕 UPDATED: Enhanced filter states
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [userStatusFilter, setUserStatusFilter] = useState('all'); // 🆕 ADDED: User status filter
+  const [viewMode, setViewMode] = useState('table');
+  
+  // 🆕 ADDED: Highlight state for navigation
+  const [highlightedRequest, setHighlightedRequest] = useState(null);
+  const [highlightedUser, setHighlightedUser] = useState(null);
+
+  // 🆕 ADDED: Tabs state
   const [activeTab, setActiveTab] = useState('requests');
-  const [requestModal, setRequestModal] = useState({
+
+  // 🆕 UPDATED: Enhanced modal states
+  const [viewModal, setViewModal] = useState({
     isOpen: false,
+    request: null
+  });
+
+  const [confirmationModal, setConfirmationModal] = useState({
+    isOpen: false,
+    type: '', // 'approve' or 'reject'
+    title: '',
+    message: '',
     request: null,
     action: '',
-    adminNotes: ''
+    isProcessing: false
   });
 
-  // 🆕 ADDED: View mode and highlight state
-  const [viewMode, setViewMode] = useState('table');
-  const [highlightedRequest, setHighlightedRequest] = useState(null);
-
-  // Filter for pending requests - Updated to 3 only and 4+
-  const [requestFilter, setRequestFilter] = useState('all');
-
-  // Loading state for actions to prevent double clicks
-  const [actionLoading, setActionLoading] = useState({
-    process: false
+  // 🆕 ADDED: Rejection Reason Modal
+  const [rejectionModal, setRejectionModal] = useState({
+    isOpen: false,
+    request: null,
+    reason: '',
+    isProcessing: false
   });
 
-  // Toast notifications
+  // Toast state
   const [toast, setToast] = useState({
     show: false,
     message: '',
     type: 'success'
   });
 
-  // Auto-reload reference
-  const autoReloadRef = useRef(null);
-  // 🆕 ADDED: Ref for table container to enable scrolling
+  // 🆕 ADDED: Scroll refs for auto-scrolling
   const tableContainerRef = useRef(null);
+  const tableWrapperRef = useRef(null);
+  const highlightedRowRef = useRef(null);
+  const highlightedCellRef = useRef(null);
+
+  // Smart polling refs
+  const pollingIntervalRef = useRef(null);
+  const isTabActiveRef = useRef(true);
 
   // Show toast notification
   const showToast = (message, type = 'success') => {
@@ -64,17 +95,92 @@ export default function AdminDeletionRequests() {
     }, 3000);
   };
 
-  // Check if any filter is active
-  const isFilterActive = () => {
-    return searchTerm !== '' || filterLimit !== 'all';
+  // 🆕 ADDED: Navigation function to User Statistics
+  const navigateToUserStatistics = (userId, email) => {
+    setActiveTab('users');
+    setHighlightedUser(userId);
+    setSearchTerm(email); // Auto-search for the user
+    closeViewModal();
+    
+    setTimeout(() => {
+      const userElement = document.querySelector(`tr[data-user-id="${userId}"]`);
+      if (userElement && tableContainerRef.current) {
+        userElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 500);
   };
 
-  // Check if any request filter is active
-  const isRequestFilterActive = () => {
-    return requestFilter !== 'all';
+  // 🆕 ADDED: Auto-scroll function for User Statistics
+  const scrollToHighlightedUser = (userId) => {
+    const userElement = document.querySelector(`tr[data-user-id="${userId}"]`);
+    if (userElement && tableContainerRef.current) {
+      userElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   };
 
-  // 🆕 ADDED: Check for highlighted requests in URL
+  // 🆕 ADDED: Auto-scroll function with HORIZONTAL scroll to buttons
+  const scrollToHighlightedRequest = (requestId) => {
+    const tableElement = document.querySelector(`tr[data-request-id="${requestId}"]`);
+    const mobileElement = document.querySelector(`.adr-mobile-card[data-request-id="${requestId}"]`);
+    
+    const element = tableElement || mobileElement;
+    
+    if (element && tableContainerRef.current) {
+      const container = tableContainerRef.current;
+      const elementTop = element.offsetTop;
+      const elementHeight = element.offsetHeight;
+      const containerHeight = container.clientHeight;
+      
+      const scrollTop = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      
+      container.scrollTo({
+        top: Math.max(0, scrollTop),
+        behavior: 'smooth'
+      });
+
+      if (tableElement && tableWrapperRef.current) {
+        const tableWrapper = tableWrapperRef.current;
+        const actionsCell = tableElement.querySelector('td:last-child');
+        
+        if (actionsCell) {
+          const cellLeft = actionsCell.offsetLeft;
+          const cellWidth = actionsCell.offsetWidth;
+          const wrapperWidth = tableWrapper.clientWidth;
+          
+          const scrollLeft = cellLeft - (wrapperWidth / 2) + (cellWidth / 2);
+          
+          tableWrapper.scrollTo({
+            left: Math.max(0, scrollLeft),
+            behavior: 'smooth'
+          });
+
+          highlightedCellRef.current = actionsCell;
+        }
+      }
+      
+      highlightedRowRef.current = element;
+    }
+  };
+
+  // 🆕 ADDED: Re-scroll when request data loads and highlighted request exists
+  useEffect(() => {
+    if (highlightedRequest && deletionRequests.length > 0 && !requestsLoading) {
+      setTimeout(() => {
+        scrollToHighlightedRequest(highlightedRequest);
+      }, 500);
+    }
+  }, [deletionRequests, requestsLoading, highlightedRequest]);
+
+  // 🆕 ADDED: Auto-scroll when highlighted user changes
+  useEffect(() => {
+    if (highlightedUser && activeTab === 'users') {
+      setTimeout(() => {
+        scrollToHighlightedUser(highlightedUser);
+      }, 500);
+    }
+  }, [highlightedUser, activeTab]);
+
+  // 🆕 ADDED: Check for URL parameters on component mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const highlightRequest = urlParams.get('highlightRequest');
@@ -83,54 +189,78 @@ export default function AdminDeletionRequests() {
       const requestId = parseInt(highlightRequest);
       setHighlightedRequest(requestId);
       
-      // Clear the URL parameter after reading it
+      if (deletionRequests.length > 0) {
+        const requestItem = deletionRequests.find(r => r.id === requestId);
+        
+        if (!requestItem) {
+          showToast('This deletion request has been processed or does not exist', 'error');
+        }
+      }
+      
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
-  }, []);
+  }, [deletionRequests]);
 
-  // Smart polling - auto reload every 1 minute
+  // 🆕 UPDATED: Smart polling setup
   useEffect(() => {
-    // Initial fetch
-    fetchUsersDeletionStats();
     fetchDeletionRequests();
+    fetchUsersDeletionStats();
 
-    // Set up auto-reload every 1 minute (60000ms)
-    autoReloadRef.current = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchUsersDeletionStats();
-        fetchDeletionRequests();
-      }
-    }, 60000);
-
-    // Cleanup interval on component unmount
-    return () => {
-      if (autoReloadRef.current) {
-        clearInterval(autoReloadRef.current);
-      }
-    };
-  }, []);
-
-  // Also reload when tab becomes visible
-  useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchUsersDeletionStats();
+      isTabActiveRef.current = !document.hidden;
+      if (isTabActiveRef.current) {
         fetchDeletionRequests();
+        fetchUsersDeletionStats();
+        startPolling();
+      } else {
+        stopPolling();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    startPolling();
+
     return () => {
+      stopPolling();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [statusFilter, priorityFilter]);
+
+  // 🆕 ADDED: Smart polling functions
+  const startPolling = () => {
+    stopPolling();
+    pollingIntervalRef.current = setInterval(() => {
+      if (isTabActiveRef.current) {
+        fetchDeletionRequests();
+        fetchUsersDeletionStats();
+      }
+    }, 60000);
+  };
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  };
+
+  // 🆕 ADDED: Manual refresh
+  const handleManualRefresh = async () => {
+    showToast('Refreshing deletion requests...', 'success');
+    await fetchDeletionRequests();
+    await fetchUsersDeletionStats();
+  };
 
   const fetchUsersDeletionStats = async () => {
     try {
       setLoading(true);
       const response = await fetch('http://localhost:8000/api/admin/users-deletion-stats', {
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (response.ok) {
@@ -138,9 +268,11 @@ export default function AdminDeletionRequests() {
         setUsers(data.users || []);
       } else {
         console.error('Failed to fetch users deletion stats');
+        showToast('Error fetching user statistics', 'error');
       }
     } catch (error) {
       console.error('Error fetching users deletion stats:', error);
+      showToast('Error fetching user statistics', 'error');
     } finally {
       setLoading(false);
     }
@@ -149,8 +281,22 @@ export default function AdminDeletionRequests() {
   const fetchDeletionRequests = async () => {
     try {
       setRequestsLoading(true);
-      const response = await fetch('http://localhost:8000/api/admin/deletion-requests', {
-        credentials: 'include'
+      let url = 'http://localhost:8000/api/admin/deletion-requests';
+      const params = new URLSearchParams();
+      
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (priorityFilter !== 'all') params.append('priority', priorityFilter);
+      
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await fetch(url, {
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (response.ok) {
@@ -158,280 +304,413 @@ export default function AdminDeletionRequests() {
         setDeletionRequests(data.requests || []);
       } else {
         console.error('Failed to fetch deletion requests');
+        showToast('Error fetching deletion requests', 'error');
       }
     } catch (error) {
       console.error('Error fetching deletion requests:', error);
+      showToast('Error fetching deletion requests', 'error');
     } finally {
       setRequestsLoading(false);
     }
   };
 
-  // Handle process deletion request with double-click prevention
-  const handleProcessDeletionRequest = async (requestId, action, adminNotes = '') => {
-    if (actionLoading.process) return; // Prevent double-click
+  // 🆕 ADDED: Clear highlighted items
+  const clearHighlightedItems = () => {
+    setHighlightedRequest(null);
+    setHighlightedUser(null);
+  };
+
+  // 🆕 UPDATED: Enhanced request processing with modal flow
+  const processDeletionRequest = async (requestId, action, rejectionReason = '') => {
+    if (confirmationModal.isProcessing) return;
     
-    setActionLoading(prev => ({ ...prev, process: true }));
+    setConfirmationModal(prev => ({ ...prev, isProcessing: true }));
     
     try {
+      const requestBody = { action: action };
+      if (rejectionReason) {
+        requestBody.admin_notes = rejectionReason;
+      }
+
       const response = await fetch(`http://localhost:8000/api/admin/deletion-requests/${requestId}/process`, {
         method: 'PUT',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          action: action,
-          admin_notes: adminNotes 
-        })
+        credentials: 'include',
+        body: JSON.stringify(requestBody)
       });
 
       if (response.ok) {
         const data = await response.json();
+        setDeletionRequests(prev => prev.filter(request => request.id !== requestId));
+        fetchUsersDeletionStats();
+        closeConfirmationModal();
+        closeRejectionModal();
         showToast(data.message || `Request ${action}d successfully`, 'success');
         
-        // Remove the processed request from the list
-        setDeletionRequests(prevRequests => 
-          prevRequests.filter(request => request.id !== requestId)
-        );
-        
-        // Clear highlight if the highlighted request was processed
         if (highlightedRequest === requestId) {
           setHighlightedRequest(null);
         }
-        
-        // Refresh user stats to get updated deletion counts
-        fetchUsersDeletionStats();
-        
-        setRequestModal({ isOpen: false, request: null, action: '', adminNotes: '' });
       } else {
-        const errorData = await response.json();
-        showToast(errorData.error || `Failed to ${action} request`, 'error');
+        throw new Error('Failed to process request');
       }
     } catch (error) {
       console.error('Error processing deletion request:', error);
       showToast('Error processing deletion request', 'error');
     } finally {
-      setActionLoading(prev => ({ ...prev, process: false }));
+      setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
 
-  const openRequestModal = (request, action) => {
-    setRequestModal({
+  // 🆕 ADDED: Modal Functions
+  const openViewModal = (request) => {
+    setViewModal({ isOpen: true, request });
+    if (highlightedRequest === request.id) {
+      setHighlightedRequest(null);
+    }
+  };
+
+  const openActionConfirmation = (request, action) => {
+    const actionLabels = {
+      approve: 'Approve',
+      reject: 'Reject'
+    };
+
+    if (action === 'reject') {
+      openRejectionModal(request);
+      return;
+    }
+
+    setConfirmationModal({
       isOpen: true,
-      request,
-      action,
-      adminNotes: ''
+      type: action,
+      title: `${actionLabels[action]} Deletion Request`,
+      message: `Are you sure you want to ${action} this deletion request?`,
+      request: request,
+      action: action,
+      isProcessing: false
     });
   };
 
-  const closeModal = () => {
-    setRequestModal({ isOpen: false, request: null, action: '', adminNotes: '' });
+  // 🆕 ADDED: Open rejection reason modal
+  const openRejectionModal = (request) => {
+    setRejectionModal({
+      isOpen: true,
+      request: request,
+      reason: '',
+      isProcessing: false
+    });
   };
 
-  const handleStatCardClick = (filterType) => {
-    setActiveTab('users');
-    setFilterLimit(filterType);
+  // 🆕 ADDED: Close rejection reason modal
+  const closeRejectionModal = () => {
+    setRejectionModal({
+      isOpen: false,
+      request: null,
+      reason: '',
+      isProcessing: false
+    });
   };
 
-  // Filter pending requests based on deletion count - Updated to 3 only and 4+
-  const getFilteredPendingRequests = () => {
-    const pendingRequests = deletionRequests.filter(request => request.status === 'pending');
+  // 🆕 ADDED: Handle rejection reason submission
+  const handleRejectionSubmit = () => {
+    if (rejectionModal.isProcessing || !rejectionModal.reason.trim()) return;
     
-    return pendingRequests.filter(request => {
-      const currentDeletions = request.current_deletions || 0;
-      
-      switch (requestFilter) {
-        case 'exactly_3':
-          return currentDeletions === 3;
-        case 'four_plus':
-          return currentDeletions >= 4;
-        default:
-          return true; // 'all'
-      }
+    processDeletionRequest(rejectionModal.request.id, 'reject', rejectionModal.reason.trim());
+  };
+
+  const closeViewModal = () => {
+    setViewModal({ isOpen: false, request: null });
+  };
+
+  const closeConfirmationModal = () => {
+    if (confirmationModal.isProcessing) return;
+    
+    setConfirmationModal({
+      isOpen: false,
+      type: '',
+      title: '',
+      message: '',
+      request: null,
+      action: '',
+      isProcessing: false
     });
   };
 
+  const handleConfirmAction = () => {
+    if (confirmationModal.isProcessing) return;
+    
+    if (confirmationModal.type === 'approve' || confirmationModal.type === 'reject') {
+      processDeletionRequest(confirmationModal.request.id, confirmationModal.action);
+    }
+  };
+
+  // 🆕 UPDATED: Priority badge classes with new terms
+  const getPriorityBadgeClass = (request) => {
+    const deletions = request.current_deletions || 0;
+    if (deletions >= 4) return 'adr-priority-critical';
+    if (deletions === 3) return 'adr-priority-limit';
+    return 'adr-priority-warning';
+  };
+
+  const getPriorityBadgeText = (request) => {
+    const deletions = request.current_deletions || 0;
+    if (deletions >= 4) return 'Too Many This Month';
+    if (deletions === 3) return 'Limit Reached';
+    return 'Approaching Limit';
+  };
+
+  // 🆕 ADDED: Status badge classes
+  const getStatusBadgeClass = (status) => {
+    const statusMap = {
+      pending: 'adr-status-pending',
+      approved: 'adr-status-approved',
+      rejected: 'adr-status-rejected'
+    };
+    return statusMap[status] || 'adr-status-pending';
+  };
+
+  // 🆕 ADDED: Status icons
+  const getStatusIcon = (status) => {
+    const iconMap = {
+      pending: faClock,
+      approved: faCheckCircle,
+      rejected: faBan
+    };
+    return iconMap[status] || faClock;
+  };
+
+  // 🆕 UPDATED: Priority icons with new terms
+  const getPriorityIcon = (request) => {
+    const deletions = request.current_deletions || 0;
+    if (deletions >= 4) return faFire;
+    if (deletions === 3) return faWarning;
+    return faExclamationTriangle;
+  };
+
+  const formatTime = (dateString) => {
+    if (!dateString) return 'Unknown date';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now - date) / (1000 * 60 * 60);
+    
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)} hours ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  // Check if any filter is active
+  const isFilterActive = () => {
+    return statusFilter !== 'all' || priorityFilter !== 'all' || searchTerm !== '' || highlightedRequest !== null || highlightedUser !== null || userStatusFilter !== 'all';
+  };
+
+  // 🆕 UPDATED: Clear all filters
+  const clearAllFilters = () => {
+    setStatusFilter('all');
+    setPriorityFilter('all');
+    setUserStatusFilter('all');
+    setSearchTerm('');
+    setHighlightedRequest(null);
+    setHighlightedUser(null);
+  };
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Filter only pending requests for the main interface
+  const pendingRequests = deletionRequests.filter(request => request.status === 'pending');
+
+  // 🆕 UPDATED: Filter logic with new priority terms
+  const filteredRequests = pendingRequests.filter(request => {
+    const matchesSearch = 
+      request.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.reason?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.post_title?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const deletions = request.current_deletions || 0;
+    const matchesPriority = priorityFilter === 'all' || 
+      (priorityFilter === 'critical' && deletions >= 4) ||
+      (priorityFilter === 'limit' && deletions === 3) ||
+      (priorityFilter === 'warning' && deletions >= 1 && deletions <= 2);
+
+    return matchesSearch && matchesPriority;
+  });
+
+  // 🆕 UPDATED: Stats for PENDING REQUESTS tab with new terms
+  const requestStats = {
+    total: pendingRequests.length,
+    critical: pendingRequests.filter(req => (req.current_deletions || 0) >= 4).length,
+    limit: pendingRequests.filter(req => (req.current_deletions || 0) === 3).length,
+    warning: pendingRequests.filter(req => (req.current_deletions || 0) >= 1 && (req.current_deletions || 0) <= 2).length
+  };
+
+  // 🆕 ADDED: Stats for USER STATISTICS tab
+  const userStats = {
+    totalUsers: users.length,
+    limitReached: users.filter(u => u.limit_reached).length,
+    approachingLimit: users.filter(u => u.deletion_count >= 2 && !u.limit_reached).length,
+    totalDeletions: users.reduce((sum, user) => sum + (user.deletion_count || 0), 0),
+    withinLimit: users.filter(u => u.deletion_count <= 1).length
+  };
+
+  // 🆕 ADDED: Handle stat card click for PENDING REQUESTS tab
+  const handleRequestStatCardClick = (filterType) => {
+    setActiveTab('requests');
+    setPriorityFilter(filterType);
+    setHighlightedRequest(null);
+  };
+
+  // 🆕 ADDED: Handle stat card click for USER STATISTICS tab
+  const handleUserStatCardClick = (filterType) => {
+    setActiveTab('users');
+    setUserStatusFilter(filterType);
+    setHighlightedUser(null);
+  };
+
+  // 🆕 ADDED: Filter users for user statistics tab
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesFilter = filterLimit === 'all' || 
-                         (filterLimit === 'limit_reached' && user.limit_reached) ||
-                         (filterLimit === 'approaching' && user.deletion_count >= 2 && !user.limit_reached);
+    // 🆕 ADDED: User status filtering
+    const matchesStatus = userStatusFilter === 'all' || 
+      (userStatusFilter === 'limit_reached' && user.limit_reached) ||
+      (userStatusFilter === 'approaching' && user.deletion_count >= 2 && !user.limit_reached) ||
+      (userStatusFilter === 'within' && user.deletion_count <= 1);
 
-    return matchesSearch && matchesFilter;
+    return matchesSearch && matchesStatus;
   });
 
-  const pendingRequests = deletionRequests.filter(request => request.status === 'pending');
-
-  // Stats for request filters - Updated to 3 only and 4+
-  const requestStats = {
-    all: pendingRequests.length,
-    exactly_3: pendingRequests.filter(req => (req.current_deletions || 0) === 3).length,
-    four_plus: pendingRequests.filter(req => (req.current_deletions || 0) >= 4).length
+  // 🆕 ADDED: Get user status class and text
+  const getUserStatusClass = (user) => {
+    if (user.limit_reached) return 'adr-user-status-banned';
+    if (user.deletion_count >= 2) return 'adr-user-status-suspended';
+    return 'adr-user-status-active';
   };
 
-  const stats = {
-    totalUsers: users.length,
-    limitReached: users.filter(u => u.limit_reached).length,
-    approachingLimit: users.filter(u => u.deletion_count >= 2 && !u.limit_reached).length,
-    totalDeletions: users.reduce((sum, user) => sum + (user.deletion_count || 0), 0),
-    pendingRequests: pendingRequests.length,
-    filteredUsers: filteredUsers.length
-  };
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setFilterLimit('all');
-  };
-
-  // Clear request filters
-  const clearRequestFilters = () => {
-    setRequestFilter('all');
-  };
-
-  const getStatusClass = (user) => {
-    if (user.limit_reached) return 'adr-status-banned';
-    if (user.deletion_count >= 2) return 'adr-status-suspended';
-    return 'adr-status-active';
-  };
-
-  const getStatusText = (user) => {
+  const getUserStatusText = (user) => {
     if (user.limit_reached) return 'Limit Reached';
     if (user.deletion_count >= 2) return 'Approaching Limit';
     return 'Within Limit';
   };
 
-  // Get request priority class - Updated to 3 only and 4+
-  const getRequestPriorityClass = (request) => {
-    const deletions = request.current_deletions || 0;
-    if (deletions >= 4) return 'adr-priority-critical';
-    if (deletions === 3) return 'adr-priority-high';
-    return 'adr-priority-medium';
+  // 🆕 ADDED: Check if user filter is active
+  const isUserFilterActive = () => {
+    return userStatusFilter !== 'all' || searchTerm !== '' || highlightedUser !== null;
   };
-
-  // Get request priority text - Updated to 3 only and 4+
-  const getRequestPriorityText = (request) => {
-    const deletions = request.current_deletions || 0;
-    if (deletions >= 4) return 'Critical (4+ deletions)';
-    if (deletions === 3) return 'High (Exactly 3)';
-    return 'Medium';
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // 🆕 ADDED: Auto-scroll to highlighted request when data loads
-  useEffect(() => {
-    const filteredPendingRequests = getFilteredPendingRequests();
-    if (highlightedRequest && filteredPendingRequests.length > 0 && tableContainerRef.current) {
-      // Wait for DOM to update
-      setTimeout(() => {
-        const highlightedElement = document.querySelector(`[data-request-id="${highlightedRequest}"]`);
-        if (highlightedElement) {
-          // Scroll the table container to the highlighted element
-          highlightedElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center',
-            inline: 'nearest'
-          });
-        }
-      }, 300);
-    }
-  }, [deletionRequests, highlightedRequest, viewMode, requestFilter]);
-
-  // 🆕 ADDED: Handle request highlighting when requests are loaded
-  useEffect(() => {
-    if (highlightedRequest && deletionRequests.length > 0) {
-      const request = deletionRequests.find(r => r.id === highlightedRequest);
-      
-      if (!request) {
-        showToast('This deletion request has been processed or does not exist', 'error');
-        setHighlightedRequest(null);
-      } else if (request.status !== 'pending') {
-        showToast('This deletion request has already been processed', 'warning');
-      }
-    }
-  }, [deletionRequests, highlightedRequest]);
 
   // 🆕 ADDED: Mobile Request Card Component
-  const MobileRequestCard = ({ request }) => (
-    <div 
-      className={`adr-mobile-card ${highlightedRequest === request.id ? 'adr-request-highlighted' : ''}`}
-      data-request-id={request.id}
-    >
-      <div className="adr-mobile-header">
-        <div className="adr-mobile-title">
-          <h3>
-            {request.first_name} {request.last_name}
-            {highlightedRequest === request.id && (
-              <span className="adr-highlight-badge">🔍 Highlighted</span>
-            )}
-          </h3>
-          <div className="adr-mobile-email">{request.email}</div>
+  const MobileRequestCard = ({ request }) => {
+    const isHighlighted = highlightedRequest === request.id;
+    
+    return (
+      <div 
+        className={`adr-mobile-card ${isHighlighted ? 'adr-request-highlighted' : ''}`}
+        data-request-id={request.id}
+      >
+        <div className="adr-mobile-header">
+          <div className="adr-mobile-title">
+            <h3>
+              {request.first_name} {request.last_name}
+              <FontAwesomeIcon 
+                icon={faExternalLinkAlt} 
+                className="adr-external-link-icon"
+                title="Click to view user details"
+              />
+            </h3>
+            <div className="adr-mobile-id">ID: #{request.id}</div>
+          </div>
+          <div className="adr-mobile-badges">
+            <span className={`adr-mobile-priority ${getPriorityBadgeClass(request)}`}>
+              <FontAwesomeIcon icon={getPriorityIcon(request)} />
+              {getPriorityBadgeText(request)}
+            </span>
+          </div>
         </div>
-        <div className="adr-mobile-badges">
-          <span className={`adr-mobile-priority ${getRequestPriorityClass(request)}`}>
-            <FontAwesomeIcon icon={getRequestPriorityClass(request) === 'adr-priority-critical' ? faFire : faExclamationTriangle} />
-            {getRequestPriorityText(request)}
+        
+        <div className="adr-mobile-details">
+          <div className="adr-mobile-detail">
+            <FontAwesomeIcon icon={faUser} />
+            <span className="adr-clickable">
+              {request.first_name} {request.last_name}
+            </span>
+          </div>
+          <div className="adr-mobile-detail">
+            <FontAwesomeIcon icon={faEnvelope} />
+            <span>{request.email}</span>
+          </div>
+          <div className="adr-mobile-detail">
+            <FontAwesomeIcon icon={faClock} />
+            <span>{formatTime(request.created_at)}</span>
+          </div>
+          <div className="adr-mobile-detail">
+            <FontAwesomeIcon icon={faExclamationTriangle} />
+            <span>Deletions: {request.current_deletions || 0}/3</span>
+          </div>
+          
+          <div className="adr-mobile-description">
+            <strong>Reason:</strong>
+            <p>{request.reason?.length > 150 
+              ? `${request.reason.substring(0, 150)}...`
+              : request.reason
+            }</p>
+          </div>
+
+          {request.post_title && (
+            <div className="adr-mobile-description">
+              <strong>Related Post:</strong>
+              <p>{request.post_title}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="adr-mobile-status-section">
+          <span className={`adr-mobile-status ${getStatusBadgeClass(request.status)}`}>
+            <FontAwesomeIcon icon={getStatusIcon(request.status)} />
+            {request.status}
           </span>
         </div>
-      </div>
-      
-      <div className="adr-mobile-details">
-        <div className="adr-mobile-detail">
-          <span className="adr-detail-label">Current Deletions</span>
-          <span className="adr-detail-value">{request.current_deletions || 0}/3</span>
+        
+        <div className="adr-mobile-actions">
+          <button
+            className="adr-action-btn view"
+            onClick={() => openViewModal(request)}
+            title="View details"
+            disabled={confirmationModal.isProcessing}
+          >
+            <FontAwesomeIcon icon={faEye} />
+          </button>
+          
+          <button
+            className="adr-action-btn approve"
+            onClick={() => openActionConfirmation(request, 'approve')}
+            title="Approve Request"
+            disabled={confirmationModal.isProcessing}
+          >
+            <FontAwesomeIcon icon={faCheck} />
+          </button>
+          
+          <button
+            className="adr-action-btn reject"
+            onClick={() => openActionConfirmation(request, 'reject')}
+            title="Reject Request"
+            disabled={confirmationModal.isProcessing}
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
         </div>
-        <div className="adr-mobile-detail">
-          <span className="adr-detail-label">Request Date</span>
-          <span className="adr-detail-value">{formatDate(request.created_at)}</span>
-        </div>
-        {request.post_title && (
-          <div className="adr-mobile-detail">
-            <span className="adr-detail-label">Related Post</span>
-            <span className="adr-detail-value">{request.post_title}</span>
-          </div>
-        )}
       </div>
-
-      <div className="adr-mobile-reason">
-        <strong>Reason:</strong>
-        <p>{request.reason}</p>
-      </div>
-      
-      <div className="adr-mobile-actions">
-        <button
-          className="adr-mobile-btn adr-mobile-approve"
-          onClick={() => openRequestModal(request, 'approve')}
-          title="Approve this deletion request"
-        >
-          <FontAwesomeIcon icon={faCheck} />
-          Approve
-        </button>
-        <button
-          className="adr-mobile-btn adr-mobile-reject"
-          onClick={() => openRequestModal(request, 'reject')}
-          title="Reject this deletion request"
-        >
-          <FontAwesomeIcon icon={faTimes} />
-          Reject
-        </button>
-      </div>
-    </div>
-  );
-
-  // Get filtered pending requests for rendering
-  const filteredPendingRequests = getFilteredPendingRequests();
-  stats.filteredPendingRequests = filteredPendingRequests.length;
+    );
+  };
 
   return (
     <>
@@ -448,24 +727,22 @@ export default function AdminDeletionRequests() {
         </div>
       )}
 
-      {/* Header Section */}
-      <div className="adr-header">
+      {/* Header */}
+      <header className="adr-management-header">
         <div className="adr-header-content">
-          <p>Manage user post deletion limits and approve additional deletions</p>
+          <p>Manage and review user deletion requests</p>
         </div>
-        <button 
-          className="adr-refresh-btn"
-          onClick={() => {
-            fetchUsersDeletionStats();
-            fetchDeletionRequests();
-            showToast('Data refreshed successfully', 'success');
-          }}
-          disabled={loading || requestsLoading}
-        >
-          <FontAwesomeIcon icon={faRefresh} spin={loading || requestsLoading} />
-          Refresh
-        </button>
-      </div>
+        <div className="adr-header-actions">
+          <button 
+            className="adr-refresh-btn"
+            onClick={handleManualRefresh}
+            disabled={requestsLoading}
+          >
+            <FontAwesomeIcon icon={faRefresh} spin={requestsLoading} />
+            Refresh
+          </button>
+        </div>
+      </header>
 
       {/* Tabs */}
       <div className="adr-tabs">
@@ -474,70 +751,147 @@ export default function AdminDeletionRequests() {
           onClick={() => setActiveTab('requests')}
         >
           <FontAwesomeIcon icon={faClock} />
-          Pending Requests ({stats.pendingRequests})
+          Pending Requests ({requestStats.total})
         </button>
         <button 
           className={`adr-tab-button ${activeTab === 'users' ? 'active' : ''}`}
           onClick={() => setActiveTab('users')}
         >
-          <FontAwesomeIcon icon={faExclamationTriangle} />
-          User Statistics ({stats.totalUsers})
+          <FontAwesomeIcon icon={faUsers} />
+          User Statistics ({userStats.totalUsers})
         </button>
       </div>
 
-      {/* Stats Cards */} 
-      <div className="adr-stats">
-        <div 
-          className={`adr-stat-card ${filterLimit === 'all' && activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('all')}
-        >
-          <span className="adr-stat-number">{stats.totalUsers}</span>
-          <span className="adr-stat-label">Total Users</span>
-        </div>
-        
-        <div 
-          className={`adr-stat-card ${filterLimit === 'limit_reached' && activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('limit_reached')}
-        >
-          <span className="adr-stat-number">{stats.limitReached}</span>
-          <span className="adr-stat-label">Limit Reached</span>
-        </div>
-        
-        <div 
-          className={`adr-stat-card ${filterLimit === 'approaching' && activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => handleStatCardClick('approaching')}
-        >
-          <span className="adr-stat-number">{stats.approachingLimit}</span>
-          <span className="adr-stat-label">Approaching Limit</span>
-        </div>
-        
-        <div 
-          className="adr-stat-card"
-          onClick={() => handleStatCardClick('all')}
-        >
-          <span className="adr-stat-number">{stats.totalDeletions}</span>
-          <span className="adr-stat-label">Total Deletions</span>
-        </div>
-      </div>
+      {/* Stats Cards - DIFFERENT FOR EACH TAB */}
+      {activeTab === 'requests' && (
+        <section className="adr-management-stats">
+          <div 
+            className={`adr-stat-card ${priorityFilter === 'all' && !highlightedRequest ? 'adr-stat-active' : ''}`}
+            onClick={() => handleRequestStatCardClick('all')}
+            style={{ cursor: 'pointer' }}
+            title="Show all requests"
+          >
+            <div className="adr-stat-info">
+              <span className="adr-stat-number">{requestStats.total}</span>
+              <span className="adr-stat-label">Total Requests</span>
+            </div>
+          </div>
+          <div 
+            className={`adr-stat-card ${priorityFilter === 'critical' ? 'adr-stat-active' : ''}`}
+            onClick={() => handleRequestStatCardClick('critical')}
+            style={{ cursor: 'pointer' }}
+            title="Show too many requests (4+ deletions)"
+          >
+            <div className="adr-stat-info">
+              <span className="adr-stat-number">{requestStats.critical}</span>
+              <span className="adr-stat-label">Too Many This Month</span>
+            </div>
+          </div>
+          <div 
+            className={`adr-stat-card ${priorityFilter === 'limit' ? 'adr-stat-active' : ''}`}
+            onClick={() => handleRequestStatCardClick('limit')}
+            style={{ cursor: 'pointer' }}
+            title="Show limit reached requests (3 deletions)"
+          >
+            <div className="adr-stat-info">
+              <span className="adr-stat-number">{requestStats.limit}</span>
+              <span className="adr-stat-label">Limit Reached</span>
+            </div>
+          </div>
+          <div 
+            className={`adr-stat-card ${priorityFilter === 'warning' ? 'adr-stat-active' : ''}`}
+            onClick={() => handleRequestStatCardClick('warning')}
+            style={{ cursor: 'pointer' }}
+            title="Show approaching limit requests (1-2 deletions)"
+          >
+            <div className="adr-stat-info">
+              <span className="adr-stat-number">{requestStats.warning}</span>
+              <span className="adr-stat-label">Approaching Limit</span>
+            </div>
+          </div>
+        </section>
+      )}
 
-      {/* Pending Requests Tab */}
+      {activeTab === 'users' && (
+        <section className="adr-management-stats">
+          <div 
+            className={`adr-stat-card ${userStatusFilter === 'all' && !highlightedUser ? 'adr-stat-active' : ''}`}
+            onClick={() => handleUserStatCardClick('all')}
+            style={{ cursor: 'pointer' }}
+            title="All users"
+          >
+            <div className="adr-stat-info">
+              <span className="adr-stat-number">{userStats.totalUsers}</span>
+              <span className="adr-stat-label">Total Users</span>
+            </div>
+          </div>
+          <div 
+            className={`adr-stat-card ${userStatusFilter === 'limit_reached' ? 'adr-stat-active' : ''}`}
+            onClick={() => handleUserStatCardClick('limit_reached')}
+            style={{ cursor: 'pointer' }}
+            title="Users who reached deletion limit"
+          >
+            <div className="adr-stat-info">
+              <span className="adr-stat-number">{userStats.limitReached}</span>
+              <span className="adr-stat-label">Limit Reached</span>
+            </div>
+          </div>
+          <div 
+            className={`adr-stat-card ${userStatusFilter === 'approaching' ? 'adr-stat-active' : ''}`}
+            onClick={() => handleUserStatCardClick('approaching')}
+            style={{ cursor: 'pointer' }}
+            title="Users approaching deletion limit"
+          >
+            <div className="adr-stat-info">
+              <span className="adr-stat-number">{userStats.approachingLimit}</span>
+              <span className="adr-stat-label">Approaching Limit</span>
+            </div>
+          </div>
+          <div 
+            className={`adr-stat-card ${userStatusFilter === 'within' ? 'adr-stat-active' : ''}`}
+            onClick={() => handleUserStatCardClick('within')}
+            style={{ cursor: 'pointer' }}
+            title="Users within normal limits"
+          >
+            <div className="adr-stat-info">
+              <span className="adr-stat-number">{userStats.withinLimit}</span>
+              <span className="adr-stat-label">Within Limit</span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Pending Requests Tab Content */}
       {activeTab === 'requests' && (
         <>
-          {/* Request Filters - Updated to 3 only and 4+ */}
-          <div className="adr-filters">
+          {/* Filters */}
+          <section className="adr-management-filters">
+            <div className="adr-search-box">
+              <FontAwesomeIcon icon={faSearch} />
+              <input
+                type="text"
+                placeholder="Search requests by name, email, reason, or post..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+            
             <div className="adr-filter-group">
               <FontAwesomeIcon icon={faFilter} />
               <select 
-                value={requestFilter}
-                onChange={(e) => setRequestFilter(e.target.value)}
+                value={priorityFilter} 
+                onChange={(e) => setPriorityFilter(e.target.value)}
+                className="adr-filter-select"
+                disabled={confirmationModal.isProcessing}
               >
-                <option value="all">All Requests ({requestStats.all})</option>
-                <option value="exactly_3">Exactly 3 ({requestStats.exactly_3})</option>
-                <option value="four_plus">4+ Deletions ({requestStats.four_plus})</option>
+                <option value="all">All Priorities</option>
+                <option value="critical">Too Many This Month (4+)</option>
+                <option value="limit">Limit Reached (3)</option>
+                <option value="warning">Approaching Limit (1-2)</option>
               </select>
             </div>
 
-            {/* 🆕 ADDED: View Mode Toggle */}
+            {/* View Toggle */}
             <div className="adr-filter-group">
               <FontAwesomeIcon icon={faList} />
               <select 
@@ -549,240 +903,318 @@ export default function AdminDeletionRequests() {
               </select>
             </div>
 
-            {isRequestFilterActive() && (
-              <button className="adr-clear-filters-btn" onClick={clearRequestFilters}>
+            {/* Clear Filters Button */}
+            {isFilterActive() && (
+              <button 
+                className="adr-clear-filters-btn"
+                onClick={clearAllFilters}
+                title="Clear all filters"
+                disabled={confirmationModal.isProcessing}
+              >
                 Clear Filters
-              </button> 
+              </button>
             )}
-          </div>
+          </section>
 
-          <div className='adr-table-darkbrown'>
-            <div className='adr-table-lightbrown'>
-              <div className='adr-table-content'>
-                <div className='adr-table-title'>
-                  <h2>Pending Deletion Requests</h2>
-                  <div className="adr-header-info">
-                    <span className="adr-users-count">
-                      {filteredPendingRequests.length} of {stats.pendingRequests} request{filteredPendingRequests.length !== 1 ? 's' : ''}
-                      {isRequestFilterActive() && ' (Filtered)'}
-                      {highlightedRequest && ` • Highlighted: #${highlightedRequest}`}
-                    </span>
-                  </div>
+          {/* Requests Table */}
+          <section className="adr-management-table-container" ref={tableContainerRef}>
+            <div className="adr-management-table-content">
+              <div className="adr-management-table-title">
+                <h2>Deletion Requests</h2>
+                <div className="adr-management-header-info">
+                  <span className="adr-management-count">
+                    Showing {filteredRequests.length} request{filteredRequests.length !== 1 ? 's' : ''}
+                    {isFilterActive() && ` (Filtered)`}
+                    {highlightedRequest && ` - Highlighted: #${highlightedRequest}`}
+                  </span>
                 </div>
+              </div>
 
-                {requestsLoading ? (
-                  <div className="adr-loading-state">
-                    <div className="adr-loading-spinner"></div>
-                    <p>Loading deletion requests...</p>
-                  </div>
-                ) : filteredPendingRequests.length === 0 ? (
-                  <div className="adr-empty-state">
-                    <p>No pending deletion requests found.</p>
-                    {isRequestFilterActive() && (
-                      <button 
-                        className="adr-retry-btn" 
-                        onClick={clearRequestFilters}
-                      >
-                        Clear Filters
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    {/* 🆕 ADDED: Desktop Table View */}
-                    <div 
-                      className="adr-table-wrapper" 
-                      ref={tableContainerRef}
-                      style={{ display: viewMode === 'table' ? 'block' : 'none' }}
-                    >
-                      <table className='adr-users-table'>
-                        <thead>
-                          <tr>
-                            <th>User Information</th>
-                            <th>Request Details</th>
-                            <th>Priority Level</th>
-                            <th>Date Requested</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredPendingRequests.map(request => (
+              {requestsLoading ? (
+                <div className="adr-loading-state">
+                  <div className="adr-loading-spinner"></div>
+                  <p>Loading deletion requests...</p>
+                </div>
+              ) : filteredRequests.length > 0 ? (
+                <>
+                  {/* Desktop Table View */}
+                  <div 
+                    className="adr-table-wrapper" 
+                    style={{ display: viewMode === 'table' ? 'block' : 'none' }}
+                    ref={tableWrapperRef}
+                  >
+                    <table className="adr-management-table">
+                      <thead>
+                        <tr>
+                          <th>User & Email</th>
+                          <th>Request Details</th>
+                          <th>Priority Level</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredRequests.map(request => {
+                          const isHighlighted = highlightedRequest === request.id;
+                          
+                          return (
                             <tr 
                               key={request.id} 
+                              className={`${isHighlighted ? 'adr-request-highlighted-row' : ''} adr-clickable-row`}
                               data-request-id={request.id}
-                              className={highlightedRequest === request.id ? 'adr-request-highlighted' : ''}
+                              onClick={() => openViewModal(request)}
                             >
                               <td>
                                 <div className="adr-user-info">
-                                  <strong>
-                                    {request.first_name} {request.last_name}
-                                    {highlightedRequest === request.id && (
-                                      <span className="adr-highlight-indicator"> 🔍</span>
-                                    )}
-                                  </strong>
-                                  <small>{request.email}</small>
+                                  <FontAwesomeIcon icon={faUser} />
                                   <div>
-                                    Current Deletions: {request.current_deletions || 0}/3
+                                    <div>
+                                      <span className="adr-clickable">
+                                        {request.first_name} {request.last_name}
+                                        <FontAwesomeIcon 
+                                          icon={faExternalLinkAlt} 
+                                          className="adr-external-link-icon"
+                                        />
+                                      </span>
+                                    </div>
+                                    <div className="adr-user-email">
+                                      <FontAwesomeIcon icon={faEnvelope} />
+                                      {request.email}
+                                    </div>
+                                    <div className="adr-deletion-count">
+                                      <FontAwesomeIcon icon={faExclamationTriangle} />
+                                      Deletions: {request.current_deletions || 0}/3
+                                    </div>
                                   </div>
                                 </div>
                               </td>
                               <td>
                                 <div className="adr-request-details">
                                   <strong>Reason:</strong>
-                                  <p className="adr-request-reason">{request.reason}</p>
+                                  <div className="adr-request-reason">
+                                    {request.reason?.length > 100 
+                                      ? `${request.reason.substring(0, 100)}...`
+                                      : request.reason
+                                    }
+                                  </div>
                                   {request.post_title && (
                                     <div className="adr-post-info">
-                                      <strong>Related Post:</strong> {request.post_title}
+                                      <strong>Post:</strong> {request.post_title}
                                     </div>
                                   )}
                                 </div>
                               </td>
                               <td>
-                                <span className={`adr-priority-badge ${getRequestPriorityClass(request)}`}>
-                                  <FontAwesomeIcon 
-                                    icon={getRequestPriorityClass(request) === 'adr-priority-critical' ? faFire : faExclamationTriangle} 
-                                  />
-                                  {getRequestPriorityText(request)}
+                                <span className={`adr-priority-badge ${getPriorityBadgeClass(request)}`}>
+                                  <FontAwesomeIcon icon={getPriorityIcon(request)} />
+                                  {getPriorityBadgeText(request)}
                                 </span>
                               </td>
                               <td>
-                                {formatDate(request.created_at)}
+                                <span className={`adr-status-badge ${getStatusBadgeClass(request.status)}`}>
+                                  <FontAwesomeIcon icon={getStatusIcon(request.status)} />
+                                  {request.status}
+                                </span>
                               </td>
                               <td>
-                                <div className="adr-table-actions">
+                                <div className="adr-date">
+                                  {formatTime(request.created_at)}
+                                </div>
+                              </td>
+                              <td onClick={(e) => e.stopPropagation()}>
+                                <div className="adr-management-actions">
+                                  <button
+                                    className="adr-action-btn view"
+                                    onClick={() => openViewModal(request)}
+                                    title="View details"
+                                    disabled={confirmationModal.isProcessing}
+                                  >
+                                    <FontAwesomeIcon icon={faEye} />
+                                  </button>
+                                  
                                   <button
                                     className="adr-action-btn approve"
-                                    onClick={() => openRequestModal(request, 'approve')}
-                                    title="Approve this deletion request"
+                                    onClick={() => openActionConfirmation(request, 'approve')}
+                                    title="Approve Request"
+                                    disabled={confirmationModal.isProcessing}
                                   >
                                     <FontAwesomeIcon icon={faCheck} />
-                                    Approve
                                   </button>
+                                  
                                   <button
                                     className="adr-action-btn reject"
-                                    onClick={() => openRequestModal(request, 'reject')}
-                                    title="Reject this deletion request"
+                                    onClick={() => openActionConfirmation(request, 'reject')}
+                                    title="Reject Request"
+                                    disabled={confirmationModal.isProcessing}
                                   >
                                     <FontAwesomeIcon icon={faTimes} />
-                                    Reject
                                   </button>
                                 </div>
                               </td>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
 
-                    {/* 🆕 ADDED: Mobile Card View */}
-                    <div 
-                      className="adr-mobile-cards" 
-                      style={{ display: viewMode === 'card' ? 'flex' : 'none' }}
+                  {/* Mobile Card View */}
+                  <div className="adr-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
+                    {filteredRequests.map(request => (
+                      <MobileRequestCard key={request.id} request={request} />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="adr-empty-state">
+                  <FontAwesomeIcon icon={faClock} size="3x" />
+                  <h3>No deletion requests found</h3>
+                  <p>
+                    {pendingRequests.length === 0
+                      ? "There are no pending deletion requests." 
+                      : "No requests match your filter criteria."
+                    }
+                  </p>
+                  {isFilterActive() && (
+                    <button 
+                      className="adr-retry-btn" 
+                      onClick={clearAllFilters}
+                      disabled={confirmationModal.isProcessing}
                     >
-                      {filteredPendingRequests.map(request => (
-                        <MobileRequestCard key={request.id} request={request} />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
+          </section>
         </>
       )}
 
-      {/* User Statistics Tab */}
+      {/* User Statistics Tab Content */}
       {activeTab === 'users' && (
         <>
           {/* Filters */}
-          <div className="adr-filters">
+          <section className="adr-management-filters">
             <div className="adr-search-box">
               <FontAwesomeIcon icon={faSearch} />
               <input
                 type="text"
                 placeholder="Search users by name or email..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearch}
               />
             </div>
-            
+
             <div className="adr-filter-group">
               <FontAwesomeIcon icon={faFilter} />
               <select 
-                value={filterLimit}
-                onChange={(e) => setFilterLimit(e.target.value)}
+                value={userStatusFilter} 
+                onChange={(e) => setUserStatusFilter(e.target.value)}
+                className="adr-filter-select"
               >
                 <option value="all">All Users</option>
                 <option value="limit_reached">Limit Reached</option>
                 <option value="approaching">Approaching Limit</option>
+                <option value="within">Within Limit</option>
               </select>
             </div>
 
-            {isFilterActive() && (
-              <button className="adr-clear-filters-btn" onClick={clearFilters}>
+            {/* Clear Filters Button */}
+            {isUserFilterActive() && (
+              <button 
+                className="adr-clear-filters-btn"
+                onClick={clearAllFilters}
+                title="Clear all filters"
+              >
                 Clear Filters
-              </button> 
+              </button>
             )}
-          </div>
+          </section>
 
           {/* Users Table */}
-          <div className='adr-table-darkbrown'>
-            <div className='adr-table-lightbrown'>
-              <div className='adr-table-content'>
-                <div className='adr-table-title'>
-                  <h2>Users Deletion Status</h2>
-                  <div className="adr-header-info">
-                    <span className="adr-users-count">
-                      {stats.filteredUsers} of {stats.totalUsers} user{stats.filteredUsers !== 1 ? 's' : ''}
-                      {isFilterActive() && ' (Filtered)'}
-                    </span>
-                  </div>
+          <section className="adr-management-table-container">
+            <div className="adr-management-table-content">
+              <div className="adr-management-table-title">
+                <h2>Users Deletion Status</h2>
+                <div className="adr-management-header-info">
+                  <span className="adr-management-count">
+                    {filteredUsers.length} of {userStats.totalUsers} user{filteredUsers.length !== 1 ? 's' : ''}
+                    {isUserFilterActive() && ' (Filtered)'}
+                    {highlightedUser && ` - Highlighted User`}
+                  </span>
                 </div>
+              </div>
 
-                {loading ? (
-                  <div className="adr-loading-state">
-                    <div className="adr-loading-spinner"></div>
-                    <p>Loading users deletion data...</p>
-                  </div>
-                ) : filteredUsers.length === 0 ? (
-                  <div className="adr-empty-state">
-                    <p>No users found matching your criteria.</p>
-                    {isFilterActive() && (
-                      <button 
-                        className="adr-retry-btn" 
-                        onClick={clearFilters}
-                      >
-                        Clear Filters
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="adr-table-wrapper">
-                    <table className='adr-users-table'>
-                      <thead>
-                        <tr>
-                          <th>User Information</th>
-                          <th>Deletion Status</th>
-                          <th>Deletion Count</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredUsers.map(user => (
-                          <tr key={user.id}>
+              {loading ? (
+                <div className="adr-loading-state">
+                  <div className="adr-loading-spinner"></div>
+                  <p>Loading users deletion data...</p>
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="adr-empty-state">
+                  <FontAwesomeIcon icon={faUsers} size="3x" />
+                  <h3>No users found</h3>
+                  <p>
+                    {users.length === 0
+                      ? "There are no users to display." 
+                      : "No users match your filter criteria."
+                    }
+                  </p>
+                  {isUserFilterActive() && (
+                    <button 
+                      className="adr-retry-btn" 
+                      onClick={clearAllFilters}
+                    >
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="adr-table-wrapper">
+                  <table className="adr-management-table">
+                    <thead>
+                      <tr>
+                        <th>User Information</th>
+                        <th>Deletion Status</th>
+                        <th>Deletion Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map(user => {
+                        const isHighlighted = highlightedUser === user.id;
+                        
+                        return (
+                          <tr 
+                            key={user.id} 
+                            className={isHighlighted ? 'adr-request-highlighted-row adr-user-highlighted-row' : ''}
+                            data-user-id={user.id}
+                          >
                             <td>
                               <div className="adr-user-info">
-                                <strong>{user.first_name} {user.last_name}</strong>
-                                <small>{user.email}</small>
+                                <FontAwesomeIcon icon={faUser} />
                                 <div>
-                                  Status: <span className={`adr-user-status-badge adr-user-status-${user.status}`}>
-                                    {user.status}
-                                  </span>
+                                  <div>
+                                    <span className="adr-clickable">
+                                      {user.first_name} {user.last_name}
+                                    </span>
+                                  </div>
+                                  <div className="adr-user-email">
+                                    <FontAwesomeIcon icon={faEnvelope} />
+                                    {user.email}
+                                  </div>
+                                  <div className="adr-user-status">
+                                    Status: <span className={`adr-user-status-badge ${getUserStatusClass(user)}`}>
+                                      {getUserStatusText(user)}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </td>
                             <td>
-                              <span className={`adr-status-badge ${getStatusClass(user)}`}>
-                                {getStatusText(user)}
+                              <span className={`adr-status-badge ${getUserStatusClass(user)}`}>
+                                {getUserStatusText(user)}
                               </span>
                             </td>
                             <td>
@@ -805,118 +1237,303 @@ export default function AdminDeletionRequests() {
                               </div>
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* View Request Modal */}
+      {viewModal.isOpen && viewModal.request && (
+        <div className="adr-modal-overlay" onClick={closeViewModal}>
+          <div className="adr-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="adr-modal-header">
+              <h2>Request Details</h2>
+              <button 
+                className="adr-modal-close"
+                onClick={closeViewModal}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="adr-modal-body">
+              <div className="adr-details-modal">
+                <div className="adr-detail-section">
+                  <h3>User Information</h3>
+                  <div className="adr-detail-row">
+                    <label>Name:</label>
+                    <span>{viewModal.request.first_name} {viewModal.request.last_name}</span>
+                  </div>
+                  <div className="adr-detail-row">
+                    <label>Email:</label>
+                    <span>{viewModal.request.email}</span>
+                  </div>
+                  <div className="adr-detail-row">
+                    <label>Current Deletions:</label>
+                    <span>{viewModal.request.current_deletions || 0}/3</span>
+                  </div>
+                  {/* 🆕 ADDED: Navigation button to User Statistics */}
+                  <div className="adr-detail-row full-width">
+                    <button
+                      className="adr-btn adr-btn-primary"
+                      onClick={() => navigateToUserStatistics(
+                        viewModal.request.user_id, 
+                        viewModal.request.email
+                      )}
+                      style={{ marginTop: '1rem' }}
+                    >
+                      <FontAwesomeIcon icon={faChartBar} />
+                      View User Statistics
+                    </button>
+                  </div>
+                </div>
+
+                <div className="adr-detail-section">
+                  <h3>Request Details</h3>
+                  <div className="adr-detail-row">
+                    <label>Priority:</label>
+                    <span className={`adr-priority-badge ${getPriorityBadgeClass(viewModal.request)}`}>
+                      {getPriorityBadgeText(viewModal.request)}
+                    </span>
+                  </div>
+                  <div className="adr-detail-row">
+                    <label>Status:</label>
+                    <span className={`adr-status-badge ${getStatusBadgeClass(viewModal.request.status)}`}>
+                      <FontAwesomeIcon icon={getStatusIcon(viewModal.request.status)} />
+                      {viewModal.request.status}
+                    </span>
+                  </div>
+                  <div className="adr-detail-row full-width">
+                    <label>Reason:</label>
+                    <div className="adr-reason-full">
+                      {viewModal.request.reason}
+                    </div>
+                  </div>
+                  {viewModal.request.post_title && (
+                    <div className="adr-detail-row">
+                      <label>Related Post:</label>
+                      <span>{viewModal.request.post_title}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="adr-detail-section">
+                  <h3>Timestamps</h3>
+                  <div className="adr-detail-row">
+                    <label>Requested:</label>
+                    <span>{new Date(viewModal.request.created_at).toLocaleString()}</span>
+                  </div>
+                  {viewModal.request.updated_at !== viewModal.request.created_at && (
+                    <div className="adr-detail-row">
+                      <label>Last Updated:</label>
+                      <span>{new Date(viewModal.request.updated_at).toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
+
+                {viewModal.request.admin_notes && (
+                  <div className="adr-detail-section">
+                    <h3>Admin Notes</h3>
+                    <div className="adr-detail-row full-width">
+                      <div className="adr-admin-notes">
+                        {viewModal.request.admin_notes}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
+            <div className="adr-modal-footer">
+              <button 
+                className="adr-btn adr-btn-secondary"
+                onClick={closeViewModal}
+              >
+                Close
+              </button>
+              <div className="adr-modal-actions">
+                <button
+                  className="adr-btn adr-btn-success"
+                  onClick={() => openActionConfirmation(viewModal.request, 'approve')}
+                  disabled={confirmationModal.isProcessing}
+                >
+                  <FontAwesomeIcon icon={faCheck} />
+                  Approve
+                </button>
+                <button
+                  className="adr-btn adr-btn-danger"
+                  onClick={() => openActionConfirmation(viewModal.request, 'reject')}
+                  disabled={confirmationModal.isProcessing}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                  Reject
+                </button>
+              </div>
+            </div>
           </div>
-        </>
+        </div>
       )}
 
-      {/* Request Processing Modal with double-click prevention */}
-      {requestModal.isOpen && requestModal.request && (
-        <div className="adr-modal-overlay" onClick={closeModal}>
-          <div className="adr-modal-content" onClick={(e) => e.stopPropagation()}>
+      {/* Confirmation Modal */}
+      {confirmationModal.isOpen && (
+        <div className="adr-modal-overlay" onClick={closeConfirmationModal}>
+          <div className="adr-modal-content adr-confirm-modal" onClick={(e) => e.stopPropagation()}>
             <div className="adr-modal-header">
-              <h3>{requestModal.action === 'approve' ? 'Approve' : 'Reject'} Deletion Request</h3>
+              <h3>{confirmationModal.title}</h3>
               <button 
                 className="adr-modal-close"
-                onClick={closeModal}
+                onClick={closeConfirmationModal}
+                disabled={confirmationModal.isProcessing}
               >
-                ×
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className="adr-modal-body">
-              <div className={`adr-info-banner ${requestModal.action === 'approve' ? 'approve' : 'reject'}`}>
-                <FontAwesomeIcon icon={requestModal.action === 'approve' ? faCheck : faTimes} />
-                {requestModal.action === 'approve' ? 'Approve' : 'Reject'} deletion request from {requestModal.request.first_name} {requestModal.request.last_name}
-              </div>
-              
-              <div className="adr-request-details-modal">
-                <p><strong>User:</strong> {requestModal.request.first_name} {requestModal.request.last_name} ({requestModal.request.email})</p>
-                <p><strong>Request Date:</strong> {formatDate(requestModal.request.created_at)}</p>
-                <p><strong>Current Deletions:</strong> {requestModal.request.current_deletions || 0}/3</p>
-                <p><strong>Priority:</strong> 
-                  <span className={`adr-priority-badge ${getRequestPriorityClass(requestModal.request)}`}>
-                    {getRequestPriorityText(requestModal.request)}
-                  </span>
-                </p>
-                <div className="adr-reason-section">
-                  <strong>Reason:</strong>
-                  <div className="adr-reason-text">{requestModal.request.reason}</div>
-                </div>
-                {requestModal.request.post_title && (
-                  <p><strong>Related Post:</strong> {requestModal.request.post_title}</p>
-                )}
-              </div>
-
-              {requestModal.action === 'reject' && (
-                <div className="adr-form-group">
-                  <label>Reason for rejection (optional):</label>
-                  <textarea
-                    placeholder="Explain why this request is being rejected..."
-                    rows="3"
-                    value={requestModal.adminNotes}
-                    onChange={(e) => setRequestModal(prev => ({ ...prev, adminNotes: e.target.value }))}
+              <div className="adr-confirm-content">
+                <div className="adr-confirm-icon">
+                  <FontAwesomeIcon 
+                    icon={confirmationModal.type === 'reject' ? faTimesCircle : faCheckCircle} 
+                    size="3x"
                   />
                 </div>
-              )}
+                <p>{confirmationModal.message}</p>
+                
+                {confirmationModal.request && (
+                  <div className="adr-confirm-details">
+                    <strong>Request Details:</strong>
+                    <span><strong>User:</strong> {confirmationModal.request.first_name} {confirmationModal.request.last_name}</span>
+                    <span><strong>Email:</strong> {confirmationModal.request.email}</span>
+                    <span><strong>Deletions:</strong> {confirmationModal.request.current_deletions || 0}/3 • {getPriorityBadgeText(confirmationModal.request)}</span>
+                    <span><strong>Reason:</strong> {confirmationModal.request.reason?.substring(0, 100)}...</span>
+                    <small>ID: #{confirmationModal.request.id}</small>
+                  </div>
+                )}
 
-              <div className="adr-info-box">
-                <strong>What happens when {requestModal.action === 'approve' ? 'approved' : 'rejected'}:</strong>
-                <ul>
-                  {requestModal.action === 'approve' ? (
-                    <>
-                      <li>This specific post deletion will be processed immediately</li>
-                      <li>User's deletion count will be incremented by 1</li>
-                      <li>User will receive email notification about the approval</li>
-                      <li>If user reaches limit, they can request additional deletions</li>
-                    </>
-                  ) : (
-                    <>
-                      <li>Request will be marked as rejected</li>
-                      <li>User's deletion limit remains unchanged</li>
-                      <li>User will receive a notification with your feedback</li>
-                      <li>The post will not be deleted</li>
-                    </>
-                  )}
-                </ul>
+                {confirmationModal.type === 'reject' && (
+                  <div className="adr-rejection-warning">
+                    <FontAwesomeIcon icon={faExclamationTriangle} />
+                    User will be notified about this rejection
+                  </div>
+                )}
               </div>
             </div>
             <div className="adr-modal-footer">
               <button 
-                className="adr-btn-secondary"
-                onClick={closeModal}
-                disabled={actionLoading.process}
+                className="adr-btn adr-btn-secondary"
+                onClick={closeConfirmationModal}
+                disabled={confirmationModal.isProcessing}
               >
                 Cancel
               </button>
               <button 
-                className={requestModal.action === 'approve' ? 'adr-btn-primary' : 'adr-btn-warning'}
-                onClick={() => handleProcessDeletionRequest(
-                  requestModal.request.id, 
-                  requestModal.action, 
-                  requestModal.adminNotes
-                )}
-                disabled={actionLoading.process}
+                className={`adr-btn ${
+                  confirmationModal.type === 'reject' 
+                    ? 'adr-btn-danger' 
+                    : 'adr-btn-success'
+                }`}
+                onClick={handleConfirmAction}
+                disabled={confirmationModal.isProcessing}
               >
-                <FontAwesomeIcon 
-                  icon={actionLoading.process ? faRefresh : 
-                    requestModal.action === 'approve' ? faCheck : faTimes
-                  } 
-                  spin={actionLoading.process}
-                />
-                {actionLoading.process ? 'Processing...' : 
-                  requestModal.action === 'approve' ? 'Approve Request' : 'Reject Request'
-                }
+                {confirmationModal.isProcessing ? (
+                  <>
+                    <FontAwesomeIcon icon={faRefresh} spin />
+                    Processing...
+                  </>
+                ) : (
+                  confirmationModal.type === 'reject' ? 'Reject Request' : 'Approve Request'
+                )}
               </button>
             </div>
           </div>
-        </div> 
+        </div>
       )}
-    </>
+
+      {/* Rejection Reason Modal */}
+      {rejectionModal.isOpen && (
+        <div className="adr-modal-overlay" onClick={closeRejectionModal}>
+          <div className="adr-modal-content adr-rejection-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="adr-modal-header">
+              <h3>Reject Deletion Request</h3>
+              <button 
+                className="adr-modal-close"
+                onClick={closeRejectionModal}
+                disabled={rejectionModal.isProcessing}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="adr-modal-body">
+              <div className="adr-rejection-content">
+                <div className="adr-rejection-icon">
+                  <FontAwesomeIcon icon={faBan} size="3x" />
+                </div>
+                <p>Please provide a reason for rejecting this deletion request:</p>
+                
+                {rejectionModal.request && (
+                  <div className="adr-confirm-details">
+                    <strong>Request Details:</strong>
+                    <span><strong>User:</strong> {rejectionModal.request.first_name} {rejectionModal.request.last_name}</span>
+                    <span><strong>Email:</strong> {rejectionModal.request.email}</span>
+                    <span><strong>Deletions:</strong> {rejectionModal.request.current_deletions || 0}/3 • {getPriorityBadgeText(rejectionModal.request)}</span>
+                    <span><strong>Reason:</strong> {rejectionModal.request.reason?.substring(0, 100)}...</span>
+                    <small>ID: #{rejectionModal.request.id}</small>
+                  </div>
+                )}
+
+                <div className="adr-rejection-reason-input">
+                  <label htmlFor="rejectionReason">Rejection Reason:</label>
+                  <textarea
+                    id="rejectionReason"
+                    value={rejectionModal.reason}
+                    onChange={(e) => setRejectionModal(prev => ({ ...prev, reason: e.target.value }))}
+                    placeholder="Explain why this deletion request is being rejected..."
+                    rows="4"
+                    disabled={rejectionModal.isProcessing}
+                  />
+                  {!rejectionModal.reason.trim() && (
+                    <small className="adr-rejection-warning">Please provide a rejection reason</small>
+                  )}
+                </div>
+
+                <div className="adr-rejection-warning">
+                  <FontAwesomeIcon icon={faExclamationTriangle} />
+                  This action will reject the deletion request and notify the user.
+                </div>
+              </div>
+            </div>
+            <div className="adr-modal-footer">
+              <button 
+                className="adr-btn adr-btn-secondary"
+                onClick={closeRejectionModal}
+                disabled={rejectionModal.isProcessing}
+              >
+                Cancel
+              </button>
+              <button 
+                className="adr-btn adr-btn-danger"
+                onClick={handleRejectionSubmit}
+                disabled={rejectionModal.isProcessing || !rejectionModal.reason.trim()}
+              >
+                {rejectionModal.isProcessing ? (
+                  <>
+                    <FontAwesomeIcon icon={faRefresh} spin />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faBan} />
+                    Reject Request
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+     </>
   );
 }
