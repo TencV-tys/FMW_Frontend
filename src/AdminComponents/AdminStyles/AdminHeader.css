@@ -195,7 +195,7 @@
 /* Responsive */
 @media (max-width: 768px) {
     .admin-header {
-        padding: 1rem;
+        padding: 0.8rem;
         z-index: 99;
     }
     

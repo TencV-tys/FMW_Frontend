@@ -855,13 +855,13 @@
 .manage-posts-table tbody tr.manage-posts-highlighted td:last-child::after {
   content: '👁️ Scroll →';
   position: absolute;
-  top: -25px;
+  top: -25px; 
   right: 0;
   background: linear-gradient(135deg, #f59e0b, #d97706);
   color: white;
   padding: 6px 10px;
   border-radius: 6px;
-  font-size: 0.7rem;
+  font-size: 0.7rem; 
   font-weight: bold;
   white-space: nowrap;
   z-index: 20;
