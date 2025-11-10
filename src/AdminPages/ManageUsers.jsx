@@ -656,7 +656,7 @@ export default function ManageUsers() {
            !user.deleted_at &&
            (user.monthly_report_count >= REPORT_THRESHOLDS.CAN_DELETE.MONTHLY || 
             user.total_report_count >= REPORT_THRESHOLDS.CAN_DELETE.TOTAL);
-  };
+  }; 
 
   // Handle stat card click for filtering
   const handleStatCardClick = (filterType, value) => {
@@ -1631,7 +1631,7 @@ export default function ManageUsers() {
             </div>
           </div>
         </div> 
-      )}
+      )} 
     </>
   );
 }

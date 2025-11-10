@@ -15,7 +15,8 @@ import {
   faCalendar,
   faTrash,
   faExternalLinkAlt,
-  faList
+  faList,
+  faTimes // 🆕 ADDED: For close icons
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Reports.css';
 
@@ -61,6 +62,12 @@ export default function Reports() {
   // Highlight state
   const [highlightedReport, setHighlightedReport] = useState(null);
 
+  // 🆕 ADDED: Scroll refs for auto-scrolling (like ManageUsers/ManagePosts)
+  const tableContainerRef = useRef(null);
+  const tableWrapperRef = useRef(null);
+  const highlightedRowRef = useRef(null);
+  const highlightedCellRef = useRef(null);
+
   // Smart polling refs
   const pollingIntervalRef = useRef(null);
   const isTabActiveRef = useRef(true);
@@ -72,6 +79,75 @@ export default function Reports() {
       setToast({ show: false, message: '', type: 'success' });
     }, 3000);
   };
+
+  // 🆕 ADDED: Auto-scroll function with HORIZONTAL scroll to buttons
+  const scrollToHighlightedReport = (reportId) => {
+    // Try table view first
+    const tableElement = document.querySelector(`tr[data-report-id="${reportId}"]`);
+    // Try mobile card view
+    const mobileElement = document.querySelector(`.rm-mobile-card[data-report-id="${reportId}"]`);
+    
+    const element = tableElement || mobileElement;
+    
+    if (element && tableContainerRef.current) {
+      const container = tableContainerRef.current;
+      const elementTop = element.offsetTop;
+      const elementHeight = element.offsetHeight;
+      const containerHeight = container.clientHeight;
+      
+      // Calculate VERTICAL scroll position to center the element
+      const scrollTop = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      
+      container.scrollTo({
+        top: Math.max(0, scrollTop),
+        behavior: 'smooth'
+      });
+
+      // 🆕 ADDED: HORIZONTAL scrolling to show ACTION BUTTONS
+      if (tableElement && tableWrapperRef.current) {
+        const tableWrapper = tableWrapperRef.current;
+        const actionsCell = tableElement.querySelector('td:last-child');
+        
+        if (actionsCell) {
+          const cellLeft = actionsCell.offsetLeft;
+          const cellWidth = actionsCell.offsetWidth;
+          const wrapperWidth = tableWrapper.clientWidth;
+          
+          // Calculate HORIZONTAL scroll position to show actions column
+          const scrollLeft = cellLeft - (wrapperWidth / 2) + (cellWidth / 2);
+          
+          tableWrapper.scrollTo({
+            left: Math.max(0, scrollLeft),
+            behavior: 'smooth'
+          });
+
+          // Store ref for the highlighted cell
+          highlightedCellRef.current = actionsCell;
+        }
+      }
+      
+      // Store ref for potential re-scrolling
+      highlightedRowRef.current = element;
+    }
+  };
+
+  // 🆕 ADDED: Re-scroll when reports data loads and highlighted report exists
+  useEffect(() => {
+    if (highlightedReport && reports.length > 0 && !loading) {
+      setTimeout(() => {
+        scrollToHighlightedReport(highlightedReport);
+      }, 500);
+    }
+  }, [reports, loading, highlightedReport]);
+
+  // 🆕 ADDED: Auto-scroll when highlighted report changes
+  useEffect(() => {
+    if (highlightedReport) {
+      setTimeout(() => {
+        scrollToHighlightedReport(highlightedReport);
+      }, 300);
+    }
+  }, [highlightedReport]);
 
   // Check for URL parameters on component mount
   useEffect(() => {
@@ -92,7 +168,7 @@ export default function Reports() {
       }
       
       // Remove from URL without page reload
-      const newUrl = window.location.pathname + window.location.search.replace(`?highlightReport=${highlightReport}`, '').replace(`&highlightReport=${highlightReport}`, '');
+      const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
   }, [location.search, reports]);
@@ -206,6 +282,11 @@ export default function Reports() {
     }
   };
 
+  // 🆕 ADDED: Clear highlighted report
+  const clearHighlightedReport = () => {
+    setHighlightedReport(null);
+  };
+
   // Handle stat card click for filtering
   const handleStatCardClick = (filterType) => {
     setStatusFilter(filterType);
@@ -291,6 +372,10 @@ export default function Reports() {
   // Modal Functions
   const openViewModal = (report) => {
     setViewModal({ isOpen: true, report });
+    // Clear highlight when viewing report details
+    if (highlightedReport === report.id) {
+      setHighlightedReport(null);
+    }
   };
 
   const openStatusChangeConfirmation = (report, newStatus) => {
@@ -399,13 +484,14 @@ export default function Reports() {
 
   // Check if any filter is active
   const isFilterActive = () => {
-    return statusFilter !== 'all' || searchTerm !== '';
+    return statusFilter !== 'all' || searchTerm !== '' || highlightedReport !== null;
   };
 
-  // Clear all filters
+  // 🆕 UPDATED: Clear all filters (including highlight)
   const clearAllFilters = () => {
     setStatusFilter('all');
     setSearchTerm('');
+    setHighlightedReport(null);
   };
 
   // Check if report can be deleted (only dismissed or resolved)
@@ -607,10 +693,11 @@ export default function Reports() {
         </div>
       </header>
 
+
       {/* Stats Summary */}
       <section className="rm-stats">
         <div 
-          className={`rm-stat-card ${statusFilter === 'all' ? 'rm-stat-active' : ''}`}
+          className={`rm-stat-card ${statusFilter === 'all' && !highlightedReport ? 'rm-stat-active' : ''}`}
           onClick={() => handleStatCardClick('all')}
           style={{ cursor: 'pointer' }}
           title="Show all reports"
@@ -719,8 +806,8 @@ export default function Reports() {
         )}
       </section>
 
-      {/* Reports Table */}
-      <section className="rm-table-container">
+      {/* 🆕 UPDATED: Reports Table with scroll refs */}
+      <section className="rm-table-container" ref={tableContainerRef}>
         <div className="rm-table-content">
           <div className="rm-table-title">
             <h2>Reports Management</h2>
@@ -728,6 +815,7 @@ export default function Reports() {
               <span className="rm-count">
                 Showing {filteredReports.length} report{filteredReports.length !== 1 ? 's' : ''}
                 {isFilterActive() && ` (Filtered)`}
+                {highlightedReport && ` - Highlighted: #${highlightedReport}`}
               </span>
             </div>
           </div>
@@ -760,7 +848,11 @@ export default function Reports() {
           ) : (
             <>
               {/* Desktop Table View */}
-              <div className="rm-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
+              <div 
+                className="rm-table-wrapper" 
+                style={{ display: viewMode === 'table' ? 'block' : 'none' }}
+                ref={tableWrapperRef} // 🆕 ADDED: Horizontal scroll container ref
+              >
                 <table className="rm-table">
                   <thead>
                     <tr>
@@ -780,8 +872,9 @@ export default function Reports() {
                       return (
                         <tr 
                           key={report.id} 
-                          className={isHighlighted ? 'rm-highlighted-row' : ''}
-                          data-report-id={report.id}
+                          className={`${isHighlighted ? 'rm-highlighted-row' : ''} rm-clickable-row`}
+                          data-report-id={report.id} // 🆕 ADDED for auto-scroll
+                          onClick={() => openViewModal(report)}
                         >
                           <td>
                             <div className="rm-details">
@@ -796,7 +889,10 @@ export default function Reports() {
                           <td>
                             <div 
                               className="rm-user-info rm-clickable"
-                              onClick={() => navigateToUser(report.reporter_id, report.reporter_name)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigateToUser(report.reporter_id, report.reporter_name);
+                              }}
                               title="Click to view user in Manage Users"
                             >
                               <FontAwesomeIcon icon={faUser} />
@@ -812,7 +908,10 @@ export default function Reports() {
                           <td>
                             <div 
                               className="rm-post-info rm-clickable"
-                              onClick={() => navigateToPost(report.post_id, report.post_title)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigateToPost(report.post_id, report.post_title);
+                              }}
                               title="Click to view post in Manage Posts"
                             >
                               <FontAwesomeIcon icon={faNewspaper} />
@@ -837,7 +936,7 @@ export default function Reports() {
                               {report.status.replace('_', ' ')}
                             </span>
                           </td>
-                          <td>
+                          <td onClick={(e) => e.stopPropagation()}>
                             <div className="rm-actions">
                               {availableActions.includes('view') && (
                                 <button
@@ -934,7 +1033,7 @@ export default function Reports() {
                 className="rm-modal-close"
                 onClick={closeViewModal}
               >
-                ×
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className="rm-modal-body">
@@ -1122,7 +1221,7 @@ export default function Reports() {
                 onClick={closeConfirmationModal}
                 disabled={confirmationModal.isProcessing}
               >
-                ×
+                <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
             <div className="rm-modal-body">
@@ -1168,13 +1267,18 @@ export default function Reports() {
                 onClick={handleConfirmAction}
                 disabled={confirmationModal.isProcessing}
               >
-                {confirmationModal.isProcessing ? 'Processing...' : 
+                {confirmationModal.isProcessing ? (
+                  <>
+                    <FontAwesomeIcon icon={faRefresh} spin />
+                    Processing...
+                  </>
+                ) : (
                   confirmationModal.type === 'delete' ? 'Delete Report' : 'Confirm'
-                }
+                )}
               </button>
             </div>
           </div>
-        </div>
+        </div> 
       )}
     </>
   );

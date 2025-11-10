@@ -18,7 +18,16 @@ import {
   faFlag,
   faHistory,
   faTag,
-  faUser
+  faUser,
+  faExternalLinkAlt,
+  faUserShield,
+  faUserSlash,
+  faPauseCircle,
+  faClock,
+  faBell,
+  faEnvelope,
+  faVenusMars,
+  faCalendar
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManagePosts.css';
 
@@ -46,24 +55,28 @@ export default function ManagePosts() {
     type: 'success'
   });
 
-  // 🆕 ADDED: User filter state for navigation from ManageUsers
+  // 🆕 ENHANCED: User filter and highlight states with scroll refs
   const [userFilter, setUserFilter] = useState(null);
   const [userName, setUserName] = useState('');
-
-  // 🆕 ADDED: Highlight state for posts from notifications
   const [highlightedPost, setHighlightedPost] = useState(null);
+
+  // 🆕 ADDED: Scroll refs for auto-scrolling (like ManageUsers)
+  const tableContainerRef = useRef(null);
+  const tableWrapperRef = useRef(null);
+  const highlightedRowRef = useRef(null);
+  const highlightedCellRef = useRef(null);
 
   // 🎯 POST REPORT THRESHOLDS
   const REPORT_THRESHOLDS = {
-    CAN_REMOVE: 3,    // Allow removal at 3+ reports
-    CAN_DELETE: 5     // Allow permanent deletion at 5+ reports
+    CAN_REMOVE: 3,
+    CAN_DELETE: 5
   };
 
-  // 🆕 ADDED: Smart polling refs
+  // 🆕 ENHANCED: Smart polling refs
   const pollingIntervalRef = useRef(null);
   const isTabActiveRef = useRef(true);
 
-  // 🆕 UPDATED: Check for URL parameters on component mount and posts load
+  // 🆕 ENHANCED: Highlight scrolling with auto-scroll (like ManageUsers)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
@@ -81,29 +94,107 @@ export default function ManagePosts() {
     if (highlightPost) {
       const postId = parseInt(highlightPost);
       setHighlightedPost(postId);
+      
+      // Use setTimeout to ensure DOM is ready
+      setTimeout(() => {
+        scrollToHighlightedPost(postId);
+      }, 800);
+      
       // Clear the URL parameter after reading it
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
   }, []);
 
-  // 🆕 ADDED: Handle post highlighting when posts are loaded
-  useEffect(() => {
-    if (highlightedPost && posts.length > 0) {
-      const post = posts.find(p => p.id === highlightedPost);
+  // 🆕 ADDED: Auto-scroll function with HORIZONTAL scroll to buttons (like ManageUsers)
+  const scrollToHighlightedPost = (postId) => {
+    // Try table view first
+    const tableElement = document.querySelector(`tr[data-post-id="${postId}"]`);
+    // Try mobile card view
+    const mobileElement = document.querySelector(`.manage-posts-mobile-card[data-post-id="${postId}"]`);
+    
+    const element = tableElement || mobileElement;
+    
+    if (element && tableContainerRef.current) {
+      const container = tableContainerRef.current;
+      const elementTop = element.offsetTop;
+      const elementHeight = element.offsetHeight;
+      const containerHeight = container.clientHeight;
       
-      if (!post) {
-        // Post doesn't exist in the fetched data
-        showToast('This post has been deleted or does not exist', 'error');
-        setHighlightedPost(null);
-      } else if (post.status === 'Deleted' || post.status === 'Removed') {
-        // Post exists but is deleted/removed
-        showToast('This post has been deleted or removed', 'warning');
-        // Keep it highlighted but show warning
+      // Calculate VERTICAL scroll position to center the element
+      const scrollTop = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      
+      container.scrollTo({
+        top: Math.max(0, scrollTop),
+        behavior: 'smooth'
+      });
+
+      // 🆕 ADDED: HORIZONTAL scrolling to show ACTION BUTTONS (like ManageUsers)
+      if (tableElement && tableWrapperRef.current) {
+        const tableWrapper = tableWrapperRef.current;
+        const actionsCell = tableElement.querySelector('td:last-child');
+        
+        if (actionsCell) {
+          const cellLeft = actionsCell.offsetLeft;
+          const cellWidth = actionsCell.offsetWidth;
+          const wrapperWidth = tableWrapper.clientWidth;
+          
+          // Calculate HORIZONTAL scroll position to show actions column
+          const scrollLeft = cellLeft - (wrapperWidth / 2) + (cellWidth / 2);
+          
+          tableWrapper.scrollTo({
+            left: Math.max(0, scrollLeft),
+            behavior: 'smooth'
+          });
+
+          // Store ref for the highlighted cell
+          highlightedCellRef.current = actionsCell;
+        }
       }
-      // If post exists and is active, it will remain highlighted
+      
+      // Store ref for potential re-scrolling
+      highlightedRowRef.current = element;
     }
-  }, [posts, highlightedPost]);
+  };
+
+  // 🆕 ADDED: Re-scroll when posts data loads and highlighted post exists
+  useEffect(() => {
+    if (highlightedPost && posts.length > 0 && !loading) {
+      setTimeout(() => {
+        scrollToHighlightedPost(highlightedPost);
+      }, 500);
+    }
+  }, [posts, loading, highlightedPost]);
+
+  // 🆕 ADDED: Auto-scroll when highlighted post changes
+  useEffect(() => {
+    if (highlightedPost) {
+      setTimeout(() => {
+        scrollToHighlightedPost(highlightedPost);
+      }, 300);
+    }
+  }, [highlightedPost]);
+
+  // 🆕 FIXED: Check for deleted posts when navigating from notifications
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightPost = urlParams.get('highlightPost');
+    
+    if (highlightPost) {
+      const postId = parseInt(highlightPost);
+      setHighlightedPost(postId);
+      
+      if (posts.length > 0) {
+        const post = posts.find(p => p.id === postId);
+        
+        if (!post) {
+          showToast('This post has been deleted or does not exist', 'error');
+        } else if (post.status === 'Deleted' || post.status === 'Removed') {
+          showToast('This post has been deleted or removed', 'warning');
+        }
+      }
+    }
+  }, [posts]);
 
   // Fetch posts data
   useEffect(() => {
@@ -530,37 +621,37 @@ export default function ManagePosts() {
   // Get status badge class
   const getStatusClass = (status) => {
     const statusMap = {
-      'Active': 'pm-status-active',
-      'Removed': 'pm-status-removed',
-      'Resolved': 'pm-status-resolved'
+      'Active': 'manage-posts-status-active',
+      'Removed': 'manage-posts-status-removed',
+      'Resolved': 'manage-posts-status-resolved'
     };
-    return statusMap[status] || 'pm-status-active';
+    return statusMap[status] || 'manage-posts-status-active';
   };
 
   // Get type badge class
   const getTypeClass = (type) => {
     const typeMap = {
-      'found': 'pm-type-found',
-      'lost': 'pm-type-lost',
-      'for sale': 'pm-type-sale',
-      'looking to buy': 'pm-type-buy',
-      'service offered': 'pm-type-service',
-      'help wanted': 'pm-type-help'
+      'found': 'manage-posts-type-found',
+      'lost': 'manage-posts-type-lost',
+      'for sale': 'manage-posts-type-sale',
+      'looking to buy': 'manage-posts-type-buy',
+      'service offered': 'manage-posts-type-service',
+      'help wanted': 'manage-posts-type-help'
     };
-    return typeMap[type?.toLowerCase()] || 'pm-type-default';
+    return typeMap[type?.toLowerCase()] || 'manage-posts-type-default';
   };
 
   // Get stat card class for types
   const getStatCardClass = (type) => {
     const typeMap = {
-      'Found': 'pm-stat-found',
-      'Lost': 'pm-stat-lost',
-      'For Sale': 'pm-stat-sale',
-      'Looking to Buy': 'pm-stat-buy',
-      'Service Offered': 'pm-stat-service',
-      'Help Wanted': 'pm-stat-help'
+      'Found': 'manage-posts-stat-found',
+      'Lost': 'manage-posts-stat-lost',
+      'For Sale': 'manage-posts-stat-sale',
+      'Looking to Buy': 'manage-posts-stat-buy',
+      'Service Offered': 'manage-posts-stat-service',
+      'Help Wanted': 'manage-posts-stat-help'
     };
-    return typeMap[type] || 'pm-type-stat';
+    return typeMap[type] || 'manage-posts-type-stat';
   };
 
   // Render location information with purok
@@ -607,17 +698,17 @@ export default function ManagePosts() {
     
     const severityConfig = {
       high: { 
-        class: 'report-high', 
+        class: 'manage-posts-report-high', 
         text: 'High Risk - Can Delete', 
         icon: faExclamationTriangle 
       },
       medium: { 
-        class: 'report-medium', 
+        class: 'manage-posts-report-medium', 
         text: 'Medium Risk - Can Remove', 
         icon: faFlag 
       },
       none: { 
-        class: 'report-none', 
+        class: 'manage-posts-report-none', 
         text: 'No Risk', 
         icon: faCheckCircle 
       }
@@ -626,7 +717,7 @@ export default function ManagePosts() {
     const config = severityConfig[severity];
 
     return (
-      <span className={`report-severity-badge ${config.class}`}>
+      <span className={`manage-posts-report-severity-badge ${config.class}`}>
         <FontAwesomeIcon icon={config.icon} />
         {config.text}
       </span>
@@ -639,14 +730,14 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="pm-action-btn pm-action-restore"
+            className="manage-posts-action-btn restore"
             onClick={() => handlePostAction(post.id, 'restore')}
             title="Restore Post"
           >
             <FontAwesomeIcon icon={faUndo} />
           </button>
           <button
-            className={`pm-action-btn pm-action-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-action-btn delete ${!canDeletePost(post) ? 'disabled' : ''}`}
             onClick={() => canDeletePost(post) && handlePostAction(post.id, 'delete')}
             title={!canDeletePost(post) ? 
               `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` 
@@ -661,7 +752,7 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className={`pm-action-btn pm-action-remove ${!canRemovePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-action-btn remove ${!canRemovePost(post) ? 'disabled' : ''}`}
             onClick={() => canRemovePost(post) && handlePostAction(post.id, 'remove')}
             title={!canRemovePost(post) ? 
               `Need ${REPORT_THRESHOLDS.CAN_REMOVE}+ reports to remove` 
@@ -671,14 +762,14 @@ export default function ManagePosts() {
             <FontAwesomeIcon icon={faBan} />
           </button>
           <button
-            className="pm-action-btn pm-action-restore"
+            className="manage-posts-action-btn restore"
             onClick={() => handlePostAction(post.id, 'restore')}
             title="Restore to Active"
           >
             <FontAwesomeIcon icon={faUndo} />
           </button>
           <button
-            className={`pm-action-btn pm-action-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-action-btn delete ${!canDeletePost(post) ? 'disabled' : ''}`}
             onClick={() => canDeletePost(post) && handlePostAction(post.id, 'delete')}
             title={!canDeletePost(post) ? 
               `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` 
@@ -693,14 +784,14 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="pm-action-btn pm-action-resolve"
+            className="manage-posts-action-btn resolve"
             onClick={() => handlePostAction(post.id, 'resolve')}
             title="Mark as Resolved"
           >
             <FontAwesomeIcon icon={faCheckCircle} />
           </button>
           <button
-            className={`pm-action-btn pm-action-remove ${!canRemovePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-action-btn remove ${!canRemovePost(post) ? 'disabled' : ''}`}
             onClick={() => canRemovePost(post) && handlePostAction(post.id, 'remove')}
             title={!canRemovePost(post) ? 
               `Need ${REPORT_THRESHOLDS.CAN_REMOVE}+ reports to remove` 
@@ -710,7 +801,7 @@ export default function ManagePosts() {
             <FontAwesomeIcon icon={faBan} />
           </button>
           <button
-            className={`pm-action-btn pm-action-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-action-btn delete ${!canDeletePost(post) ? 'disabled' : ''}`}
             onClick={() => canDeletePost(post) && handlePostAction(post.id, 'delete')}
             title={!canDeletePost(post) ? 
               `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` 
@@ -747,14 +838,14 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="pm-modal-btn pm-modal-restore"
+            className="manage-posts-modal-btn restore"
             onClick={() => handleModalAction('restore')}
           >
             <FontAwesomeIcon icon={faUndo} />
             Restore Post
           </button>
           <button
-            className={`pm-modal-btn pm-modal-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-modal-btn delete ${!canDeletePost(post) ? 'disabled' : ''}`}
             onClick={() => canDeletePost(post) && handleModalAction('delete')}
             disabled={!canDeletePost(post)}
             title={!canDeletePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` : ''}
@@ -768,7 +859,7 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className={`pm-modal-btn pm-modal-remove ${!canRemovePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-modal-btn remove ${!canRemovePost(post) ? 'disabled' : ''}`}
             onClick={() => canRemovePost(post) && handleModalAction('remove')}
             disabled={!canRemovePost(post)}
             title={!canRemovePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_REMOVE}+ reports to remove` : ''}
@@ -777,14 +868,14 @@ export default function ManagePosts() {
             Remove Post
           </button>
           <button
-            className="pm-modal-btn pm-modal-restore"
+            className="manage-posts-modal-btn restore"
             onClick={() => handleModalAction('restore')}
           >
             <FontAwesomeIcon icon={faUndo} />
             Restore to Active
           </button>
           <button
-            className={`pm-modal-btn pm-modal-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-modal-btn delete ${!canDeletePost(post) ? 'disabled' : ''}`}
             onClick={() => canDeletePost(post) && handleModalAction('delete')}
             disabled={!canDeletePost(post)}
             title={!canDeletePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` : ''}
@@ -798,14 +889,14 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="pm-modal-btn pm-modal-resolve"
+            className="manage-posts-modal-btn resolve"
             onClick={() => handleModalAction('resolve')}
           >
             <FontAwesomeIcon icon={faCheckCircle} />
             Mark as Resolved
           </button>
           <button
-            className={`pm-modal-btn pm-modal-remove ${!canRemovePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-modal-btn remove ${!canRemovePost(post) ? 'disabled' : ''}`}
             onClick={() => canRemovePost(post) && handleModalAction('remove')}
             disabled={!canRemovePost(post)}
             title={!canRemovePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_REMOVE}+ reports to remove` : ''}
@@ -814,7 +905,7 @@ export default function ManagePosts() {
             Remove Post
           </button>
           <button
-            className={`pm-modal-btn pm-modal-delete ${!canDeletePost(post) ? 'disabled' : ''}`}
+            className={`manage-posts-modal-btn delete ${!canDeletePost(post) ? 'disabled' : ''}`}
             onClick={() => canDeletePost(post) && handleModalAction('delete')}
             disabled={!canDeletePost(post)}
             title={!canDeletePost(post) ? `Need ${REPORT_THRESHOLDS.CAN_DELETE}+ reports to delete` : ''}
@@ -829,12 +920,22 @@ export default function ManagePosts() {
 
   // 🆕 UPDATED: Mobile card view with user navigation and highlighting
   const MobilePostCard = ({ post }) => (
-    <div className={`pm-mobile-card ${highlightedPost === post.id ? 'pm-post-highlighted' : ''}`}>
-      <div className="pm-mobile-header">
-        <div className="pm-mobile-title">
-          <h3>{post.title}</h3>
+    <div 
+      className={`manage-posts-mobile-card ${highlightedPost === post.id ? 'manage-posts-highlighted' : ''}`}
+      data-post-id={post.id} // 🆕 ADDED for auto-scroll
+    >
+      <div className="manage-posts-mobile-header">
+        <div className="manage-posts-mobile-title">
+          <h3>
+            {post.title}
+            <FontAwesomeIcon 
+              icon={faExternalLinkAlt} 
+              className="manage-posts-external-link-icon"
+              title="Click to view post details"
+            />
+          </h3>
           <div 
-            className="pm-mobile-author clickable-user"
+            className="manage-posts-mobile-author clickable-user"
             onClick={() => navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`)}
             title="Click to view user in Manage Users"
           >
@@ -842,47 +943,48 @@ export default function ManagePosts() {
             by {post.first_name} {post.last_name}
           </div>
         </div>
-        <div className="pm-mobile-badges">
-          <span className={`pm-mobile-status ${getStatusClass(post.status)}`}>
+        <div className="manage-posts-mobile-badges">
+          <span className={`manage-posts-mobile-status ${getStatusClass(post.status)}`}>
+            <FontAwesomeIcon icon={getStatusIcon(post.status)} />
             {post.status}
           </span>
-          <span className={`pm-mobile-type ${getTypeClass(post.type)}`}>
+          <span className={`manage-posts-mobile-type ${getTypeClass(post.type)}`}>
             {post.type}
           </span>
         </div>
       </div>
       
-      <div className="pm-mobile-details">
-        <div className="pm-mobile-detail">
-          <span className="pm-detail-label">ID</span>
-          <span className="pm-detail-value">#{post.id}</span>
+      <div className="manage-posts-mobile-details">
+        <div className="manage-posts-mobile-detail">
+          <FontAwesomeIcon icon={faTag} />
+          <span>ID: #{post.id}</span>
         </div>
-        <div className="pm-mobile-detail">
-          <span className="pm-detail-label">Category</span>
-          <span className="pm-detail-value">{post.category_name}</span>
+        <div className="manage-posts-mobile-detail">
+          <FontAwesomeIcon icon={faList} />
+          <span>{post.category_name}</span>
         </div>
-        <div className="pm-mobile-detail">
-          <span className="pm-detail-label">Location</span>
-          <span className="pm-detail-value">{renderLocationInfo(post)}</span>
+        <div className="manage-posts-mobile-detail">
+          <FontAwesomeIcon icon={faMapMarkerAlt} />
+          <span>{renderLocationInfo(post)}</span>
         </div>
-        <div className="pm-mobile-detail">
-          <span className="pm-detail-label">Date</span>
-          <span className="pm-detail-value">{formatDate(post.created_at)}</span>
+        <div className="manage-posts-mobile-detail">
+          <FontAwesomeIcon icon={faCalendar} />
+          <span>{formatDate(post.created_at)}</span>
         </div>
-        <div className="pm-mobile-detail">
-          <span className="pm-detail-label">Total Reports</span>
-          <span className="pm-detail-value">{post.total_report_count || 0}</span>
+        <div className="manage-posts-mobile-detail">
+          <FontAwesomeIcon icon={faFlag} />
+          <span>Total Reports: {post.total_report_count || 0}</span>
         </div>
       </div>
 
       {/* 🎯 ADDED: Report severity badge for mobile */}
-      <div className="pm-mobile-report-severity">
+      <div className="manage-posts-mobile-report-severity">
         <ReportSeverityBadge post={post} />
       </div>
       
-      <div className="pm-mobile-actions">
+      <div className="manage-posts-mobile-actions">
         <button 
-          className="pm-mobile-btn pm-mobile-view"
+          className="manage-posts-mobile-btn view"
           onClick={() => openViewModal(post)}
         >
           <FontAwesomeIcon icon={faEye} />
@@ -893,15 +995,25 @@ export default function ManagePosts() {
     </div>
   );
 
+  // Get status icon (like ManageUsers)
+  const getStatusIcon = (status) => {
+    const iconMap = {
+      'Active': faCheckCircle,
+      'Removed': faBan,
+      'Resolved': faCheckCircle
+    };
+    return iconMap[status] || faCheckCircle;
+  };
+
   return (
     <>
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`pm-toast pm-toast-${toast.type}`}>
-          <div className="pm-toast-content">
+        <div className={`manage-posts-toast manage-posts-toast-${toast.type}`}>
+          <div className="manage-posts-toast-content">
             <FontAwesomeIcon 
               icon={toast.type === 'success' ? faCheckCircle : faExclamationTriangle} 
-              className="pm-toast-icon" 
+              className="manage-posts-toast-icon" 
             />
             <span>{toast.message}</span>
           </div>
@@ -909,12 +1021,12 @@ export default function ManagePosts() {
       )}
 
       {/* Header Section */}
-      <div className="pm-header">
-        <div className="pm-header-content">
+      <div className="manage-posts-header">
+        <div className="manage-posts-header-content">
           <p>Review and moderate community posts</p>
         </div>
         <button 
-          className="pm-refresh-btn"
+          className="manage-posts-refresh-btn"
           onClick={handleManualRefresh}
           disabled={loading}
         >
@@ -923,14 +1035,16 @@ export default function ManagePosts() {
         </button>
       </div>
 
-      {/* 🆕 ADDED: User Filter Banner */}
+      {/* 🆕 ENHANCED: User Filter Banner with Brown Theme */}
       {userFilter && (
-        <div className="user-filter-banner">
-          <div className="user-filter-content">
-            <FontAwesomeIcon icon={faUser} />
-            <span>Showing posts by: <strong>{userName}</strong></span>
+        <div className="manage-posts-user-filter-banner">
+          <div className="manage-posts-user-filter-content">
+            <div className="manage-posts-user-filter-info">
+              <FontAwesomeIcon icon={faUser} />
+              <span>Showing posts by: <strong>{userName}</strong></span>
+            </div>
             <button 
-              className="user-filter-clear"
+              className="manage-posts-user-filter-clear"
               onClick={clearUserFilter}
               title="Clear user filter"
             >
@@ -941,14 +1055,16 @@ export default function ManagePosts() {
         </div>
       )}
 
-      {/* 🆕 ADDED: Highlighted Post Banner */}
+      {/* 🆕 ENHANCED: Highlighted Post Banner with Brown Theme */}
       {highlightedPost && (
-        <div className="post-highlight-banner">
-          <div className="post-highlight-content">
-            <FontAwesomeIcon icon={faFlag} />
-            <span>Highlighted Post: <strong>#{highlightedPost}</strong></span>
+        <div className="manage-posts-highlight-banner">
+          <div className="manage-posts-highlight-content">
+            <div className="manage-posts-highlight-info">
+              <FontAwesomeIcon icon={faFlag} />
+              <span>Highlighted Post: <strong>#{highlightedPost}</strong></span>
+            </div>
             <button 
-              className="post-highlight-clear"
+              className="manage-posts-highlight-clear"
               onClick={clearHighlightedPost}
               title="Clear highlight"
             >
@@ -960,58 +1076,58 @@ export default function ManagePosts() {
       )}
 
       {/* Stats Summary */}
-      <div className="pm-stats">
+      <div className="manage-posts-stats">
         <div 
-          className={`pm-stat-card ${statusFilter === 'all' && typeFilter === 'all' && !userFilter && !highlightedPost ? 'pm-stat-active' : ''}`}
+          className={`manage-posts-stat-card ${statusFilter === 'all' && typeFilter === 'all' && !userFilter && !highlightedPost ? 'manage-posts-stat-active' : ''}`}
           onClick={() => handleStatCardClick('all', 'all')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="pm-stat-number">{posts.length}</span>
-          <span className="pm-stat-label">Total Posts</span>
+          <span className="manage-posts-stat-number">{posts.length}</span>
+          <span className="manage-posts-stat-label">Total Posts</span>
         </div>
         <div 
-          className={`pm-stat-card ${statusFilter === 'Active' ? 'pm-stat-active' : ''}`}
+          className={`manage-posts-stat-card ${statusFilter === 'Active' ? 'manage-posts-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'Active')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="pm-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
-          <span className="pm-stat-label">Active</span>
+          <span className="manage-posts-stat-number">{posts.filter(p => p.status === 'Active').length}</span>
+          <span className="manage-posts-stat-label">Active</span>
         </div>
         <div 
-          className={`pm-stat-card ${statusFilter === 'Resolved' ? 'pm-stat-active' : ''}`}
+          className={`manage-posts-stat-card ${statusFilter === 'Resolved' ? 'manage-posts-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'Resolved')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="pm-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
-          <span className="pm-stat-label">Resolved</span>
+          <span className="manage-posts-stat-number">{posts.filter(p => p.status === 'Resolved').length}</span>
+          <span className="manage-posts-stat-label">Resolved</span>
         </div>
         <div 
-          className={`pm-stat-card ${statusFilter === 'Removed' ? 'pm-stat-active' : ''}`}
+          className={`manage-posts-stat-card ${statusFilter === 'Removed' ? 'manage-posts-stat-active' : ''}`}
           onClick={() => handleStatCardClick('status', 'Removed')}
           style={{ cursor: 'pointer' }}
         >
-          <span className="pm-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
-          <span className="pm-stat-label">Removed</span>
+          <span className="manage-posts-stat-number">{posts.filter(p => p.status === 'Removed').length}</span>
+          <span className="manage-posts-stat-label">Removed</span>
         </div>
         
         {Object.entries(typeStats).map(([type, count]) => (
           count > 0 && (
             <div 
               key={type}
-              className={`pm-stat-card ${getStatCardClass(type)} ${typeFilter === type ? 'pm-stat-active' : ''}`}
+              className={`manage-posts-stat-card ${getStatCardClass(type)} ${typeFilter === type ? 'manage-posts-stat-active' : ''}`}
               onClick={() => handleStatCardClick('type', type)}
               style={{ cursor: 'pointer' }}
             >
-              <span className="pm-stat-number">{count}</span>
-              <span className="pm-stat-label">{type}</span>
+              <span className="manage-posts-stat-number">{count}</span>
+              <span className="manage-posts-stat-label">{type}</span>
             </div>
           )
         ))}
       </div>
 
       {/* Filters and Search */}
-      <div className="pm-filters">
-        <div className="pm-search-box">
+      <div className="manage-posts-filters">
+        <div className="manage-posts-search-box">
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
@@ -1021,7 +1137,7 @@ export default function ManagePosts() {
           />
         </div>
         
-        <div className="pm-filter-group">
+        <div className="manage-posts-filter-group">
           <FontAwesomeIcon icon={faFilter} />
           <select 
             value={statusFilter}
@@ -1034,7 +1150,7 @@ export default function ManagePosts() {
           </select>
         </div>
 
-        <div className="pm-filter-group">
+        <div className="manage-posts-filter-group">
           <FontAwesomeIcon icon={faTag} />
           <select 
             value={typeFilter}
@@ -1047,7 +1163,7 @@ export default function ManagePosts() {
           </select>
         </div>
 
-        <div className="pm-filter-group">
+        <div className="manage-posts-filter-group">
           <FontAwesomeIcon icon={faList} />
           <select 
             value={viewMode}
@@ -1060,7 +1176,7 @@ export default function ManagePosts() {
 
         {isFilterActive() && (
           <button  
-            className="pm-clear-filters-btn"
+            className="manage-posts-clear-filters-btn"
             onClick={clearAllFilters}
             title="Clear all filters"
           >
@@ -1069,24 +1185,24 @@ export default function ManagePosts() {
         )}
 
         {selectedPosts.size > 0 && (
-          <div className="pm-bulk-actions">
+          <div className="manage-posts-bulk-actions">
             <span>{selectedPosts.size} selected</span>
             <button 
-              className="pm-bulk-btn pm-bulk-remove"
+              className="manage-posts-bulk-btn remove"
               onClick={() => handleBulkAction('remove')}
             >
               <FontAwesomeIcon icon={faBan} />
               Remove
             </button>
             <button 
-              className="pm-bulk-btn pm-bulk-restore"
+              className="manage-posts-bulk-btn restore"
               onClick={() => handleBulkAction('restore')}
             >
               <FontAwesomeIcon icon={faUndo} />
               Restore
             </button>
             <button 
-              className="pm-bulk-btn pm-bulk-delete"
+              className="manage-posts-bulk-btn delete"
               onClick={() => handleBulkAction('delete')}
             >
               <FontAwesomeIcon icon={faTrash} />
@@ -1097,193 +1213,215 @@ export default function ManagePosts() {
       </div>
 
       {/* 🎯 MOVED: Report Thresholds Info - NOW AFTER FILTERS (Same as ManageUsers) */}
-      <div className="thresholds-info">
+      <div className="manage-posts-thresholds-info">
         <h3>Post Report Thresholds:</h3>
-        <div className="thresholds-grid">
-          <div className="threshold-item">
-            <span className="threshold-badge threshold-remove">⏸️</span>
-            <span className="threshold-text">
+        <div className="manage-posts-thresholds-grid">
+          <div className="manage-posts-threshold-item">
+            <span className="manage-posts-threshold-badge manage-posts-threshold-remove">⏸️</span>
+            <span className="manage-posts-threshold-text">
               <strong>{REPORT_THRESHOLDS.CAN_REMOVE}+ Total Reports:</strong> Can remove post from public view
             </span>
           </div>
-          <div className="threshold-item"> 
-            <span className="threshold-badge threshold-delete">🚫</span>
-            <span className="threshold-text">
+          <div className="manage-posts-threshold-item"> 
+            <span className="manage-posts-threshold-badge manage-posts-threshold-delete">🚫</span>
+            <span className="manage-posts-threshold-text">
               <strong>{REPORT_THRESHOLDS.CAN_DELETE}+ Total Reports:</strong> Can permanently delete post
             </span>
           </div>
         </div>
       </div>
 
-      {/* Posts Table */}
-      <div className='pm-table-container'>
-        <div className='pm-table-content'>
-          <div className='pm-table-title'>
-            <h2>Posts Management</h2>
-            <div className="pm-header-info">
-              <span className="pm-count">
-                {filteredPosts.length} of {posts.length} post{filteredPosts.length !== 1 ? 's' : ''}
-                {isFilterActive() && ' (Filtered)'}
-                {userFilter && ` - User: ${userName}`}
-                {highlightedPost && ` - Highlighted: #${highlightedPost}`}
-              </span>
+      {/* 🆕 UPDATED: Posts Table with scroll refs */}
+      <div className='manage-posts-table-container' ref={tableContainerRef}>
+        <div className='manage-posts-table-inner'>
+          <div className='manage-posts-table-content'>
+            <div className='manage-posts-table-header'>
+              <h2>Posts Management</h2>
+              <div className="manage-posts-header-info">
+                <span className="manage-posts-count">
+                  {filteredPosts.length} of {posts.length} post{filteredPosts.length !== 1 ? 's' : ''}
+                  {isFilterActive() && ' (Filtered)'}
+                  {userFilter && ` - User: ${userName}`}
+                  {highlightedPost && ` - Highlighted: #${highlightedPost}`}
+                </span>
+              </div>
             </div>
-          </div>
 
-          {loading ? (
-            <div className="pm-loading-state">
-              <div className="pm-loading-spinner"></div>
-              <p>Loading posts...</p>
-            </div>
-          ) : filteredPosts.length === 0 ? (
-            <div className="pm-empty-state">
-              <p>
-                {posts.length === 0 
-                  ? "No posts have been created yet." 
-                  : "No posts match your search criteria."
-                }
-              </p>
-              {isFilterActive() && (
-                <button 
-                  className="pm-retry-btn" 
-                  onClick={clearAllFilters}
+            {loading ? (
+              <div className="manage-posts-loading-state">
+                <div className="manage-posts-loading-spinner"></div>
+                <p>Loading posts...</p>
+              </div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="manage-posts-empty-state">
+                <p>
+                  {posts.length === 0 
+                    ? "No posts have been created yet." 
+                    : "No posts match your search criteria."
+                  }
+                </p>
+                {isFilterActive() && (
+                  <button 
+                    className="manage-posts-retry-btn" 
+                    onClick={clearAllFilters}
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table View */}
+                <div 
+                  className="manage-posts-table-wrapper" 
+                  style={{ display: viewMode === 'table' ? 'block' : 'none' }}
+                  ref={tableWrapperRef} // 🆕 ADDED: Horizontal scroll container ref
                 >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-          ) : (
-            <>
-              {/* Desktop Table View */}
-              <div className="pm-table-wrapper" style={{ display: viewMode === 'table' ? 'block' : 'none' }}>
-                <table className='pm-table'>
-                  <thead>
-                    <tr>
-                      <th>
-                        <input
-                          type="checkbox"
-                          checked={selectedPosts.size === filteredPosts.length && filteredPosts.length > 0}
-                          onChange={toggleSelectAll}
-                        />
-                      </th>
-                      <th>ID</th>
-                      <th>Title & Author</th>
-                      <th>Type</th>
-                      <th>Category</th>
-                      <th>Location</th> 
-                      <th>Date Posted</th>
-                      <th>Status</th>
-                      <th>Total Reports</th>
-                      <th>Risk Level</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPosts.map(post => (
-                      <tr 
-                        key={post.id} 
-                        className={`${selectedPosts.has(post.id) ? 'pm-row-selected' : ''} ${
-                          highlightedPost === post.id ? 'pm-post-highlighted' : ''
-                        }`}
-                      >
-                        <td>
+                  <table className='manage-posts-table'>
+                    <thead>
+                      <tr> 
+                        <th>
                           <input
                             type="checkbox"
-                            checked={selectedPosts.has(post.id)}
-                            onChange={() => togglePostSelection(post.id)}
+                            checked={selectedPosts.size === filteredPosts.length && filteredPosts.length > 0}
+                            onChange={toggleSelectAll}
                           />
-                        </td>
-                        <td className="pm-id">#{post.id}</td>
-                        <td>
-                          <div className="pm-title-author">
-                            <strong className="pm-title">{post.title}</strong>
-                            <div 
-                              className="pm-author clickable-user"
-                              onClick={() => navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`)}
-                              title="Click to view user in Manage Users"
-                            >
-                              <FontAwesomeIcon icon={faUser} />
-                              by {post.first_name} {post.last_name}
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`pm-type-badge ${getTypeClass(post.type)}`}>
-                            {post.type}
-                          </span>
-                        </td>
-                        <td>{post.category_name}</td>
-                        <td>
-                          <div className="pm-location-info">
-                            <FontAwesomeIcon icon={faMapMarkerAlt} className="pm-location-icon" />
-                            <span>{renderLocationInfo(post)}</span>
-                          </div>
-                        </td>
-                        <td>{formatDate(post.created_at)}</td>
-                        <td>
-                          <span className={`pm-status-badge ${getStatusClass(post.status)}`}>
-                            {post.status}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="pm-report-count">
-                            {post.total_report_count || 0}
-                          </span>
-                        </td>
-                        <td>
-                          <ReportSeverityBadge post={post} />
-                        </td>
-                        <td>
-                          <div className='pm-actions'>
-                            <button
-                              className="pm-action-btn pm-action-view"
-                              onClick={() => openViewModal(post)}
-                              title="View Post"
-                            >
-                              <FontAwesomeIcon icon={faEye} />
-                            </button>
-                            {getActionButtons(post)}
-                          </div>
-                        </td>
+                        </th>
+                        <th>ID</th>
+                        <th>Title & Author</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Location</th> 
+                        <th>Date Posted</th>
+                        <th>Status</th>
+                        <th>Total Reports</th>
+                        <th>Risk Level</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {filteredPosts.map(post => (
+                        <tr 
+                          key={post.id} 
+                          className={`${selectedPosts.has(post.id) ? 'manage-posts-row-selected' : ''} ${
+                            highlightedPost === post.id ? 'manage-posts-highlighted' : ''
+                          } manage-posts-clickable-row`}
+                          data-post-id={post.id} // 🆕 ADDED for auto-scroll
+                          onClick={() => openViewModal(post)}
+                        >
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedPosts.has(post.id)}
+                              onChange={() => togglePostSelection(post.id)}
+                            />
+                          </td>
+                          <td className="manage-posts-id">#{post.id}</td>
+                          <td>
+                            <div className="manage-posts-user-info">
+                              <strong>
+                                {post.title}
+                                <FontAwesomeIcon 
+                                  icon={faExternalLinkAlt} 
+                                  className="manage-posts-external-link-icon"
+                                  title="Click to view post details"
+                                />
+                              </strong>
+                              <div 
+                                className="manage-posts-author clickable-user"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`);
+                                }}
+                                title="Click to view user in Manage Users"
+                              >
+                                <FontAwesomeIcon icon={faUser} />
+                                by {post.first_name} {post.last_name}
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`manage-posts-type-badge ${getTypeClass(post.type)}`}>
+                              {post.type}
+                            </span>
+                          </td>
+                          <td>{post.category_name}</td>
+                          <td>
+                            <div className="manage-posts-location-info">
+                              <FontAwesomeIcon icon={faMapMarkerAlt} className="manage-posts-location-icon" />
+                              <span>{renderLocationInfo(post)}</span>
+                            </div>
+                          </td>
+                          <td>{formatDate(post.created_at)}</td>
+                          <td>
+                            <span className={`manage-posts-status-badge ${getStatusClass(post.status)}`}>
+                              <FontAwesomeIcon icon={getStatusIcon(post.status)} />
+                              {post.status}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="manage-posts-report-count">
+                              {post.total_report_count || 0}
+                            </span>
+                          </td>
+                          <td>
+                            <ReportSeverityBadge post={post} />
+                          </td>
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <div className='manage-posts-actions'>
+                              <button
+                                className="manage-posts-action-btn view"
+                                onClick={() => openViewModal(post)}
+                                title="View Post"
+                              >
+                                <FontAwesomeIcon icon={faEye} />
+                              </button>
+                              {getActionButtons(post)}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
 
-              {/* Mobile Card View */}
-              <div className="pm-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
-                {filteredPosts.map(post => (
-                  <MobilePostCard key={post.id} post={post} />
-                ))}
-              </div>
-            </>
-          )}
+                {/* Mobile Card View */}
+                <div className="manage-posts-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
+                  {filteredPosts.map(post => (
+                    <MobilePostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
- 
+
       {/* View Post Modal */}
       {viewModal.isOpen && viewModal.post && (
-        <div className="pm-modal-overlay" onClick={closeModal}>
-          <div className="pm-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="pm-modal-header">
-              <h2>View Post</h2>
-              <button className="pm-modal-close" onClick={closeModal}>
+        <div className="manage-posts-modal-overlay">
+          <div className="manage-posts-modal-content">
+            <div className="manage-posts-modal-header">
+              <h3>View Post</h3>
+              <button 
+                className="manage-posts-modal-close"
+                onClick={closeModal}
+              >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="pm-modal-body">
+            <div className="manage-posts-modal-body">
               {/* 🎯 ADDED: Report Statistics in Modal */}
-              <div className="pm-report-stats">
+              <div className="manage-posts-user-report-stats">
                 <h4>Post Report Statistics:</h4>
-                <div className="pm-report-stats-grid">
-                  <div className="pm-report-stat">
-                    <span className="pm-stat-label">Total Reports:</span>
-                    <span className="pm-stat-value">{viewModal.post.total_report_count || 0}</span>
+                <div className="manage-posts-report-stats-grid">
+                  <div className="manage-posts-report-stat">
+                    <span className="manage-posts-stat-label">Total Reports:</span>
+                    <span className="manage-posts-stat-value">{viewModal.post.total_report_count || 0}</span>
                   </div>
-                  <div className="pm-report-stat">
-                    <span className="pm-stat-label">Risk Level:</span>
-                    <span className="pm-stat-value">
+                  <div className="manage-posts-report-stat">
+                    <span className="manage-posts-stat-label">Risk Level:</span>
+                    <span className="manage-posts-stat-value">
                       <ReportSeverityBadge post={viewModal.post} />
                     </span>
                   </div>
@@ -1291,19 +1429,19 @@ export default function ManagePosts() {
               </div>
 
               {getPhotoUrl(viewModal.post) && (
-                <div className="pm-photo-container">
+                <div className="manage-posts-photo-container">
                   <label>Post Photo:</label>
-                  <div className="pm-photo">
+                  <div className="manage-posts-photo">
                     <img
                       src={getPhotoUrl(viewModal.post)}
                       alt={viewModal.post.title}
-                      className="pm-photo-display"
+                      className="manage-posts-photo-display"
                       onError={(e) => {
                         e.target.style.display = 'none';
                         e.target.nextSibling.style.display = 'flex';
                       }}
                     />
-                    <div className="pm-photo-fallback" style={{ display: 'none' }}>
+                    <div className="manage-posts-photo-fallback" style={{ display: 'none' }}>
                       <FontAwesomeIcon icon={faImage} />
                       <span>Photo not available</span>
                     </div>
@@ -1311,12 +1449,12 @@ export default function ManagePosts() {
                 </div>
               )}
               
-              <div className="pm-details">
-                <div className="pm-detail-row">
+              <div className="manage-posts-details">
+                <div className="manage-posts-detail-row">
                   <label>Title:</label>
                   <span>{viewModal.post.title}</span>
                 </div>
-                <div className="pm-detail-row">
+                <div className="manage-posts-detail-row">
                   <label>Author:</label>
                   <div 
                     className="clickable-user"
@@ -1327,54 +1465,55 @@ export default function ManagePosts() {
                     {viewModal.post.first_name} {viewModal.post.last_name}
                   </div>
                 </div>
-                <div className="pm-detail-row">
+                <div className="manage-posts-detail-row">
                   <label>Type:</label>
-                  <span className={`pm-type-badge ${getTypeClass(viewModal.post.type)}`}>
+                  <span className={`manage-posts-type-badge ${getTypeClass(viewModal.post.type)}`}>
                     {viewModal.post.type}
                   </span>
                 </div>
-                <div className="pm-detail-row">
+                <div className="manage-posts-detail-row">
                   <label>Category:</label>
                   <span>{viewModal.post.category_name}</span>
                 </div>
-                <div className="pm-detail-row">
+                <div className="manage-posts-detail-row">
                   <label>Location:</label>
                   <span>{renderLocationInfo(viewModal.post)}</span>
                 </div>
-                <div className="pm-detail-row">
+                <div className="manage-posts-detail-row">
                   <label>Status:</label>
-                  <span className={`pm-status-badge ${getStatusClass(viewModal.post.status)}`}>
+                  <span className={`manage-posts-status-badge ${getStatusClass(viewModal.post.status)}`}>
+                    <FontAwesomeIcon icon={getStatusIcon(viewModal.post.status)} />
                     {viewModal.post.status}
                   </span>
                 </div>
-                <div className="pm-detail-row">
+                <div className="manage-posts-detail-row">
                   <label>Date Posted:</label>
                   <span>{formatDate(viewModal.post.created_at)}</span>
                 </div>
-                <div className="pm-detail-row pm-full-width">
+                <div className="manage-posts-detail-row manage-posts-full-width">
                   <label>Description:</label>
-                  <div className="pm-description">
+                  <div className="manage-posts-description">
                     {viewModal.post.description}
                   </div>
                 </div>
                 {viewModal.post.color && (
-                  <div className="pm-detail-row">
+                  <div className="manage-posts-detail-row">
                     <label>Color:</label>
-                    <span>{viewModal.post.color}</span>
-                  </div>
+                  <span>{viewModal.post.color}</span>
+                </div>
                 )}
-                <div className="pm-detail-row pm-full-width">
+                <div className="manage-posts-detail-row manage-posts-full-width">
                   <label>Contact Info:</label>
-                  <div className="pm-contact-info">
+                  <div className="manage-posts-contact-info">
                     {viewModal.post.contact_info}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="pm-modal-footer">
-              <div className="pm-modal-actions">
+            <div className="manage-posts-modal-footer">
+              <div className="manage-posts-modal-actions">
                 {renderModalActions(viewModal.post)}
-                <button className="pm-modal-btn pm-modal-close-btn" onClick={closeModal}>
+                <button className="manage-posts-modal-btn manage-posts-modal-close-btn" onClick={closeModal}>
                   Close
                 </button>
               </div>
@@ -1385,24 +1524,27 @@ export default function ManagePosts() {
 
       {/* Confirmation Modal for ALL Actions */}
       {confirmationModal.isOpen && (
-        <div className="pm-modal-overlay" onClick={closeModal}>
-          <div className="pm-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="pm-modal-header">
-              <h2>{confirmationModal.title}</h2>
-              <button className="pm-modal-close" onClick={closeModal}>
+        <div className="manage-posts-modal-overlay">
+          <div className="manage-posts-modal-content">
+            <div className="manage-posts-modal-header">
+              <h3>{confirmationModal.title}</h3>
+              <button 
+                className="manage-posts-modal-close"
+                onClick={closeModal}
+              >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="pm-modal-body">
-              <div className="pm-confirmation-content">
-                <div className="pm-warning-icon-large">
+            <div className="manage-posts-modal-body">
+              <div className="manage-posts-confirmation-content">
+                <div className="manage-posts-warning-icon-large">
                   <FontAwesomeIcon icon={faExclamationTriangle} />
                 </div>
                 <p>{confirmationModal.message}</p>
                 
                 {/* 🎯 ADDED: Report stats in confirmation modal */}
                 {confirmationModal.post && (
-                  <div className="pm-confirmation-stats">
+                  <div className="manage-posts-confirmation-stats">
                     <p><strong>Current Reports:</strong> {confirmationModal.post.total_report_count || 0}</p>
                     <p><strong>Required for this action:</strong> {
                       confirmationModal.action === 'remove' ? REPORT_THRESHOLDS.CAN_REMOVE :
@@ -1412,27 +1554,27 @@ export default function ManagePosts() {
                 )}
 
                 {confirmationModal.action === 'delete' && (
-                  <div className="pm-deletion-warning">
+                  <div className="manage-posts-deletion-warning">
                     <FontAwesomeIcon icon={faExclamationTriangle} />
                     <span>This action cannot be undone!</span>
                   </div>
                 )}
               </div>
             </div>
-            <div className="pm-modal-footer">
+            <div className="manage-posts-modal-footer">
               <button 
-                className="pm-modal-btn pm-modal-cancel" 
+                className="manage-posts-btn-secondary"
                 onClick={closeModal}
                 disabled={confirmationModal.isProcessing}
               >
                 Cancel
               </button>
               <button 
-                className={`pm-modal-btn ${
-                  confirmationModal.action === 'delete' ? 'pm-modal-delete' :
-                  confirmationModal.action === 'remove' ? 'pm-modal-remove' :
-                  confirmationModal.action === 'restore' ? 'pm-modal-restore' :
-                  'pm-modal-resolve'
+                className={`manage-posts-btn-primary ${
+                  confirmationModal.action === 'delete' ? 'delete' :
+                  confirmationModal.action === 'remove' ? 'remove' :
+                  confirmationModal.action === 'restore' ? 'restore' :
+                  'resolve'
                 }`} 
                 onClick={handleConfirmedAction}
                 disabled={confirmationModal.isProcessing}
@@ -1456,5 +1598,5 @@ export default function ManagePosts() {
         </div>
       )} 
     </>
-  ); 
+  );
 }
