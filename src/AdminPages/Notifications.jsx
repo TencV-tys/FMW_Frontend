@@ -206,7 +206,7 @@ export default function AdminNotifications() {
       
       case 'post_resolved':
       case 'post_restored':
-      case 'post_removed': 
+      case 'post_removed':  
       case 'post_deleted':
       case 'resolution_request_pending':
       case 'resolution_approved_admin':
@@ -220,7 +220,7 @@ export default function AdminNotifications() {
         return metadata.target_user_id ? `/admin/manage-users?highlightUser=${metadata.target_user_id}` : '/admin/manage-users';
       
       case 'feedback_submitted':
-      case 'feedback_updated':
+      case 'feedback_updated': 
       case 'feedback_deleted':
         return metadata.feedback_id ? `/admin/feedback?highlightFeedback=${metadata.feedback_id}` : '/admin/feedback';
       
@@ -229,7 +229,7 @@ export default function AdminNotifications() {
       case 'deletion_request_rejected':
         return metadata.request_id ? `/admin/deletion-requests?highlightRequest=${metadata.request_id}` : '/admin/deletion-requests';
   
-      default:
+      default: 
         return null;
     }   
   }; 
@@ -720,8 +720,8 @@ export default function AdminNotifications() {
             <option value="user_activated">User Activations</option>
             <option value="user_deleted">User Deletions</option>
             <option value="deletion_request">Deletion Requests</option>
-            <option value="deletion_request_approved">Request Approved</option>
-            <option value="deletion_request_rejected">Request Rejected</option>
+            <option value="deletion_request_approved">Deletion Approved</option>
+            <option value="deletion_request_rejected">Deletion Rejected</option>
             
             {/* 🆕 ADD: Resolution request filters */}
             <option value="resolution_request_pending">Pending Resolution</option>
@@ -764,8 +764,8 @@ export default function AdminNotifications() {
               {filter === 'user_activated' && 'User Activations'}
               {filter === 'user_deleted' && 'User Deletions'}
               {filter === 'deletion_request' && 'Deletion Requests'}
-              {filter === 'deletion_request_approved' && 'Request Approved'}
-              {filter === 'deletion_request_rejected' && 'Request Rejected'}
+              {filter === 'deletion_request_approved' && 'Deletion Approved'}
+              {filter === 'deletion_request_rejected' && 'Deletion Rejected'}
               
               {/* 🆕 ADD: Resolution request filter labels */}
               {filter === 'resolution_request_pending' && 'Pending Resolution'}

@@ -1165,3 +1165,129 @@
     animation: none !important;
   }
 }
+/* 🆕 Group Stats */
+.user-notif-group-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.user-notif-group-stat {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.user-notif-group-stat.active,
+.user-notif-group-stat:hover {
+  border-left-color: #8B5A2B;
+  background: #fff9e6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(139, 90, 43, 0.2);
+}
+
+.user-notif-group-stat-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(139, 90, 43, 0.1);
+  border-radius: 8px;
+}
+
+.user-notif-group-stat-info h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.user-notif-group-stat-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.user-notif-group-chevron {
+  margin-left: auto;
+  color: #8B5A2B;
+}
+
+/* 🆕 Grouped Notifications */
+.user-notif-groups {
+  margin-top: 2rem;
+}
+
+.user-notif-group {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.user-notif-group-header {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.user-notif-group-header:hover {
+  background: #e9ecef;
+}
+
+.user-notif-group-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-notif-group-title h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.user-notif-group-count {
+  font-size: 0.9rem;
+  color: #666;
+  margin-left: 1rem;
+}
+
+.user-notif-group-unread {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.user-notif-group-toggle {
+  color: #8B5A2B;
+  transition: transform 0.3s ease;
+}
+
+.user-notif-group-content {
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Enhanced filter groups */
+.user-notif-filter-select optgroup {
+  font-weight: 600;
+  color: #8B5A2B;
+}
+
+.user-notif-filter-select option {
+  padding: 0.5rem;
+} 

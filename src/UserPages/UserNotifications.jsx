@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx - UPDATED with deletion request filters
+// UserPages/UserNotifications.jsx - UPDATED with resolution request filters
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -17,7 +17,10 @@ import {
   faUserShield,
   faWarning,
   faTimes,
-  faPaperPlane
+  faPaperPlane,
+  faHourglassHalf,
+  faThumbsUp,
+  faThumbsDown
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
@@ -186,6 +189,17 @@ export default function UserNotifications() {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      // Resolution Request Types
+      case 'resolution_request_submitted':
+        return faHourglassHalf;
+      case 'resolution_request_approved':
+        return faThumbsUp;
+      case 'resolution_request_rejected':
+        return faThumbsDown;
+      case 'resolution_request_pending':
+        return faHourglassHalf;
+        
+      // Deletion Request Types
       case 'deletion_request_submitted':
         return faPaperPlane;
       case 'deletion_request_approved':
@@ -194,6 +208,8 @@ export default function UserNotifications() {
         return faTimesCircle;
       case 'deletion_request':
         return faUserShield;
+        
+      // Post and General Types
       case 'user_warning':
         return faExclamationTriangle;
       case 'post_resolved':
@@ -223,6 +239,17 @@ export default function UserNotifications() {
 
   const getNotificationColor = (type) => {
     switch (type) {
+      // Resolution Request Colors
+      case 'resolution_request_submitted':
+        return '#f59e0b'; // Amber - pending/submitted
+      case 'resolution_request_approved':
+        return '#10b981'; // Green - approved
+      case 'resolution_request_rejected':
+        return '#ef4444'; // Red - rejected
+      case 'resolution_request_pending':
+        return '#f59e0b'; // Amber - pending
+        
+      // Deletion Request Colors
       case 'deletion_request_submitted':
         return '#3b82f6'; // Blue - submitted
       case 'deletion_request_approved':
@@ -231,6 +258,8 @@ export default function UserNotifications() {
         return '#ef4444'; // Red - rejected
       case 'deletion_request':
         return '#8b5cf6'; // Purple - admin deletion request
+        
+      // Other Types
       case 'user_warning':
         return '#f59e0b';
       case 'post_resolved':
@@ -241,13 +270,13 @@ export default function UserNotifications() {
         return '#ef4444';
       case 'post_restored':
         return '#3b82f6';
-      case 'report_submitted': 
+      case 'report_submitted':
         return '#8b5cf6';
       case 'report_status_update':
         return '#06b6d4';
       case 'feedback_submitted':
         return '#10b981';
-      case 'feedback_updated': 
+      case 'feedback_updated':
         return '#3b82f6';
       case 'deletion_limit_reached':
         return '#ef4444';
@@ -260,6 +289,17 @@ export default function UserNotifications() {
 
   const getNotificationLabel = (type) => {
     switch (type) {
+      // Resolution Request Labels
+      case 'resolution_request_submitted':
+        return 'Resolution Submitted';
+      case 'resolution_request_approved':
+        return 'Resolution Approved';
+      case 'resolution_request_rejected':
+        return 'Resolution Rejected';
+      case 'resolution_request_pending':
+        return 'Resolution Pending';
+        
+      // Deletion Request Labels
       case 'deletion_request_submitted':
         return 'Request Submitted';
       case 'deletion_request_approved':
@@ -268,6 +308,8 @@ export default function UserNotifications() {
         return 'Request Rejected';
       case 'deletion_request':
         return 'Admin Request';
+        
+      // Other Labels
       case 'user_warning':
         return 'User Warning';
       case 'post_resolved':
@@ -404,10 +446,16 @@ export default function UserNotifications() {
             <option value="all">All Notifications</option>
             <option value="unread">Unread Only</option>
             
+            {/* Resolution Request Categories */}
+            <option value="resolution_request_submitted">Resolution Submitted</option>
+            <option value="resolution_request_approved">Resolution Approved</option>
+            <option value="resolution_request_rejected">Resolution Rejected</option>
+            <option value="resolution_request_pending">Resolution Pending</option>
+            
             {/* Deletion Request Categories */}
-            <option value="deletion_request_submitted">Request Submitted</option>
-            <option value="deletion_request_approved">Request Approved</option>
-            <option value="deletion_request_rejected">Request Rejected</option>
+            <option value="deletion_request_submitted">Deletion Submitted</option>
+            <option value="deletion_request_approved">Deletion Approved</option>
+            <option value="deletion_request_rejected">Deletion Rejected</option>
             
             {/* Post Categories */}
             <option value="post_resolved">Resolved Posts</option>
@@ -438,17 +486,33 @@ export default function UserNotifications() {
           <div className="user-notif-filter-tags">
             <span className="user-notif-filter-tag">
               {filter === 'unread' && 'Unread Only'}
-              {filter === 'deletion_request_submitted' && 'Request Submitted'}
-              {filter === 'deletion_request_approved' && 'Request Approved'}
-              {filter === 'deletion_request_rejected' && 'Request Rejected'}
+              
+              {/* Resolution Request Filters */}
+              {filter === 'resolution_request_submitted' && 'Resolution Submitted'}
+              {filter === 'resolution_request_approved' && 'Resolution Approved'}
+              {filter === 'resolution_request_rejected' && 'Resolution Rejected'}
+              {filter === 'resolution_request_pending' && 'Resolution Pending'}
+              
+              {/* Deletion Request Filters */}
+              {filter === 'deletion_request_submitted' && 'Deletion Submitted'}
+              {filter === 'deletion_request_approved' && 'Deletion Approved'}
+              {filter === 'deletion_request_rejected' && 'Deletion Rejected'}
+              
+              {/* Post Filters */}
               {filter === 'post_resolved' && 'Resolved Posts'}
               {filter === 'post_removed_warning' && 'Post Removal Warnings'}
               {filter === 'post_deleted_warning' && 'Post Deletion Warnings'}
               {filter === 'post_restored' && 'Restored Posts'}
+              
+              {/* Report Filters */}
               {filter === 'report_submitted' && 'Reports'}
               {filter === 'report_status_update' && 'Report Updates'}
+              
+              {/* Feedback Filters */}
               {filter === 'feedback_submitted' && 'Feedback Submitted'}
               {filter === 'feedback_updated' && 'Feedback Updates'}
+              
+              {/* Warning Filters */}
               {filter === 'user_warning' && 'User Warnings'}
               {filter === 'deletion_limit_reached' && 'Deletion Limits'}
               {filter === 'deletion_warning' && 'Deletion Warnings'}

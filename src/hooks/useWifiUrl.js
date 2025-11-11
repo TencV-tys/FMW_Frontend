@@ -10,7 +10,9 @@ export function useWifiUrl() {
     
     if (window.location.hostname.includes('10.129.')) {
       return 'http://10.129.103.2:8000'; // Backend port 8000
-    } else {
+    } else if(window.location.hostname.includes('10.85.')){
+       return 'http://10.85.180.2:8000';
+    }else{
       return 'http://192.168.1.27:8000'; // Backend port 8000
     }
   }, []);
