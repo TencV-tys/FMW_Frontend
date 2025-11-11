@@ -1,4 +1,4 @@
-// UserPages/UserNotifications.jsx - FIXED DUPLICATE USERNAV
+// UserPages/UserNotifications.jsx - UPDATED with deletion request filters
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -16,7 +16,8 @@ import {
   faSyncAlt,
   faUserShield,
   faWarning,
-  faTimes
+  faTimes,
+  faPaperPlane
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/UserNotification.css';
 import UserNav from '../UserComponents/UserDashboardNav';
@@ -30,6 +31,7 @@ export default function UserNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, notificationId: null, notificationTitle: null });
   const [deleteAllModal, setDeleteAllModal] = useState({ isOpen: false });
+  const [markAllReadModal, setMarkAllReadModal] = useState({ isOpen: false });
   const wifi = useWifiUrl();
 
   useEffect(() => {
@@ -131,6 +133,7 @@ export default function UserNotifications() {
       if (response.ok) {
         setNotifications(prev => prev.map(notif => ({ ...notif, is_read: true })));
         setUnreadCount(0);
+        setMarkAllReadModal({ isOpen: false });
       }
     } catch (error) {
       console.error('Error marking all as read:', error);
@@ -183,6 +186,16 @@ export default function UserNotifications() {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case 'deletion_request_submitted':
+        return faPaperPlane;
+      case 'deletion_request_approved':
+        return faCheckCircle;
+      case 'deletion_request_rejected':
+        return faTimesCircle;
+      case 'deletion_request':
+        return faUserShield;
+      case 'user_warning':
+        return faExclamationTriangle;
       case 'post_resolved':
         return faCheckCircle;
       case 'post_removed_warning':
@@ -199,12 +212,6 @@ export default function UserNotifications() {
         return faComments;
       case 'feedback_updated':
         return faSyncAlt;
-      case 'deletion_request_approved':
-        return faCheckCircle;
-      case 'deletion_request_rejected':
-        return faTimesCircle;
-      case 'user_warning':
-        return faUserShield;
       case 'deletion_limit_reached':
         return faExclamationTriangle;
       case 'deletion_warning':
@@ -216,6 +223,16 @@ export default function UserNotifications() {
 
   const getNotificationColor = (type) => {
     switch (type) {
+      case 'deletion_request_submitted':
+        return '#3b82f6'; // Blue - submitted
+      case 'deletion_request_approved':
+        return '#10b981'; // Green - approved
+      case 'deletion_request_rejected':
+        return '#ef4444'; // Red - rejected
+      case 'deletion_request':
+        return '#8b5cf6'; // Purple - admin deletion request
+      case 'user_warning':
+        return '#f59e0b';
       case 'post_resolved':
         return '#10b981';
       case 'post_removed_warning':
@@ -224,20 +241,14 @@ export default function UserNotifications() {
         return '#ef4444';
       case 'post_restored':
         return '#3b82f6';
-      case 'report_submitted':
+      case 'report_submitted': 
         return '#8b5cf6';
       case 'report_status_update':
         return '#06b6d4';
       case 'feedback_submitted':
         return '#10b981';
-      case 'feedback_updated':
+      case 'feedback_updated': 
         return '#3b82f6';
-      case 'deletion_request_approved':
-        return '#10b981';
-      case 'deletion_request_rejected':
-        return '#ef4444';
-      case 'user_warning':
-        return '#f59e0b';
       case 'deletion_limit_reached':
         return '#ef4444';
       case 'deletion_warning':
@@ -247,17 +258,60 @@ export default function UserNotifications() {
     }
   };
 
+  const getNotificationLabel = (type) => {
+    switch (type) {
+      case 'deletion_request_submitted':
+        return 'Request Submitted';
+      case 'deletion_request_approved':
+        return 'Request Approved';
+      case 'deletion_request_rejected':
+        return 'Request Rejected';
+      case 'deletion_request':
+        return 'Admin Request';
+      case 'user_warning':
+        return 'User Warning';
+      case 'post_resolved':
+        return 'Post Resolved';
+      case 'post_removed_warning':
+        return 'Post Removed';
+      case 'post_deleted_warning':
+        return 'Post Deleted';
+      case 'post_restored':
+        return 'Post Restored';
+      case 'report_submitted':
+        return 'Report Submitted';
+      case 'report_status_update':
+        return 'Report Update';
+      case 'feedback_submitted':
+        return 'Feedback Submitted';
+      case 'feedback_updated':
+        return 'Feedback Updated';
+      case 'deletion_limit_reached':
+        return 'Deletion Limit';
+      case 'deletion_warning':
+        return 'Deletion Warning';
+      default:
+        return 'Notification';
+    }
+  };
+
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = (now - date) / (1000 * 60 * 60);
     
     if (diffInHours < 1) {
-      return 'Just now';
+      const diffInMinutes = Math.floor(diffInHours * 60);
+      if (diffInMinutes < 1) return 'Just now';
+      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
     } else if (diffInHours < 24) {
-      return `${Math.floor(diffInHours)} hours ago`;
+      return `${Math.floor(diffInHours)} hour${Math.floor(diffInHours) !== 1 ? 's' : ''} ago`;
     } else {
-      return date.toLocaleDateString();
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        year: 'numeric'
+      });
     }
   };
 
@@ -289,7 +343,7 @@ export default function UserNotifications() {
         <div className="user-notif-header-actions">
           <button 
             className="user-notif-btn-mark-all"
-            onClick={markAllAsRead}
+            onClick={() => setMarkAllReadModal({ isOpen: true })}
             disabled={unreadCount === 0}
           >
             <FontAwesomeIcon icon={faCheckDouble} />
@@ -349,17 +403,28 @@ export default function UserNotifications() {
           >
             <option value="all">All Notifications</option>
             <option value="unread">Unread Only</option>
+            
+            {/* Deletion Request Categories */}
+            <option value="deletion_request_submitted">Request Submitted</option>
+            <option value="deletion_request_approved">Request Approved</option>
+            <option value="deletion_request_rejected">Request Rejected</option>
+            
+            {/* Post Categories */}
             <option value="post_resolved">Resolved Posts</option>
             <option value="post_restored">Restored Posts</option>
             <option value="post_removed_warning">Post Removal Warnings</option>
             <option value="post_deleted_warning">Post Deletion Warnings</option>
+            
+            {/* Report Categories */}
             <option value="report_submitted">Reports</option>
             <option value="report_status_update">Report Updates</option>
+            
+            {/* Feedback Categories */}
             <option value="feedback_submitted">Feedback Submitted</option>
             <option value="feedback_updated">Feedback Updates</option>
-            <option value="deletion_request_approved">Approved Deletions</option>
-            <option value="deletion_request_rejected">Rejected Deletions</option>
-            <option value="user_warning">Report Warnings</option>
+            
+            {/* Warning Categories */}
+            <option value="user_warning">User Warnings</option>
             <option value="deletion_limit_reached">Deletion Limits</option>
             <option value="deletion_warning">Deletion Warnings</option>
           </select>
@@ -373,6 +438,9 @@ export default function UserNotifications() {
           <div className="user-notif-filter-tags">
             <span className="user-notif-filter-tag">
               {filter === 'unread' && 'Unread Only'}
+              {filter === 'deletion_request_submitted' && 'Request Submitted'}
+              {filter === 'deletion_request_approved' && 'Request Approved'}
+              {filter === 'deletion_request_rejected' && 'Request Rejected'}
               {filter === 'post_resolved' && 'Resolved Posts'}
               {filter === 'post_removed_warning' && 'Post Removal Warnings'}
               {filter === 'post_deleted_warning' && 'Post Deletion Warnings'}
@@ -381,9 +449,7 @@ export default function UserNotifications() {
               {filter === 'report_status_update' && 'Report Updates'}
               {filter === 'feedback_submitted' && 'Feedback Submitted'}
               {filter === 'feedback_updated' && 'Feedback Updates'}
-              {filter === 'deletion_request_approved' && 'Approved Deletions'}
-              {filter === 'deletion_request_rejected' && 'Rejected Deletions'}
-              {filter === 'user_warning' && 'Report Warnings'}
+              {filter === 'user_warning' && 'User Warnings'}
               {filter === 'deletion_limit_reached' && 'Deletion Limits'}
               {filter === 'deletion_warning' && 'Deletion Warnings'}
             </span>
@@ -419,7 +485,15 @@ export default function UserNotifications() {
                   />
                 </div>
                 <div className="user-notif-content">
-                  <h4>{notification.title}</h4>
+                  <div className="user-notif-header-row">
+                    <h4>{notification.title}</h4>
+                    <span 
+                      className="user-notif-type-badge"
+                      style={{ backgroundColor: getNotificationColor(notification.type) }}
+                    >
+                      {getNotificationLabel(notification.type)}
+                    </span>
+                  </div>
                   <p>{notification.message}</p>
                   <div className="user-notif-meta">
                     <span className="time">{formatTime(notification.created_at)}</span>
@@ -463,6 +537,43 @@ export default function UserNotifications() {
           </div>
         )}
       </section>
+
+      {/* Mark All as Read Confirmation Modal */}
+      {markAllReadModal.isOpen && (
+        <div className="user-notif-modal-overlay" onClick={() => setMarkAllReadModal({ isOpen: false })}>
+          <div className="user-notif-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="user-notif-modal-header">
+              <FontAwesomeIcon icon={faCheckDouble} className="user-notif-warning-icon" style={{ color: '#10b981' }} />
+              <h3>Mark All as Read</h3>
+              <button 
+                className="user-notif-modal-close"
+                onClick={() => setMarkAllReadModal({ isOpen: false })}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="user-notif-modal-body">
+              <p>Are you sure you want to mark all <strong>{unreadCount}</strong> unread notification{unreadCount !== 1 ? 's' : ''} as read?</p>
+              <p className="user-notif-warning-text">This action will mark all notifications as read and cannot be undone.</p>
+            </div>
+            <div className="user-notif-modal-footer">
+              <button 
+                className="user-notif-modal-btn-secondary"
+                onClick={() => setMarkAllReadModal({ isOpen: false })}
+              >
+                Cancel
+              </button>
+              <button 
+                className="user-notif-modal-btn-primary mark-read-confirm"
+                onClick={markAllAsRead}
+              >
+                <FontAwesomeIcon icon={faCheckDouble} />
+                Mark All as Read
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Single Notification Modal */}
       {deleteModal.isOpen && (

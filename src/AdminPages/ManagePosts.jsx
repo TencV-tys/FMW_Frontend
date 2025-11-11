@@ -16,19 +16,13 @@ import {
   faImage,
   faExclamationTriangle,
   faFlag,
-  faHistory,
   faTag,
   faUser,
   faExternalLinkAlt,
-  faUserShield,
-  faUserSlash,
-  faPauseCircle,
   faClock,
-  faBell,
-  faEnvelope,
-  faVenusMars,
   faCalendar
 } from '@fortawesome/free-solid-svg-icons';
+import AdminResolutionModal from '../AdminComponents/AdminResolutionModal'; // 🆕 IMPORT SEPARATE MODAL
 import './styles/ManagePosts.css';
 
 export default function ManagePosts() {
@@ -59,8 +53,11 @@ export default function ManagePosts() {
   const [userFilter, setUserFilter] = useState(null);
   const [userName, setUserName] = useState('');
   const [highlightedPost, setHighlightedPost] = useState(null);
+  const [resolutionRequests, setResolutionRequests] = useState([]);
+  const [resolutionModal, setResolutionModal] = useState({ isOpen: false, request: null });
+  const [processingResolution, setProcessingResolution] = useState(false);
 
-  // 🆕 ADDED: Scroll refs for auto-scrolling (like ManageUsers)
+  // 🆕 ADDED: Scroll refs for auto-scrolling
   const tableContainerRef = useRef(null);
   const tableWrapperRef = useRef(null);
   const highlightedRowRef = useRef(null);
@@ -76,12 +73,13 @@ export default function ManagePosts() {
   const pollingIntervalRef = useRef(null);
   const isTabActiveRef = useRef(true);
 
-  // 🆕 ENHANCED: Highlight scrolling with auto-scroll (like ManageUsers)
+  // 🆕 ENHANCED: Handle notification redirects and URL parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId');
     const userNameParam = urlParams.get('userName');
     const highlightPost = urlParams.get('highlightPost');
+    const fromNotification = urlParams.get('fromNotification');
     
     if (userId) {
       setUserFilter(parseInt(userId));
@@ -104,9 +102,58 @@ export default function ManagePosts() {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
+
+    // 🆕 Handle notification redirects
+    if (fromNotification === 'true') {
+      const notificationPostId = urlParams.get('postId');
+      if (notificationPostId) {
+        const postId = parseInt(notificationPostId);
+        setHighlightedPost(postId);
+        
+        setTimeout(() => {
+          scrollToHighlightedPost(postId);
+        }, 1000);
+        
+        // Show toast message
+        showToast('Navigated from notification', 'success');
+        
+        // Clear URL parameters
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
   }, []);
 
-  // 🆕 ADDED: Auto-scroll function with HORIZONTAL scroll to buttons (like ManageUsers)
+  // 🆕 ADDED: Fetch resolution requests
+  useEffect(() => {
+    fetchResolutionRequests();
+  }, []);
+
+  const fetchResolutionRequests = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/admin/resolution-requests/pending', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setResolutionRequests(data.requests || []);
+      }
+    } catch (error) {
+      console.error('Error fetching resolution requests:', error);
+    }
+  };
+
+  // 🆕 ADDED: Check if post has pending resolution request
+  const hasPendingResolutionRequest = (postId) => {
+    return resolutionRequests.some(request => request.post_id === postId);
+  };
+
+  // 🆕 ADDED: Get resolution request for a post
+  const getResolutionRequest = (postId) => {
+    return resolutionRequests.find(request => request.post_id === postId);
+  };
+
+  // 🆕 ADDED: Auto-scroll function with HORIZONTAL scroll to buttons
   const scrollToHighlightedPost = (postId) => {
     // Try table view first
     const tableElement = document.querySelector(`tr[data-post-id="${postId}"]`);
@@ -129,7 +176,7 @@ export default function ManagePosts() {
         behavior: 'smooth'
       });
 
-      // 🆕 ADDED: HORIZONTAL scrolling to show ACTION BUTTONS (like ManageUsers)
+      // 🆕 ADDED: HORIZONTAL scrolling to show ACTION BUTTONS
       if (tableElement && tableWrapperRef.current) {
         const tableWrapper = tableWrapperRef.current;
         const actionsCell = tableElement.querySelector('td:last-child');
@@ -175,27 +222,6 @@ export default function ManagePosts() {
     }
   }, [highlightedPost]);
 
-  // 🆕 FIXED: Check for deleted posts when navigating from notifications
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const highlightPost = urlParams.get('highlightPost');
-    
-    if (highlightPost) {
-      const postId = parseInt(highlightPost);
-      setHighlightedPost(postId);
-      
-      if (posts.length > 0) {
-        const post = posts.find(p => p.id === postId);
-        
-        if (!post) {
-          showToast('This post has been deleted or does not exist', 'error');
-        } else if (post.status === 'Deleted' || post.status === 'Removed') {
-          showToast('This post has been deleted or removed', 'warning');
-        }
-      }
-    }
-  }, [posts]);
-
   // Fetch posts data
   useEffect(() => {
     fetchPosts();
@@ -206,6 +232,7 @@ export default function ManagePosts() {
       if (isTabActiveRef.current) {
         // Tab became active, fetch immediately
         fetchPosts();
+        fetchResolutionRequests();
         startPolling();
       } else {
         // Tab hidden, stop polling
@@ -228,6 +255,7 @@ export default function ManagePosts() {
     pollingIntervalRef.current = setInterval(() => {
       if (isTabActiveRef.current) {
         fetchPosts();
+        fetchResolutionRequests();
       }
     }, 60000); // 60 seconds
   };
@@ -243,6 +271,7 @@ export default function ManagePosts() {
   const handleManualRefresh = async () => {
     showToast('Refreshing posts...', 'success');
     await fetchPosts();
+    await fetchResolutionRequests();
   };
 
   // Show toast notification
@@ -276,6 +305,64 @@ export default function ManagePosts() {
       showToast('Error fetching posts', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 🆕 ADDED: Resolution request functions
+  const openResolutionModal = (request) => {
+    setResolutionModal({ isOpen: true, request });
+  };
+
+  const handleApproveResolution = async (requestId) => {
+    setProcessingResolution(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/admin/resolution-requests/${requestId}/approve`, {
+        method: 'PUT',
+        credentials: 'include', 
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        showToast('Resolution request approved! Post marked as resolved.', 'success');
+        setResolutionModal({ isOpen: false, request: null });
+        fetchResolutionRequests();
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error('Error approving resolution:', error);
+      showToast('Failed to approve resolution request', 'error');
+    } finally {
+      setProcessingResolution(false);
+    }
+  };
+
+  const handleRejectResolution = async (requestId, adminNotes = '') => {
+    setProcessingResolution(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/admin/resolution-requests/${requestId}/reject`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          admin_notes: adminNotes
+        })
+      });
+
+      if (response.ok) {
+        showToast('Resolution request rejected!', 'success');
+        setResolutionModal({ isOpen: false, request: null });
+        fetchResolutionRequests();
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error('Error rejecting resolution:', error);
+      showToast('Failed to reject resolution request', 'error');
+    } finally {
+      setProcessingResolution(false);
     }
   };
 
@@ -327,10 +414,6 @@ export default function ManagePosts() {
       case 'restore':
         title = 'Restore Post';
         message = `Are you sure you want to restore the post "${post.title}" to active status?`;
-        break;
-      case 'resolve':
-        title = 'Resolve Post';
-        message = `Are you sure you want to mark the post "${post.title}" as resolved?`;
         break;
       default:
         return;
@@ -402,12 +485,7 @@ export default function ManagePosts() {
           method = 'PUT';
           body = {};
           break;
-        case 'resolve':
-          url = `http://localhost:8000/api/admin/posts/${postId}/resolve`;
-          method = 'PUT';
-          body = { reason: 'Issue resolved' };
-          break;
-        default:
+        default: 
           return;
       }
 
@@ -434,9 +512,6 @@ export default function ManagePosts() {
             break;
           case 'restore':
             successMessage = 'Post restored successfully!';
-            break;
-          case 'resolve':
-            successMessage = 'Post marked as resolved!';
             break;
         }
         showToast(successMessage, 'success');
@@ -473,8 +548,6 @@ export default function ManagePosts() {
               return { ...post, status: 'Removed' };
             case 'restore':
               return { ...post, status: 'Active' };
-            case 'resolve':
-              return { ...post, status: 'Resolved' };
             default:
               return post;
           }
@@ -623,7 +696,8 @@ export default function ManagePosts() {
     const statusMap = {
       'Active': 'manage-posts-status-active',
       'Removed': 'manage-posts-status-removed',
-      'Resolved': 'manage-posts-status-resolved'
+      'Resolved': 'manage-posts-status-resolved',
+      'Pending Resolution': 'manage-posts-status-pending' // 🆕 ADDED
     };
     return statusMap[status] || 'manage-posts-status-active';
   };
@@ -724,8 +798,40 @@ export default function ManagePosts() {
     );
   };
 
-  // 🎯 UPDATED: Get action buttons with threshold validation (same pattern as users)
+  // 🎯 UPDATED: Get action buttons with threshold validation and resolution requests
   const getActionButtons = (post) => {
+    // Check if post has pending resolution request
+    const hasPendingRequest = hasPendingResolutionRequest(post.id);
+    const resolutionRequest = getResolutionRequest(post.id);
+
+    if (hasPendingRequest) {
+      return (
+        <>
+          <button
+            className="manage-posts-action-btn view-request"
+            onClick={() => openResolutionModal(resolutionRequest)}
+            title="View Resolution Request"
+          >
+            <FontAwesomeIcon icon={faEye} />
+          </button>
+          <button
+            className="manage-posts-action-btn approve"
+            onClick={() => handleApproveResolution(resolutionRequest.id)}
+            title="Approve Resolution"
+          >
+            <FontAwesomeIcon icon={faCheckCircle} />
+          </button>
+          <button
+            className="manage-posts-action-btn reject"
+            onClick={() => handleRejectResolution(resolutionRequest.id)}
+            title="Reject Resolution"
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+        </>
+      );
+    }
+
     if (post.status === 'Removed') {
       return (
         <>
@@ -784,13 +890,6 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="manage-posts-action-btn resolve"
-            onClick={() => handlePostAction(post.id, 'resolve')}
-            title="Mark as Resolved"
-          >
-            <FontAwesomeIcon icon={faCheckCircle} />
-          </button>
-          <button
             className={`manage-posts-action-btn remove ${!canRemovePost(post) ? 'disabled' : ''}`}
             onClick={() => canRemovePost(post) && handlePostAction(post.id, 'remove')}
             title={!canRemovePost(post) ? 
@@ -834,6 +933,37 @@ export default function ManagePosts() {
 
   // 🎯 UPDATED: Render modal actions with threshold validation
   const renderModalActions = (post) => {
+    const hasPendingRequest = hasPendingResolutionRequest(post.id);
+    const resolutionRequest = getResolutionRequest(post.id);
+
+    if (hasPendingRequest) {
+      return (
+        <>
+          <button
+            className="manage-posts-modal-btn view-request"
+            onClick={() => openResolutionModal(resolutionRequest)}
+          >
+            <FontAwesomeIcon icon={faEye} />
+            View Resolution Request
+          </button>
+          <button
+            className="manage-posts-modal-btn approve"
+            onClick={() => handleApproveResolution(resolutionRequest.id)}
+          >
+            <FontAwesomeIcon icon={faCheckCircle} />
+            Approve Resolution
+          </button>
+          <button
+            className="manage-posts-modal-btn reject"
+            onClick={() => handleRejectResolution(resolutionRequest.id)}
+          >
+            <FontAwesomeIcon icon={faTimes} />
+            Reject Resolution
+          </button>
+        </>
+      );
+    }
+
     if (post.status === 'Removed') {
       return (
         <>
@@ -889,13 +1019,6 @@ export default function ManagePosts() {
       return (
         <>
           <button
-            className="manage-posts-modal-btn resolve"
-            onClick={() => handleModalAction('resolve')}
-          >
-            <FontAwesomeIcon icon={faCheckCircle} />
-            Mark as Resolved
-          </button>
-          <button
             className={`manage-posts-modal-btn remove ${!canRemovePost(post) ? 'disabled' : ''}`}
             onClick={() => canRemovePost(post) && handleModalAction('remove')}
             disabled={!canRemovePost(post)}
@@ -918,89 +1041,13 @@ export default function ManagePosts() {
     }
   };
 
-  // 🆕 UPDATED: Mobile card view with user navigation and highlighting
-  const MobilePostCard = ({ post }) => (
-    <div 
-      className={`manage-posts-mobile-card ${highlightedPost === post.id ? 'manage-posts-highlighted' : ''}`}
-      data-post-id={post.id} // 🆕 ADDED for auto-scroll
-    >
-      <div className="manage-posts-mobile-header">
-        <div className="manage-posts-mobile-title">
-          <h3>
-            {post.title}
-            <FontAwesomeIcon 
-              icon={faExternalLinkAlt} 
-              className="manage-posts-external-link-icon"
-              title="Click to view post details"
-            />
-          </h3>
-          <div 
-            className="manage-posts-mobile-author clickable-user"
-            onClick={() => navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`)}
-            title="Click to view user in Manage Users"
-          >
-            <FontAwesomeIcon icon={faUser} />
-            by {post.first_name} {post.last_name}
-          </div>
-        </div>
-        <div className="manage-posts-mobile-badges">
-          <span className={`manage-posts-mobile-status ${getStatusClass(post.status)}`}>
-            <FontAwesomeIcon icon={getStatusIcon(post.status)} />
-            {post.status}
-          </span>
-          <span className={`manage-posts-mobile-type ${getTypeClass(post.type)}`}>
-            {post.type}
-          </span>
-        </div>
-      </div>
-      
-      <div className="manage-posts-mobile-details">
-        <div className="manage-posts-mobile-detail">
-          <FontAwesomeIcon icon={faTag} />
-          <span>ID: #{post.id}</span>
-        </div>
-        <div className="manage-posts-mobile-detail">
-          <FontAwesomeIcon icon={faList} />
-          <span>{post.category_name}</span>
-        </div>
-        <div className="manage-posts-mobile-detail">
-          <FontAwesomeIcon icon={faMapMarkerAlt} />
-          <span>{renderLocationInfo(post)}</span>
-        </div>
-        <div className="manage-posts-mobile-detail">
-          <FontAwesomeIcon icon={faCalendar} />
-          <span>{formatDate(post.created_at)}</span>
-        </div>
-        <div className="manage-posts-mobile-detail">
-          <FontAwesomeIcon icon={faFlag} />
-          <span>Total Reports: {post.total_report_count || 0}</span>
-        </div>
-      </div>
-
-      {/* 🎯 ADDED: Report severity badge for mobile */}
-      <div className="manage-posts-mobile-report-severity">
-        <ReportSeverityBadge post={post} />
-      </div>
-      
-      <div className="manage-posts-mobile-actions">
-        <button 
-          className="manage-posts-mobile-btn view"
-          onClick={() => openViewModal(post)}
-        >
-          <FontAwesomeIcon icon={faEye} />
-          View
-        </button>
-        {getActionButtons(post)}
-      </div>
-    </div>
-  );
-
-  // Get status icon (like ManageUsers)
+  // Get status icon
   const getStatusIcon = (status) => {
     const iconMap = {
       'Active': faCheckCircle,
       'Removed': faBan,
-      'Resolved': faCheckCircle
+      'Resolved': faCheckCircle,
+      'Pending Resolution': faClock // 🆕 ADDED
     };
     return iconMap[status] || faCheckCircle;
   };
@@ -1035,7 +1082,7 @@ export default function ManagePosts() {
         </button>
       </div>
 
-      {/* 🆕 ENHANCED: User Filter Banner with Brown Theme */}
+      {/* 🆕 ENHANCED: User Filter Banner */}
       {userFilter && (
         <div className="manage-posts-user-filter-banner">
           <div className="manage-posts-user-filter-content">
@@ -1055,7 +1102,7 @@ export default function ManagePosts() {
         </div>
       )}
 
-      {/* 🆕 ENHANCED: Highlighted Post Banner with Brown Theme */}
+      {/* 🆕 ENHANCED: Highlighted Post Banner */}
       {highlightedPost && (
         <div className="manage-posts-highlight-banner">
           <div className="manage-posts-highlight-content">
@@ -1212,7 +1259,7 @@ export default function ManagePosts() {
         )}
       </div>
 
-      {/* 🎯 MOVED: Report Thresholds Info - NOW AFTER FILTERS (Same as ManageUsers) */}
+      {/* 🎯 MOVED: Report Thresholds Info */}
       <div className="manage-posts-thresholds-info">
         <h3>Post Report Thresholds:</h3>
         <div className="manage-posts-thresholds-grid">
@@ -1243,6 +1290,7 @@ export default function ManagePosts() {
                   {isFilterActive() && ' (Filtered)'}
                   {userFilter && ` - User: ${userName}`}
                   {highlightedPost && ` - Highlighted: #${highlightedPost}`}
+                  {resolutionRequests.length > 0 && ` - ${resolutionRequests.length} Pending Resolution Request${resolutionRequests.length !== 1 ? 's' : ''}`}
                 </span>
               </div>
             </div>
@@ -1275,7 +1323,7 @@ export default function ManagePosts() {
                 <div 
                   className="manage-posts-table-wrapper" 
                   style={{ display: viewMode === 'table' ? 'block' : 'none' }}
-                  ref={tableWrapperRef} // 🆕 ADDED: Horizontal scroll container ref
+                  ref={tableWrapperRef}
                 >
                   <table className='manage-posts-table'>
                     <thead>
@@ -1300,96 +1348,207 @@ export default function ManagePosts() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredPosts.map(post => (
-                        <tr 
-                          key={post.id} 
-                          className={`${selectedPosts.has(post.id) ? 'manage-posts-row-selected' : ''} ${
-                            highlightedPost === post.id ? 'manage-posts-highlighted' : ''
-                          } manage-posts-clickable-row`}
-                          data-post-id={post.id} // 🆕 ADDED for auto-scroll
-                          onClick={() => openViewModal(post)}
-                        >
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <input
-                              type="checkbox"
-                              checked={selectedPosts.has(post.id)}
-                              onChange={() => togglePostSelection(post.id)}
-                            />
-                          </td>
-                          <td className="manage-posts-id">#{post.id}</td>
-                          <td>
-                            <div className="manage-posts-user-info">
-                              <strong>
-                                {post.title}
-                                <FontAwesomeIcon 
-                                  icon={faExternalLinkAlt} 
-                                  className="manage-posts-external-link-icon"
-                                  title="Click to view post details"
-                                />
-                              </strong>
-                              <div 
-                                className="manage-posts-author clickable-user"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`);
-                                }}
-                                title="Click to view user in Manage Users"
-                              >
-                                <FontAwesomeIcon icon={faUser} />
-                                by {post.first_name} {post.last_name}
+                      {filteredPosts.map(post => {
+                        const hasPendingRequest = hasPendingResolutionRequest(post.id);
+                        const resolutionRequest = getResolutionRequest(post.id);
+                        const displayStatus = hasPendingRequest ? 'Pending Resolution' : post.status;
+                        
+                        return (
+                          <tr 
+                            key={post.id} 
+                            className={`${selectedPosts.has(post.id) ? 'manage-posts-row-selected' : ''} ${
+                              highlightedPost === post.id ? 'manage-posts-highlighted' : ''
+                            } manage-posts-clickable-row`}
+                            data-post-id={post.id}
+                            onClick={() => openViewModal(post)}
+                          >
+                            <td onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={selectedPosts.has(post.id)}
+                                onChange={() => togglePostSelection(post.id)}
+                              />
+                            </td>
+                            <td className="manage-posts-id">#{post.id}</td>
+                            <td>
+                              <div className="manage-posts-user-info">
+                                <strong>
+                                  {post.title}
+                                  <FontAwesomeIcon 
+                                    icon={faExternalLinkAlt} 
+                                    className="manage-posts-external-link-icon"
+                                    title="Click to view post details"
+                                  />
+                                </strong>
+                                <div 
+                                  className="manage-posts-author clickable-user"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`);
+                                  }}
+                                  title="Click to view user in Manage Users"
+                                >
+                                  <FontAwesomeIcon icon={faUser} />
+                                  by {post.first_name} {post.last_name}
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td>
-                            <span className={`manage-posts-type-badge ${getTypeClass(post.type)}`}>
-                              {post.type}
-                            </span>
-                          </td>
-                          <td>{post.category_name}</td>
-                          <td>
-                            <div className="manage-posts-location-info">
-                              <FontAwesomeIcon icon={faMapMarkerAlt} className="manage-posts-location-icon" />
-                              <span>{renderLocationInfo(post)}</span>
-                            </div>
-                          </td>
-                          <td>{formatDate(post.created_at)}</td>
-                          <td>
-                            <span className={`manage-posts-status-badge ${getStatusClass(post.status)}`}>
-                              <FontAwesomeIcon icon={getStatusIcon(post.status)} />
-                              {post.status}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="manage-posts-report-count">
-                              {post.total_report_count || 0}
-                            </span>
-                          </td>
-                          <td>
-                            <ReportSeverityBadge post={post} />
-                          </td>
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div className='manage-posts-actions'>
-                              <button
-                                className="manage-posts-action-btn view"
-                                onClick={() => openViewModal(post)}
-                                title="View Post"
-                              >
-                                <FontAwesomeIcon icon={faEye} />
-                              </button>
-                              {getActionButtons(post)}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td>
+                              <span className={`manage-posts-type-badge ${getTypeClass(post.type)}`}>
+                                {post.type}
+                              </span>
+                            </td>
+                            <td>{post.category_name}</td>
+                            <td>
+                              <div className="manage-posts-location-info">
+                                <FontAwesomeIcon icon={faMapMarkerAlt} className="manage-posts-location-icon" />
+                                <span>{renderLocationInfo(post)}</span>
+                              </div>
+                            </td>
+                            <td>{formatDate(post.created_at)}</td>
+                            <td>
+                              <span className={`manage-posts-status-badge ${getStatusClass(displayStatus)}`}>
+                                <FontAwesomeIcon icon={getStatusIcon(displayStatus)} />
+                                {displayStatus}
+                              </span>
+                              {hasPendingRequest && (
+                                <button
+                                  className="manage-posts-resolution-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openResolutionModal(resolutionRequest);
+                                  }}
+                                  title="View resolution request details"
+                                >
+                                  <FontAwesomeIcon icon={faEye} />
+                                  View Request
+                                </button>
+                              )}
+                            </td>
+                            <td>
+                              <span className="manage-posts-report-count">
+                                {post.total_report_count || 0}
+                              </span>
+                            </td>
+                            <td>
+                              <ReportSeverityBadge post={post} />
+                            </td>
+                            <td onClick={(e) => e.stopPropagation()}>
+                              <div className='manage-posts-actions'>
+                                <button
+                                  className="manage-posts-action-btn view"
+                                  onClick={() => openViewModal(post)}
+                                  title="View Post"
+                                >
+                                  <FontAwesomeIcon icon={faEye} />
+                                </button>
+                                {getActionButtons(post)}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
 
                 {/* Mobile Card View */}
                 <div className="manage-posts-mobile-cards" style={{ display: viewMode === 'card' ? 'flex' : 'none' }}>
-                  {filteredPosts.map(post => (
-                    <MobilePostCard key={post.id} post={post} />
-                  ))}
+                  {filteredPosts.map(post => {
+                    const hasPendingRequest = hasPendingResolutionRequest(post.id);
+                    const resolutionRequest = getResolutionRequest(post.id);
+                    const displayStatus = hasPendingRequest ? 'Pending Resolution' : post.status;
+                    
+                    return (
+                      <div 
+                        key={post.id} 
+                        className={`manage-posts-mobile-card ${highlightedPost === post.id ? 'manage-posts-highlighted' : ''}`}
+                        data-post-id={post.id}
+                      >
+                        <div className="manage-posts-mobile-header">
+                          <div className="manage-posts-mobile-title">
+                            <h3>
+                              {post.title}
+                              <FontAwesomeIcon 
+                                icon={faExternalLinkAlt} 
+                                className="manage-posts-external-link-icon"
+                                title="Click to view post details"
+                              />
+                            </h3>
+                            <div 
+                              className="manage-posts-mobile-author clickable-user"
+                              onClick={() => navigateToUser(post.user_id, `${post.first_name} ${post.last_name}`)}
+                              title="Click to view user in Manage Users"
+                            >
+                              <FontAwesomeIcon icon={faUser} />
+                              by {post.first_name} {post.last_name}
+                            </div>
+                          </div>
+                          <div className="manage-posts-mobile-badges">
+                            <span className={`manage-posts-mobile-status ${getStatusClass(displayStatus)}`}>
+                              <FontAwesomeIcon icon={getStatusIcon(displayStatus)} />
+                              {displayStatus}
+                            </span>
+                            <span className={`manage-posts-mobile-type ${getTypeClass(post.type)}`}>
+                              {post.type}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="manage-posts-mobile-details">
+                          <div className="manage-posts-mobile-detail">
+                            <FontAwesomeIcon icon={faTag} />
+                            <span>ID: #{post.id}</span>
+                          </div>
+                          <div className="manage-posts-mobile-detail">
+                            <FontAwesomeIcon icon={faList} />
+                            <span>{post.category_name}</span>
+                          </div>
+                          <div className="manage-posts-mobile-detail">
+                            <FontAwesomeIcon icon={faMapMarkerAlt} />
+                            <span>{renderLocationInfo(post)}</span>
+                          </div>
+                          <div className="manage-posts-mobile-detail">
+                            <FontAwesomeIcon icon={faCalendar} />
+                            <span>{formatDate(post.created_at)}</span>
+                          </div>
+                          <div className="manage-posts-mobile-detail">
+                            <FontAwesomeIcon icon={faFlag} />
+                            <span>Total Reports: {post.total_report_count || 0}</span>
+                          </div>
+                        </div>
+
+                        {/* Report severity badge for mobile */}
+                        <div className="manage-posts-mobile-report-severity">
+                          <ReportSeverityBadge post={post} />
+                        </div>
+                        
+                        {hasPendingRequest && (
+                          <div className="manage-posts-mobile-resolution-notice">
+                            <FontAwesomeIcon icon={faClock} />
+                            <span>Pending Resolution Request</span>
+                            <button
+                              className="manage-posts-mobile-resolution-btn"
+                              onClick={() => openResolutionModal(resolutionRequest)}
+                            >
+                              View Request
+                            </button>
+                          </div>
+                        )}
+                        
+                        <div className="manage-posts-mobile-actions">
+                          <button 
+                            className="manage-posts-mobile-btn view"
+                            onClick={() => openViewModal(post)}
+                          >
+                            <FontAwesomeIcon icon={faEye} />
+                            View
+                          </button>
+                          {getActionButtons(post)}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </>
             )}
@@ -1411,7 +1570,7 @@ export default function ManagePosts() {
               </button>
             </div>
             <div className="manage-posts-modal-body">
-              {/* 🎯 ADDED: Report Statistics in Modal */}
+              {/* Report Statistics in Modal */}
               <div className="manage-posts-user-report-stats">
                 <h4>Post Report Statistics:</h4>
                 <div className="manage-posts-report-stats-grid">
@@ -1522,6 +1681,17 @@ export default function ManagePosts() {
         </div>
       )}
 
+      {/* 🆕 SEPARATE Admin Resolution Modal */}
+      {resolutionModal.isOpen && resolutionModal.request && (
+        <AdminResolutionModal
+          request={resolutionModal.request}
+          onApprove={handleApproveResolution}
+          onReject={handleRejectResolution}
+          onClose={() => setResolutionModal({ isOpen: false, request: null })}
+          loading={processingResolution}
+        />
+      )}
+
       {/* Confirmation Modal for ALL Actions */}
       {confirmationModal.isOpen && (
         <div className="manage-posts-modal-overlay">
@@ -1542,7 +1712,7 @@ export default function ManagePosts() {
                 </div>
                 <p>{confirmationModal.message}</p>
                 
-                {/* 🎯 ADDED: Report stats in confirmation modal */}
+                {/* Report stats in confirmation modal */}
                 {confirmationModal.post && (
                   <div className="manage-posts-confirmation-stats">
                     <p><strong>Current Reports:</strong> {confirmationModal.post.total_report_count || 0}</p>
@@ -1573,8 +1743,7 @@ export default function ManagePosts() {
                 className={`manage-posts-btn-primary ${
                   confirmationModal.action === 'delete' ? 'delete' :
                   confirmationModal.action === 'remove' ? 'remove' :
-                  confirmationModal.action === 'restore' ? 'restore' :
-                  'resolve'
+                  confirmationModal.action === 'restore' ? 'restore' : ''
                 }`} 
                 onClick={handleConfirmedAction}
                 disabled={confirmationModal.isProcessing}
@@ -1589,7 +1758,6 @@ export default function ManagePosts() {
                     {confirmationModal.action === 'remove' && 'Remove Post'}
                     {confirmationModal.action === 'delete' && 'Delete Permanently'}
                     {confirmationModal.action === 'restore' && 'Restore Post'}
-                    {confirmationModal.action === 'resolve' && 'Mark as Resolved'}
                   </>
                 )}
               </button>

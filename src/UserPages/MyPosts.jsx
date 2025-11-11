@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
-import { faEdit, faTrash, faCheckCircle, faExclamationTriangle, faEnvelope, faPlus, faTimes, faWarning, faFilter } from '@fortawesome/free-solid-svg-icons'
+import { faEdit, faTrash, faCheckCircle, faExclamationTriangle, faEnvelope, faPlus, faTimes, faWarning, faFilter, faClock } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import UserNav from '../UserComponents/UserDashboardNav'
 import Logo1 from '../assets/Logo.jpg'
+import ResolutionForm from '../UserComponents/ResolutionForm'; 
 import './styles/MyPosts.css'
 import { useWifiUrl } from '../hooks/useWifiUrl';
 import CustomToast from '../components/CustomToast';
@@ -11,7 +12,7 @@ import CustomToast from '../components/CustomToast';
 export default function MyPosts() {
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'resolved', 'removed'
+  const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
@@ -19,8 +20,11 @@ export default function MyPosts() {
   const [deletionStats, setDeletionStats] = useState(null);
   const [contactAdminModal, setContactAdminModal] = useState({ isOpen: false, postId: null });
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [resolveConfirm, setResolveConfirm] = useState(null);
   const [processingAction, setProcessingAction] = useState(null);
+  const [resolutionRequests, setResolutionRequests] = useState([]);
+  const [resolutionForm, setResolutionForm] = useState({ isOpen: false, post: null });
+  const [pendingDeletionRequests, setPendingDeletionRequests] = useState(new Set());
+  
   const nav = useNavigate();
   const wifi = useWifiUrl();
   
@@ -29,28 +33,28 @@ export default function MyPosts() {
   useEffect(() => {
     fetchMyPosts();
     fetchDeletionStats();
+    fetchResolutionRequests();
+    fetchPendingDeletionRequests();
     
-    // Check if there's a filter from Profile page
     const savedFilter = sessionStorage.getItem('postsFilter');
     if (savedFilter) {
       setStatusFilter(savedFilter);
-      sessionStorage.removeItem('postsFilter'); // Clear after use
+      sessionStorage.removeItem('postsFilter');
     }
   }, []);
 
   // FIXED: Filter posts when status filter or posts change
   useEffect(() => {
     if (statusFilter === 'all') {
-      setFilteredPosts(posts);
+      setFilteredPosts(posts); 
     } else {
-      // Normalize status values for comparison
       setFilteredPosts(posts.filter(post => {
         const postStatus = post.status?.toLowerCase().trim();
         const filterStatus = statusFilter.toLowerCase().trim();
         return postStatus === filterStatus;
       }));
     }
-  }, [statusFilter, posts]);
+  }, [statusFilter, posts]); 
 
   const fetchMyPosts = async () => {
     try {
@@ -82,6 +86,86 @@ export default function MyPosts() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 🆕 ADD: Fetch resolution requests
+  const fetchResolutionRequests = async () => {
+    try {
+      const response = await fetch(`${wifi}/api/user/resolution-requests`, {
+        credentials: 'include'
+      });
+      const result = await response.json();
+      if (result.success) {
+        setResolutionRequests(result.requests || []);
+      }
+    } catch (error) {
+      console.error('Error fetching resolution requests:', error);
+    }
+  };
+
+  // 🆕 UPDATED: Fetch pending deletion requests using the new endpoint
+  const fetchPendingDeletionRequests = async () => {
+    try {
+      // First, get all posts to check their pending status
+      const postsResponse = await fetch(`${wifi}/api/posts/my-posts`, {
+        credentials: 'include'
+      });
+      const postsResult = await postsResponse.json();
+      
+      if (postsResult.success) {
+        const posts = postsResult.posts || [];
+        const pendingSet = new Set();
+        
+        // Check each post for pending deletion requests
+        for (const post of posts) {
+          const response = await fetch(`${wifi}/api/check-pending-deletion/${post.id}`, {
+            credentials: 'include'
+          });
+          const result = await response.json();
+          
+          if (result.success && result.hasPendingRequest) {
+            pendingSet.add(post.id);
+          }
+        }
+        
+        setPendingDeletionRequests(pendingSet);
+      }
+    } catch (error) {
+      console.error('Error fetching pending deletion requests:', error);
+      // Don't show error toast, just use empty set
+      setPendingDeletionRequests(new Set());
+    }
+  };
+
+  // 🆕 ADD: Check individual post for pending deletion request
+  const checkPostPendingDeletion = async (postId) => {
+    try {
+      const response = await fetch(`${wifi}/api/check-pending-deletion/${postId}`, {
+        credentials: 'include'
+      });
+      const result = await response.json();
+      
+      if (result.success && result.hasPendingRequest) {
+        setPendingDeletionRequests(prev => new Set([...prev, postId]));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking pending deletion:', error);
+      return false;
+    }
+  };
+
+  // 🆕 ADD: Check if post has pending resolution request
+  const hasPendingResolutionRequest = (postId) => {
+    return resolutionRequests.some(request => 
+      request.post_id === postId && request.status === 'pending'
+    );
+  };
+
+  // 🆕 ADD: Check if post has pending deletion request
+  const hasPendingDeletionRequest = (postId) => {
+    return pendingDeletionRequests.has(postId);
   };
 
   const fetchDeletionStats = async () => {
@@ -169,86 +253,128 @@ export default function MyPosts() {
     }
   };
 
-  const handleContactAdmin = async () => {
-    if (processingAction) return;
-    
-    setProcessingAction('contact');
-    const reasonInput = document.getElementById('deletion-reason');
-    const reason = reasonInput?.value?.trim();
+  // 🆕 UPDATED: Handle contact admin with better error handling
+const handleContactAdmin = async () => {
+  if (processingAction) return;
+  
+  setProcessingAction('contact');
+  const reasonInput = document.getElementById('deletion-reason');
+  const reason = reasonInput?.value?.trim();
 
-    if (!reason) {
-      toast.error('Please provide a reason for your deletion request.');
-      setProcessingAction(null);
+  if (!reason) {
+    toast.error('Please provide a reason for your deletion request.');
+    setProcessingAction(null);
+    return;
+  }
+
+  // Validate reason length
+  if (reason.length < 10) {
+    toast.error('Reason must be at least 10 characters long.');
+    setProcessingAction(null);
+    return;
+  }
+
+  try {
+    const response = await fetch(`${wifi}/api/contact-admin`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        reason: reason,
+          type: 'deletion_request',
+        post_id: contactAdminModal.postId // 🆕 REMOVED: type
+      })
+    }); 
+
+    const result = await response.json();
+
+    if (result.success) {
+      toast.success('Your request has been sent to the admin. They will review it soon.');
+      setContactAdminModal({ isOpen: false, postId: null });
+      
+      // Update pending state
+      setPendingDeletionRequests(prev => new Set([...prev, contactAdminModal.postId]));
+      
+      // Refresh to update the UI
+      await checkPostPendingDeletion(contactAdminModal.postId);
+    } else {
+      if (result.error && result.error.includes('already have a pending deletion request')) {
+        toast.error('You already have a pending deletion request for this post.');
+        setPendingDeletionRequests(prev => new Set([...prev, contactAdminModal.postId]));
+      } else {
+        toast.error(result.error || 'Failed to send request. Please try again.');
+      }
+    }
+  } catch (error) {
+    console.error('Error contacting admin:', error);
+    toast.error('Error sending request. Please try again.');
+  } finally {
+    setProcessingAction(null);
+  }
+};
+
+  // 🆕 ADD: Check for pending request before opening modal
+  const handleRequestDeletionClick = async (postId) => {
+    // Check if there's already a pending request
+    const hasPending = await checkPostPendingDeletion(postId);
+    
+    if (hasPending) {
+      toast.info('You already have a pending deletion request for this post.');
       return;
     }
-
-    try {
-      const response = await fetch(`${wifi}/api/contact-admin`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          reason: reason,
-          type: 'deletion_request',
-          post_id: contactAdminModal.postId
-        })
-      });
-
-      if (response.ok) {
-        toast.success('Your request has been sent to the admin. They will review it soon.');
-        setContactAdminModal({ isOpen: false, postId: null });
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Failed to send request. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error contacting admin:', error);
-      toast.error('Error sending request. Please try again.');
-    } finally {
-      setProcessingAction(null);
-    }
+    
+    setContactAdminModal({ isOpen: true, postId });
   };
 
   const handleEditPost = (postId) => {
     nav(`/user/edit-post/${postId}`);
   };
 
-  const handleMarkAsResolved = async (postId, postTitle) => {
+  // 🆕 UPDATED: Handle resolution request submission
+  const handleSubmitResolutionRequest = async (postId, resolutionData) => {
     if (processingAction) return;
     
     setProcessingAction('resolve');
     try {
-      const response = await fetch(`${wifi}/api/posts/${postId}/status`, {
-        method: 'PUT',
+      const formData = new FormData();
+      formData.append('resolution_description', resolutionData.resolution_description);
+      formData.append('verification_details', resolutionData.verification_details);
+      
+      if (resolutionData.resolution_photo) {
+        formData.append('resolution_photo', resolutionData.resolution_photo);
+      }
+
+      const response = await fetch(`${wifi}/api/posts/${postId}/resolution-request`, {
+        method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: 'Resolved'
-        }),
+        body: formData,
       });
 
       const result = await response.json();
 
       if (result.success) {
-        toast.success('Post marked as resolved successfully');
-        setPosts(prevPosts => 
-          prevPosts.map(post => 
-            post.id === postId ? { ...post, status: 'Resolved' } : post
-          )
-        );
+        toast.success('Resolution request submitted! Waiting for admin approval.');
+        setResolutionForm({ isOpen: false, post: null });
+        
+        // Refresh resolution requests
+        fetchResolutionRequests();
+        fetchMyPosts();
       } else {
-        throw new Error(result.error || 'Failed to update post status');
+        throw new Error(result.error || 'Failed to submit resolution request');
       }
     } catch (err) {
-      console.error('Error updating post status:', err);
-      toast.error(err.message || 'Failed to mark post as resolved');
+      console.error('Error submitting resolution request:', err);
+      toast.error(err.message || 'Failed to submit resolution request');
     } finally {
       setProcessingAction(null);
     }
+  };
+
+  // 🆕 ADD: Open resolution form
+  const handleResolveClick = (post) => {
+    setResolutionForm({ isOpen: true, post });
   };
 
   const formatDate = (dateString) => {
@@ -491,6 +617,8 @@ export default function MyPosts() {
                    
                     const canDelete = (post.status === 'Active' || post.status === 'Removed') && !isLimitReached;
                     const showRequestButton = (post.status === 'Active' || post.status === 'Removed') && isLimitReached;
+                    const hasPendingResolution = hasPendingResolutionRequest(post.id);
+                    const hasPendingDeletion = hasPendingDeletionRequest(post.id);
 
                     return (
                       <div key={post.id} className='mypost-cards-fmw'>
@@ -575,14 +703,39 @@ export default function MyPosts() {
                           </div>
 
                           <div className='mypost-actions-fmw'>
-                            {post.status === 'Active' && (
+                            {/* 🆕 UPDATED: Resolution Request Button with Pending State */}
+                            {post.status === 'Active' && !hasPendingResolution && (
                               <button
-                                onClick={() => setResolveConfirm({ postId: post.id, postTitle: post.title })}
+                                onClick={() => handleResolveClick(post)}
                                 className="resolve-btn-fmw"
-                                title="Mark as resolved"
+                                title="Request to mark as resolved"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} />
-                                <span className="btn-text-fmw">Resolve</span>
+                                <span className="btn-text-fmw">Mark as Resolved</span>
+                              </button>
+                            )}
+                            
+                            {/* 🆕 ADDED: Pending Resolution Approval State */}
+                            {hasPendingResolution && (
+                              <button
+                                className="resolve-btn-fmw pending"
+                                disabled
+                                title="Resolution request pending admin approval"
+                              >
+                                <FontAwesomeIcon icon={faClock} />
+                                <span className="btn-text-fmw">Pending Approval</span>
+                              </button>
+                            )}
+                            
+                            {/* 🆕 ADDED: Resolved State */}
+                            {post.status === 'Resolved' && (
+                              <button
+                                className="resolve-btn-fmw resolved"
+                                disabled
+                                title="Post has been resolved"
+                              >
+                                <FontAwesomeIcon icon={faCheckCircle} />
+                                <span className="btn-text-fmw">Resolved</span>
                               </button>
                             )}
                             
@@ -607,14 +760,27 @@ export default function MyPosts() {
                               </button>
                             )}
                             
-                            {showRequestButton && (
+                            {/* 🆕 UPDATED: Deletion Request Button with Pending State */}
+                            {showRequestButton && !hasPendingDeletion && (
                               <button
-                                onClick={() => setContactAdminModal({ isOpen: true, postId: post.id })}
+                                onClick={() => handleRequestDeletionClick(post.id)}
                                 className="request-deletion-btn-fmw"
                                 title="Request deletion from admin"
                               >
                                 <FontAwesomeIcon icon={faEnvelope} />
                                 <span className="btn-text-fmw">Request</span>
+                              </button>
+                            )}
+                            
+                            {/* 🆕 ADDED: Pending Deletion Request State */}
+                            {hasPendingDeletion && (
+                              <button
+                                className="request-deletion-btn-fmw pending"
+                                disabled
+                                title="Deletion request pending admin approval"
+                              >
+                                <FontAwesomeIcon icon={faClock} />
+                                <span className="btn-text-fmw">Pending</span>
                               </button>
                             )}
                           </div>
@@ -624,13 +790,23 @@ export default function MyPosts() {
                   })}
                 </div>
               )}
-            </div>
+            </div> 
           </div>
-        </div>
+        </div> 
 
         <Link to="/user/create" className="mobile-create-post-btn-fmw">
           <FontAwesomeIcon icon={faPlus} />
         </Link>
+
+        {/* 🆕 ADD: Separate User Resolution Form Modal */}
+        {resolutionForm.isOpen && resolutionForm.post && (
+          <ResolutionForm
+            post={resolutionForm.post} 
+            onSubmit={(resolutionData) => handleSubmitResolutionRequest(resolutionForm.post.id, resolutionData)}
+            onCancel={() => setResolutionForm({ isOpen: false, post: null })}
+            loading={processingAction === 'resolve'}
+          />
+        )}
 
         {/* Custom Toast Container */}
         <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
@@ -676,47 +852,6 @@ export default function MyPosts() {
           </div>
         )}
 
-        {/* Resolve Confirmation Modal */}
-        {resolveConfirm && (
-          <div className="modal-overlay-fmw" onClick={() => !processingAction && setResolveConfirm(null)}>
-            <div className="modal-content-fmw" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header-fmw">
-                <FontAwesomeIcon icon={faCheckCircle} className="success-icon-fmw" />
-                <h3>Mark as Resolved</h3>
-                <button 
-                  className="modal-close-fmw"
-                  onClick={() => !processingAction && setResolveConfirm(null)}
-                  disabled={processingAction}
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
-              </div>
-              <div className="modal-body-fmw">
-                <p>Are you sure you want to mark this post as resolved?</p>
-                <p><strong>"{resolveConfirm.postTitle}"</strong></p>
-                <p className="info-text-fmw">This will close the post and mark it as completed.</p>
-              </div>
-              <div className="modal-footer-fmw">
-                <button 
-                  className="btn-secondary-fmw"
-                  onClick={() => !processingAction && setResolveConfirm(null)}
-                  disabled={processingAction}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="btn-primary-fmw resolve-confirm-fmw"
-                  onClick={() => handleMarkAsResolved(resolveConfirm.postId, resolveConfirm.postTitle)}
-                  disabled={processingAction}
-                >
-                  <FontAwesomeIcon icon={faCheckCircle} />
-                  {processingAction === 'resolve' ? 'Marking...' : 'Mark as Resolved'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Contact Admin Modal */}
         {contactAdminModal.isOpen && (
           <div className="modal-overlay-fmw" onClick={() => !processingAction && setContactAdminModal({ isOpen: false, postId: null })}>
@@ -742,14 +877,16 @@ export default function MyPosts() {
                 
                 <div className="form-group-fmw">
                   <label htmlFor="deletion-reason">
-                    <strong>Reason for deletion request:</strong>
+                    <strong>Reason for deletion request: *</strong>
                   </label>
                   <textarea
-                    placeholder="Please explain why you need to delete this post (required)..."
+                    placeholder="Please explain why you need to delete this post (minimum 10 characters)..."
                     rows="4"
                     id="deletion-reason"
                     className="form-textarea-fmw"
+                    minLength="10"
                   /> 
+                  <small style={{color: '#666', fontSize: '0.8rem'}}>Reason must be at least 10 characters long</small>
                 </div>
 
                 <div className="info-box-fmw">
@@ -758,7 +895,7 @@ export default function MyPosts() {
                     <li>Your request will be sent to administrators</li>
                     <li>Admin will review your request within 24 hours</li>
                     <li>You'll receive a notification when approved</li>
-                    <li>Monthly limit automatically resets</li>
+                    <li>You cannot submit another request for this post while pending</li>
                   </ul>
                 </div>
               </div>
@@ -779,9 +916,9 @@ export default function MyPosts() {
                 </button>
               </div>
             </div>
-          </div>
+          </div> 
         )}
       </main>
-    </div>
-  )
+    </div> 
+  ) 
 }

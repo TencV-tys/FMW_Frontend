@@ -18,7 +18,8 @@ import {
   faUndo,
   faPlusCircle,
   faTimes,
-  faRefresh
+  faRefresh,
+  faFlagCheckered // 🆕 ADD: For resolution requests
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Notifications.css'; 
 
@@ -34,7 +35,10 @@ export default function AdminNotifications() {
     user_suspended: 0,
     user_banned: 0,
     feedback_submitted: 0,
-    deletion_request: 0
+    deletion_request: 0,
+    resolution_request_pending: 0, // 🆕 ADD: Resolution request stats
+    resolution_request_approved: 0, // 🆕 ADD: Resolution approval stats
+    resolution_request_rejected: 0  // 🆕 ADD: Resolution rejection stats
   });
   
   // Confirmation Modal State
@@ -159,7 +163,10 @@ export default function AdminNotifications() {
           user_suspended: data.stats?.user_suspended || 0,
           user_banned: data.stats?.user_banned || 0,
           feedback_submitted: data.stats?.feedback_submitted || 0,
-          deletion_request: data.stats?.deletion_request || 0
+          deletion_request: data.stats?.deletion_request || 0,
+          resolution_request_pending: data.stats?.resolution_request_pending || 0, // 🆕 ADD
+          resolution_request_approved: data.stats?.resolution_request_approved || 0, // 🆕 ADD
+          resolution_request_rejected: data.stats?.resolution_request_rejected || 0  // 🆕 ADD
         });
       }
     } catch (error) {
@@ -193,15 +200,17 @@ export default function AdminNotifications() {
   const getNotificationLink = (notification) => {
     const metadata = parseNotificationMetadata(notification);
 
-    switch (notification.type) {
+    switch (notification.type) { 
       case 'report_submitted':
         return metadata.report_id ? `/admin/reports?highlightReport=${metadata.report_id}` : '/admin/reports';
       
       case 'post_resolved':
       case 'post_restored':
-      case 'post_removed':
+      case 'post_removed': 
       case 'post_deleted':
-      case 'post_resolved_by_user':
+      case 'resolution_request_pending':
+      case 'resolution_approved_admin':
+      case 'resolution_rejected_admin':
         return metadata.post_id ? `/admin/manage-posts?highlightPost=${metadata.post_id}` : '/admin/manage-posts';
       
       case 'user_suspended':
@@ -219,7 +228,7 @@ export default function AdminNotifications() {
       case 'deletion_request_approved':
       case 'deletion_request_rejected':
         return metadata.request_id ? `/admin/deletion-requests?highlightRequest=${metadata.request_id}` : '/admin/deletion-requests';
-      
+  
       default:
         return null;
     }   
@@ -432,8 +441,15 @@ export default function AdminNotifications() {
       case 'deletion_request_approved':
       case 'deletion_request_rejected':
         return faUserLock;
-      case 'post_resolved_by_user':
+      
+      // 🆕 ADD: Resolution request icons
+      case 'resolution_request_pending':
+        return faFlagCheckered;
+      case 'resolution_approved_admin':
         return faCheckCircle;
+      case 'resolution_rejected_admin':
+        return faBan;
+      
       default:
         return faBell;
     }
@@ -469,8 +485,15 @@ export default function AdminNotifications() {
       case 'deletion_request_approved':
       case 'deletion_request_rejected':
         return '#FF8904';
-      case 'post_resolved_by_user':
-        return '#10b981';
+      
+      // 🆕 ADD: Resolution request colors
+      case 'resolution_request_pending':
+        return '#8b5cf6'; // Purple for pending
+      case 'resolution_approved_admin':
+        return '#10b981'; // Green for approved
+      case 'resolution_rejected_admin':
+        return '#ef4444'; // Red for rejected
+      
       default:
         return '#6b7280';
     }
@@ -491,6 +514,12 @@ export default function AdminNotifications() {
       case 'user_suspended':
       case 'user_banned':
         return `User #${metadata.target_user_id} - ${metadata.target_user_name || ''}`;
+      
+      // 🆕 ADD: Resolution request descriptions
+      case 'resolution_request_pending':
+      case 'resolution_approved_admin':
+      case 'resolution_rejected_admin':
+        return `Request #${metadata.request_id} - Post: ${metadata.post_title || 'N/A'}`;
       
       default:
         return '';
@@ -618,6 +647,19 @@ export default function AdminNotifications() {
           </div>
         </div>
         
+        {/* 🆕 ADD: Resolution Request Stats */}
+        <div 
+          className={`admin-notif-stat-card ${filter === 'resolution_request_pending' ? 'admin-notif-active' : ''}`}
+          onClick={() => handleStatCardClick('resolution_request_pending')}
+          style={{ cursor: 'pointer' }}
+          title="Show pending resolution requests"
+        >
+          <div className="admin-notif-stat-info">
+            <h3>{stats.resolution_request_pending}</h3>
+            <p>Pending Resolution</p>
+          </div>
+        </div>
+        
         {/* User Action Stats */}
         <div 
           className={`admin-notif-stat-card ${filter === 'user_suspended' ? 'admin-notif-active' : ''}`}
@@ -680,7 +722,12 @@ export default function AdminNotifications() {
             <option value="deletion_request">Deletion Requests</option>
             <option value="deletion_request_approved">Request Approved</option>
             <option value="deletion_request_rejected">Request Rejected</option>
-            <option value="post_resolved_by_user">User Resolved Posts</option>
+            
+            {/* 🆕 ADD: Resolution request filters */}
+            <option value="resolution_request_pending">Pending Resolution</option>
+            <option value="resolution_approved_admin">Resolution Approved</option>
+            <option value="resolution_rejected_admin">Resolution Rejected</option>
+            
             <option value="feedback_submitted">Feedback Submitted</option>
             <option value="feedback_updated">Feedback Updated</option>
             <option value="feedback_deleted">Feedback Deleted</option>
@@ -719,7 +766,12 @@ export default function AdminNotifications() {
               {filter === 'deletion_request' && 'Deletion Requests'}
               {filter === 'deletion_request_approved' && 'Request Approved'}
               {filter === 'deletion_request_rejected' && 'Request Rejected'}
-              {filter === 'post_resolved_by_user' && 'User Resolved Posts'}
+              
+              {/* 🆕 ADD: Resolution request filter labels */}
+              {filter === 'resolution_request_pending' && 'Pending Resolution'}
+              {filter === 'resolution_approved_admin' && 'Resolution Approved'}
+              {filter === 'resolution_rejected_admin' && 'Resolution Rejected'}
+              
               {filter === 'feedback_submitted' && 'Feedback Submitted'}
               {filter === 'feedback_updated' && 'Feedback Updated'}
               {filter === 'feedback_deleted' && 'Feedback Deleted'}
