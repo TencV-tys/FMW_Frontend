@@ -11,7 +11,7 @@ import CustomToast from '../components/CustomToast';
 export default function MyPosts() {
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'resolved'
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'resolved', 'removed'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
@@ -29,6 +29,13 @@ export default function MyPosts() {
   useEffect(() => {
     fetchMyPosts();
     fetchDeletionStats();
+    
+    // Check if there's a filter from Profile page
+    const savedFilter = sessionStorage.getItem('postsFilter');
+    if (savedFilter) {
+      setStatusFilter(savedFilter);
+      sessionStorage.removeItem('postsFilter'); // Clear after use
+    }
   }, []);
 
   // FIXED: Filter posts when status filter or posts change
@@ -346,12 +353,13 @@ export default function MyPosts() {
     );
   };
 
-  // FIXED: Get status counts with normalized status values
+  // FIXED: Get status counts with normalized status values - ADDED REMOVED COUNT
   const getStatusCounts = () => {
     const counts = {
       all: posts.length,
       active: posts.filter(post => post.status?.toLowerCase() === 'active').length,
-      resolved: posts.filter(post => post.status?.toLowerCase() === 'resolved').length
+      resolved: posts.filter(post => post.status?.toLowerCase() === 'resolved').length,
+      removed: posts.filter(post => post.status?.toLowerCase() === 'removed').length
     };
     return counts;
   };
@@ -412,7 +420,7 @@ export default function MyPosts() {
                 </div>
               </div>
 
-              {/* Enhanced Filter Section */}
+              {/* Enhanced Filter Section - ADDED REMOVED FILTER */}
               <div className="myposts-filter-section-fmw">
                 <div className="filter-header-fmw">
                   <FontAwesomeIcon icon={faFilter} />
@@ -422,7 +430,8 @@ export default function MyPosts() {
                   {[
                     { value: 'all', label: 'All', count: statusCounts.all },
                     { value: 'active', label: 'Active', count: statusCounts.active },
-                    { value: 'resolved', label: 'Resolved', count: statusCounts.resolved }
+                    { value: 'resolved', label: 'Resolved', count: statusCounts.resolved },
+                    { value: 'removed', label: 'Removed', count: statusCounts.removed }
                   ].map(option => (
                     <button
                       key={option.value}

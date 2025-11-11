@@ -6,6 +6,7 @@ import UserNav from '../UserComponents/UserDashboardNav';
 import Logo2 from '../assets/Logo2.jpg';
 import './styles/Profile.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
+
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,8 +15,9 @@ export default function Profile() {
     activePosts: 0, 
     resolvedPosts: 0
   });
- const wifi = useWifiUrl();
-  //  Fetch user data and statistics
+  const wifi = useWifiUrl();
+
+  // Fetch user data and statistics
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -33,7 +35,7 @@ export default function Profile() {
         const userData = await userResponse.json();
         setUser(userData.user);
 
-        //  Fetch user statistics
+        // Fetch user statistics
         const statsResponse = await fetch(`${wifi}/api/users/post-stats`, {
           credentials: 'include'
         });
@@ -55,7 +57,7 @@ export default function Profile() {
     fetchUserData();
   }, []);
 
-  // 🎯 Format registration date
+  // Format registration date
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -64,7 +66,7 @@ export default function Profile() {
     });
   };
 
-  //  Get gender display text
+  // Get gender display text
   const getGenderDisplay = (gender) => {
     if (!gender) return 'Not specified';
     
@@ -77,7 +79,14 @@ export default function Profile() {
     return genderMap[gender] || gender;
   };
 
-  //  Loading state
+  // Handle stat card click - redirect to MyPosts with filter
+  const handleStatClick = (filter) => {
+    // Store the filter in sessionStorage to apply in MyPosts
+    sessionStorage.setItem('postsFilter', filter);
+    window.location.href = '/user/myposts';
+  };
+
+  // Loading state
   if (loading) {
     return (
       <section className="profile-page">
@@ -108,9 +117,14 @@ export default function Profile() {
           </Link>
         </div> 
 
-        {/*  Statistics Cards */}
+        {/* Statistics Cards - NOW CLICKABLE */}
         <div className="profile-stats-container">
-          <div className="profile-stat-card">
+          {/* Total Posts Card */}
+          <div 
+            className="profile-stat-card clickable-stat" 
+            onClick={() => handleStatClick('all')}
+            title="View all posts"
+          >
             <div className="profile-stat-icon posts-icon">
               <FontAwesomeIcon icon={faUser} />
             </div>
@@ -120,7 +134,12 @@ export default function Profile() {
             </div>
           </div>
           
-          <div className="profile-stat-card">
+          {/* Active Posts Card */}
+          <div 
+            className="profile-stat-card clickable-stat" 
+            onClick={() => handleStatClick('active')}
+            title="View active posts"
+          >
             <div className="profile-stat-icon active-icon">
               <div className="pulse-dot"></div>
             </div>
@@ -130,7 +149,12 @@ export default function Profile() {
             </div>
           </div>
           
-          <div className="profile-stat-card">
+          {/* Resolved Cases Card */}
+          <div 
+            className="profile-stat-card clickable-stat" 
+            onClick={() => handleStatClick('resolved')}
+            title="View resolved cases"
+          >
             <div className="profile-stat-icon resolved-icon">
               <span>✓</span>
             </div>
@@ -138,10 +162,10 @@ export default function Profile() {
               <h3>{stats.resolvedPosts}</h3>
               <p>Resolved Cases</p>
             </div>
-          </div>
+          </div> 
         </div>
 
-        {/*  Main Profile Card */}
+        {/* Rest of your existing profile content remains the same */}
         <div className='profile-data-container-darkbrown'>   
           <div className='profile-data-container-lightbrown'>  
             <div className='profile-data-container'>
@@ -155,11 +179,10 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* 🎯 Profile Content */}
+                {/* Profile Content */}
                 <div className='profile-container'>
-              
                   
-                  {/* 🎯 Profile Picture */}
+                  {/* Profile Picture */}
                   <div className='profile-pic-section'>
                     <div className='profile-pic'>
                       <img 
@@ -178,7 +201,7 @@ export default function Profile() {
                     </div> 
                   </div>
 
-                  {/* 🎯 Profile Details */}
+                  {/* Profile Details */}
                   <div className='profile-details'>
                     <div className="detail-group">
                       <h3>Personal Information</h3>
@@ -215,7 +238,7 @@ export default function Profile() {
                       </div>
                     </div>
 
-                    {/* 🎯 Quick Actions */}
+                    {/* Quick Actions */}
                     <div className="profile-actions">
                       <h3>Quick Actions</h3>
                       <div className="action-buttons">

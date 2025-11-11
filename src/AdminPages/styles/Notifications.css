@@ -943,7 +943,7 @@
 
   .admin-notif-content p {
     font-size: 0.95rem;
-  }
+  } 
 
   .admin-notif-modal-overlay {
     padding: 0.5rem;
@@ -952,4 +952,35 @@
   .admin-notif-modal-content {
     margin: 0.5rem; 
   }
+}
+/* Confirmation Modal Notification Preview */
+.admin-notif-modal-notification-preview {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #8B5A2B;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.admin-notif-modal-notification-preview strong {
+  color: #8B5A2B;
+  font-weight: 700;
+}
+
+/* Enhanced modal styles for different types */
+.admin-notif-modal-content .admin-notif-confirm-icon {
+  margin-bottom: 1.5rem;
+}
+
+.admin-notif-modal-content .admin-notif-confirm-icon svg {
+  color: #8B5A2B;
+}
+
+.admin-notif-modal-content .admin-notif-confirm-icon svg[data-icon="trash"] {
+  color: #ef4444;
+}
+
+.admin-notif-modal-content .admin-notif-confirm-icon svg[data-icon="exclamation-triangle"] {
+  color: #f59e0b;
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom'; // 🆕 ADD THIS
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBell,
@@ -23,7 +23,7 @@ import {
 import './styles/Notifications.css'; 
 
 export default function AdminNotifications() {
-  const navigate = useNavigate(); // 🆕 ADD THIS HOOK
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -36,12 +36,16 @@ export default function AdminNotifications() {
     feedback_submitted: 0,
     deletion_request: 0
   });
+  
+  // Confirmation Modal State
   const [confirmationModal, setConfirmationModal] = useState({
     isOpen: false,
-    type: '', // 'markAllRead' or 'clearAll'
+    type: '', // 'markAllRead', 'clearAll', 'deleteSingle'
     title: '',
     message: '',
-    isProcessing: false // Prevent double clicks
+    isProcessing: false,
+    notificationId: null, // For single deletion
+    notificationTitle: '' // For single deletion
   });
 
   // Smart polling refs
@@ -175,7 +179,7 @@ export default function AdminNotifications() {
     setFilter(filterType);
   };
 
-  // 🆕 ENHANCED: Parse metadata from notification
+  // Parse metadata from notification
   const parseNotificationMetadata = (notification) => {
     try {
       return notification.metadata ? JSON.parse(notification.metadata) : {};
@@ -185,13 +189,12 @@ export default function AdminNotifications() {
     }
   };
 
-  // 🆕 ENHANCED: Get navigation link with specific data parameters
+  // Get navigation link with specific data parameters
   const getNotificationLink = (notification) => {
     const metadata = parseNotificationMetadata(notification);
 
     switch (notification.type) {
       case 'report_submitted':
-        // Navigate to reports page with specific report ID
         return metadata.report_id ? `/admin/reports?highlightReport=${metadata.report_id}` : '/admin/reports';
       
       case 'post_resolved':
@@ -199,26 +202,22 @@ export default function AdminNotifications() {
       case 'post_removed':
       case 'post_deleted':
       case 'post_resolved_by_user':
-        // Navigate to manage posts with post ID filter
         return metadata.post_id ? `/admin/manage-posts?highlightPost=${metadata.post_id}` : '/admin/manage-posts';
       
       case 'user_suspended':
       case 'user_banned':
       case 'user_activated':
       case 'user_deleted':
-        // Navigate to manage users with user ID filter
         return metadata.target_user_id ? `/admin/manage-users?highlightUser=${metadata.target_user_id}` : '/admin/manage-users';
       
       case 'feedback_submitted':
       case 'feedback_updated':
       case 'feedback_deleted':
-        // Navigate to feedback with specific feedback ID
         return metadata.feedback_id ? `/admin/feedback?highlightFeedback=${metadata.feedback_id}` : '/admin/feedback';
       
       case 'deletion_request':
       case 'deletion_request_approved':
       case 'deletion_request_rejected':
-        // Navigate to deletion requests with specific request ID
         return metadata.request_id ? `/admin/deletion-requests?highlightRequest=${metadata.request_id}` : '/admin/deletion-requests';
       
       default:
@@ -226,7 +225,7 @@ export default function AdminNotifications() {
     }   
   }; 
 
-  // 🆕 ENHANCED: Handle notification click with navigation
+  // Handle notification click with navigation
   const handleNotificationClick = (notification) => {
     // Mark as read when clicked
     if (!notification.is_read) {
@@ -288,6 +287,10 @@ export default function AdminNotifications() {
   };
 
   const deleteNotification = async (notificationId) => {
+    if (confirmationModal.isProcessing) return;
+    
+    setConfirmationModal(prev => ({ ...prev, isProcessing: true }));
+    
     try {
       const response = await fetch(`http://localhost:8000/api/admin/notifications/${notificationId}`, {
         method: 'DELETE',
@@ -297,11 +300,14 @@ export default function AdminNotifications() {
       if (response.ok) {
         setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
         fetchNotificationStats();
+        closeConfirmationModal();
         showToast('Notification deleted', 'success');
       }
     } catch (error) {
       console.error('Error deleting notification:', error);
       showToast('Error deleting notification', 'error');
+    } finally {
+      setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
 
@@ -339,7 +345,9 @@ export default function AdminNotifications() {
       type: 'markAllRead',
       title: 'Mark All as Read',
       message: `Are you sure you want to mark all ${stats.unread} unread notifications as read? This action cannot be undone.`,
-      isProcessing: false
+      isProcessing: false,
+      notificationId: null,
+      notificationTitle: ''
     });
   };
 
@@ -351,7 +359,22 @@ export default function AdminNotifications() {
       type: 'clearAll',
       title: 'Clear All Notifications',
       message: `Are you sure you want to clear all ${notifications.length} notifications? This action cannot be undone and all notifications will be permanently deleted.`,
-      isProcessing: false
+      isProcessing: false,
+      notificationId: null,
+      notificationTitle: ''
+    });
+  };
+
+  // NEW: Open single notification deletion confirmation
+  const openDeleteSingleConfirmation = (notificationId, notificationTitle) => {
+    setConfirmationModal({
+      isOpen: true,
+      type: 'deleteSingle',
+      title: 'Delete Notification',
+      message: `Are you sure you want to delete this notification? This action cannot be undone.`,
+      isProcessing: false,
+      notificationId: notificationId,
+      notificationTitle: notificationTitle
     });
   };
 
@@ -363,7 +386,9 @@ export default function AdminNotifications() {
       type: '',
       title: '',
       message: '',
-      isProcessing: false
+      isProcessing: false,
+      notificationId: null,
+      notificationTitle: ''
     });
   };
 
@@ -374,6 +399,8 @@ export default function AdminNotifications() {
       markAllAsRead();
     } else if (confirmationModal.type === 'clearAll') {
       clearAllNotifications();
+    } else if (confirmationModal.type === 'deleteSingle') {
+      deleteNotification(confirmationModal.notificationId);
     }
   };
 
@@ -449,7 +476,7 @@ export default function AdminNotifications() {
     }
   };
 
-  // 🆕 ENHANCED: Get description text based on metadata
+  // Get description text based on metadata
   const getNotificationDescription = (notification) => {
     const metadata = parseNotificationMetadata(notification);
     
@@ -777,7 +804,7 @@ export default function AdminNotifications() {
                       className="admin-notif-btn-delete"
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteNotification(notification.id);
+                        openDeleteSingleConfirmation(notification.id, notification.title);
                       }}
                       title="Delete notification"
                       disabled={confirmationModal.isProcessing}
@@ -829,11 +856,20 @@ export default function AdminNotifications() {
             <div className="admin-notif-modal-body">
               <div className="admin-notif-confirm-icon">
                 <FontAwesomeIcon 
-                  icon={confirmationModal.type === 'markAllRead' ? faCheckDouble : faTrash} 
+                  icon={
+                    confirmationModal.type === 'markAllRead' ? faCheckDouble : 
+                    confirmationModal.type === 'clearAll' ? faTrash : 
+                    faExclamationTriangle
+                  } 
                   size="3x"
                 />
               </div>
               <p>{confirmationModal.message}</p>
+              {confirmationModal.type === 'deleteSingle' && confirmationModal.notificationTitle && (
+                <div className="admin-notif-modal-notification-preview">
+                  <strong>Notification:</strong> "{confirmationModal.notificationTitle}"
+                </div>
+              )}
             </div>
             <div className="admin-notif-modal-footer">
               <button 
@@ -845,13 +881,15 @@ export default function AdminNotifications() {
               </button>
               <button 
                 className={`admin-notif-btn-primary ${
-                  confirmationModal.type === 'clearAll' ? 'admin-notif-warning' : ''
+                  confirmationModal.type === 'clearAll' || confirmationModal.type === 'deleteSingle' ? 'admin-notif-warning' : ''
                 }`}
                 onClick={handleConfirmAction}
                 disabled={confirmationModal.isProcessing}
               >
                 {confirmationModal.isProcessing ? 'Processing...' : 
-                  confirmationModal.type === 'markAllRead' ? 'Mark All as Read' : 'Clear All'
+                  confirmationModal.type === 'markAllRead' ? 'Mark All as Read' : 
+                  confirmationModal.type === 'clearAll' ? 'Clear All' : 
+                  'Delete Notification'
                 }
               </button>
             </div>
