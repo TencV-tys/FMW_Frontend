@@ -809,6 +809,7 @@
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 0.5rem;
   box-shadow: 0 2px 4px rgba(139, 90, 43, 0.3);
