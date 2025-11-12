@@ -212,8 +212,6 @@ export default function UserNotifications() {
       // Post and General Types
       case 'user_warning':
         return faExclamationTriangle;
-      case 'post_resolved':
-        return faCheckCircle;
       case 'post_removed_warning':
         return faEyeSlash;
       case 'post_deleted_warning':
@@ -312,8 +310,6 @@ export default function UserNotifications() {
       // Other Labels
       case 'user_warning':
         return 'User Warning';
-      case 'post_resolved':
-        return 'Post Resolved';
       case 'post_removed_warning':
         return 'Post Removed';
       case 'post_deleted_warning':
@@ -458,7 +454,7 @@ export default function UserNotifications() {
             <option value="deletion_request_rejected">Deletion Rejected</option>
             
             {/* Post Categories */}
-            <option value="post_resolved">Resolved Posts</option>
+        
             <option value="post_restored">Restored Posts</option>
             <option value="post_removed_warning">Post Removal Warnings</option>
             <option value="post_deleted_warning">Post Deletion Warnings</option>
@@ -499,7 +495,7 @@ export default function UserNotifications() {
               {filter === 'deletion_request_rejected' && 'Deletion Rejected'}
               
               {/* Post Filters */}
-              {filter === 'post_resolved' && 'Resolved Posts'}
+            
               {filter === 'post_removed_warning' && 'Post Removal Warnings'}
               {filter === 'post_deleted_warning' && 'Post Deletion Warnings'}
               {filter === 'post_restored' && 'Restored Posts'}

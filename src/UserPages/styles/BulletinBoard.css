@@ -1,4 +1,4 @@
-/* BulletinBoard.css - FIXED RESPONSIVE VERSION */
+/* BulletinBoard.css - UPDATED WITHOUT OVERLAY */
 
 .bulletin-board-page-container {
   min-height: 100dvh;
@@ -53,7 +53,7 @@
   align-items: center;
 }
 
-/* FIXED Loading and Error States */
+/* Loading and Error States */
 .bulletin-loading-outer-container,
 .bulletin-error-outer-container {
   display: flex;
@@ -205,7 +205,7 @@
   color: #999;
 }
 
-/* Filters Container - FIXED FOR RESPONSIVE */
+/* Filters Container */
 .bulletin-filters-container {
   display: flex;
   gap: 1rem;
@@ -354,7 +354,7 @@
   width: 95%;
 }
 
-/* FIXED Post Card - Removed Pin */
+/* Post Card - UPDATED WITHOUT OVERLAY */
 .bulletin-post-card {
   display: flex;
   flex-direction: column;
@@ -448,7 +448,7 @@
   color: #654321;
 }
 
-/* FIXED User Details Alignment */
+/* User Details Alignment */
 .bulletin-user-details {
   display: flex;
   flex-direction: column;
@@ -750,55 +750,9 @@
   max-height: none;
 }
 
-/* FIXED Expand Overlay - Lighter and Clearer */
-.bulletin-expand-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(139, 90, 43, 0.4), rgba(101, 67, 33, 0.4));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 12px;
-  color: white;
-  text-align: center;
-  padding: 20px;
-  pointer-events: none;
-  backdrop-filter: blur(0.5px);
-}
+/* REMOVED: Expand Overlay Styles */
 
-.bulletin-post-card:hover .bulletin-expand-overlay {
-  opacity: 1;
-  transform: scale(1.02);
-}
-
-.bulletin-expand-icon {
-  font-size: 2rem;
-  margin-bottom: 10px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.bulletin-post-card:hover .bulletin-expand-icon {
-  transform: scale(1.2);
-}
-
-.bulletin-expand-overlay span {
-  font-weight: 700;
-  font-size: 0.9rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  transition: transform 0.3s ease;
-}
-
-.bulletin-post-card:hover .bulletin-expand-overlay span {
-  transform: translateY(-2px);
-}
-
-/* FIXED: Empty State - Matches MyPosts Style */
+/* Empty State */
 .bulletin-empty-state {
   display: flex;
   flex-direction: column;
@@ -1070,7 +1024,7 @@
   width: 16px;
 }
 
-/* ========== RESPONSIVE DESIGN - FIXED FOR 768px AND BELOW ========== */
+/* ========== RESPONSIVE DESIGN ========== */
 
 @media (max-width: 1200px) {
   .bulletin-posts-grid {
@@ -1082,7 +1036,7 @@
   }
 }
 
-/* FIXED: Tablet and Mobile (768px and below) */
+/* Tablet and Mobile (768px and below) */
 @media (max-width: 768px) {
   .bulletin-board-main-container {
     padding: 20px 5px;
@@ -1204,7 +1158,7 @@
   }
 }
 
-/* FIXED: Small Mobile (480px and below) */
+/* Small Mobile (480px and below) */
 @media (max-width: 480px) {
   .bulletin-board-main-container {
     padding: 20px 5px;

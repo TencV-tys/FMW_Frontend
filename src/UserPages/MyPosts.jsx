@@ -333,44 +333,45 @@ const handleContactAdmin = async () => {
   };
 
   // 🆕 UPDATED: Handle resolution request submission
-  const handleSubmitResolutionRequest = async (postId, resolutionData) => {
-    if (processingAction) return;
+ const handleSubmitResolutionRequest = async (postId, resolutionData) => {
+  if (processingAction) return;
+  
+  setProcessingAction('resolve');
+  try {
+    const formData = new FormData();
+    formData.append('resolution_description', resolutionData.resolution_description);
+    formData.append('verification_details', resolutionData.verification_details || '');
     
-    setProcessingAction('resolve');
-    try {
-      const formData = new FormData();
-      formData.append('resolution_description', resolutionData.resolution_description);
-      formData.append('verification_details', resolutionData.verification_details);
-      
-      if (resolutionData.resolution_photo) {
-        formData.append('resolution_photo', resolutionData.resolution_photo);
-      }
-
-      const response = await fetch(`${wifi}/api/posts/${postId}/resolution-request`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        toast.success('Resolution request submitted! Waiting for admin approval.');
-        setResolutionForm({ isOpen: false, post: null });
-        
-        // Refresh resolution requests
-        fetchResolutionRequests();
-        fetchMyPosts();
-      } else {
-        throw new Error(result.error || 'Failed to submit resolution request');
-      }
-    } catch (err) {
-      console.error('Error submitting resolution request:', err);
-      toast.error(err.message || 'Failed to submit resolution request');
-    } finally {
-      setProcessingAction(null);
+    if (resolutionData.resolution_photo) {
+      formData.append('resolution_photo', resolutionData.resolution_photo);
     }
-  };
+
+    // UPDATED: Use the correct endpoint
+    const response = await fetch(`${wifi}/api/posts/${postId}/resolution-request`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      toast.success('Resolution request submitted! Waiting for admin approval.');
+      setResolutionForm({ isOpen: false, post: null });
+      
+      // Refresh data
+      fetchResolutionRequests();
+      fetchMyPosts();
+    } else {
+      throw new Error(result.error || 'Failed to submit resolution request');
+    }
+  } catch (err) {
+    console.error('Error submitting resolution request:', err);
+    toast.error(err.message || 'Failed to submit resolution request');
+  } finally {
+    setProcessingAction(null);
+  }
+};
 
   // 🆕 ADD: Open resolution form
   const handleResolveClick = (post) => {

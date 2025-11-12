@@ -231,7 +231,7 @@ export default function ResolutionForm({
               disabled={loading}
             >
               Cancel
-            </button>
+            </button> 
             <button
               type="submit"
               className="btn-primary-fmw resolve-confirm-fmw"

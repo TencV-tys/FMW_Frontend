@@ -9,7 +9,6 @@ import {
   faFlag,
   faFilter,
   faTimes,
-  faExpand,
   faLocationDot
 } from '@fortawesome/free-solid-svg-icons';
 import UserNav from '../UserComponents/UserDashboardNav.jsx';
@@ -17,7 +16,7 @@ import ReportModal from '../UserComponents/ReportModal';
 import OptionalPhoto from '../assets/Logo.jpg';
 import './styles/BulletinBoard.css';
 import {useWifiUrl} from '../hooks/useWifiUrl';
-import CustomToast from '../components/CustomToast'; // Import the toast
+import CustomToast from '../components/CustomToast';
 
 export default function BulletinBoard() {
   const [reportModal, setReportModal] = useState({ isOpen: false, post: null });
@@ -38,7 +37,6 @@ export default function BulletinBoard() {
   const [expandedContacts, setExpandedContacts] = useState({});
   const wifi = useWifiUrl(); 
 
-  // Initialize toast
   const { toasts, removeToast, toast } = CustomToast.useCustomToast();
 
   useEffect(() => {
@@ -196,7 +194,6 @@ export default function BulletinBoard() {
     e.stopPropagation();
   };
 
-  // Toggle description expansion
   const toggleDescription = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedDescriptions(prev => ({
@@ -205,7 +202,6 @@ export default function BulletinBoard() {
     }));
   };
 
-  // Toggle contact expansion
   const toggleContact = (postId, e) => {
     if (e) e.stopPropagation();
     setExpandedContacts(prev => ({
@@ -214,31 +210,26 @@ export default function BulletinBoard() {
     }));
   };
 
-  // Check if description needs "Read More"
   const needsReadMore = (description) => {
     return description && description.length > 120;
   };
 
-  // Check if contact needs "Read More"
   const needsContactReadMore = (contact) => {
     return contact && contact.length > 50;
   };
 
-  // Get truncated description
   const getTruncatedDescription = (description) => {
     if (!description) return '';
     if (description.length <= 120) return description;
     return description.substring(0, 120) + '...';
   };
 
-  // Get truncated contact
   const getTruncatedContact = (contact) => {
     if (!contact) return '';
     if (contact.length <= 50) return contact;
     return contact.substring(0, 50) + '...';
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="bulletin-board-page-container">
@@ -251,7 +242,6 @@ export default function BulletinBoard() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="bulletin-board-page-container">
@@ -548,12 +538,6 @@ export default function BulletinBoard() {
                             </div>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Expand Overlay */}
-                      <div className="bulletin-expand-overlay">
-                        <FontAwesomeIcon icon={faExpand} className="bulletin-expand-icon" />
-                        <span>Click to view details</span>
                       </div>
                     </div>
                   ))}

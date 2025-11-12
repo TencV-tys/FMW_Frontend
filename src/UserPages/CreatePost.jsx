@@ -92,21 +92,36 @@ export default function CreatePost() {
     }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData(prev => ({
-        ...prev,
-        photo: file
-      }));
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPhotoPreview(e.target.result);
-      };
-      reader.readAsDataURL(file);
+ const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    // Check file size (5MB limit example)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      toast.error('File size too large. Please select an image under 5MB.');
+      e.target.value = ''; // Clear the file input
+      return;
     }
-  };
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file.');
+      e.target.value = '';
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      photo: file
+    }));
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPhotoPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+}; 
 
   const handleRemovePhoto = () => {
     setFormData(prev => ({
