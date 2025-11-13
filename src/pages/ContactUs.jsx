@@ -33,12 +33,44 @@ export default function ContactUs() {
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Clear errors when user starts typing
     if (error) setError('');
+    if (submitStatus) setSubmitStatus(null);
+  };
+
+  const validateForm = () => {
+    const { name, email, subject, message } = formData;
+    
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
+      setError('All fields are required');
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    if (message.trim().length < 10) {
+      setError('Message must be at least 10 characters long');
+      return false;
+    }
+
+    if (message.trim().length > 2000) {
+      setError('Message must not exceed 2000 characters');
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
     
@@ -48,7 +80,13 @@ export default function ContactUs() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+          category: formData.category
+        })
       });
 
       const result = await response.json();
@@ -63,14 +101,12 @@ export default function ContactUs() {
           category: 'general'
         });
         
-        // Clear success message after 5 seconds
         setTimeout(() => setSubmitStatus(null), 5000);
       } else {
         setSubmitStatus('error');
-        setError(result.message || 'Failed to send message. Please try again.');
+        setError(result.error || result.message || 'Failed to send message. Please try again.');
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
       setSubmitStatus('error');
       setError('Network error. Please check your connection and try again.');
     } finally {
@@ -83,7 +119,6 @@ export default function ContactUs() {
       <NavAuth />
       
       <div className="contact-us-container-fmwcp">
-        {/* Header */}
         <header className="contact-us-header-fmwcp">
           <div className="header-content-fmwcp">
             <div className="header-icon-container-fmwcp">
@@ -95,7 +130,6 @@ export default function ContactUs() {
         </header>
 
         <div className="contact-us-content-fmwcp">
-          {/* Contact Information */}
           <div className="contact-info-section-fmwcp">
             <div className="contact-info-card-fmwcp">
               <h2>Get in Touch</h2>
@@ -141,7 +175,6 @@ export default function ContactUs() {
             </div>
           </div>
 
-          {/* Contact Form */}
           <div className="contact-form-section-fmwcp">
             <div className="contact-form-card-fmwcp">
               <h2>Send us a Message</h2>
@@ -245,9 +278,15 @@ export default function ContactUs() {
                     onChange={handleChange}
                     required
                     rows="6"
-                    placeholder="Please provide detailed information about your inquiry..."
+                    placeholder="Please provide detailed information about your inquiry (minimum 10 characters)..."
                     disabled={isSubmitting}
                   ></textarea>
+                  <div className="character-count-fmwcp">
+                    {formData.message.length}/2000 characters
+                    {formData.message.length < 10 && (
+                      <span className="character-warning-fmwcp"> (Minimum 10 characters required)</span>
+                    )}
+                  </div>
                 </div>
 
                 <button 
@@ -272,7 +311,6 @@ export default function ContactUs() {
           </div>
         </div>
 
-        {/* FAQ Section */}
         <section className="faq-section-fmwcp">
           <div className="faq-container-fmwcp">
             <h2>Frequently Asked Questions</h2>
@@ -295,7 +333,6 @@ export default function ContactUs() {
           </div>
         </section>
 
-        {/* UNIQUE FOOTER - Centered for desktop */}
         <footer className="contact-us-footer-fmwcp-unique">
           <div className="contact-footer-content-fmwcp">
             <p className="contact-footer-notice-fmwcp">
