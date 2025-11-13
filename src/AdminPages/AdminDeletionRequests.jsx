@@ -19,7 +19,9 @@ import {
   faExternalLinkAlt,
   faUsers,
   faWarning,
-  faChartBar
+  faChartBar,
+  faTrash,
+  faCalendar
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/AdminDeletionRequests.css';
 
@@ -49,6 +51,11 @@ export default function AdminDeletionRequests() {
     request: null
   });
 
+  const [userViewModal, setUserViewModal] = useState({
+    isOpen: false,
+    user: null
+  });
+
   const [confirmationModal, setConfirmationModal] = useState({
     isOpen: false,
     type: '', // 'approve' or 'reject'
@@ -73,6 +80,9 @@ export default function AdminDeletionRequests() {
     message: '',
     type: 'success'
   });
+
+  // 🆕 ADDED: Double-click prevention
+  const [processingRequestId, setProcessingRequestId] = useState(null);
 
   // Scroll refs for auto-scrolling
   const tableContainerRef = useRef(null);
@@ -317,9 +327,17 @@ export default function AdminDeletionRequests() {
     setHighlightedUser(null);
   };
 
-  // Enhanced request processing with modal flow
+  // 🆕 UPDATED: Enhanced request processing with modal closing
   const processDeletionRequest = async (requestId, action, rejectionReason = '') => {
-    if (confirmationModal.isProcessing) return;
+    // Prevent double-click
+    if (processingRequestId === requestId) return;
+    
+    setProcessingRequestId(requestId);
+    
+    if (confirmationModal.isProcessing) {
+      setProcessingRequestId(null);
+      return;
+    }
     
     setConfirmationModal(prev => ({ ...prev, isProcessing: true }));
     
@@ -342,8 +360,12 @@ export default function AdminDeletionRequests() {
         const data = await response.json();
         setDeletionRequests(prev => prev.filter(request => request.id !== requestId));
         fetchUsersDeletionStats();
+        
+        // 🆕 CLOSE ALL MODALS after successful action
         closeConfirmationModal();
         closeRejectionModal();
+        closeViewModal(); // 🆕 ADDED: Close view modal
+        
         showToast(data.message || `Request ${action}d successfully`, 'success');
         
         if (highlightedRequest === requestId) {
@@ -357,6 +379,7 @@ export default function AdminDeletionRequests() {
       showToast('Error processing deletion request', 'error');
     } finally {
       setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
+      setProcessingRequestId(null);
     }
   };
 
@@ -368,7 +391,19 @@ export default function AdminDeletionRequests() {
     }
   };
 
+  // 🆕 ADDED: Open user view modal
+  const openUserViewModal = (user) => {
+    setUserViewModal({ isOpen: true, user });
+    if (highlightedUser === user.id) {
+      setHighlightedUser(null);
+    }
+  };
+
+  // 🆕 UPDATED: Open action confirmation with double-click prevention
   const openActionConfirmation = (request, action) => {
+    // Prevent double-click
+    if (processingRequestId === request.id) return;
+
     const actionLabels = {
       approve: 'Approve',
       reject: 'Reject'
@@ -392,6 +427,9 @@ export default function AdminDeletionRequests() {
 
   // Open rejection reason modal
   const openRejectionModal = (request) => {
+    // Prevent double-click
+    if (processingRequestId === request.id) return;
+
     setRejectionModal({
       isOpen: true,
       request: request,
@@ -410,15 +448,21 @@ export default function AdminDeletionRequests() {
     });
   };
 
-  // Handle rejection reason submission
+  // 🆕 UPDATED: Handle rejection reason submission with modal closing
   const handleRejectionSubmit = () => {
     if (rejectionModal.isProcessing || !rejectionModal.reason.trim()) return;
+    if (processingRequestId === rejectionModal.request?.id) return;
     
     processDeletionRequest(rejectionModal.request.id, 'reject', rejectionModal.reason.trim());
   };
 
   const closeViewModal = () => {
     setViewModal({ isOpen: false, request: null });
+  };
+
+  // 🆕 ADDED: Close user view modal
+  const closeUserViewModal = () => {
+    setUserViewModal({ isOpen: false, user: null });
   };
 
   const closeConfirmationModal = () => {
@@ -435,8 +479,10 @@ export default function AdminDeletionRequests() {
     });
   };
 
+  // 🆕 UPDATED: Handle confirm action with modal closing
   const handleConfirmAction = () => {
     if (confirmationModal.isProcessing) return;
+    if (processingRequestId === confirmationModal.request?.id) return;
     
     if (confirmationModal.type === 'approve' || confirmationModal.type === 'reject') {
       processDeletionRequest(confirmationModal.request.id, confirmationModal.action);
@@ -581,7 +627,7 @@ export default function AdminDeletionRequests() {
     // User status filtering
     const matchesStatus = userStatusFilter === 'all' || 
       (userStatusFilter === 'limit_reached' && user.limit_reached) ||
-      (userStatusFilter === 'approaching' && user.deletion_count >= 2 && !user.limit_reached) ||
+      (userStatusFilter === 'approaching' && user.deletion_count >= 2 && !u.limit_reached) ||
       (userStatusFilter === 'within' && user.deletion_count <= 1);
 
     return matchesSearch && matchesStatus;
@@ -605,9 +651,10 @@ export default function AdminDeletionRequests() {
     return userStatusFilter !== 'all' || searchTerm !== '' || highlightedUser !== null;
   };
 
-  // Mobile Request Card Component
+  // 🆕 UPDATED: Mobile Request Card Component with double-click prevention
   const MobileRequestCard = ({ request }) => {
     const isHighlighted = highlightedRequest === request.id;
+    const isProcessing = processingRequestId === request.id;
     
     return (
       <div 
@@ -682,7 +729,7 @@ export default function AdminDeletionRequests() {
             className="adr-action-btn view"
             onClick={() => openViewModal(request)}
             title="View details"
-            disabled={confirmationModal.isProcessing}
+            disabled={confirmationModal.isProcessing || isProcessing}
           >
             <FontAwesomeIcon icon={faEye} />
           </button>
@@ -691,7 +738,7 @@ export default function AdminDeletionRequests() {
             className="adr-action-btn approve"
             onClick={() => openActionConfirmation(request, 'approve')}
             title="Approve Request"
-            disabled={confirmationModal.isProcessing}
+            disabled={confirmationModal.isProcessing || isProcessing}
           >
             <FontAwesomeIcon icon={faCheck} />
           </button>
@@ -700,7 +747,7 @@ export default function AdminDeletionRequests() {
             className="adr-action-btn reject"
             onClick={() => openActionConfirmation(request, 'reject')}
             title="Reject Request"
-            disabled={confirmationModal.isProcessing}
+            disabled={confirmationModal.isProcessing || isProcessing}
           >
             <FontAwesomeIcon icon={faTimes} />
           </button>
@@ -884,7 +931,6 @@ export default function AdminDeletionRequests() {
                 <option value="all">All Priorities</option>
                 <option value="critical">Too Many This Month (4+)</option>
                 <option value="limit">Limit Reached (3)</option>
-                <option value="warning">Approaching Limit (1-2)</option>
               </select>
             </div>
 
@@ -954,6 +1000,7 @@ export default function AdminDeletionRequests() {
                       <tbody>
                         {filteredRequests.map(request => {
                           const isHighlighted = highlightedRequest === request.id;
+                          const isProcessing = processingRequestId === request.id;
                           
                           return (
                             <tr 
@@ -1025,7 +1072,7 @@ export default function AdminDeletionRequests() {
                                     className="adr-action-btn view"
                                     onClick={() => openViewModal(request)}
                                     title="View details"
-                                    disabled={confirmationModal.isProcessing}
+                                    disabled={confirmationModal.isProcessing || isProcessing}
                                   >
                                     <FontAwesomeIcon icon={faEye} />
                                   </button>
@@ -1034,7 +1081,7 @@ export default function AdminDeletionRequests() {
                                     className="adr-action-btn approve"
                                     onClick={() => openActionConfirmation(request, 'approve')}
                                     title="Approve Request"
-                                    disabled={confirmationModal.isProcessing}
+                                    disabled={confirmationModal.isProcessing || isProcessing}
                                   >
                                     <FontAwesomeIcon icon={faCheck} />
                                   </button>
@@ -1043,7 +1090,7 @@ export default function AdminDeletionRequests() {
                                     className="adr-action-btn reject"
                                     onClick={() => openActionConfirmation(request, 'reject')}
                                     title="Reject Request"
-                                    disabled={confirmationModal.isProcessing}
+                                    disabled={confirmationModal.isProcessing || isProcessing}
                                   >
                                     <FontAwesomeIcon icon={faTimes} />
                                   </button>
@@ -1185,8 +1232,9 @@ export default function AdminDeletionRequests() {
                         return (
                           <tr 
                             key={user.id} 
-                            className={isHighlighted ? 'adr-request-highlighted-row adr-user-highlighted-row' : ''}
+                            className={`${isHighlighted ? 'adr-request-highlighted-row adr-user-highlighted-row' : ''} adr-clickable-row`}
                             data-user-id={user.id}
+                            onClick={() => openUserViewModal(user)}
                           >
                             <td>
                               <div className="adr-user-info">
@@ -1195,6 +1243,10 @@ export default function AdminDeletionRequests() {
                                   <div>
                                     <span className="adr-clickable">
                                       {user.first_name} {user.last_name}
+                                      <FontAwesomeIcon 
+                                        icon={faExternalLinkAlt} 
+                                        className="adr-external-link-icon"
+                                      />
                                     </span>
                                   </div>
                                   <div className="adr-user-email">
@@ -1359,7 +1411,7 @@ export default function AdminDeletionRequests() {
                     e.stopPropagation();
                     openActionConfirmation(viewModal.request, 'approve');
                   }}
-                  disabled={confirmationModal.isProcessing}
+                  disabled={confirmationModal.isProcessing || processingRequestId === viewModal.request.id}
                 >
                   <FontAwesomeIcon icon={faCheck} />
                   Approve
@@ -1370,12 +1422,102 @@ export default function AdminDeletionRequests() {
                     e.stopPropagation();
                     openActionConfirmation(viewModal.request, 'reject');
                   }}
-                  disabled={confirmationModal.isProcessing}
+                  disabled={confirmationModal.isProcessing || processingRequestId === viewModal.request.id}
                 >
                   <FontAwesomeIcon icon={faTimes} />
                   Reject
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🆕 ADDED: User View Modal */}
+      {userViewModal.isOpen && userViewModal.user && (
+        <div className="adr-modal-overlay" onClick={closeUserViewModal}>
+          <div className="adr-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="adr-modal-header">
+              <h2>User Details</h2>
+              <button 
+                className="adr-modal-close"
+                onClick={closeUserViewModal}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="adr-modal-body">
+              <div className="adr-details-modal">
+                <div className="adr-detail-section">
+                  <h3>User Information</h3>
+                  <div className="adr-detail-row">
+                    <label>Name:</label>
+                    <span>{userViewModal.user.first_name} {userViewModal.user.last_name}</span>
+                  </div>
+                  <div className="adr-detail-row">
+                    <label>Email:</label>
+                    <span>{userViewModal.user.email}</span>
+                  </div>
+                  <div className="adr-detail-row">
+                    <label>User ID:</label>
+                    <span>#{userViewModal.user.id}</span>
+                  </div>
+                </div>
+
+                <div className="adr-detail-section">
+                  <h3>Deletion Statistics</h3>
+                  <div className="adr-detail-row">
+                    <label>Current Deletions:</label>
+                    <span>{userViewModal.user.deletion_count || 0} / 3</span>
+                  </div>
+                  <div className="adr-detail-row">
+                    <label>Status:</label>
+                    <span className={`adr-user-status-badge ${getUserStatusClass(userViewModal.user)}`}>
+                      {getUserStatusText(userViewModal.user)}
+                    </span>
+                  </div>
+                  <div className="adr-detail-row full-width">
+                    <label>Progress:</label>
+                    <div className="adr-progress-container" style={{ marginTop: '1rem' }}>
+                      <div className="adr-progress-bar">
+                        <div 
+                          className={`adr-progress-fill ${
+                            userViewModal.user.limit_reached 
+                              ? 'limit-reached' 
+                              : userViewModal.user.deletion_count >= 2 
+                              ? 'approaching' 
+                              : 'normal'
+                          }`}
+                          style={{ width: `${Math.min(((userViewModal.user.deletion_count || 0) / 3) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                      <span className="adr-progress-text">
+                        {userViewModal.user.deletion_count || 0} out of 3 deletions this month
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {userViewModal.user.limit_reached && (
+                  <div className="adr-detail-section">
+                    <h3>Limit Status</h3>
+                    <div className="adr-detail-row full-width">
+                      <div className="adr-rejection-warning">
+                        <FontAwesomeIcon icon={faExclamationTriangle} />
+                        This user has reached the monthly deletion limit (3 requests)
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="adr-modal-footer">
+              <button 
+                className="adr-btn adr-btn-secondary"
+                onClick={closeUserViewModal}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -1442,7 +1584,7 @@ export default function AdminDeletionRequests() {
                   e.stopPropagation();
                   handleConfirmAction();
                 }}
-                disabled={confirmationModal.isProcessing}
+                disabled={confirmationModal.isProcessing || processingRequestId === confirmationModal.request?.id}
               >
                 {confirmationModal.isProcessing ? (
                   <>
@@ -1525,7 +1667,7 @@ export default function AdminDeletionRequests() {
                   e.stopPropagation();
                   handleRejectionSubmit();
                 }}
-                disabled={rejectionModal.isProcessing || !rejectionModal.reason.trim()}
+                disabled={rejectionModal.isProcessing || !rejectionModal.reason.trim() || processingRequestId === rejectionModal.request?.id}
               >
                 {rejectionModal.isProcessing ? (
                   <>
@@ -1544,5 +1686,5 @@ export default function AdminDeletionRequests() {
         </div>
       )}
      </>
-  ); 
+  );
 }
