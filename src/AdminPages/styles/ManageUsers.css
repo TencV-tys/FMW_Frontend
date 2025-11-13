@@ -702,25 +702,54 @@
   border-color: #d32f2f;
 }
 
-/* Report Severity Badges - Enhanced */
+/* 🆕 FIXED: Report Severity Badges - Enhanced with modal compatibility */
 .manage-users-report-severity-badge {
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1rem;
   border-radius: 25px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   white-space: nowrap;
   border: 2px solid;
   transition: all 0.3s ease;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .manage-users-report-severity-badge:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.manage-users-report-severity-badge.compact {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
+  gap: 0.4rem;
+  min-width: auto;
+}
+
+/* 🆕 FIXED: Modal-specific report severity badge styles */
+.manage-users-modal-content .manage-users-report-severity-badge {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.7rem;
+  gap: 0.4rem;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manage-users-report-stat .manage-users-report-severity-badge {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.65rem;
+  gap: 0.3rem;
+  max-width: 120px;
 }
 
 .manage-users-report-high {
@@ -739,6 +768,12 @@
   background: linear-gradient(135deg, #e8f5e8, #c8e6c9) !important;
   color: #388e3c !important;
   border-color: #388e3c !important;
+}
+
+.manage-users-report-warning {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7) !important;
+  color: #856404 !important;
+  border-color: #856404 !important;
 }
 
 .manage-users-report-none {
@@ -893,7 +928,7 @@
 .manage-users-empty-state p {
   font-size: 1.2rem;
   line-height: 1.6;
-  margin: 0 0 2rem 0;
+  margin: 0 0 2rem 0; 
   color: #6b7280;
   max-width: 500px; 
 }
@@ -1650,6 +1685,235 @@
   background: linear-gradient(135deg, #A0522D, #8B5A2B);
 }
 
+/* 🆕 ADDED: User Details Modal Styles */
+.user-details-modal {
+  max-width: 800px;
+}
+
+.manage-users-user-profile-section {
+  margin-bottom: 2rem;
+}
+
+.manage-users-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.manage-users-profile-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #8B5A2B;
+}
+
+.manage-users-profile-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8B5A2B, #654321);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+  border: 3px solid #8B5A2B;
+}
+
+.manage-users-profile-info h2 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.manage-users-profile-badges {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.manage-users-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.manage-users-detail-group {
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.manage-users-detail-group h4 {
+  margin: 0 0 1rem 0;
+  color: #8B5A2B;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #8B5A2B;
+  padding-bottom: 0.5rem;
+}
+
+.manage-users-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.manage-users-detail-item:last-child {
+  border-bottom: none;
+}
+
+.manage-users-detail-item svg {
+  color: #8B5A2B;
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.manage-users-detail-content {
+  flex: 1;
+}
+
+.manage-users-detail-content label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.manage-users-detail-content span {
+  display: block;
+  font-size: 1rem;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+/* 🆕 ADDED: Modal Actions */
+.manage-users-modal-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.manage-users-modal-btn {
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid;
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  min-width: 150px;
+  justify-content: center;
+}
+
+.manage-users-modal-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  transform: translate(-50%, -50%);
+}
+
+.manage-users-modal-btn:hover::before {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+
+.manage-users-modal-btn.view-posts {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  color: #1976d2;
+  border-color: #1976d2;
+}
+
+.manage-users-modal-btn.close {
+  background: linear-gradient(135deg, #6c757d, #545b62);
+  color: white;
+  border-color: #545b62;
+}
+
+.manage-users-modal-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 🆕 FIXED: Report severity badge in modal statistics */
+.manage-users-report-stat .manage-users-stat-value .manage-users-report-severity-badge {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.65rem;
+  gap: 0.3rem;
+  max-width: 110px;
+  margin: 0 auto;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* Responsive styles for modal */
+@media (max-width: 768px) {
+  .user-details-modal {
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
+  
+  .manage-users-profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .manage-users-details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .manage-users-modal-actions {
+    flex-direction: column;
+  }
+  
+  .manage-users-modal-btn {
+    width: 100%;
+  }
+
+  /* 🆕 FIXED: Mobile report severity badge adjustments */
+  .manage-users-report-severity-badge {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.7rem;
+    gap: 0.4rem;
+    max-width: 140px;
+  }
+
+  .manage-users-modal-content .manage-users-report-severity-badge {
+    max-width: 130px;
+    font-size: 0.65rem;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .manage-users-page {
@@ -1785,6 +2049,19 @@
   
   .manage-users-report-stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* 🆕 FIXED: Extra small screen report severity badge */
+  .manage-users-report-severity-badge {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.65rem;
+    gap: 0.3rem;
+    max-width: 120px;
+  }
+
+  .manage-users-modal-content .manage-users-report-severity-badge {
+    max-width: 110px;
+    font-size: 0.6rem;
   }
 }
 

@@ -159,7 +159,8 @@
 .contact-form-card-fmwcp {
   background: white;
   padding: 2rem;
-  border-radius: 12px;
+  border-radius:4px 4px 16px 16px;
+  border-top: 4px solid #8B5A2B;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -473,7 +474,7 @@
   }
   
   .faq-section-fmwcp {
-    padding: 1rem;
+    padding: 1rem; 
   }
   
   .contact-footer-notice-fmwcp {

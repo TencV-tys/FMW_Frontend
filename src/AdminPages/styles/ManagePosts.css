@@ -2605,7 +2605,7 @@
 .manage-posts-action-btn.approve:hover:not(.disabled),
 .manage-posts-action-btn.reject:hover:not(.disabled) {
   transform: translateY(-3px) scale(1.1);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); 
 }
 
 .manage-posts-modal-btn.view-request:hover:not(:disabled):not(.disabled),

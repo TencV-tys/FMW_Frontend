@@ -7,7 +7,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: hidden;
   position: relative; 
-  padding-top: 30px;
+  padding-top: 60px;
 }
 
 .login-auth-container {
@@ -29,7 +29,7 @@
 .login-auth-form {
   background: #ffffff;
   padding: 2.5rem;
-  border-radius: 16px;
+  border-radius:4px 4px 16px 16px;
   border: 1px solid #e2e8f0;
   box-shadow: 
     0 4px 20px rgba(139, 90, 43, 0.08), /* Brown shadow */

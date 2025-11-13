@@ -22,7 +22,11 @@ import {
   faTimes,
   faBell,
   faUndo,
-  faExternalLinkAlt
+  faExternalLinkAlt,
+  faMapMarkerAlt,
+  faPhone,
+  faIdCard,
+  faEye
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ManageUsers.css';
 
@@ -40,6 +44,7 @@ export default function ManageUsers() {
   const [showBanModal, setShowBanModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showActivateModal, setShowActivateModal] = useState(false);
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   
   // Form states
@@ -58,8 +63,6 @@ export default function ManageUsers() {
   const [highlightedUser, setHighlightedUser] = useState(null);
   const tableContainerRef = useRef(null);
   const tableWrapperRef = useRef(null);
-  const highlightedRowRef = useRef(null);
-  const highlightedCellRef = useRef(null);
 
   // Smart polling refs and warned users tracking
   const pollingIntervalRef = useRef(null);
@@ -89,27 +92,31 @@ export default function ManageUsers() {
     }
   };
 
-  // 🆕 ENHANCED: Highlight scrolling with horizontal support
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const highlightUser = urlParams.get('highlightUser');
-    
-    if (highlightUser) {
-      const userId = parseInt(highlightUser);
-      setHighlightedUser(userId);
-      
-      // Use setTimeout to ensure DOM is ready
-      setTimeout(() => {
-        scrollToHighlightedUser(userId);
-      }, 800);
-    }
-  }, []);
+  // 🆕 ADDED: Open user details modal
+  const openUserDetailsModal = (user) => {
+    setSelectedUser(user);
+    setShowUserDetailsModal(true);
+  };
+
+  // 🆕 ADDED: Close user details modal
+  const closeUserDetailsModal = () => {
+    setShowUserDetailsModal(false);
+    setSelectedUser(null);
+  };
+
+  // 🆕 ADDED: Navigate to user posts (external link functionality)
+  const navigateToUserPosts = (user) => {
+    navigate(`/admin/manage-posts?userId=${user.id}&userName=${encodeURIComponent(getUserName(user))}`);
+  };
+
+  // 🆕 ENHANCED: Handle user row click to open modal instead of navigation
+  const handleUserClick = (user) => {
+    openUserDetailsModal(user);
+  };
 
   // 🆕 ENHANCED: Scroll to highlighted user with VERTICAL and HORIZONTAL support
   const scrollToHighlightedUser = (userId) => {
-    // Try table view first
     const tableElement = document.querySelector(`tr[data-user-id="${userId}"]`);
-    // Try mobile card view
     const mobileElement = document.querySelector(`.manage-users-mobile-card[data-user-id="${userId}"]`);
     
     const element = tableElement || mobileElement;
@@ -120,7 +127,6 @@ export default function ManageUsers() {
       const elementHeight = element.offsetHeight;
       const containerHeight = container.clientHeight;
       
-      // Calculate VERTICAL scroll position to center the element
       const scrollTop = elementTop - (containerHeight / 2) + (elementHeight / 2);
       
       container.scrollTo({
@@ -128,7 +134,6 @@ export default function ManageUsers() {
         behavior: 'smooth'
       });
 
-      // 🆕 ADDED: HORIZONTAL scrolling for table view
       if (tableElement && tableWrapperRef.current) {
         const tableWrapper = tableWrapperRef.current;
         const actionsCell = tableElement.querySelector('td:last-child');
@@ -138,21 +143,14 @@ export default function ManageUsers() {
           const cellWidth = actionsCell.offsetWidth;
           const wrapperWidth = tableWrapper.clientWidth;
           
-          // Calculate HORIZONTAL scroll position to show actions column
           const scrollLeft = cellLeft - (wrapperWidth / 2) + (cellWidth / 2);
           
           tableWrapper.scrollTo({
             left: Math.max(0, scrollLeft),
             behavior: 'smooth'
           });
-
-          // Store ref for the highlighted cell
-          highlightedCellRef.current = actionsCell;
         }
       }
-      
-      // Store ref for potential re-scrolling
-      highlightedRowRef.current = element;
     }
   };
 
@@ -266,11 +264,9 @@ export default function ManageUsers() {
       const data = await res.json();
       setUsers(data); 
       
-      // Check for users that need automatic warnings
       checkForAutomaticWarnings(data);
     } catch (error) {
       console.log(`Error fetching users with reports: ${error.message}`);
-      // Fallback to basic user data
       try {
         const fallbackRes = await fetch('http://localhost:8000/api/admin/users', {
           credentials: 'include'
@@ -313,7 +309,6 @@ export default function ManageUsers() {
         if (success) {
           newWarnedUsers.add(user.id);
           warningsSent++;
-          console.log(`✅ Warning sent to user ${user.id} for ${user.monthly_report_count} monthly reports OR ${user.total_report_count} total reports`);
         }
       }
       
@@ -341,7 +336,6 @@ export default function ManageUsers() {
       });
 
       if (response.ok) {
-        console.log(`✅ Generic warning sent to user: ${user.first_name} ${user.last_name}`);
         return true;
       }
       return false;
@@ -349,11 +343,6 @@ export default function ManageUsers() {
       console.error('Error sending automatic warning:', error);
       return false;
     }
-  };
-
-  // Handle user row click to navigate to user details or related content
-  const handleUserClick = (user) => {
-    navigate(`/admin/manage-posts?userId=${user.id}&userName=${encodeURIComponent(getUserName(user))}`);
   };
 
   // OPEN MODAL FUNCTIONS WITH VALIDATION
@@ -417,6 +406,7 @@ export default function ManageUsers() {
     setShowBanModal(false);
     setShowDeleteModal(false);
     setShowActivateModal(false);
+    setShowUserDetailsModal(false);
     setSelectedUser(null);
     setIsProcessing(false);
   };
@@ -609,7 +599,6 @@ export default function ManageUsers() {
       });
       
       const responseData = await res.json();
-      console.log('Backend response:', responseData);
       
       if (res.ok) {
         setUsers(users.map(u => 
@@ -621,7 +610,6 @@ export default function ManageUsers() {
         ));
         showToast(`User "${getUserName(user)}" restored successfully!`, 'success');
       } else {
-        console.log('Backend error:', responseData);
         showToast(responseData.error || 'Failed to restore user', 'error');
       }
     } catch (error) {
@@ -762,6 +750,25 @@ export default function ManageUsers() {
     setSearchTerm('');
   };
 
+  // 🆕 ADDED: Format date for display
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // 🆕 ADDED: Get user profile image URL
+  const getUserProfileImage = (user) => {
+    if (user.profile_picture) {
+      return `http://localhost:8000/uploads/${user.profile_picture}`;
+    }
+    return null;
+  };
+
   // GET ACTION BUTTONS WITH RESTORE FUNCTIONALITY
   const getActionButtons = (user) => {
     if (user.deleted_at) {
@@ -875,39 +882,39 @@ export default function ManageUsers() {
     return 'none';
   };
 
-  // Report severity badge with BOTH monthly and total
-  const ReportSeverityBadge = ({ user }) => {
+  // 🆕 FIXED: Report severity badge with shorter text to prevent overflow
+  const ReportSeverityBadge = ({ user, compact = false }) => {
     const severity = getReportSeverity(user);
     
     const severityConfig = {
       high: { 
         class: 'manage-users-report-high', 
-        text: 'High Risk - Can Delete', 
+        text: compact ? 'High Risk' : 'High Risk - Can Delete', 
         icon: faExclamationTriangle 
       },
       medium: { 
         class: 'manage-users-report-medium', 
-        text: 'Medium Risk - Can Ban', 
+        text: compact ? 'Medium Risk' : 'Medium Risk - Can Ban', 
         icon: faFlag 
       },
       low: { 
         class: 'manage-users-report-low', 
-        text: 'Low Risk - Can Suspend', 
+        text: compact ? 'Low Risk' : 'Low Risk - Can Suspend', 
         icon: faFlag 
       },
       warning: { 
         class: 'manage-users-report-warning', 
-        text: 'Warning Level', 
+        text: compact ? 'Warning' : 'Warning Level', 
         icon: faBell 
       },
       none: { 
         class: 'manage-users-report-none', 
-        text: 'No Risk', 
+        text: compact ? 'No Risk' : 'No Risk', 
         icon: faCheckCircle 
       },
       deleted: { 
         class: 'manage-users-report-deleted', 
-        text: 'User Deleted', 
+        text: compact ? 'Deleted' : 'User Deleted', 
         icon: faUserSlash 
       }
     };
@@ -915,10 +922,36 @@ export default function ManageUsers() {
     const config = severityConfig[severity];
 
     return (
-      <span className={`manage-users-report-severity-badge ${config.class}`}>
+      <span className={`manage-users-report-severity-badge ${config.class} ${compact ? 'compact' : ''}`}>
         <FontAwesomeIcon icon={config.icon} />
         {config.text}
       </span>
+    );
+  };
+
+  // 🆕 ADDED: User Details Modal Actions
+  const UserDetailsModalActions = ({ user }) => {
+    return (
+      <div className="manage-users-modal-actions">
+        <button
+          className="manage-users-modal-btn view-posts"
+          onClick={() => navigateToUserPosts(user)}
+          title="View User Posts"
+        >
+          <FontAwesomeIcon icon={faExternalLinkAlt} />
+          View Posts
+        </button>
+        
+        {getActionButtons(user)}
+        
+        <button
+          className="manage-users-modal-btn close"
+          onClick={closeUserDetailsModal}
+        >
+          <FontAwesomeIcon icon={faTimes} />
+          Close
+        </button>
+      </div>
     );
   };
 
@@ -927,6 +960,7 @@ export default function ManageUsers() {
     <div 
       className={`manage-users-mobile-card ${highlightedUser === user.id ? 'manage-users-highlighted' : ''}`}
       data-user-id={user.id}
+      onClick={() => handleUserClick(user)}
     >
       <div className="manage-users-mobile-header">
         <div className="manage-users-mobile-title">
@@ -935,7 +969,7 @@ export default function ManageUsers() {
             <FontAwesomeIcon 
               icon={faExternalLinkAlt} 
               className="manage-users-external-link-icon"
-              title="Click to view user posts"
+              title="Click to view user details"
             />
           </h3>
           <div className="manage-users-mobile-id">ID: #{user.id}</div>
@@ -963,11 +997,7 @@ export default function ManageUsers() {
         </div>
         <div className="manage-users-mobile-detail">
           <FontAwesomeIcon icon={faCalendar} />
-          <span>{new Date(user.created_at).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          })}</span>
+          <span>{formatDate(user.created_at)}</span>
         </div>
         
         {/* Report Statistics */}
@@ -987,21 +1017,21 @@ export default function ManageUsers() {
         {user.status === 'suspended' && user.suspended_until && (
           <div className="manage-users-mobile-detail">
             <FontAwesomeIcon icon={faClock} />
-            <span>Until: {new Date(user.suspended_until).toLocaleDateString()}</span>
+            <span>Until: {formatDate(user.suspended_until)}</span>
           </div>
         )}
 
         {user.deleted_at && (
           <div className="manage-users-mobile-detail">
             <FontAwesomeIcon icon={faCalendar} />
-            <span>Deleted: {new Date(user.deleted_at).toLocaleDateString()}</span>
+            <span>Deleted: {formatDate(user.deleted_at)}</span>
           </div>
         )}
       </div>
 
       {/* Report Severity Indicator */}
       <div className="manage-users-mobile-report-severity">
-        <ReportSeverityBadge user={user} />
+        <ReportSeverityBadge user={user} compact={true} />
       </div>
       
       <div className="manage-users-mobile-actions">
@@ -1224,7 +1254,7 @@ export default function ManageUsers() {
                 <div 
                   className="manage-users-table-wrapper" 
                   style={{ display: viewMode === 'table' ? 'block' : 'none' }}
-                  ref={tableWrapperRef} // 🆕 ADDED: Horizontal scroll container ref
+                  ref={tableWrapperRef}
                 >
                   <table className='manage-users-table'>
                     <thead>
@@ -1257,7 +1287,7 @@ export default function ManageUsers() {
                                 <FontAwesomeIcon 
                                   icon={faExternalLinkAlt} 
                                   className="manage-users-external-link-icon"
-                                  title="Click to view user posts"
+                                  title="Click to view user details"
                                 />
                               </strong>
                               <small>ID: #{user.id}</small>
@@ -1293,14 +1323,10 @@ export default function ManageUsers() {
                             </span>
                           </td>
                           <td>
-                            <ReportSeverityBadge user={user} />
+                            <ReportSeverityBadge user={user} compact={true} />
                           </td>
                           <td>
-                            {new Date(user.created_at).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
-                            })}
+                            {formatDate(user.created_at)}
                           </td>
                           <td>
                             <div className='manage-users-actions' onClick={(e) => e.stopPropagation()}>
@@ -1325,7 +1351,158 @@ export default function ManageUsers() {
         </div>
       </div>
 
-      {/* Suspend User Modal */}
+      {/* 🆕 ADDED: User Details Modal */}
+      {showUserDetailsModal && selectedUser && (
+        <div className="manage-users-modal-overlay">
+          <div className="manage-users-modal-content user-details-modal">
+            <div className="manage-users-modal-header">
+              <h3>User Details</h3>
+              <button 
+                className="manage-users-modal-close"
+                onClick={closeUserDetailsModal}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="manage-users-modal-body">
+              {/* User Profile Section */}
+              <div className="manage-users-user-profile-section">
+                <div className="manage-users-profile-header">
+                  {getUserProfileImage(selectedUser) ? (
+                    <img 
+                      src={getUserProfileImage(selectedUser)} 
+                      alt={`${selectedUser.first_name} ${selectedUser.last_name}`}
+                      className="manage-users-profile-image"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className="manage-users-profile-placeholder"
+                    style={{ display: getUserProfileImage(selectedUser) ? 'none' : 'flex' }}
+                  >
+                    <FontAwesomeIcon icon={faUser} />
+                  </div>
+                  <div className="manage-users-profile-info">
+                    <h2>{getUserName(selectedUser)}</h2>
+                    <div className="manage-users-profile-badges">
+                      <span className={`manage-users-status-badge ${getStatusClass(selectedUser.status)} ${selectedUser.deleted_at ? 'manage-users-status-deleted' : ''}`}>
+                        <FontAwesomeIcon icon={selectedUser.deleted_at ? faUserSlash : getStatusIcon(selectedUser.status)} />
+                        {getStatusDisplayText(selectedUser)}
+                      </span>
+                      <span className={`manage-users-role-badge ${getRoleClass(selectedUser.role)}`}>
+                        <FontAwesomeIcon icon={selectedUser.role === 'admin' ? faUserShield : faUser} />
+                        {selectedUser.role}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Report Statistics */}
+              <div className="manage-users-user-report-stats">
+                <h4>User Report Statistics:</h4>
+                <div className="manage-users-report-stats-grid">
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Monthly Reports</span>
+                    <span className="manage-users-stat-value">{selectedUser.monthly_report_count || 0}</span>
+                  </div>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Total Reports</span>
+                    <span className="manage-users-stat-value">{selectedUser.total_report_count || 0}</span>
+                  </div>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Problem Posts</span>
+                    <span className="manage-users-stat-value">{selectedUser.active_posts_with_reports || 0}</span>
+                  </div>
+                  <div className="manage-users-report-stat">
+                    <span className="manage-users-stat-label">Risk Level</span>
+                    <span className="manage-users-stat-value">
+                      <ReportSeverityBadge user={selectedUser} compact={true} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* User Details */}
+              <div className="manage-users-details-grid">
+                <div className="manage-users-detail-group">
+                  <h4>Personal Information</h4>
+                  <div className="manage-users-detail-item">
+                    <FontAwesomeIcon icon={faIdCard} />
+                    <div className="manage-users-detail-content">
+                      <label>User ID</label>
+                      <span>#{selectedUser.id}</span>
+                    </div>
+                  </div>
+                  <div className="manage-users-detail-item">
+                    <FontAwesomeIcon icon={faUser} />
+                    <div className="manage-users-detail-content">
+                      <label>Full Name</label>
+                      <span>{getUserName(selectedUser)}</span>
+                    </div>
+                  </div>
+                  <div className="manage-users-detail-item">
+                    <FontAwesomeIcon icon={faVenusMars} />
+                    <div className="manage-users-detail-content">
+                      <label>Gender</label>
+                      <span>{selectedUser.gender || 'Not specified'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="manage-users-detail-group">
+                  <h4>Contact Information</h4>
+                  <div className="manage-users-detail-item">
+                    <FontAwesomeIcon icon={faEnvelope} />
+                    <div className="manage-users-detail-content">
+                      <label>Email Address</label>
+                      <span>{selectedUser.email}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="manage-users-detail-group">
+                  <h4>Account Information</h4>
+                  <div className="manage-users-detail-item">
+                    <FontAwesomeIcon icon={faCalendar} />
+                    <div className="manage-users-detail-content">
+                      <label>Joined Date</label>
+                      <span>{formatDate(selectedUser.created_at)}</span>
+                    </div>
+                  </div>
+                  {selectedUser.status === 'suspended' && selectedUser.suspended_until && (
+                    <div className="manage-users-detail-item">
+                      <FontAwesomeIcon icon={faClock} />
+                      <div className="manage-users-detail-content">
+                        <label>Suspended Until</label>
+                        <span>{formatDate(selectedUser.suspended_until)}</span>
+                      </div>
+                    </div>
+                  )}
+                  {selectedUser.deleted_at && (
+                    <div className="manage-users-detail-item">
+                      <FontAwesomeIcon icon={faCalendar} />
+                      <div className="manage-users-detail-content">
+                        <label>Deleted Date</label>
+                        <span>{formatDate(selectedUser.deleted_at)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+            <div className="manage-users-modal-footer">
+              <UserDetailsModalActions user={selectedUser} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Existing Modals (Suspend, Ban, Delete, Activate) */}
       {showSuspendModal && selectedUser && (
         <div className="manage-users-modal-overlay">
           <div className="manage-users-modal-content">
@@ -1341,7 +1518,6 @@ export default function ManageUsers() {
             <div className="manage-users-modal-body">
               <p>You are about to suspend <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
               
-              {/* Report Statistics in Modal */}
               <div className="manage-users-user-report-stats">
                 <h4>User Report Statistics:</h4>
                 <div className="manage-users-report-stats-grid">
@@ -1448,7 +1624,6 @@ export default function ManageUsers() {
               </div>
               <p>You are about to <strong>permanently ban</strong> <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
               
-              {/* Report Statistics in Modal */}
               <div className="manage-users-user-report-stats">
                 <h4>User Report Statistics:</h4>
                 <div className="manage-users-report-stats-grid">
@@ -1529,7 +1704,6 @@ export default function ManageUsers() {
               </div>
               <p>You are about to <strong>permanently delete</strong> user <strong>{getUserName(selectedUser)}</strong> ({selectedUser.email})</p>
               
-              {/* Report Statistics in Modal */}
               <div className="manage-users-user-report-stats">
                 <h4>User Report Statistics:</h4>
                 <div className="manage-users-report-stats-grid">
