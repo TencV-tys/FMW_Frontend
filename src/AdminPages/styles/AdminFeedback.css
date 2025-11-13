@@ -1538,6 +1538,23 @@
   display: block;
 }
 
+/* 🆕 ADDED: Modal Actions Section */
+.feedback-modal-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.feedback-modal-actions .feedback-btn {
+  flex: 1;
+  min-width: 200px;
+  justify-content: center;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+}
+
 /* Button Styles - Enhanced */
 .feedback-btn {
   padding: 1.25rem 2rem;
@@ -1765,6 +1782,15 @@
     width: 100%;
     justify-content: center;
   }
+
+  /* 🆕 ADDED: Mobile modal actions */
+  .feedback-modal-actions {
+    flex-direction: column;
+  }
+  
+  .feedback-modal-actions .feedback-btn {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1791,6 +1817,10 @@
   .feedback-modal-content {
     margin: 0.5rem; 
   }
+
+  .feedback-modal-actions .feedback-btn {
+    min-width: auto;
+  }
 }
 
 /* Force clear status badges */
@@ -1800,4 +1830,4 @@
   opacity: 1 !important;
   filter: none !important;
   backdrop-filter: none !important;
-} 
+}

@@ -11,15 +11,12 @@ import {
   faTimes,
   faFire,
   faList,
-  
   faEye,
   faUser,
   faEnvelope,
   faBan,
- 
   faTimesCircle,
   faExternalLinkAlt,
- 
   faUsers,
   faWarning,
   faChartBar
@@ -33,20 +30,20 @@ export default function AdminDeletionRequests() {
   const [requestsLoading, setRequestsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // 🆕 UPDATED: Enhanced filter states
+  // Enhanced filter states
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
-  const [userStatusFilter, setUserStatusFilter] = useState('all'); // 🆕 ADDED: User status filter
+  const [userStatusFilter, setUserStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState('table');
   
-  // 🆕 ADDED: Highlight state for navigation
+  // Highlight state for navigation
   const [highlightedRequest, setHighlightedRequest] = useState(null);
   const [highlightedUser, setHighlightedUser] = useState(null);
 
-  // 🆕 ADDED: Tabs state
+  // Tabs state
   const [activeTab, setActiveTab] = useState('requests');
 
-  // 🆕 UPDATED: Enhanced modal states
+  // Enhanced modal states
   const [viewModal, setViewModal] = useState({
     isOpen: false,
     request: null
@@ -62,7 +59,7 @@ export default function AdminDeletionRequests() {
     isProcessing: false
   });
 
-  // 🆕 ADDED: Rejection Reason Modal
+  // Rejection Reason Modal
   const [rejectionModal, setRejectionModal] = useState({
     isOpen: false,
     request: null,
@@ -77,7 +74,7 @@ export default function AdminDeletionRequests() {
     type: 'success'
   });
 
-  // 🆕 ADDED: Scroll refs for auto-scrolling
+  // Scroll refs for auto-scrolling
   const tableContainerRef = useRef(null);
   const tableWrapperRef = useRef(null);
   const highlightedRowRef = useRef(null);
@@ -95,7 +92,7 @@ export default function AdminDeletionRequests() {
     }, 3000);
   };
 
-  // 🆕 ADDED: Navigation function to User Statistics
+  // Navigation function to User Statistics
   const navigateToUserStatistics = (userId, email) => {
     setActiveTab('users');
     setHighlightedUser(userId);
@@ -110,7 +107,7 @@ export default function AdminDeletionRequests() {
     }, 500);
   };
 
-  // 🆕 ADDED: Auto-scroll function for User Statistics
+  // Auto-scroll function for User Statistics
   const scrollToHighlightedUser = (userId) => {
     const userElement = document.querySelector(`tr[data-user-id="${userId}"]`);
     if (userElement && tableContainerRef.current) {
@@ -118,7 +115,7 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  // 🆕 ADDED: Auto-scroll function with HORIZONTAL scroll to buttons
+  // Auto-scroll function with HORIZONTAL scroll to buttons
   const scrollToHighlightedRequest = (requestId) => {
     const tableElement = document.querySelector(`tr[data-request-id="${requestId}"]`);
     const mobileElement = document.querySelector(`.adr-mobile-card[data-request-id="${requestId}"]`);
@@ -162,7 +159,7 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  // 🆕 ADDED: Re-scroll when request data loads and highlighted request exists
+  // Re-scroll when request data loads and highlighted request exists
   useEffect(() => {
     if (highlightedRequest && deletionRequests.length > 0 && !requestsLoading) {
       setTimeout(() => {
@@ -171,7 +168,7 @@ export default function AdminDeletionRequests() {
     }
   }, [deletionRequests, requestsLoading, highlightedRequest]);
 
-  // 🆕 ADDED: Auto-scroll when highlighted user changes
+  // Auto-scroll when highlighted user changes
   useEffect(() => {
     if (highlightedUser && activeTab === 'users') {
       setTimeout(() => {
@@ -180,7 +177,7 @@ export default function AdminDeletionRequests() {
     }
   }, [highlightedUser, activeTab]);
 
-  // 🆕 ADDED: Check for URL parameters on component mount
+  // Check for URL parameters on component mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const highlightRequest = urlParams.get('highlightRequest');
@@ -202,7 +199,7 @@ export default function AdminDeletionRequests() {
     }
   }, [deletionRequests]);
 
-  // 🆕 UPDATED: Smart polling setup
+  // Smart polling setup
   useEffect(() => {
     fetchDeletionRequests();
     fetchUsersDeletionStats();
@@ -227,7 +224,7 @@ export default function AdminDeletionRequests() {
     };
   }, [statusFilter, priorityFilter]);
 
-  // 🆕 ADDED: Smart polling functions
+  // Smart polling functions
   const startPolling = () => {
     stopPolling();
     pollingIntervalRef.current = setInterval(() => {
@@ -245,7 +242,7 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  // 🆕 ADDED: Manual refresh
+  // Manual refresh
   const handleManualRefresh = async () => {
     showToast('Refreshing deletion requests...', 'success');
     await fetchDeletionRequests();
@@ -314,13 +311,13 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  // 🆕 ADDED: Clear highlighted items
+  // Clear highlighted items
   const clearHighlightedItems = () => {
     setHighlightedRequest(null);
     setHighlightedUser(null);
   };
 
-  // 🆕 UPDATED: Enhanced request processing with modal flow
+  // Enhanced request processing with modal flow
   const processDeletionRequest = async (requestId, action, rejectionReason = '') => {
     if (confirmationModal.isProcessing) return;
     
@@ -363,7 +360,7 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  // 🆕 ADDED: Modal Functions
+  // Modal Functions
   const openViewModal = (request) => {
     setViewModal({ isOpen: true, request });
     if (highlightedRequest === request.id) {
@@ -393,7 +390,7 @@ export default function AdminDeletionRequests() {
     });
   };
 
-  // 🆕 ADDED: Open rejection reason modal
+  // Open rejection reason modal
   const openRejectionModal = (request) => {
     setRejectionModal({
       isOpen: true,
@@ -403,7 +400,7 @@ export default function AdminDeletionRequests() {
     });
   };
 
-  // 🆕 ADDED: Close rejection reason modal
+  // Close rejection reason modal
   const closeRejectionModal = () => {
     setRejectionModal({
       isOpen: false,
@@ -413,7 +410,7 @@ export default function AdminDeletionRequests() {
     });
   };
 
-  // 🆕 ADDED: Handle rejection reason submission
+  // Handle rejection reason submission
   const handleRejectionSubmit = () => {
     if (rejectionModal.isProcessing || !rejectionModal.reason.trim()) return;
     
@@ -446,7 +443,7 @@ export default function AdminDeletionRequests() {
     }
   };
 
-  // 🆕 UPDATED: Priority badge classes with new terms
+  // Priority badge classes with new terms
   const getPriorityBadgeClass = (request) => {
     const deletions = request.current_deletions || 0;
     if (deletions >= 4) return 'adr-priority-critical';
@@ -461,7 +458,7 @@ export default function AdminDeletionRequests() {
     return 'Approaching Limit';
   };
 
-  // 🆕 ADDED: Status badge classes
+  // Status badge classes
   const getStatusBadgeClass = (status) => {
     const statusMap = {
       pending: 'adr-status-pending',
@@ -471,7 +468,7 @@ export default function AdminDeletionRequests() {
     return statusMap[status] || 'adr-status-pending';
   };
 
-  // 🆕 ADDED: Status icons
+  // Status icons
   const getStatusIcon = (status) => {
     const iconMap = {
       pending: faClock,
@@ -481,7 +478,7 @@ export default function AdminDeletionRequests() {
     return iconMap[status] || faClock;
   };
 
-  // 🆕 UPDATED: Priority icons with new terms
+  // Priority icons with new terms
   const getPriorityIcon = (request) => {
     const deletions = request.current_deletions || 0;
     if (deletions >= 4) return faFire;
@@ -509,7 +506,7 @@ export default function AdminDeletionRequests() {
     return statusFilter !== 'all' || priorityFilter !== 'all' || searchTerm !== '' || highlightedRequest !== null || highlightedUser !== null || userStatusFilter !== 'all';
   };
 
-  // 🆕 UPDATED: Clear all filters
+  // Clear all filters
   const clearAllFilters = () => {
     setStatusFilter('all');
     setPriorityFilter('all');
@@ -526,7 +523,7 @@ export default function AdminDeletionRequests() {
   // Filter only pending requests for the main interface
   const pendingRequests = deletionRequests.filter(request => request.status === 'pending');
 
-  // 🆕 UPDATED: Filter logic with new priority terms
+  // Filter logic with new priority terms
   const filteredRequests = pendingRequests.filter(request => {
     const matchesSearch = 
       request.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -544,7 +541,7 @@ export default function AdminDeletionRequests() {
     return matchesSearch && matchesPriority;
   });
 
-  // 🆕 UPDATED: Stats for PENDING REQUESTS tab with new terms
+  // Stats for PENDING REQUESTS tab with new terms
   const requestStats = {
     total: pendingRequests.length,
     critical: pendingRequests.filter(req => (req.current_deletions || 0) >= 4).length,
@@ -552,7 +549,7 @@ export default function AdminDeletionRequests() {
     warning: pendingRequests.filter(req => (req.current_deletions || 0) >= 1 && (req.current_deletions || 0) <= 2).length
   };
 
-  // 🆕 ADDED: Stats for USER STATISTICS tab
+  // Stats for USER STATISTICS tab
   const userStats = {
     totalUsers: users.length,
     limitReached: users.filter(u => u.limit_reached).length,
@@ -561,27 +558,27 @@ export default function AdminDeletionRequests() {
     withinLimit: users.filter(u => u.deletion_count <= 1).length
   };
 
-  // 🆕 ADDED: Handle stat card click for PENDING REQUESTS tab
+  // Handle stat card click for PENDING REQUESTS tab
   const handleRequestStatCardClick = (filterType) => {
     setActiveTab('requests');
     setPriorityFilter(filterType);
     setHighlightedRequest(null);
   };
 
-  // 🆕 ADDED: Handle stat card click for USER STATISTICS tab
+  // Handle stat card click for USER STATISTICS tab
   const handleUserStatCardClick = (filterType) => {
     setActiveTab('users');
     setUserStatusFilter(filterType);
     setHighlightedUser(null);
   };
 
-  // 🆕 ADDED: Filter users for user statistics tab
+  // Filter users for user statistics tab
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // 🆕 ADDED: User status filtering
+    // User status filtering
     const matchesStatus = userStatusFilter === 'all' || 
       (userStatusFilter === 'limit_reached' && user.limit_reached) ||
       (userStatusFilter === 'approaching' && user.deletion_count >= 2 && !user.limit_reached) ||
@@ -590,7 +587,7 @@ export default function AdminDeletionRequests() {
     return matchesSearch && matchesStatus;
   });
 
-  // 🆕 ADDED: Get user status class and text
+  // Get user status class and text
   const getUserStatusClass = (user) => {
     if (user.limit_reached) return 'adr-user-status-banned';
     if (user.deletion_count >= 2) return 'adr-user-status-suspended';
@@ -603,12 +600,12 @@ export default function AdminDeletionRequests() {
     return 'Within Limit';
   };
 
-  // 🆕 ADDED: Check if user filter is active
+  // Check if user filter is active
   const isUserFilterActive = () => {
     return userStatusFilter !== 'all' || searchTerm !== '' || highlightedUser !== null;
   };
 
-  // 🆕 ADDED: Mobile Request Card Component
+  // Mobile Request Card Component
   const MobileRequestCard = ({ request }) => {
     const isHighlighted = highlightedRequest === request.id;
     
@@ -1277,7 +1274,7 @@ export default function AdminDeletionRequests() {
                     <label>Current Deletions:</label>
                     <span>{viewModal.request.current_deletions || 0}/3</span>
                   </div>
-                  {/* 🆕 ADDED: Navigation button to User Statistics */}
+                  {/* Navigation button to User Statistics */}
                   <div className="adr-detail-row full-width">
                     <button
                       className="adr-btn adr-btn-primary"
@@ -1358,7 +1355,10 @@ export default function AdminDeletionRequests() {
               <div className="adr-modal-actions">
                 <button
                   className="adr-btn adr-btn-success"
-                  onClick={() => openActionConfirmation(viewModal.request, 'approve')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openActionConfirmation(viewModal.request, 'approve');
+                  }}
                   disabled={confirmationModal.isProcessing}
                 >
                   <FontAwesomeIcon icon={faCheck} />
@@ -1366,7 +1366,10 @@ export default function AdminDeletionRequests() {
                 </button>
                 <button
                   className="adr-btn adr-btn-danger"
-                  onClick={() => openActionConfirmation(viewModal.request, 'reject')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openActionConfirmation(viewModal.request, 'reject');
+                  }}
                   disabled={confirmationModal.isProcessing}
                 >
                   <FontAwesomeIcon icon={faTimes} />
@@ -1435,7 +1438,10 @@ export default function AdminDeletionRequests() {
                     ? 'adr-btn-danger' 
                     : 'adr-btn-success'
                 }`}
-                onClick={handleConfirmAction}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleConfirmAction();
+                }}
                 disabled={confirmationModal.isProcessing}
               >
                 {confirmationModal.isProcessing ? (
@@ -1515,7 +1521,10 @@ export default function AdminDeletionRequests() {
               </button>
               <button 
                 className="adr-btn adr-btn-danger"
-                onClick={handleRejectionSubmit}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRejectionSubmit();
+                }}
                 disabled={rejectionModal.isProcessing || !rejectionModal.reason.trim()}
               >
                 {rejectionModal.isProcessing ? (
@@ -1535,5 +1544,5 @@ export default function AdminDeletionRequests() {
         </div>
       )}
      </>
-  );
+  ); 
 }

@@ -328,7 +328,7 @@ export default function AdminFeedback() {
     navigate(`/admin/manage-posts?highlightPost=${postId}`);
   };
 
-  // Update feedback status
+  // 🆕 FIXED: Update feedback status - properly handle modal closing and toast
   const updateFeedbackStatus = async (feedbackId, newStatus, rejectionReason = '') => {
     if (confirmationModal.isProcessing) return;
     
@@ -354,21 +354,28 @@ export default function AdminFeedback() {
           item.id === feedbackId ? { ...item, status: newStatus } : item
         ));
         fetchFeedbackStats();
-        closeConfirmationModal();
-        closeRejectionModal();
         showToast(`Feedback marked as ${newStatus.replace('_', ' ')}`, 'success');
+        
+        // 🆕 FIXED: Close modal AFTER successful operation
+        setTimeout(() => {
+          closeConfirmationModal();
+          closeRejectionModal();
+          // Also close view modal if it's open
+          if (viewModal.isOpen && viewModal.feedback?.id === feedbackId) {
+            closeViewModal();
+          }
+        }, 500);
       } else {
         throw new Error('Failed to update status');
       }
     } catch (error) {
       console.error('Error updating feedback status:', error);
       showToast('Error updating feedback status', 'error');
-    } finally {
       setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
 
-  // Delete feedback
+  // 🆕 FIXED: Delete feedback - properly handle modal closing and toast
   const deleteFeedback = async (feedbackId) => {
     if (confirmationModal.isProcessing) return;
     
@@ -383,20 +390,27 @@ export default function AdminFeedback() {
       if (response.ok) {
         setFeedback(prev => prev.filter(item => item.id !== feedbackId));
         fetchFeedbackStats();
-        closeConfirmationModal();
         showToast('Feedback deleted successfully', 'success');
         
         // Clear highlight if the highlighted feedback was deleted
         if (highlightedFeedback === feedbackId) {
           setHighlightedFeedback(null);
         }
+        
+        // 🆕 FIXED: Close modal AFTER successful operation
+        setTimeout(() => {
+          closeConfirmationModal();
+          // Also close view modal if it's open
+          if (viewModal.isOpen && viewModal.feedback?.id === feedbackId) {
+            closeViewModal();
+          }
+        }, 500);
       } else {
         throw new Error('Failed to delete feedback');
       }
     } catch (error) {
       console.error('Error deleting feedback:', error);
       showToast('Error deleting feedback', 'error');
-    } finally {
       setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
@@ -493,6 +507,7 @@ export default function AdminFeedback() {
     });
   };
 
+  // 🆕 FIXED: Handle confirm action - properly manage async operations
   const handleConfirmAction = () => {
     if (confirmationModal.isProcessing) return;
     
@@ -1291,6 +1306,113 @@ export default function AdminFeedback() {
                     </div>
                   </div>
                 )}
+
+                {/* 🆕 ADDED: Action Buttons in View Modal */}
+                <div className="feedback-detail-section">
+                  <h3>Quick Actions</h3>
+                  <div className="feedback-modal-actions">
+                    {viewModal.feedback.status === 'pending' && (
+                      <>
+                        <button
+                          className="feedback-btn feedback-btn-primary"
+                          onClick={() => openStatusChangeConfirmation(viewModal.feedback, 'reviewed')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faEye} />
+                          Mark as Reviewed
+                        </button>
+                        <button
+                          className="feedback-btn feedback-btn-warning"
+                          onClick={() => openStatusChangeConfirmation(viewModal.feedback, 'in_progress')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faExclamationTriangle} />
+                          Mark as In Progress
+                        </button>
+                        <button
+                          className="feedback-btn feedback-btn-danger"
+                          onClick={() => openRejectionModal(viewModal.feedback)}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faBan} />
+                          Reject Feedback
+                        </button>
+                      </>
+                    )}
+                    
+                    {viewModal.feedback.status === 'reviewed' && (
+                      <>
+                        <button
+                          className="feedback-btn feedback-btn-warning"
+                          onClick={() => openStatusChangeConfirmation(viewModal.feedback, 'in_progress')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faExclamationTriangle} />
+                          Mark as In Progress
+                        </button>
+                        <button
+                          className="feedback-btn feedback-btn-success"
+                          onClick={() => openStatusChangeConfirmation(viewModal.feedback, 'completed')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faCheckCircle} />
+                          Mark as Completed
+                        </button>
+                        <button
+                          className="feedback-btn feedback-btn-danger"
+                          onClick={() => openRejectionModal(viewModal.feedback)}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faBan} />
+                          Reject Feedback
+                        </button>
+                      </>
+                    )}
+                    
+                    {viewModal.feedback.status === 'in_progress' && (
+                      <>
+                        <button
+                          className="feedback-btn feedback-btn-success"
+                          onClick={() => openStatusChangeConfirmation(viewModal.feedback, 'completed')}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faCheckCircle} />
+                          Mark as Completed
+                        </button>
+                        <button
+                          className="feedback-btn feedback-btn-danger"
+                          onClick={() => openRejectionModal(viewModal.feedback)}
+                          disabled={confirmationModal.isProcessing}
+                        >
+                          <FontAwesomeIcon icon={faBan} />
+                          Reject Feedback
+                        </button>
+                      </>
+                    )}
+                    
+                    {(viewModal.feedback.status === 'completed' || viewModal.feedback.status === 'rejected') && (
+                      <button
+                        className="feedback-btn feedback-btn-primary"
+                        onClick={() => openStatusChangeConfirmation(viewModal.feedback, 'pending')}
+                        disabled={confirmationModal.isProcessing}
+                      >
+                        <FontAwesomeIcon icon={faRefresh} />
+                        Reopen Feedback
+                      </button>
+                    )}
+
+                    {(viewModal.feedback.status === 'completed' || viewModal.feedback.status === 'rejected') && (
+                      <button
+                        className="feedback-btn feedback-btn-danger"
+                        onClick={() => openDeleteConfirmation(viewModal.feedback)}
+                        disabled={confirmationModal.isProcessing}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                        Delete Feedback
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             <div className="feedback-modal-footer">
@@ -1461,4 +1583,4 @@ export default function AdminFeedback() {
       )}
     </>
   );  
-}
+} 
