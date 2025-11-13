@@ -302,7 +302,7 @@ export default function Reports() {
     navigate(`/admin/manage-users?highlightUser=${userId}`);
   };
 
-  // Update report status
+  // 🆕 FIXED: Update report status - properly handle modal closing and toast
   const updateReportStatus = async (reportId, newStatus) => {
     if (confirmationModal.isProcessing) return;
     
@@ -323,20 +323,27 @@ export default function Reports() {
           report.id === reportId ? { ...report, status: newStatus } : report
         ));
         fetchReportStats();
-        closeConfirmationModal();
         showToast(`Report marked as ${newStatus.replace('_', ' ')}`, 'success');
+        
+        // 🆕 FIXED: Close modal AFTER successful operation
+        setTimeout(() => {
+          closeConfirmationModal();
+          // Also close view modal if it's open
+          if (viewModal.isOpen && viewModal.report?.id === reportId) {
+            closeViewModal();
+          }
+        }, 500);
       } else {
         throw new Error('Failed to update report status');
       }
     } catch (error) {
       console.error('Error updating report status:', error);
       showToast('Error updating report status', 'error');
-    } finally {
       setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
 
-  // Delete report
+  // 🆕 FIXED: Delete report - properly handle modal closing and toast
   const deleteReport = async (reportId) => {
     if (confirmationModal.isProcessing) return;
     
@@ -351,20 +358,27 @@ export default function Reports() {
       if (response.ok) {
         setReports(prev => prev.filter(report => report.id !== reportId));
         fetchReportStats();
-        closeConfirmationModal();
         showToast('Report deleted successfully', 'success');
         
         // Clear highlight if the highlighted report was deleted
         if (highlightedReport === reportId) {
           setHighlightedReport(null);
         }
+        
+        // 🆕 FIXED: Close modal AFTER successful operation
+        setTimeout(() => {
+          closeConfirmationModal();
+          // Also close view modal if it's open
+          if (viewModal.isOpen && viewModal.report?.id === reportId) {
+            closeViewModal();
+          }
+        }, 500);
       } else {
         throw new Error('Failed to delete report');
       }
     } catch (error) {
       console.error('Error deleting report:', error);
       showToast('Error deleting report', 'error');
-    } finally {
       setConfirmationModal(prev => ({ ...prev, isProcessing: false }));
     }
   };
@@ -434,6 +448,7 @@ export default function Reports() {
     });
   };
 
+  // 🆕 FIXED: Handle confirm action - properly manage async operations
   const handleConfirmAction = () => {
     if (confirmationModal.isProcessing) return;
     
@@ -693,7 +708,6 @@ export default function Reports() {
         </div>
       </header>
 
-
       {/* Stats Summary */}
       <section className="rm-stats">
         <div 
@@ -819,7 +833,7 @@ export default function Reports() {
               </span>
             </div>
           </div>
-
+ 
           {loading ? (
             <div className="rm-loading-state">
               <div className="rm-loading-spinner"></div>
