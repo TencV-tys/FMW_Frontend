@@ -43,10 +43,24 @@ export default function MyPosts() {
     }
   }, []);
 
-  // FIXED: Filter posts when status filter or posts change
+  // UPDATED: Enhanced filter logic to include pending requests
   useEffect(() => {
     if (statusFilter === 'all') {
       setFilteredPosts(posts); 
+    } else if (statusFilter === 'pending_resolution') {
+      // Filter posts that have pending resolution requests
+      const pendingResolutionPostIds = resolutionRequests
+        .filter(request => request.status === 'pending')
+        .map(request => request.post_id);
+      
+      setFilteredPosts(posts.filter(post => 
+        pendingResolutionPostIds.includes(post.id)
+      ));
+    } else if (statusFilter === 'pending_deletion') {
+      // Filter posts that have pending deletion requests
+      setFilteredPosts(posts.filter(post => 
+        pendingDeletionRequests.has(post.id)
+      ));
     } else {
       setFilteredPosts(posts.filter(post => {
         const postStatus = post.status?.toLowerCase().trim();
@@ -54,7 +68,7 @@ export default function MyPosts() {
         return postStatus === filterStatus;
       }));
     }
-  }, [statusFilter, posts]); 
+  }, [statusFilter, posts, resolutionRequests, pendingDeletionRequests]); 
 
   const fetchMyPosts = async () => {
     try {
@@ -88,7 +102,6 @@ export default function MyPosts() {
     }
   };
 
-  // 🆕 ADD: Fetch resolution requests
   const fetchResolutionRequests = async () => {
     try {
       const response = await fetch(`${wifi}/api/user/resolution-requests`, {
@@ -103,10 +116,8 @@ export default function MyPosts() {
     }
   };
 
-  // 🆕 UPDATED: Fetch pending deletion requests using the new endpoint
   const fetchPendingDeletionRequests = async () => {
     try {
-      // First, get all posts to check their pending status
       const postsResponse = await fetch(`${wifi}/api/posts/my-posts`, {
         credentials: 'include'
       });
@@ -116,7 +127,6 @@ export default function MyPosts() {
         const posts = postsResult.posts || [];
         const pendingSet = new Set();
         
-        // Check each post for pending deletion requests
         for (const post of posts) {
           const response = await fetch(`${wifi}/api/check-pending-deletion/${post.id}`, {
             credentials: 'include'
@@ -132,12 +142,10 @@ export default function MyPosts() {
       }
     } catch (error) {
       console.error('Error fetching pending deletion requests:', error);
-      // Don't show error toast, just use empty set
       setPendingDeletionRequests(new Set());
     }
   };
 
-  // 🆕 ADD: Check individual post for pending deletion request
   const checkPostPendingDeletion = async (postId) => {
     try {
       const response = await fetch(`${wifi}/api/check-pending-deletion/${postId}`, {
@@ -156,16 +164,24 @@ export default function MyPosts() {
     }
   };
 
-  // 🆕 ADD: Check if post has pending resolution request
   const hasPendingResolutionRequest = (postId) => {
     return resolutionRequests.some(request => 
       request.post_id === postId && request.status === 'pending'
     );
   };
 
-  // 🆕 ADD: Check if post has pending deletion request
   const hasPendingDeletionRequest = (postId) => {
     return pendingDeletionRequests.has(postId);
+  };
+
+  // ADDED: Count pending resolution requests
+  const countPendingResolutionRequests = () => {
+    return resolutionRequests.filter(request => request.status === 'pending').length;
+  };
+
+  // ADDED: Count pending deletion requests
+  const countPendingDeletionRequests = () => {
+    return pendingDeletionRequests.size;
   };
 
   const fetchDeletionStats = async () => {
@@ -253,71 +269,65 @@ export default function MyPosts() {
     }
   };
 
-  // 🆕 UPDATED: Handle contact admin with better error handling
-const handleContactAdmin = async () => {
-  if (processingAction) return;
-  
-  setProcessingAction('contact');
-  const reasonInput = document.getElementById('deletion-reason');
-  const reason = reasonInput?.value?.trim();
+  const handleContactAdmin = async () => {
+    if (processingAction) return;
+    
+    setProcessingAction('contact');
+    const reasonInput = document.getElementById('deletion-reason');
+    const reason = reasonInput?.value?.trim();
 
-  if (!reason) {
-    toast.error('Please provide a reason for your deletion request.');
-    setProcessingAction(null);
-    return;
-  }
-
-  // Validate reason length
-  if (reason.length < 10) {
-    toast.error('Reason must be at least 10 characters long.');
-    setProcessingAction(null);
-    return;
-  }
-
-  try {
-    const response = await fetch(`${wifi}/api/contact-admin`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        reason: reason,
-          type: 'deletion_request',
-        post_id: contactAdminModal.postId // 🆕 REMOVED: type
-      })
-    }); 
-
-    const result = await response.json();
-
-    if (result.success) {
-      toast.success('Your request has been sent to the admin. They will review it soon.');
-      setContactAdminModal({ isOpen: false, postId: null });
-      
-      // Update pending state
-      setPendingDeletionRequests(prev => new Set([...prev, contactAdminModal.postId]));
-      
-      // Refresh to update the UI
-      await checkPostPendingDeletion(contactAdminModal.postId);
-    } else {
-      if (result.error && result.error.includes('already have a pending deletion request')) {
-        toast.error('You already have a pending deletion request for this post.');
-        setPendingDeletionRequests(prev => new Set([...prev, contactAdminModal.postId]));
-      } else {
-        toast.error(result.error || 'Failed to send request. Please try again.');
-      }
+    if (!reason) {
+      toast.error('Please provide a reason for your deletion request.');
+      setProcessingAction(null);
+      return;
     }
-  } catch (error) {
-    console.error('Error contacting admin:', error);
-    toast.error('Error sending request. Please try again.');
-  } finally {
-    setProcessingAction(null);
-  }
-};
 
-  // 🆕 ADD: Check for pending request before opening modal
+    if (reason.length < 10) {
+      toast.error('Reason must be at least 10 characters long.');
+      setProcessingAction(null);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${wifi}/api/contact-admin`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: reason,
+          type: 'deletion_request',
+          post_id: contactAdminModal.postId
+        })
+      }); 
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Your request has been sent to the admin. They will review it soon.');
+        setContactAdminModal({ isOpen: false, postId: null });
+        
+        setPendingDeletionRequests(prev => new Set([...prev, contactAdminModal.postId]));
+        
+        await checkPostPendingDeletion(contactAdminModal.postId);
+      } else {
+        if (result.error && result.error.includes('already have a pending deletion request')) {
+          toast.error('You already have a pending deletion request for this post.');
+          setPendingDeletionRequests(prev => new Set([...prev, contactAdminModal.postId]));
+        } else {
+          toast.error(result.error || 'Failed to send request. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Error contacting admin:', error);
+      toast.error('Error sending request. Please try again.');
+    } finally {
+      setProcessingAction(null);
+    }
+  };
+
   const handleRequestDeletionClick = async (postId) => {
-    // Check if there's already a pending request
     const hasPending = await checkPostPendingDeletion(postId);
     
     if (hasPending) {
@@ -332,48 +342,44 @@ const handleContactAdmin = async () => {
     nav(`/user/edit-post/${postId}`);
   };
 
-  // 🆕 UPDATED: Handle resolution request submission
- const handleSubmitResolutionRequest = async (postId, resolutionData) => {
-  if (processingAction) return;
-  
-  setProcessingAction('resolve');
-  try {
-    const formData = new FormData();
-    formData.append('resolution_description', resolutionData.resolution_description);
-    formData.append('verification_details', resolutionData.verification_details || '');
+  const handleSubmitResolutionRequest = async (postId, resolutionData) => {
+    if (processingAction) return;
     
-    if (resolutionData.resolution_photo) {
-      formData.append('resolution_photo', resolutionData.resolution_photo);
-    }
-
-    // UPDATED: Use the correct endpoint
-    const response = await fetch(`${wifi}/api/posts/${postId}/resolution-request`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      toast.success('Resolution request submitted! Waiting for admin approval.');
-      setResolutionForm({ isOpen: false, post: null });
+    setProcessingAction('resolve');
+    try {
+      const formData = new FormData();
+      formData.append('resolution_description', resolutionData.resolution_description);
+      formData.append('verification_details', resolutionData.verification_details || '');
       
-      // Refresh data
-      fetchResolutionRequests();
-      fetchMyPosts();
-    } else {
-      throw new Error(result.error || 'Failed to submit resolution request');
-    }
-  } catch (err) {
-    console.error('Error submitting resolution request:', err);
-    toast.error(err.message || 'Failed to submit resolution request');
-  } finally {
-    setProcessingAction(null);
-  }
-};
+      if (resolutionData.resolution_photo) {
+        formData.append('resolution_photo', resolutionData.resolution_photo);
+      }
 
-  // 🆕 ADD: Open resolution form
+      const response = await fetch(`${wifi}/api/posts/${postId}/resolution-request`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Resolution request submitted! Waiting for admin approval.');
+        setResolutionForm({ isOpen: false, post: null });
+        
+        fetchResolutionRequests();
+        fetchMyPosts();
+      } else {
+        throw new Error(result.error || 'Failed to submit resolution request');
+      }
+    } catch (err) {
+      console.error('Error submitting resolution request:', err);
+      toast.error(err.message || 'Failed to submit resolution request');
+    } finally {
+      setProcessingAction(null);
+    }
+  };
+
   const handleResolveClick = (post) => {
     setResolutionForm({ isOpen: true, post });
   };
@@ -480,13 +486,15 @@ const handleContactAdmin = async () => {
     );
   };
 
-  // FIXED: Get status counts with normalized status values - ADDED REMOVED COUNT
+  // UPDATED: Get status counts with pending request counts
   const getStatusCounts = () => {
     const counts = {
       all: posts.length,
       active: posts.filter(post => post.status?.toLowerCase() === 'active').length,
       resolved: posts.filter(post => post.status?.toLowerCase() === 'resolved').length,
-      removed: posts.filter(post => post.status?.toLowerCase() === 'removed').length
+      removed: posts.filter(post => post.status?.toLowerCase() === 'removed').length,
+      pending_resolution: countPendingResolutionRequests(),
+      pending_deletion: countPendingDeletionRequests()
     };
     return counts;
   };
@@ -536,7 +544,7 @@ const handleContactAdmin = async () => {
           <div className='myposts-content-lightbrown-fmw'>
             <div className='myposts-content-container-fmw'>
 
-              {/* FIXED: Centered Header */}
+              {/* Centered Header */}
               <div className='myposts-content-title-fmw'>
                 <h1>My Posts</h1>
                 <div className="posts-header-info-fmw">
@@ -547,7 +555,7 @@ const handleContactAdmin = async () => {
                 </div>
               </div>
 
-              {/* Enhanced Filter Section - ADDED REMOVED FILTER */}
+              {/* ENHANCED: Filter Section with Pending Request Filters */}
               <div className="myposts-filter-section-fmw">
                 <div className="filter-header-fmw">
                   <FontAwesomeIcon icon={faFilter} />
@@ -558,13 +566,15 @@ const handleContactAdmin = async () => {
                     { value: 'all', label: 'All', count: statusCounts.all },
                     { value: 'active', label: 'Active', count: statusCounts.active },
                     { value: 'resolved', label: 'Resolved', count: statusCounts.resolved },
-                    { value: 'removed', label: 'Removed', count: statusCounts.removed }
+                    { value: 'removed', label: 'Removed', count: statusCounts.removed },
+                    { value: 'pending_resolution', label: 'Pending Resolution', count: statusCounts.pending_resolution },
+                    { value: 'pending_deletion', label: 'Pending Deletion', count: statusCounts.pending_deletion }
                   ].map(option => (
                     <button
                       key={option.value}
                       className={`filter-option-fmw ${statusFilter === option.value ? 'active-fmw' : ''}`}
                       onClick={() => setStatusFilter(option.value)}
-                      disabled={loading}
+                      disabled={loading || option.count === 0}
                     >
                       <span className="filter-label-fmws">{option.label}</span>
                       <span className="filter-count-fmws">({option.count})</span>
@@ -588,12 +598,20 @@ const handleContactAdmin = async () => {
                   <h3>
                     {statusFilter === 'all' 
                       ? 'No posts yet' 
+                      : statusFilter === 'pending_resolution'
+                      ? 'No pending resolution requests'
+                      : statusFilter === 'pending_deletion'
+                      ? 'No pending deletion requests'
                       : `No ${statusFilter} posts found`
                     }
                   </h3>
                   <p>
                     {statusFilter === 'all' 
                       ? 'You haven\'t created any posts. Start by creating your first lost or found item post!'
+                      : statusFilter === 'pending_resolution'
+                      ? 'You don\'t have any posts waiting for resolution approval.'
+                      : statusFilter === 'pending_deletion'
+                      ? 'You don\'t have any posts waiting for deletion approval.'
                       : `You don't have any ${statusFilter} posts.`
                     }
                   </p>
@@ -704,7 +722,6 @@ const handleContactAdmin = async () => {
                           </div>
 
                           <div className='mypost-actions-fmw'>
-                            {/* 🆕 UPDATED: Resolution Request Button with Pending State */}
                             {post.status === 'Active' && !hasPendingResolution && (
                               <button
                                 onClick={() => handleResolveClick(post)}
@@ -716,7 +733,6 @@ const handleContactAdmin = async () => {
                               </button>
                             )}
                             
-                            {/* 🆕 ADDED: Pending Resolution Approval State */}
                             {hasPendingResolution && (
                               <button
                                 className="resolve-btn-fmw pending"
@@ -728,7 +744,6 @@ const handleContactAdmin = async () => {
                               </button>
                             )}
                             
-                            {/* 🆕 ADDED: Resolved State */}
                             {post.status === 'Resolved' && (
                               <button
                                 className="resolve-btn-fmw resolved"
@@ -761,7 +776,6 @@ const handleContactAdmin = async () => {
                               </button>
                             )}
                             
-                            {/* 🆕 UPDATED: Deletion Request Button with Pending State */}
                             {showRequestButton && !hasPendingDeletion && (
                               <button
                                 onClick={() => handleRequestDeletionClick(post.id)}
@@ -773,7 +787,6 @@ const handleContactAdmin = async () => {
                               </button>
                             )}
                             
-                            {/* 🆕 ADDED: Pending Deletion Request State */}
                             {hasPendingDeletion && (
                               <button
                                 className="request-deletion-btn-fmw pending"
@@ -799,7 +812,6 @@ const handleContactAdmin = async () => {
           <FontAwesomeIcon icon={faPlus} />
         </Link>
 
-        {/* 🆕 ADD: Separate User Resolution Form Modal */}
         {resolutionForm.isOpen && resolutionForm.post && (
           <ResolutionForm
             post={resolutionForm.post} 
@@ -809,7 +821,6 @@ const handleContactAdmin = async () => {
           />
         )}
 
-        {/* Custom Toast Container */}
         <CustomToast.CustomToastContainer toasts={toasts} removeToast={removeToast} />
 
         {/* Delete Confirmation Modal */}
@@ -922,4 +933,4 @@ const handleContactAdmin = async () => {
       </main>
     </div> 
   ) 
-}
+} 
