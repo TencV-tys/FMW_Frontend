@@ -1,4 +1,4 @@
-// ResolutionForm.jsx - UPDATED WITH CUSTOM TOAST
+// ResolutionForm.jsx - UPDATED WITH REQUIRED PROOF PHOTO
 import { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImage, faTimes, faCheckCircle, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
@@ -79,13 +79,19 @@ export default function ResolutionForm({
       return;
     }
 
+    // NEW: Check if proof photo is provided
+    if (!resolutionData.resolution_photo) {
+      toast.error('Proof photo is required for resolution approval');
+      return;
+    }
+
     // Prevent double click
     if (!loading) {
       onSubmit(resolutionData);
     }
   };
 
-  const isFormValid = resolutionData.resolution_description.trim().length > 0;
+  const isFormValid = resolutionData.resolution_description.trim().length > 0 && resolutionData.resolution_photo;
 
   return (
     <div className="modal-overlay-fmw resolution-modal-overlay">
@@ -109,7 +115,7 @@ export default function ResolutionForm({
             <div className="warning-banner-fmw resolution-info-banner">
               <FontAwesomeIcon icon={faExclamationTriangle} />
               <span>
-                <strong>Admin Approval Required</strong> - Provide details about how this post was resolved. Admin will review your request.
+                <strong>Admin Approval Required</strong> - Provide details and proof about how this post was resolved. Admin will review your request.
               </span>
             </div>
 
@@ -172,7 +178,7 @@ export default function ResolutionForm({
 
             <div className="form-group-fmw">
               <label>
-                <strong>Proof Photo (Optional but Recommended)</strong>
+                <strong>Proof Photo * (Required)</strong>
               </label>
               <div className="photo-upload-section-fmw">
                 {!photoPreview ? (
@@ -185,12 +191,19 @@ export default function ResolutionForm({
                       onChange={handlePhotoChange}
                       disabled={loading}
                       style={{ display: 'none' }}
+                      required
                     />
-                    <label htmlFor="resolution-photo" className="photo-upload-btn-fmw">
+                    <label 
+                      htmlFor="resolution-photo" 
+                      className={`photo-upload-btn-fmw ${hasAttemptedSubmit && !resolutionData.resolution_photo ? 'required-error-fmw' : ''}`}
+                    >
                       <FontAwesomeIcon icon={faImage} />
-                      <span>Add Proof Photo</span>
-                      <small>Max 5MB - JPG, PNG, etc.</small>
+                      <span>Add Proof Photo *</span>
+                      <small>Max 5MB - JPG, PNG, etc. (Required)</small>
                     </label>
+                    {hasAttemptedSubmit && !resolutionData.resolution_photo && (
+                      <div className="error-message-fmw">Proof photo is required for resolution approval</div>
+                    )}
                   </div>
                 ) : (
                   <div className="photo-preview-container-fmw">
@@ -206,9 +219,18 @@ export default function ResolutionForm({
                         <FontAwesomeIcon icon={faTimes} />
                       </button>
                     </div>
-                    <p className="photo-preview-text-fmw">Proof photo added</p>
+                    <p className="photo-preview-text-fmw">Proof photo added ✓</p>
                   </div>
                 )}
+              </div>
+              <div className="photo-requirement-note-fmw">
+                <strong>Why proof is required:</strong>
+                <ul>
+                  <li>Helps administrators verify the resolution</li>
+                  <li>Provides evidence for the community</li>
+                  <li>Ensures the integrity of resolved posts</li>
+                  <li>Photos of returned items, found owners, or resolution evidence are accepted</li>
+                </ul>
               </div>
             </div>
 
@@ -216,7 +238,7 @@ export default function ResolutionForm({
               <strong>What happens next:</strong>
               <ul>
                 <li>Your request will be sent to administrators for review</li>
-                <li>Admin will verify your resolution details</li>
+                <li>Admin will verify your resolution details and proof photo</li>
                 <li>You'll receive a notification when approved or rejected</li>
                 <li>Post status will be updated to "Resolved" upon approval</li>
               </ul>
@@ -253,5 +275,5 @@ export default function ResolutionForm({
         </form>
       </div>
     </div>
-  );
+  ); 
 }

@@ -1,4 +1,4 @@
-/* CreatePost.css - COMPLETE WITH COLOR INPUT STYLING */
+/* CreatePost.css - FIXED VERSION */
 
 .create-container {
   min-height: 100dvh;
@@ -179,7 +179,7 @@
   color: #e53e3e;
   background: #fef2f2;
   border-left: 3px solid #e53e3e;
-  padding: 0.1rem 0.2rem;
+  padding:3px;
 }
 
 .optional-field {
@@ -292,34 +292,67 @@
   50% { transform: scale(1.05); }
 }
 
-.submit-post-btns {
+/* Form Actions for Edit Post - FIXED ALIGNMENT */
+.form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   max-width: 400px;
+  margin-top: 10px;
+}
+
+.edit-cancel-btn {
+  width: 150px;
+  padding: 14px 20px;
+  background: #6b7280;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700; 
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+  text-align: center;
+  flex: 1;
+}
+
+.submit-post-btns {
+  width: 150px;
   padding: 14px 20px;
   background: #8B5A2B;
   border: none;
   border-radius: 8px;
   color: white;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem;
   transition: all 0.3s ease;
-  margin: 20px 0 10px 0;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(139, 90, 43, 0.3);
-  position: relative;
-  overflow: hidden;
+  text-align: center;
+  flex: 1;
+}
+
+.edit-cancel-btn:hover:not(:disabled) {
+  background: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
 }
 
 .submit-post-btns:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(139, 90, 43, 0.4);
   background: #654321;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 90, 43, 0.4);
 }
 
+.edit-cancel-btn:active:not(:disabled),
 .submit-post-btns:active:not(:disabled) {
   transform: translateY(-1px);
 }
 
+.edit-cancel-btn:disabled,
 .submit-post-btns:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -327,7 +360,14 @@
   box-shadow: none;
 }
 
-/* Rest of your existing CSS remains the same... */
+.submit-post-btns,
+.edit-cancel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .image-uploader-container {
   width: 100%;
   max-width: 400px;
@@ -508,8 +548,20 @@
   .create-textarea-group,
   .image-uploader-container,
   .current-photo-container,
-  .submit-post-btns {
+  .submit-post-btns,
+  .edit-cancel-btn {
     max-width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .submit-post-btns,
+  .edit-cancel-btn {
+    width: 100%;
+    max-width: 300px;
   }
 }
 
@@ -524,5 +576,15 @@
   
   .field-requirement-note {
     font-size: 0.75rem;
+  }
+
+  .form-actions { 
+    gap: 10px;
+  }
+  
+  .submit-post-btns,
+  .edit-cancel-btn {
+    padding: 12px 16px;
+    font-size: 0.95rem; 
   }
 }

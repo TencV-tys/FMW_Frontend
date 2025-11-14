@@ -1,5 +1,4 @@
- /* Resolution Button States */
- /* ResolutionForm.css - UPDATED TO MATCH CONTACT ADMIN STYLE */
+/* ResolutionForm.css - UPDATED WITH REQUIRED PHOTO STYLING */
 
 .resolution-modal-overlay {
   z-index: 1001; /* Higher than other modals */
@@ -61,7 +60,7 @@
   color: #666;
 }
 
-/* Photo Upload Styles */
+/* Photo Upload Styles - UPDATED FOR REQUIRED FIELD */
 .photo-upload-section-fmw {
   margin-top: 0.5rem;
 }
@@ -106,6 +105,23 @@
 .photo-upload-btn-fmw small {
   font-size: 0.8rem;
   color: #9ca3af;
+}
+
+/* Required Photo Error State */
+.photo-upload-btn-fmw.required-error-fmw {
+  border-color: #e53e3e !important;
+  background-color: #fef2f2 !important;
+  animation: pulse-error 0.5s ease-in-out;
+}
+
+.photo-upload-btn-fmw.required-error-fmw span {
+  color: #e53e3e;
+  font-weight: 700;
+}
+
+.photo-upload-btn-fmw.required-error-fmw small {
+  color: #e53e3e;
+  font-weight: 600;
 }
 
 .photo-preview-container-fmw {
@@ -163,6 +179,36 @@
   font-weight: 600;
   font-size: 0.9rem;
   margin: 0;
+}
+
+/* Photo Requirement Note */
+.photo-requirement-note-fmw {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  border-left: 4px solid #3b82f6;
+}
+
+.photo-requirement-note-fmw strong {
+  color: #0369a1;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.photo-requirement-note-fmw ul {
+  margin: 0.5rem 0 0 1rem;
+  padding: 0;
+}
+
+.photo-requirement-note-fmw li {
+  margin-bottom: 0.25rem;
+  color: #475569;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 /* Form Validation */
@@ -225,46 +271,7 @@
   cursor: not-allowed;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .resolution-modal-content {
-    width: 95%;
-    margin: 1rem;
-  }
-  
-  .resolution-modal-body {
-    padding: 1rem;
-    max-height: 50vh;
-  }
-  
-  .photo-preview-fmw {
-    width: 150px;
-    height: 120px;
-  }
-  
-  .modal-footer-fmw {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  .btn-primary-fmw, .btn-secondary-fmw {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .photo-upload-placeholder-fmw {
-    padding: 1.5rem;
-  }
-  
-  .photo-upload-btn-fmw svg {
-    font-size: 1.5rem;
-  }
-  
-  .photo-upload-btn-fmw span {
-    font-size: 0.9rem;
-  }
-}
+/* Resolution Button States */
 .resolve-btn-fmw.pending {
   background: #ffc107;
   border-color: #ffc107;
@@ -323,4 +330,75 @@
 .resolve-btn-fmw.pending .btn-text-fmw,
 .resolve-btn-fmw.resolved .btn-text-fmw {
   color: inherit; /* Use the parent's color */
+}
+
+/* Animations */
+@keyframes pulse-error {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes spin-fmw {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes modalSlideIn-fmw {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .resolution-modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .resolution-modal-body {
+    padding: 1rem;
+    max-height: 50vh;
+  }
+  
+  .photo-preview-fmw {
+    width: 150px;
+    height: 120px;
+  }
+  
+  .modal-footer-fmw {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .btn-primary-fmw, .btn-secondary-fmw {
+    width: 100%;
+  }
+  
+  .photo-requirement-note-fmw {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .photo-upload-placeholder-fmw {
+    padding: 1.5rem;
+  }
+  
+  .photo-upload-btn-fmw svg {
+    font-size: 1.5rem;
+  }
+  
+  .photo-upload-btn-fmw span {
+    font-size: 0.9rem;
+  }
+  
+  .photo-requirement-note-fmw ul {
+    margin-left: 0.5rem;
+  }
 }

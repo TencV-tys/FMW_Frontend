@@ -39,6 +39,27 @@ export default function EditPost() {
 
   const MAX_CHARS = 200;
 
+  // Color options for select dropdown
+  const colorOptions = [
+    { value: '', label: 'Select Color' },
+    { value: 'Black', label: '⚫ Black' },
+    { value: 'White', label: '⚪ White' },
+    { value: 'Red', label: '🔴 Red' },
+    { value: 'Blue', label: '🔵 Blue' },
+    { value: 'Green', label: '🟢 Green' },
+    { value: 'Yellow', label: '🟡 Yellow' },
+    { value: 'Orange', label: '🟠 Orange' },
+    { value: 'Purple', label: '🟣 Purple' },
+    { value: 'Pink', label: '💗 Pink' },
+    { value: 'Brown', label: '🟤 Brown' },
+    { value: 'Gray', label: '⚪ Gray' },
+    { value: 'Silver', label: '⚪ Silver' },
+    { value: 'Gold', label: '🟡 Gold' },
+    { value: 'Multi-color', label: '🌈 Multi-color' },
+    { value: 'Transparent', label: '💎 Transparent' },
+    { value: 'Other', label: '🎨 Other' }
+  ];
+
   // Check if photo is required
   const requiresPhoto = () => {
     if (!formData.category_id) return false;
@@ -58,7 +79,7 @@ export default function EditPost() {
     if (!selectedCategory) return false;
 
     const categoryName = selectedCategory.name.toLowerCase();
-    const colorRequiredCategories = ['bag', 'phone', 'clothes', 'accessories', 'wallet', 'electronics', 'jewelry'];
+    const colorRequiredCategories = ['bag', 'phone', 'clothes', 'accessories', 'wallet', 'gadgets', 'jewelry'];
     
     return colorRequiredCategories.some(cat => categoryName.includes(cat));
   };
@@ -348,23 +369,27 @@ export default function EditPost() {
               </select>
             </div>
 
-            {/* Color Input - Simple Text Input with Requirements */}
-            <div className='create-input-group color-input-group'>
-              <input
-                type='text'
-                name='color'
-                placeholder={requiresColor() ? 'Color * (Required for this category)' : 'Color (Optional)'}
-                value={formData.color}
+            {/* Color Input - Select Dropdown with Emojis */}
+            <div className='create-select-group color-select-group'>
+              <select 
+                name='color' 
+                value={formData.color} 
                 onChange={handleChange}
                 required={requiresColor()}
                 disabled={loading}
                 className={requiresColor() && !formData.color ? 'required-field' : ''}
-              />
+              >
+                {colorOptions.map((color, index) => (
+                  <option key={index} value={color.value}>
+                    {color.label} {color.value === '' && requiresColor() ? '* (Required)' : ''}
+                  </option>
+                ))}
+              </select>
               <div className="field-requirement-note">
                 {requiresColor() ? (
-                  <span className="required-field">* Color is required for bags, phones, clothes, accessories, wallets, electronics, and jewelry</span>
+                  <span className="required-field">* Color is required</span>
                 ) : (
-                  <span className="optional-field">Color is optional for this category</span>
+                  <span className="optional-field">Color is optional </span>
                 )}
               </div>
             </div>
