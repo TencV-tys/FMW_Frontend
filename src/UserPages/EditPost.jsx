@@ -310,7 +310,7 @@ export default function EditPost() {
               />
             </div>
 
-            {/* Horizontal Selects - Same as CreatePost */}
+            {/* Horizontal Selects */}
             <div className='create-selects-horizontal'>
               <div className='create-select-group'>
                 <select name='type' value={formData.type} onChange={handleChange} required disabled={loading}>
@@ -338,7 +338,7 @@ export default function EditPost() {
               </div>
             </div>
 
-            {/* Purok Select - Same styling */}
+            {/* Purok Select */}
             <div className='create-select-group purok-select'>
               <select name='purok_id' value={formData.purok_id} onChange={handleChange} disabled={loading}>
                 <option value="">Select Purok (Optional)</option>
@@ -348,33 +348,21 @@ export default function EditPost() {
               </select>
             </div>
 
-            {/* Updated Color Input - HTML5 Color Picker */}
+            {/* Color Input - Simple Text Input with Requirements */}
             <div className='create-input-group color-input-group'>
-              <label className='color-input-label'>
-                Color {requiresColor() ? '*' : '(Optional)'}
-              </label>
-              <div className='color-input-container'>
-                <input
-                  type='color'
-                  name='color'
-                  value={formData.color || '#000000'}
-                  onChange={handleChange}
-                  className='color-picker-input'
-                  disabled={loading}
-                />
-                <input
-                  type='text'
-                  name='color_text'
-                  value={formData.color}
-                  placeholder='Or type color name...'
-                  onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
-                  className='color-text-input'
-                  disabled={loading}
-                />
-              </div>
+              <input
+                type='text'
+                name='color'
+                placeholder={requiresColor() ? 'Color * (Required for this category)' : 'Color (Optional)'}
+                value={formData.color}
+                onChange={handleChange}
+                required={requiresColor()}
+                disabled={loading}
+                className={requiresColor() && !formData.color ? 'required-field' : ''}
+              />
               <div className="field-requirement-note">
                 {requiresColor() ? (
-                  <span className="required-field">* Color is required for this category</span>
+                  <span className="required-field">* Color is required for bags, phones, clothes, accessories, wallets, electronics, and jewelry</span>
                 ) : (
                   <span className="optional-field">Color is optional for this category</span>
                 )}
