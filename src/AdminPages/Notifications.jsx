@@ -19,7 +19,8 @@ import {
   faPlusCircle,
   faTimes,
   faRefresh,
-  faFlagCheckered // 🆕 ADD: For resolution requests
+  faFlagCheckered,
+  faFileCirclePlus // 🆕 ADD: For new post notifications
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/Notifications.css'; 
 
@@ -31,14 +32,15 @@ export default function AdminNotifications() {
   const [stats, setStats] = useState({
     total: 0,
     unread: 0,
+    new_post: 0, // 🆕 ADD: New post stats
     reports: 0,
     user_suspended: 0,
     user_banned: 0,
     feedback_submitted: 0,
     deletion_request: 0,
-    resolution_request_pending: 0, // 🆕 ADD: Resolution request stats
-    resolution_request_approved: 0, // 🆕 ADD: Resolution approval stats
-    resolution_request_rejected: 0  // 🆕 ADD: Resolution rejection stats
+    resolution_request_pending: 0,
+    resolution_request_approved: 0,
+    resolution_request_rejected: 0
   });
   
   // Confirmation Modal State
@@ -159,14 +161,15 @@ export default function AdminNotifications() {
         setStats({ 
           total: data.stats?.total || 0,
           unread: data.stats?.unread || 0,
+          new_post: data.stats?.new_post || 0, // 🆕 ADD: New post count
           reports: data.stats?.reports || 0,
           user_suspended: data.stats?.user_suspended || 0,
           user_banned: data.stats?.user_banned || 0,
           feedback_submitted: data.stats?.feedback_submitted || 0,
           deletion_request: data.stats?.deletion_request || 0,
-          resolution_request_pending: data.stats?.resolution_request_pending || 0, // 🆕 ADD
-          resolution_request_approved: data.stats?.resolution_request_approved || 0, // 🆕 ADD
-          resolution_request_rejected: data.stats?.resolution_request_rejected || 0  // 🆕 ADD
+          resolution_request_pending: data.stats?.resolution_request_pending || 0,
+          resolution_request_approved: data.stats?.resolution_request_approved || 0,
+          resolution_request_rejected: data.stats?.resolution_request_rejected || 0
         });
       }
     } catch (error) {
@@ -201,6 +204,9 @@ export default function AdminNotifications() {
     const metadata = parseNotificationMetadata(notification);
 
     switch (notification.type) { 
+      case 'new_post': // 🆕 ADD: New post navigation
+        return metadata.post_id ? `/admin/manage-posts?highlightPost=${metadata.post_id}` : '/admin/manage-posts';
+      
       case 'report_submitted':
         return metadata.report_id ? `/admin/reports?highlightReport=${metadata.report_id}` : '/admin/reports';
       
@@ -415,6 +421,8 @@ export default function AdminNotifications() {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case 'new_post': // 🆕 ADD: New post icon
+        return faFileCirclePlus;
       case 'post_resolved':
         return faCheckCircle;
       case 'post_removed':
@@ -442,7 +450,7 @@ export default function AdminNotifications() {
       case 'deletion_request_rejected':
         return faUserLock;
       
-      // 🆕 ADD: Resolution request icons
+      // Resolution request icons
       case 'resolution_request_pending':
         return faFlagCheckered;
       case 'resolution_approved_admin':
@@ -457,6 +465,8 @@ export default function AdminNotifications() {
 
   const getNotificationColor = (type) => {
     switch (type) {
+      case 'new_post': // 🆕 ADD: New post color (teal)
+        return '#14b8a6';
       case 'post_resolved':
         return '#10b981';
       case 'post_removed':
@@ -486,7 +496,7 @@ export default function AdminNotifications() {
       case 'deletion_request_rejected':
         return '#FF8904';
       
-      // 🆕 ADD: Resolution request colors
+      // Resolution request colors
       case 'resolution_request_pending':
         return '#8b5cf6'; // Purple for pending
       case 'resolution_approved_admin':
@@ -504,6 +514,9 @@ export default function AdminNotifications() {
     const metadata = parseNotificationMetadata(notification);
     
     switch (notification.type) {
+      case 'new_post': // 🆕 ADD: New post description
+        return `Post #${metadata.post_id} - ${metadata.post_title || ''} (${metadata.post_type})`;
+      
       case 'report_submitted':
         return `Report #${metadata.report_id} for Post #${metadata.post_id}`;
       
@@ -515,7 +528,7 @@ export default function AdminNotifications() {
       case 'user_banned':
         return `User #${metadata.target_user_id} - ${metadata.target_user_name || ''}`;
       
-      // 🆕 ADD: Resolution request descriptions
+      // Resolution request descriptions
       case 'resolution_request_pending':
       case 'resolution_approved_admin':
       case 'resolution_rejected_admin':
@@ -622,6 +635,20 @@ export default function AdminNotifications() {
             <p>Unread</p>
           </div>
         </div>
+        
+        {/* 🆕 ADD: New Post Stats Card */}
+        <div 
+          className={`admin-notif-stat-card ${filter === 'new_post' ? 'admin-notif-active' : ''}`}
+          onClick={() => handleStatCardClick('new_post')}
+          style={{ cursor: 'pointer' }}
+          title="Show new post notifications"
+        >
+          <div className="admin-notif-stat-info">
+            <h3>{stats.new_post}</h3>
+            <p>New Posts</p>
+          </div>
+        </div>
+        
         <div 
           className={`admin-notif-stat-card ${filter === 'report_submitted' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('report_submitted')}
@@ -647,7 +674,7 @@ export default function AdminNotifications() {
           </div>
         </div>
         
-        {/* 🆕 ADD: Resolution Request Stats */}
+        {/* Resolution Request Stats */}
         <div 
           className={`admin-notif-stat-card ${filter === 'resolution_request_pending' ? 'admin-notif-active' : ''}`}
           onClick={() => handleStatCardClick('resolution_request_pending')}
@@ -710,6 +737,7 @@ export default function AdminNotifications() {
           >
             <option value="all">All Notifications</option>
             <option value="unread">Unread Only</option>
+            <option value="new_post">New Posts</option> {/* 🆕 ADD: New post filter */}
             <option value="post_resolved">Resolved Posts</option>
             <option value="post_removed">Removed Posts</option>
             <option value="post_deleted">Deleted Posts</option>
@@ -723,7 +751,7 @@ export default function AdminNotifications() {
             <option value="deletion_request_approved">Deletion Approved</option>
             <option value="deletion_request_rejected">Deletion Rejected</option>
             
-            {/* 🆕 ADD: Resolution request filters */}
+            {/* Resolution request filters */}
             <option value="resolution_request_pending">Pending Resolution</option>
             <option value="resolution_approved_admin">Resolution Approved</option>
             <option value="resolution_rejected_admin">Resolution Rejected</option>
@@ -754,6 +782,7 @@ export default function AdminNotifications() {
           <div className="admin-notif-filter-tags">
             <span className="admin-notif-filter-tag">
               {filter === 'unread' && 'Unread Only'}
+              {filter === 'new_post' && 'New Posts'} {/* 🆕 ADD: New post filter label */}
               {filter === 'report_submitted' && 'Reports'}
               {filter === 'post_resolved' && 'Resolved Posts'}
               {filter === 'post_removed' && 'Removed Posts'}
@@ -767,7 +796,7 @@ export default function AdminNotifications() {
               {filter === 'deletion_request_approved' && 'Deletion Approved'}
               {filter === 'deletion_request_rejected' && 'Deletion Rejected'}
               
-              {/* 🆕 ADD: Resolution request filter labels */}
+              {/* Resolution request filter labels */}
               {filter === 'resolution_request_pending' && 'Pending Resolution'}
               {filter === 'resolution_approved_admin' && 'Resolution Approved'}
               {filter === 'resolution_rejected_admin' && 'Resolution Rejected'}

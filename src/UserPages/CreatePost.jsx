@@ -37,6 +37,7 @@ export default function CreatePost() {
 
   const MAX_CHARS = 200;
 
+  // Check if photo is required
   const requiresPhoto = () => {
     if (!formData.category_id) return false;
     
@@ -45,6 +46,26 @@ export default function CreatePost() {
 
     const categoryName = selectedCategory.name.toLowerCase();
     return categoryName.includes('person') || categoryName.includes('pet');
+  };
+
+  // Check if color is required
+  const requiresColor = () => {
+    if (!formData.category_id) return false;
+    
+    const selectedCategory = categories.find(cat => cat.id == formData.category_id);
+    if (!selectedCategory) return false;
+
+    const categoryName = selectedCategory.name.toLowerCase();
+    const colorRequiredCategories = ['bag', 'phone', 'clothes', 'accessories', 'wallet', 'gadgets', 'jewelry'];
+    
+    return colorRequiredCategories.some(cat => categoryName.includes(cat));
+  };
+
+  // Get current category name
+  const getCurrentCategoryName = () => {
+    if (!formData.category_id) return '';
+    const selectedCategory = categories.find(cat => cat.id == formData.category_id);
+    return selectedCategory ? selectedCategory.name.toLowerCase() : '';
   };
 
   useEffect(() => {
@@ -92,36 +113,36 @@ export default function CreatePost() {
     }));
   };
 
- const handleFileChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    // Check file size (5MB limit example)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-    if (file.size > maxSize) {
-      toast.error('File size too large. Please select an image under 5MB.');
-      e.target.value = ''; // Clear the file input
-      return;
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file size (5MB limit example)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error('File size too large. Please select an image under 5MB.');
+        e.target.value = ''; // Clear the file input
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file.');
+        e.target.value = '';
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        photo: file
+      }));
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file.');
-      e.target.value = '';
-      return;
-    }
-
-    setFormData(prev => ({
-      ...prev,
-      photo: file
-    }));
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPhotoPreview(e.target.result);
-    };
-    reader.readAsDataURL(file);
-  }
-}; 
+  }; 
 
   const handleRemovePhoto = () => {
     setFormData(prev => ({
@@ -136,16 +157,26 @@ export default function CreatePost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Basic validation
     if (!formData.title || !formData.category_id || !formData.barangay_id || !formData.description || !formData.contact_info) {
       toast.error('Please fill in all required fields');
       return;
     }
 
+    // Photo validation
     if (requiresPhoto() && !formData.photo) {
       toast.error('Photo is required for Person or Pets categories');
       return;
     }
 
+    // Color validation
+    if (requiresColor() && !formData.color) {
+      const categoryName = getCurrentCategoryName();
+      toast.error(`Color is required for ${categoryName} category`);
+      return;
+    }
+
+    // Character limit validation
     if (formData.description.length > MAX_CHARS || formData.contact_info.length > MAX_CHARS) {
       toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`);
       return;
@@ -304,15 +335,25 @@ export default function CreatePost() {
               </select>
             </div>
 
-            <div className='create-input-group'>
+            {/* Color Input - Simple Text Input with Requirements */}
+            <div className='create-input-group color-input-group'>
               <input
                 type='text'
                 name='color'
-                placeholder='Color (optional)'
+                placeholder={requiresColor() ? 'Color * (Required for this category)' : 'Color'}
                 value={formData.color}
                 onChange={handleChange}
+                required={requiresColor()}
                 disabled={submitting}
+                className={requiresColor() && !formData.color ? 'required-field' : ''}
               />
+              <div className="field-requirement-note">
+                {requiresColor() ? (
+                  <span className="required-field">* Color is required for bags, phones, clothes, accessories, wallets, gadgets, and jewelry</span>
+                ) : (
+                  <span className="optional-field">Color is optional for this category</span>
+                )}
+              </div>
             </div>
 
             <div className='create-textarea-group'>

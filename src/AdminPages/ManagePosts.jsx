@@ -1016,8 +1016,8 @@ export default function ManagePosts() {
         </>
       );
     } else {
-      return (
-        <>
+      return (   
+        <>  
           <button
             className={`manage-posts-modal-btn remove ${!canRemovePost(post) ? 'disabled' : ''}`}
             onClick={() => canRemovePost(post) && handleModalAction('remove')}

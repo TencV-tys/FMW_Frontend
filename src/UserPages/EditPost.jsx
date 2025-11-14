@@ -39,6 +39,7 @@ export default function EditPost() {
 
   const MAX_CHARS = 200;
 
+  // Check if photo is required
   const requiresPhoto = () => {
     if (!formData.category_id) return false;
     
@@ -47,6 +48,26 @@ export default function EditPost() {
 
     const categoryName = selectedCategory.name.toLowerCase();
     return categoryName.includes('person') || categoryName.includes('pet');
+  };
+
+  // Check if color is required
+  const requiresColor = () => {
+    if (!formData.category_id) return false;
+    
+    const selectedCategory = categories.find(cat => cat.id == formData.category_id);
+    if (!selectedCategory) return false;
+
+    const categoryName = selectedCategory.name.toLowerCase();
+    const colorRequiredCategories = ['bag', 'phone', 'clothes', 'accessories', 'wallet', 'electronics', 'jewelry'];
+    
+    return colorRequiredCategories.some(cat => categoryName.includes(cat));
+  };
+
+  // Get current category name
+  const getCurrentCategoryName = () => {
+    if (!formData.category_id) return '';
+    const selectedCategory = categories.find(cat => cat.id == formData.category_id);
+    return selectedCategory ? selectedCategory.name.toLowerCase() : '';
   };
 
   const hasPhoto = () => {
@@ -138,6 +159,21 @@ export default function EditPost() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Check file size (5MB limit example)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error('File size too large. Please select an image under 5MB.');
+        e.target.value = ''; // Clear the file input
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file.');
+        e.target.value = '';
+        return;
+      }
+
       setFormData(prev => ({
         ...prev,
         photo: file
@@ -165,16 +201,26 @@ export default function EditPost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Basic validation
     if (!formData.title || !formData.category_id || !formData.barangay_id || !formData.description || !formData.contact_info) {
       toast.error('Please fill in all required fields');
       return;
     }
 
+    // Photo validation
     if (requiresPhoto() && !hasPhoto()) {
       toast.error('Photo is required for Person or Pets categories');
       return;
     }
 
+    // Color validation
+    if (requiresColor() && !formData.color) {
+      const categoryName = getCurrentCategoryName();
+      toast.error(`Color is required for ${categoryName} category`);
+      return;
+    }
+
+    // Character limit validation
     if (formData.description.length > MAX_CHARS || formData.contact_info.length > MAX_CHARS) {
       toast.error(`Text fields cannot exceed ${MAX_CHARS} characters`);
       return;
@@ -302,15 +348,37 @@ export default function EditPost() {
               </select>
             </div>
 
-            <div className='create-input-group'>
-              <input
-                type='text'
-                name='color'
-                placeholder='Color (optional)'
-                value={formData.color}
-                onChange={handleChange}
-                disabled={loading}
-              />
+            {/* Updated Color Input - HTML5 Color Picker */}
+            <div className='create-input-group color-input-group'>
+              <label className='color-input-label'>
+                Color {requiresColor() ? '*' : '(Optional)'}
+              </label>
+              <div className='color-input-container'>
+                <input
+                  type='color'
+                  name='color'
+                  value={formData.color || '#000000'}
+                  onChange={handleChange}
+                  className='color-picker-input'
+                  disabled={loading}
+                />
+                <input
+                  type='text'
+                  name='color_text'
+                  value={formData.color}
+                  placeholder='Or type color name...'
+                  onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                  className='color-text-input'
+                  disabled={loading}
+                />
+              </div>
+              <div className="field-requirement-note">
+                {requiresColor() ? (
+                  <span className="required-field">* Color is required for this category</span>
+                ) : (
+                  <span className="optional-field">Color is optional for this category</span>
+                )}
+              </div>
             </div>
 
             <div className='create-textarea-group'>
@@ -402,7 +470,7 @@ export default function EditPost() {
                 name='image'
                 accept='image/*'
                 onChange={handleFileChange}
-                required={requiresPhoto()}
+                required={requiresPhoto() && !hasPhoto()}
                 disabled={loading}
               />
               {requiresPhoto() && !hasPhoto() && (
